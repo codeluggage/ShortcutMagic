@@ -1,1 +1,1 @@
-import Remindo from './main.jsx';
+import Remindo from 'main.jsx';

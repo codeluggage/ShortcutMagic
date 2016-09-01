@@ -1,14 +1,11 @@
 #import "OverlayWindow.h"
-#import "RCTViewManager.h"
-
-@interface RCTTransparentViewManager : RCTViewManager
-@end
+#import "RCTTransparentViewManager.h"
 
 @implementation RCTTransparentViewManager
 
 RCT_EXPORT_MODULE()
 
-- (UIView *)view
+- (NSWindow *)view
 {
   return [[OverlayWindow alloc] init];
 }
