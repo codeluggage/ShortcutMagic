@@ -17,14 +17,19 @@
         NSRect contentSize = NSMakeRect(200, 500, 1000, 500); // initial size of main NSWindow
 
         self.window = [[NSWindow alloc] initWithContentRect:contentSize
-                                                  styleMask:NSTitledWindowMask | NSResizableWindowMask | NSFullSizeContentViewWindowMask | NSMiniaturizableWindowMask | NSClosableWindowMask
-                                                    backing:NSBackingStoreBuffered
-                                                      defer:NO];
+            styleMask:NSBorderlessWindowMask 
+            backing:NSBackingStoreBuffered 
+            defer:YES];
+
         NSWindowController *windowController = [[NSWindowController alloc] initWithWindow:self.window];
 
         [[self window] setTitleVisibility:NSWindowTitleHidden];
         [[self window] setTitlebarAppearsTransparent:YES];
         [[self window] setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameAqua]];
+        [[self window] setOpaque:NO];
+        [[self window] setAlphaValue:0.2];
+        [[self window] setHasShadow:YES];
+        [[self window] setLevel:NSFloatingWindowLevel];
 
         [windowController setShouldCascadeWindows:NO];
         [windowController setWindowFrameAutosaveName:@"ShortcutWizard"];
@@ -36,8 +41,24 @@
     return self;
 }
 
+- (void)printLoop
+{
+  NSWorkspace* workspace            = [NSWorkspace sharedWorkspace];
+  NSRunningApplication* currentAppInfo      = [workspace frontmostApplication];
+
+//   NSImage* icon = [currentAppInfo icon];
+  NSLog([currentAppInfo localizedName]);
+}
+
 - (void)applicationDidFinishLaunching:(__unused NSNotification *)aNotification
 {
+   // [[[NSWorkspace sharedWorkspace] notificationCenter] addObserver:self selector:@selector(activateApp:) name:NSWorkspaceDidActivateApplicationNotification object:nil];
+
+  NSTimer *myTimer =[NSTimer scheduledTimerWithTimeInterval:0.03
+                                                    target:self
+                                                  selector:@selector(printLoop)
+                                                  userInfo:nil
+                                                   repeats:YES];
 
     _bridge = [[RCTBridge alloc] initWithDelegate:self
                                               launchOptions:nil];
