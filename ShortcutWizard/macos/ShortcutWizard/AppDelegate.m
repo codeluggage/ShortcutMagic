@@ -41,31 +41,63 @@
     return self;
 }
 
-- (void)printLoop
-{
-  NSWorkspace* workspace            = [NSWorkspace sharedWorkspace];
-  NSRunningApplication* currentAppInfo      = [workspace frontmostApplication];
+// - (void)printLoop
+// {
+//   NSWorkspace* workspace            = [NSWorkspace sharedWorkspace];
+//   NSRunningApplication* currentAppInfo      = [workspace frontmostApplication];
   
-  [[workspace notificationCenter] addObserver:self
-                                     selector:@selector(applicationLaunched:)
-                                         name:NSWorkspaceDidLaunchApplicationNotification
-                                       object:workspace];
+//   [[workspace notificationCenter] addObserver:self
+//                                      selector:@selector(applicationLaunched:)
+//                                          name:NSWorkspaceDidLaunchApplicationNotification
+//                                        object:workspace];
 
 
-//   NSImage* icon = [currentAppInfo icon];
-  NSLog([currentAppInfo localizedName]);
-}
+// //   NSImage* icon = [currentAppInfo icon];
+//   NSLog([currentAppInfo localizedName]);
+// }
 
 - (void)listeningApplicationActivated:(NSNotification *)notification
 {
     NSLog(@"Inside listeningApplicationActivated! ");
     NSLog([[notification userInfo] description]);
+    
+    NSRunningApplication* currentAppInfo      = [workspace frontmostApplication];
+    NSImage* icon = [currentAppInfo icon];
+    NSData *imageData = [icon TIFFRepresentation];
+    NSBitmapImageRep *imageRep = [NSBitmapImageRep imageRepWithData:imageData];
+    NSDictionary *imageProps = [NSDictionary dictionaryWithObject:[NSNumber numberWithFloat:1.0] forKey:NSImageCompressionFactor];
+    imageData = [imageRep representationUsingType:NSJPEGFileType properties:imageProps];
+
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);         
+    NSString *fileName = [[paths objectAtIndex:0] 
+        stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.png" , 
+            [currentAppInfo localizedName]
+        ]
+    ];
+
+    [imageData writeToFile:fileName atomically:NO];
 }
 
 - (void)listeningApplicationLaunched:(NSNotification *)notification
 {
     NSLog(@"Inside listeningApplicationLaunched! ");
     NSLog([[notification userInfo] description]);
+
+    NSRunningApplication* currentAppInfo      = [workspace frontmostApplication];
+    NSImage* icon = [currentAppInfo icon];
+    NSData *imageData = [icon TIFFRepresentation];
+    NSBitmapImageRep *imageRep = [NSBitmapImageRep imageRepWithData:imageData];
+    NSDictionary *imageProps = [NSDictionary dictionaryWithObject:[NSNumber numberWithFloat:1.0] forKey:NSImageCompressionFactor];
+    imageData = [imageRep representationUsingType:NSJPEGFileType properties:imageProps];
+
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);         
+    NSString *fileName = [[paths objectAtIndex:0] 
+        stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.png" , 
+            [currentAppInfo localizedName]
+        ]
+    ];
+
+    [imageData writeToFile:fileName atomically:NO];
 }
 
 - (void)applicationDidFinishLaunching:(__unused NSNotification *)aNotification
@@ -103,11 +135,39 @@
     _bridge = [[RCTBridge alloc] initWithDelegate:self
                                               launchOptions:nil];
 
+    NSRunningApplication* currentAppInfo      = [workspace frontmostApplication];
+    NSImage* icon = [currentAppInfo icon];
+    NSData *imageData = [icon TIFFRepresentation];
+    NSBitmapImageRep *imageRep = [NSBitmapImageRep imageRepWithData:imageData];
+    NSDictionary *imageProps = [NSDictionary dictionaryWithObject:[NSNumber numberWithFloat:1.0] forKey:NSImageCompressionFactor];
+    imageData = [imageRep representationUsingType:NSJPEGFileType properties:imageProps];
+
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);         
+    NSString *fileName = [[paths objectAtIndex:0] 
+        stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.png" , 
+            [currentAppInfo localizedName]
+        ]
+    ];
+
+    [imageData writeToFile:fileName atomically:NO];
+
+    // NSURL* url = [[NSBundle mainBundle] URLForResource:@"MyImage" withExtension:@"png"];
+    // NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);         
+    // NSString *filePath = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"banner.png"];
+
+    // NSError *writeError = nil;
+    // [imageData writeToFile:filePath options:NSDataWritingAtomic error:&writeError];
+
+    // if (writeError) {
+    //     NSLog(@"Error writing file: %@", writeError);
+    // }
+
+
+    NSDictionary* bridgeValues = @{ @"applicationName": [currentAppInfo localizedName], @"fileName": fileName };
+
     RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:_bridge
                                                      moduleName:@"ShortcutWizard"
-                                              initialProperties:nil];
-
-
+                                              initialProperties:bridgeValues];
 
     [self.window setContentView:rootView];
 }
