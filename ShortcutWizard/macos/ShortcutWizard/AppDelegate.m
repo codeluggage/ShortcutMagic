@@ -45,20 +45,60 @@
 {
   NSWorkspace* workspace            = [NSWorkspace sharedWorkspace];
   NSRunningApplication* currentAppInfo      = [workspace frontmostApplication];
+  
+  [[workspace notificationCenter] addObserver:self
+                                     selector:@selector(applicationLaunched:)
+                                         name:NSWorkspaceDidLaunchApplicationNotification
+                                       object:workspace];
+
 
 //   NSImage* icon = [currentAppInfo icon];
   NSLog([currentAppInfo localizedName]);
 }
 
+- (void)listeningApplicationActivated:(NSNotification *)notification
+{
+    NSLog(@"Inside listeningApplicationActivated! ");
+    NSLog([[notification userInfo] description]);
+}
+
+- (void)listeningApplicationLaunched:(NSNotification *)notification
+{
+    NSLog(@"Inside listeningApplicationLaunched! ");
+    NSLog([[notification userInfo] description]);
+}
+
 - (void)applicationDidFinishLaunching:(__unused NSNotification *)aNotification
 {
+
+  // NSTimer *myTimer =[NSTimer scheduledTimerWithTimeInterval:0.03
+  //                                                   target:self
+  //                                                 selector:@selector(printLoop)
+  //                                                 userInfo:nil
+  //                                                  repeats:YES];
+
+// APPKIT_EXTERN NSString * NSWorkspaceWillLaunchApplicationNotification;  //  see above
+// APPKIT_EXTERN NSString * NSWorkspaceDidLaunchApplicationNotification;   //  see above
+// APPKIT_EXTERN NSString * NSWorkspaceDidTerminateApplicationNotification;    //  see above
+// APPKIT_EXTERN NSString * const NSWorkspaceDidHideApplicationNotification NS_AVAILABLE_MAC(10_6);
+// APPKIT_EXTERN NSString * const NSWorkspaceDidUnhideApplicationNotification NS_AVAILABLE_MAC(10_6);
+// APPKIT_EXTERN NSString * const NSWorkspaceDidActivateApplicationNotification NS_AVAILABLE_MAC(10_6);
+// APPKIT_EXTERN NSString * const NSWorkspaceDidDeactivateApplicationNotification NS_AVAILABLE_MAC(10_6);
+
    // [[[NSWorkspace sharedWorkspace] notificationCenter] addObserver:self selector:@selector(activateApp:) name:NSWorkspaceDidActivateApplicationNotification object:nil];
 
-  NSTimer *myTimer =[NSTimer scheduledTimerWithTimeInterval:0.03
-                                                    target:self
-                                                  selector:@selector(printLoop)
-                                                  userInfo:nil
-                                                   repeats:YES];
+    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
+        
+    [[workspace notificationCenter] addObserver:self 
+                                       selector:@selector(listeningApplicationLaunched:) 
+                                           name:NSWorkspaceDidLaunchApplicationNotification 
+                                         object:workspace];
+
+    [[workspace notificationCenter] addObserver:self 
+                                       selector:@selector(listeningApplicationActivated:) 
+                                           name:NSWorkspaceDidActivateApplicationNotification 
+                                         object:workspace];
+
 
     _bridge = [[RCTBridge alloc] initWithDelegate:self
                                               launchOptions:nil];
