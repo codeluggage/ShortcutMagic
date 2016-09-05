@@ -11,15 +11,40 @@
 
 @implementation AppDelegate
 
++ (NSRect) screenResolution {
+  NSRect screenRect;
+  NSArray *screenArray = [NSScreen screens];
+  NSUInteger screenCount = [screenArray count];
+  NSUInteger index  = 0;
+  
+  for (index; index < screenCount; index++)
+  {
+    NSScreen *screen = [screenArray objectAtIndex: index];
+    screenRect = [screen visibleFrame];
+  }
+  
+  return screenRect;
+}
+
 -(id)init
 {
     if(self = [super init]) {
-        NSRect contentSize = NSMakeRect(200, 500, 1000, 500); // initial size of main NSWindow
+      NSRect screenRect = [AppDelegate screenResolution];
+      NSLog(@"Got the screen rect: >>>>>>>>>");
+      NSLog([NSString stringWithFormat:@"%.1fx%.1f",screenRect.size.width, screenRect.size.height]);
+      
+        NSRect contentSize = NSMakeRect(screenRect.size.width - 400, screenRect.size.height - 200, 800, 400); // initial size of main NSWindow
 
         self.window = [[NSWindow alloc] initWithContentRect:contentSize
-            styleMask:NSBorderlessWindowMask 
-            backing:NSBackingStoreBuffered 
+//            styleMask:NSBorderlessWindowMask
+            styleMask:NSTitledWindowMask
+            backing:NSBackingStoreBuffered
+//            defer:NO];
             defer:YES];
+      
+//      NSLog(@"window size:%i-%i : %i - %i", self.window.frame.size.width, self.window.frame.size.height, self.window.frame.positon.x, self.window.frame.position.y);
+      NSLog(@"window size:%f-%f", self.window.frame.size.width, self.window.frame.size.height);
+      NSLog(@"window pos:%f-%f", self.window.frame.origin.x, self.window.frame.origin.y);
 
         NSWindowController *windowController = [[NSWindowController alloc] initWithWindow:self.window];
 
@@ -27,7 +52,7 @@
         [[self window] setTitlebarAppearsTransparent:YES];
         [[self window] setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameAqua]];
         [[self window] setOpaque:NO];
-        [[self window] setAlphaValue:0.8];
+        [[self window] setAlphaValue:0.3];
         [[self window] setHasShadow:YES];
         [[self window] setLevel:NSFloatingWindowLevel];
 
