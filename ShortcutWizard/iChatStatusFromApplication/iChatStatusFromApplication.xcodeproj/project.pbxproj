@@ -5,7 +5,6 @@
 	};
 	objectVersion = 44;
 	objects = {
-
 /* Begin PBXBuildFile section */
 		4496BC100BFD283A00CB300A /* ISFAController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4496BC0F0BFD283A00CB300A /* ISFAController.m */; };
 		44CF98E10BFE2797008DD370 /* ScriptingBridge.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 44CF98E00BFE2797008DD370 /* ScriptingBridge.framework */; };
@@ -14,6 +13,7 @@
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		D0D876FF13FEBDF50084CAAF /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = D0D8770113FEBDF50084CAAF /* MainMenu.xib */; };
+		1B79F672449F43DB8A3991C5 /* libRCTActionSheet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 973923A2A3A947788C6A494F /* libRCTActionSheet.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +31,8 @@
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* iChatStatusFromApplication.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iChatStatusFromApplication.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D0D8770013FEBDF50084CAAF /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		50009EC1659F43FB9193EE34 /* RCTActionSheet.xcodeproj */ = {isa = PBXFileReference; name = "RCTActionSheet.xcodeproj"; path = "../node_modules/react-native-macos/Libraries/ActionSheetIOS/RCTActionSheet.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
+		973923A2A3A947788C6A494F /* libRCTActionSheet.a */ = {isa = PBXFileReference; name = "libRCTActionSheet.a"; path = "libRCTActionSheet.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -40,6 +42,7 @@
 			files = (
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				44CF98E10BFE2797008DD370 /* ScriptingBridge.framework in Frameworks */,
+				1B79F672449F43DB8A3991C5 /* libRCTActionSheet.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -90,6 +93,7 @@
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
+				F32A4693D2634D8685FE8CB7 /* Libraries */,
 			);
 			name = iChatStatusFromApplication;
 			sourceTree = "<group>";
@@ -121,6 +125,15 @@
 				1058C7A2FEA54F0111CA2CBB /* Other Frameworks */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		F32A4693D2634D8685FE8CB7 /* Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				50009EC1659F43FB9193EE34 /* RCTActionSheet.xcodeproj */,
+			);
+			name = Libraries;
+			path = "";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -222,6 +235,10 @@
 				INSTALL_PATH = "$(HOME)/Applications";
 				PRODUCT_NAME = iChatStatusFromApplication;
 				WRAPPER_EXTENSION = app;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/iChatStatusFromApplication\"",
+				);
 			};
 			name = Debug;
 		};
@@ -235,6 +252,10 @@
 				INSTALL_PATH = "$(HOME)/Applications";
 				PRODUCT_NAME = iChatStatusFromApplication;
 				WRAPPER_EXTENSION = app;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/iChatStatusFromApplication\"",
+				);
 			};
 			name = Release;
 		};
