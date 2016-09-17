@@ -190,11 +190,32 @@ return screenRect;
     //     NSLog(@"Error writing file: %@", writeError);
     // }
 
-    NSDictionary* bridgeValues = @{ 
-        @"applicationName": appName,
-        @"applicationIconPath": fileName 
+    NSDictionary* evernoteShortcuts = @{
+        // @"": @[@"cmd", @""],
+        // @"": @[@"cmd", @""],
+        // @"": @[@"alt", @""],
+        // @"": @[@"alt", @""],
+        // @"": @[@"ctrl", @""],
+        // @"": @[@"ctrl", @""],
+        // @"": @[@"fn", @""],
+        // @"": @[@"fn", @""],
+        @"Bold text": @[@"cmd", @"b"],
+        @"Italicise text": @[@"cmd", @"i"],
+        @"Underline text": @[@"cmd", @"u"],
+        @"Strikethrough text": @[@"ctrl", @"cmd", @"k"],
+        @"New notebook": @[@"cmd", @"shift", @"n"],
+        @"New note": @[@"cmd", @"n"],
+        @"Edit tag on current note": @[@"alt", @"'"]
     };
+
+    NSDictionary* bridgeValues = @{
+        @"applicationName": appName,
+        @"applicationIconPath": fileName,
+        @"shortcuts": evernoteShortcuts
+    };
+
     RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:_bridge moduleName:@"ShortcutWizard" initialProperties:bridgeValues];
+
     [self.window setContentView:rootView];
 }
 

@@ -13,16 +13,6 @@ const {
 } = ReactNative;
 
 
-var LOREM_IPSUM = 'Lorem ipsum dolor sit amet, ius ad pertinax oportere accommodare, an vix civibus corrumpit referrentur. Te nam case ludus inciderint, te mea facilisi adipiscing. Sea id integre luptatum. In tota sale consequuntur nec. Erat ocurreret mei ei. Eu paulo sapientem vulputate est, vel an accusam intellegam interesset. Nam eu stet pericula reprimique, ea vim illud modus, putant invidunt reprehendunt ne qui.';
-
-var hashCode = function(str) {
-    var hash = 15;
-    for (var ii = str.length - 1; ii >= 0; ii--) {
-        hash = ((hash << 5) - hash) + str.charCodeAt(ii);
-    }
-    return hash;
-};
-
 const styles = StyleSheet.create({
     row: {
         flexDirection: 'row',
@@ -131,11 +121,30 @@ const styles = StyleSheet.create({
 
 
 const ShortcutWizard = React.createClass({
-    componentDidMount() {
+    initialize() {
         console.log('>>> componentDidMount');
-        console.log(this.props);
-        console.log(this.props.applicationName);
-        console.log(this.props.applicationIconPath);
+        console.log(`Printing type [${typeof this.props}]: this.props`);
+        console.log(`Printing type [${typeof this.props.applicationName}]: this.props.applicationName`);
+        console.log(`Printing type [${typeof this.props.applicationIconPath}]: this.props.applicationIconPath`);
+        console.log(`Printing type [${typeof this.props.shortcuts}]: this.props.shortcuts`);
+        var shortcuts = this.props.shortcuts;
+        var shortcutRows = [];
+        var shortcutDataSource = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+
+        if (shortcuts) {
+            for (var key of Object.keys(shortcuts)) {
+                shortcutRows.push(`[${shortcuts[key]}]: ${key}`);
+            }
+        }
+
+        this.state = {
+            shortcutDataSource: shortcutRows.length ? shortcutDataSource.cloneWithRows(shortcutRows) : null,
+            image: this.props.applicationIconPath ? this.props.applicationIconPath : ''
+        };
+    },
+
+    componentDidMount() {
+        this.initialize();
     },
 
     componentWillMount() {
@@ -163,14 +172,6 @@ const ShortcutWizard = React.createClass({
         description: 'Performant, scrollable list of data.'
     },
 
-    getInitialState: function() {
-        console.log('>>>>>>>>>> hit initial state');
-        var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-        return {
-            dataSource: ds.cloneWithRows(this._genRows({})),
-        };
-    },
-
     _pressData: ({}: {[key: number]: boolean}),
 
     componentWillMount: function() {
@@ -178,7 +179,7 @@ const ShortcutWizard = React.createClass({
     },
 
     render: function() {
-        this.state.image = this.props.applicationIconPath ? this.props.applicationIconPath : '';
+        this.initialize();
 
         return (
             <View style={{flexDirection: 'row'}}>
@@ -187,20 +188,20 @@ const ShortcutWizard = React.createClass({
                     height: 30,
                     backgroundColor: 'transparent',
                     marginRight: 10,
-                }} source={{uri: this.props.applicationIconPath}} /> 
+                }} 
+                source={{uri: this.props.applicationIconPath}} 
+            /> 
 
-                <ListView
-                    dataSource={this.state.dataSource}
+                <ListView dataSource={this.state.shortcutDataSource}
                     renderRow={this._renderRow}
                     renderScrollComponent={props => <RecyclerViewBackedScrollView {...props} />}
-                    renderSeparator={this._renderSeparator}
+                    renderSeparator={this._renderSeparator} 
                 />
             </View>
         );
     },
 
     _renderRow: function(rowData: string, sectionID: number, rowID: number, highlightRow: (sectionID: number, rowID: number) => void) {
-        var rowHash = Math.abs(hashCode(rowData));
         return (
             <TouchableHighlight onPress={() => {
                 this._pressRow(rowID);
@@ -209,7 +210,7 @@ const ShortcutWizard = React.createClass({
                 <View>
                     <View style={styles.row}>
                         <Text style={styles.text}>
-                            {rowData + ' - ' + LOREM_IPSUM.substr(0, rowHash % 301 + 10)}
+                            {rowData}
                         </Text>
                     </View>
                 </View>
@@ -227,10 +228,12 @@ const ShortcutWizard = React.createClass({
     },
 
     _pressRow: function(rowID: number) {
+        console.log('pressed row: ' + rowID);
+
         this._pressData[rowID] = !this._pressData[rowID];
-        this.setState({dataSource: this.state.dataSource.cloneWithRows(
-            this._genRows(this._pressData)
-        )});
+        // this.setState({shortcutDataSource: this.state.shortcutDataSource.cloneWithRows(
+        //     this._genRows(this._pressData)
+        // )});
     },
 
     _renderSeparator: function(sectionID: number, rowID: number, adjacentRowHighlighted: bool) {
