@@ -21,18 +21,18 @@
   {
     NSScreen *screen = [screenArray objectAtIndex: index];
     screenRect = [screen visibleFrame];
-  }
-  
-  return screenRect;
+}
+
+return screenRect;
 }
 
 -(id)init
 {
     if(self = [super init]) {
-      NSRect screenRect = [AppDelegate screenResolution];
-      NSLog(@"Got the screen rect: >>>>>>>>>");
-      NSLog([NSString stringWithFormat:@"%.1fx%.1f",screenRect.size.width, screenRect.size.height]);
-      
+        NSRect screenRect = [AppDelegate screenResolution];
+        NSLog(@"Got the screen rect: >>>>>>>>>");
+        NSLog([NSString stringWithFormat:@"%.1fx%.1f",screenRect.size.width, screenRect.size.height]);
+
         NSRect contentSize = NSMakeRect(screenRect.size.width - 400, screenRect.size.height - 200, 800, 400); // initial size of main NSWindow
 
         self.window = [[NSWindow alloc] initWithContentRect:contentSize
@@ -41,10 +41,10 @@
             backing:NSBackingStoreBuffered
 //            defer:NO];
             defer:YES];
-      
+
 //      NSLog(@"window size:%i-%i : %i - %i", self.window.frame.size.width, self.window.frame.size.height, self.window.frame.positon.x, self.window.frame.position.y);
-      NSLog(@"window size:%f-%f", self.window.frame.size.width, self.window.frame.size.height);
-      NSLog(@"window pos:%f-%f", self.window.frame.origin.x, self.window.frame.origin.y);
+        NSLog(@"window size:%f-%f", self.window.frame.size.width, self.window.frame.size.height);
+        NSLog(@"window pos:%f-%f", self.window.frame.origin.x, self.window.frame.origin.y);
 
         NSWindowController *windowController = [[NSWindowController alloc] initWithWindow:self.window];
 
@@ -63,6 +63,7 @@
 
         [self setUpApplicationMenu];
     }
+
     return self;
 }
 
@@ -70,7 +71,7 @@
 // {
 //   NSWorkspace* workspace            = [NSWorkspace sharedWorkspace];
 //   NSRunningApplication* currentAppInfo      = [workspace frontmostApplication];
-  
+
 //   [[workspace notificationCenter] addObserver:self
 //                                      selector:@selector(applicationLaunched:)
 //                                          name:NSWorkspaceDidLaunchApplicationNotification
@@ -85,10 +86,10 @@
 {
     NSLog(@"Inside listeningApplicationActivated! ");
     NSLog([[notification userInfo] description]);
-      NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
-      NSRunningApplication* currentAppInfo      = [workspace frontmostApplication];
-  NSLog([currentAppInfo localizedName]);
-  
+    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
+    NSRunningApplication* currentAppInfo      = [workspace frontmostApplication];
+    NSLog([currentAppInfo localizedName]);
+
 //    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
 //    NSRunningApplication* currentAppInfo      = [workspace frontmostApplication];
 //    NSImage* icon = [currentAppInfo icon];
@@ -112,7 +113,7 @@
 {
     NSLog(@"Inside listeningApplicationLaunched! ");
     NSLog([[notification userInfo] description]);
-  
+
 //    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
 //    NSRunningApplication* currentAppInfo      = [workspace frontmostApplication];
 //    NSImage* icon = [currentAppInfo icon];
@@ -151,16 +152,16 @@
    // [[[NSWorkspace sharedWorkspace] notificationCenter] addObserver:self selector:@selector(activateApp:) name:NSWorkspaceDidActivateApplicationNotification object:nil];
 
     self.sharedWorkspace = [NSWorkspace sharedWorkspace];
-        
-    [[self.sharedWorkspace notificationCenter] addObserver:self 
-                                       selector:@selector(listeningApplicationLaunched:) 
-                                           name:NSWorkspaceDidLaunchApplicationNotification 
-                                         object:self.sharedWorkspace];
 
     [[self.sharedWorkspace notificationCenter] addObserver:self 
-                                       selector:@selector(listeningApplicationActivated:) 
-                                           name:NSWorkspaceDidActivateApplicationNotification 
-                                         object:self.sharedWorkspace];
+     selector:@selector(listeningApplicationLaunched:) 
+     name:NSWorkspaceDidLaunchApplicationNotification 
+     object:self.sharedWorkspace];
+
+    [[self.sharedWorkspace notificationCenter] addObserver:self 
+     selector:@selector(listeningApplicationActivated:) 
+     name:NSWorkspaceDidActivateApplicationNotification 
+     object:self.sharedWorkspace];
 
     _bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:nil];
 
@@ -190,14 +191,10 @@
     // }
 
     NSDictionary* bridgeValues = @{ 
-      @"applicationName": appName,
-      @"applicationIconPath": fileName 
+        @"applicationName": appName,
+        @"applicationIconPath": fileName 
     };
-
-    RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:_bridge
-                                                     moduleName:@"ShortcutWizard"
-                                              initialProperties:bridgeValues];
-
+    RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:_bridge moduleName:@"ShortcutWizard" initialProperties:bridgeValues];
     [self.window setContentView:rootView];
 }
 
@@ -216,10 +213,10 @@
 }
 
 - (void)loadSourceForBridge:(RCTBridge *)bridge
-                  withBlock:(RCTSourceLoadBlock)loadCallback
+withBlock:(RCTSourceLoadBlock)loadCallback
 {
     [RCTJavaScriptLoader loadBundleAtURL:[self sourceURLForBridge:bridge]
-                              onComplete:loadCallback];
+      onComplete:loadCallback];
 }
 
 
