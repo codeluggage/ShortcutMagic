@@ -157,7 +157,7 @@ const ShortcutWizard = React.createClass({
         console.log('>>> componentWillUnmount()');
         console.log((this.props) ? this.props : "No props");
     },
-    
+
     statics: {
         title: '<ListView>',
         description: 'Performant, scrollable list of data.'
@@ -178,9 +178,7 @@ const ShortcutWizard = React.createClass({
     },
 
     render: function() {
-        this.state = {
-            image: this.props.applicationIconPath ? this.props.applicationIconPath : ''
-        };
+        this.state.image = this.props.applicationIconPath ? this.props.applicationIconPath : '';
 
         return (
             <View style={{flexDirection: 'row'}}>
@@ -232,7 +230,7 @@ const ShortcutWizard = React.createClass({
         this._pressData[rowID] = !this._pressData[rowID];
         this.setState({dataSource: this.state.dataSource.cloneWithRows(
             this._genRows(this._pressData)
-            )});
+        )});
     },
 
     _renderSeparator: function(sectionID: number, rowID: number, adjacentRowHighlighted: bool) {
