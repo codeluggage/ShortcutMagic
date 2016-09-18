@@ -123,10 +123,10 @@ const styles = StyleSheet.create({
 const ShortcutWizard = React.createClass({
     initialize() {
         console.log('>>> componentDidMount');
-        console.log(`Printing type [${typeof this.props}]: this.props`);
-        console.log(`Printing type [${typeof this.props.applicationName}]: this.props.applicationName`);
-        console.log(`Printing type [${typeof this.props.applicationIconPath}]: this.props.applicationIconPath`);
-        console.log(`Printing type [${typeof this.props.shortcuts}]: this.props.shortcuts`);
+        console.log(`Printing type [${typeof this.props}]: ${this.props}`);
+        console.log(`Printing type [${typeof this.props.applicationName}]: ${this.props.applicationName}`);
+        console.log(`Printing type [${typeof this.props.applicationIconPath}]: ${this.props.applicationIconPath}`);
+        console.log(`Printing type [${typeof this.props.shortcuts}]: ${this.props.shortcuts}`);
         var shortcuts = this.props.shortcuts;
         var shortcutRows = [];
         var shortcutDataSource = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});

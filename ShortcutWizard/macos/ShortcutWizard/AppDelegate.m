@@ -7,6 +7,8 @@
 
 @interface AppDelegate() <RCTBridgeDelegate>
 
+- (void)triggerAppSwitch:(NSString *)appName withNotification:(NSNotification *)notification;
+
 @end
 
 @implementation AppDelegate
@@ -15,15 +17,14 @@
   NSRect screenRect;
   NSArray *screenArray = [NSScreen screens];
   NSUInteger screenCount = [screenArray count];
-  NSUInteger index  = 0;
   
-  for (index; index < screenCount; index++)
+  for (NSUInteger index  = 0; index < screenCount; index++)
   {
     NSScreen *screen = [screenArray objectAtIndex: index];
     screenRect = [screen visibleFrame];
-}
+  }
 
-return screenRect;
+  return screenRect;
 }
 
 -(id)init
@@ -52,7 +53,7 @@ return screenRect;
         [[self window] setTitlebarAppearsTransparent:YES];
         [[self window] setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameAqua]];
         [[self window] setOpaque:NO];
-        [[self window] setAlphaValue:0.3];
+        [[self window] setAlphaValue:0.8];
         [[self window] setHasShadow:YES];
         [[self window] setLevel:NSFloatingWindowLevel];
 
@@ -85,10 +86,17 @@ return screenRect;
 - (void)listeningApplicationActivated:(NSNotification *)notification
 {
     NSLog(@"Inside listeningApplicationActivated! ");
+    [self triggerAppSwitch:@"activated" withNotification:notification];
+}
+
+- (void)triggerAppSwitch:(NSString *)appName withNotification:(NSNotification *)notification
+{
     NSLog([[notification userInfo] description]);
     NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
     NSRunningApplication* currentAppInfo      = [workspace frontmostApplication];
     NSLog([currentAppInfo localizedName]);
+
+    NSString *previousApplicationName = self.currentApplicationName;
 
 //    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
 //    NSRunningApplication* currentAppInfo      = [workspace frontmostApplication];

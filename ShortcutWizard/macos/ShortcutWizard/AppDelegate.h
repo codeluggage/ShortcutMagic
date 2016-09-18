@@ -15,5 +15,6 @@
 @property (strong, nonatomic) NSWindow *window;
 @property (nonatomic, readonly) RCTBridge *bridge;
 @property (strong, nonatomic) NSWorkspace *sharedWorkspace;
+@property (strong, nonatomic) NSString *currentApplicationName;
 
 @end
