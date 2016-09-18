@@ -37,39 +37,104 @@
 
     NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
     NSRunningApplication* currentAppInfo = [workspace frontmostApplication];
+    self.currentApplicationName = [currentAppInfo localizedName];
 
     [self updateApplicationIcon:currentAppInfo];
 
-    self.currentApplicationName = [currentAppInfo localizedName];
 
-    NSDictionary* evernoteShortcuts = @{
-        // @"": @[@"cmd", @""],
-        // @"": @[@"cmd", @""],
-        // @"": @[@"alt", @""],
-        // @"": @[@"alt", @""],
-        // @"": @[@"ctrl", @""],
-        // @"": @[@"ctrl", @""],
-        // @"": @[@"fn", @""],
-        // @"": @[@"fn", @""],
-        @"Bold text": @[@"cmd", @"b"],
-        @"Italicise text": @[@"cmd", @"i"],
-        @"Underline text": @[@"cmd", @"u"],
-        @"Strikethrough text": @[@"ctrl", @"cmd", @"k"],
-        @"New notebook": @[@"cmd", @"shift", @"n"],
-        @"New note": @[@"cmd", @"n"],
-        @"Edit tag on current note": @[@"alt", @"'"]
-    };
+    NSDictionary* shortcuts;
+
+    if ([self.currentApplicationName isEqualToString:@"Evernote"]) {
+        NSLog(@"shortcuts for >>>>>>>>>>>>>>> Evernote <<<<<<<<<<<<<<<<<< ");
+        shortcuts = @{
+            @"Bold text": @[@"cmd", @"b"],
+            @"Italicise text": @[@"cmd", @"i"],
+            @"Underline text": @[@"cmd", @"u"],
+            @"Strikethrough text": @[@"ctrl", @"cmd", @"k"],
+            @"New notebook": @[@"cmd", @"shift", @"n"],
+            @"New note": @[@"cmd", @"n"],
+            @"Edit tag on current note": @[@"alt", @"'"]
+        };
+    } else if ([self.currentApplicationName isEqualToString:@"Google Chrome"]) {
+        NSLog(@"shortcuts for >>>>> Google Chrome<<<<< ");
+        shortcuts = @{
+            @"Open last closed tab": @[@"ctrl", @"shift", @"t"],
+            @"New tab": @[@"cmd", @"t"],
+            @"New window": @[@"cmd", @"n"],
+        };
+    } else if ([self.currentApplicationName isEqualToString:@"Xcode"]) {
+        NSLog(@"shortcuts for >>>>> Xcode<<<<< ");
+        shortcuts = @{
+            @"Open quickly": @[@"cmd", @"shift", @"o"],
+            @"Run project": @[@"cmd", @"r"],
+            @"Clean project": @[@"cmd", @"shift", @"k"],
+        };
+    } else if ([self.currentApplicationName isEqualToString:@"iTerm2"]) {
+        NSLog(@"shortcuts for >>>>> iTerm2<<<<< ");
+        shortcuts = @{
+            @"New tab": @[@"cmd", @"t"],
+            @"New window": @[@"cmd", @"n"],
+            @"Delete word backwards": @[@"ctrl", @"w"],
+            @"Go to beginning of line": @[@"ctrl", @"a"],
+            @"Go to end of line": @[@"ctrl", @"e"],
+            @"Cancel/reset line": @[@"ctrl", @"c"],
+        };
+    } else if ([self.currentApplicationName isEqualToString:@"Terminal"]) {
+        NSLog(@"shortcuts for >>>>> Terminal<<<<< ");
+        shortcuts = @{
+            @"New tab": @[@"cmd", @"t"],
+            @"New window": @[@"cmd", @"n"],
+            @"Delete word backwards": @[@"ctrl", @"w"],
+            @"Go to beginning of line": @[@"ctrl", @"a"],
+            @"Go to end of line": @[@"ctrl", @"e"],
+            @"Cancel/reset line": @[@"ctrl", @"c"],
+        };
+    } else if ([self.currentApplicationName isEqualToString:@"Sublime Text"]) {
+        NSLog(@"shortcuts for >>>>> Sublime Text<<<<< ");
+        shortcuts = @{
+            @"New tab": @[@"cmd", @"t"],
+            @"New window": @[@"cmd", @"n"],
+            @"Open file": @[@"cmd", @"o"],
+            @"Suggest text completion": @[@"ctrl", @"space"],
+            @"Open anything": @[@"cmd", @"p"],
+            @"Add next occurrence to selection": @[@"cmd", @"d"],
+        };
+    } else if ([self.currentApplicationName isEqualToString:@"PomoDoneApp"]) {
+        NSLog(@"shortcuts for >>>>> PomoDoneApp<<<<< ");
+        shortcuts = @{
+            @"New task": @[@"cmd", @"n"],
+            @"Toggle mini mode": @[@"m"]
+        };
+    } else if ([self.currentApplicationName isEqualToString:@"ShortcutWizard"]) {
+        NSLog(@"shortcuts for >>>>> ShortcutWizard<<<<< ");
+        shortcuts = @{
+            @"No shortcuts for ShortcutWizard yet!!": @[@"alt"]
+        };
+    } else if ([self.currentApplicationName isEqualToString:@"Finder"]) {
+        NSLog(@"shortcuts for >>>>> Finder<<<<< ");
+        shortcuts = @{
+            @"New tab": @[@"cmd", @"t"],
+            @"New window": @[@"cmd", @"n"],
+        };
+    } else if ([self.currentApplicationName isEqualToString:@"Skype"]) {
+        NSLog(@"shortcuts for >>>>> Skype<<<<< ");
+        shortcuts = @{
+            @"Move to below chat": @[@"cmd", @"shift", @"right arrow"],
+            @"Move to above chat": @[@"cmd", @"shift", @"left arrow"],
+        };
+    }
 
     if (!self.props) {
         self.props = @{
             @"applicationName": self.currentApplicationName,
             @"applicationIconPath": self.currentIconPath,
-            @"shortcuts": evernoteShortcuts
+            @"shortcuts": shortcuts
         };
     } else {
         NSMutableDictionary *newDict = [NSMutableDictionary dictionaryWithDictionary:self.props];
         newDict[@"applicationName"] = self.currentApplicationName;
         newDict[@"applicationIconPath"] = self.currentIconPath;
+        newDict[@"shortcuts"] = shortcuts;
         self.props = [NSDictionary dictionaryWithDictionary:newDict];
     }
 }

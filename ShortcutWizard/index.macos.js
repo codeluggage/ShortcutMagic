@@ -246,7 +246,10 @@ const ShortcutWizard = React.createClass({
 
         return (
             <View style={{flexDirection: 'row'}}>
-                <Text>ShorcutWizard - {this.props.applicationName} ({this.props.applicationIconPath})</Text>
+                <Text>ShorcutWizard - {'\n'} {this.props.applicationName}</Text>
+
+                <Text>{'\n'}</Text>
+
                 <Image style={{
                         width: 30,
                         height: 30,
@@ -255,6 +258,8 @@ const ShortcutWizard = React.createClass({
                     }} 
                     source={{uri: this.props.applicationIconPath}} 
                 /> 
+
+                <Text>{'\n'}</Text>
 
                 <ListView dataSource={this.state.shortcutDataSource}
                     renderRow={this._renderRow}
