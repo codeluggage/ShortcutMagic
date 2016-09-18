@@ -82,16 +82,22 @@
 
 -(void)updateApplicationIcon:(NSRunningApplication *)currentAppInfo
 {
+    NSString *iconPath = [NSString stringWithFormat:@"%@.png" , [currentAppInfo localizedName]];
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);         
+    NSString* originalFile = [paths[0] stringByAppendingPathComponent:iconPath];
+    self.currentIconPath = [[paths objectAtIndex:0] stringByAppendingPathComponent:iconPath];
+
+    if ([[NSFileManager defaultManager] fileExistsAtPath:originalFile]) {
+        // File already exists
+        NSLog(@"########################################################## ICON EXISTS");
+        return;
+    }
+
     NSImage* icon = [currentAppInfo icon];
-    NSString *appName = [currentAppInfo localizedName];
     NSData *imageData = [icon TIFFRepresentation];
     NSBitmapImageRep *imageRep = [NSBitmapImageRep imageRepWithData:imageData];
     NSDictionary *imageProps = [NSDictionary dictionaryWithObject:[NSNumber numberWithFloat:1.0] forKey:NSImageCompressionFactor];
     imageData = [imageRep representationUsingType:NSJPEGFileType properties:imageProps];
-
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);         
-    self.currentIconPath = [[paths objectAtIndex:0] stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.png" , appName]];
-
     [imageData writeToFile:self.currentIconPath atomically:NO];
 
     // NSURL* url = [[NSBundle mainBundle] URLForResource:@"MyImage" withExtension:@"png"];
