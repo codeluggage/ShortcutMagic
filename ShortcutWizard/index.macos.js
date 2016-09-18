@@ -122,33 +122,49 @@ const styles = StyleSheet.create({
 
 const ShortcutWizard = React.createClass({
     initialize() {
-        console.log('>>> componentDidMount');
-        console.log(`Printing type [${typeof this.props}]: ${this.props}`);
-        console.log(`Printing type [${typeof this.props.applicationName}]: ${this.props.applicationName}`);
-        console.log(`Printing type [${typeof this.props.applicationIconPath}]: ${this.props.applicationIconPath}`);
-        console.log(`Printing type [${typeof this.props.shortcuts}]: ${this.props.shortcuts}`);
-        var shortcuts = this.props.shortcuts;
+        var shortcutDataSource = new ListView.DataSource({
+            rowHasChanged: (row1, row2) => row1 !== row2
+        });
         var shortcutRows = [];
-        var shortcutDataSource = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+        var shortcuts = this.props.shortcuts;
 
         if (shortcuts) {
             for (var key of Object.keys(shortcuts)) {
-                shortcutRows.push(`[${shortcuts[key]}]: ${key}`);
+                // console.log(`>>>> ECHOOO key: ${key}`);
+                shortcutRows.push(`[${shortcuts[key].join(" + ")}]: ${key}`);
             }
         }
 
-        this.state = {
+        var newState = {
             shortcutDataSource: shortcutRows.length ? shortcutDataSource.cloneWithRows(shortcutRows) : null,
             image: this.props.applicationIconPath ? this.props.applicationIconPath : ''
         };
+        newState.fullyInitialized = (newState.shortcutDataSource && newState.image); // TODO: kan jeg lese newState her?
+
+        if (this.state && this.state.fullyInitialized) {
+            console.log('Already initialized, comparing against new props...');
+            if (this.state == newState) {
+                console.log('Old and new props are the same, skipping');
+                return;
+            }
+        }
+
+        console.log('>>> Initializing... ');
+        console.log(`props: [${typeof this.props}]: ${JSON.stringify(this.props)}`);
+        console.log(`props.applicationName: [${typeof this.props.applicationName}]: ${this.props.applicationName}`);
+        console.log(`props.applicationIconPath: [${typeof this.props.applicationIconPath}]: ${this.props.applicationIconPath}`);
+        console.log(`props.shortcuts: [${typeof this.props.shortcuts}]: ${JSON.stringify(this.props.shortcuts)}`);
+
+        this.state = newState;
     },
 
     componentDidMount() {
+        console.log('>>> componentDidMount');
         this.initialize();
     },
 
     componentWillMount() {
-        console.log('>>> componentDidMount()');
+        console.log('>>> componentWillMount()');
         console.log((this.props) ? this.props : "No props");
     },
 
@@ -176,29 +192,6 @@ const ShortcutWizard = React.createClass({
 
     componentWillMount: function() {
         this._pressData = {};
-    },
-
-    render: function() {
-        this.initialize();
-
-        return (
-            <View style={{flexDirection: 'row'}}>
-                <Image style={{
-                    width: 30,
-                    height: 30,
-                    backgroundColor: 'transparent',
-                    marginRight: 10,
-                }} 
-                source={{uri: this.props.applicationIconPath}} 
-            /> 
-
-                <ListView dataSource={this.state.shortcutDataSource}
-                    renderRow={this._renderRow}
-                    renderScrollComponent={props => <RecyclerViewBackedScrollView {...props} />}
-                    renderSeparator={this._renderSeparator} 
-                />
-            </View>
-        );
     },
 
     _renderRow: function(rowData: string, sectionID: number, rowID: number, highlightRow: (sectionID: number, rowID: number) => void) {
@@ -246,7 +239,32 @@ const ShortcutWizard = React.createClass({
                 }}
             />
         );
+    }, 
+
+    render: function() {
+        this.initialize();
+
+        return (
+            <View style={{flexDirection: 'row'}}>
+                <Text>ShorcutWizard - {this.props.applicationName} ({this.props.applicationIconPath})</Text>
+                <Image style={{
+                        width: 30,
+                        height: 30,
+                        backgroundColor: 'transparent',
+                        marginRight: 10,
+                    }} 
+                    source={{uri: this.props.applicationIconPath}} 
+                /> 
+
+                <ListView dataSource={this.state.shortcutDataSource}
+                    renderRow={this._renderRow}
+                    renderScrollComponent={props => <RecyclerViewBackedScrollView {...props} />}
+                    renderSeparator={this._renderSeparator} 
+                />
+            </View>
+        );
     }
+
 // render() {
 // {this.props.icon.map(this.renderImage)}
 // <TouchableOpacity
