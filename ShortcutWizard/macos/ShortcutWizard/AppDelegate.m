@@ -2,10 +2,14 @@
 
 #import "RCTBridge.h"
 #import "RCTJavaScriptLoader.h"
-#import "RCTRootView.h"
 #import <Cocoa/Cocoa.h>
 
 @interface AppDelegate() <RCTBridgeDelegate>
+
++ (NSRect) screenResolution;
+// - (void)triggerAppSwitch:(NSNotification *)notification;
+- (void)prepareProps;
+- (void)triggerAppSwitch;
 
 @end
 
@@ -15,15 +19,91 @@
   NSRect screenRect;
   NSArray *screenArray = [NSScreen screens];
   NSUInteger screenCount = [screenArray count];
-  NSUInteger index  = 0;
   
-  for (index; index < screenCount; index++)
+  for (NSUInteger index  = 0; index < screenCount; index++)
   {
     NSScreen *screen = [screenArray objectAtIndex: index];
     screenRect = [screen visibleFrame];
+  }
+
+  return screenRect;
 }
 
-return screenRect;
+- (void)prepareProps
+{
+    // NSLog([[notification userInfo] description]);
+    NSString *previousIconPath = self.currentIconPath;
+    NSString *previousApplicationName = self.currentApplicationName;
+
+    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
+    NSRunningApplication* currentAppInfo = [workspace frontmostApplication];
+
+    [self updateApplicationIcon:currentAppInfo];
+
+    self.currentApplicationName = [currentAppInfo localizedName];
+
+    NSDictionary* evernoteShortcuts = @{
+        // @"": @[@"cmd", @""],
+        // @"": @[@"cmd", @""],
+        // @"": @[@"alt", @""],
+        // @"": @[@"alt", @""],
+        // @"": @[@"ctrl", @""],
+        // @"": @[@"ctrl", @""],
+        // @"": @[@"fn", @""],
+        // @"": @[@"fn", @""],
+        @"Bold text": @[@"cmd", @"b"],
+        @"Italicise text": @[@"cmd", @"i"],
+        @"Underline text": @[@"cmd", @"u"],
+        @"Strikethrough text": @[@"ctrl", @"cmd", @"k"],
+        @"New notebook": @[@"cmd", @"shift", @"n"],
+        @"New note": @[@"cmd", @"n"],
+        @"Edit tag on current note": @[@"alt", @"'"]
+    };
+
+    if (!self.props) {
+        self.props = @{
+            @"applicationName": self.currentApplicationName,
+            @"applicationIconPath": self.currentIconPath,
+            @"shortcuts": evernoteShortcuts
+        };
+    } else {
+        NSMutableDictionary *newDict = [NSMutableDictionary dictionaryWithDictionary:self.props];
+        newDict[@"applicationName"] = self.currentApplicationName;
+        newDict[@"applicationIconPath"] = self.currentIconPath;
+        self.props = [NSDictionary dictionaryWithDictionary:newDict];
+    }
+}
+
+- (void)triggerAppSwitch
+{
+    [self prepareProps];
+    self.rootView.appProperties = self.props;
+}
+
+-(void)updateApplicationIcon:(NSRunningApplication *)currentAppInfo
+{
+    NSImage* icon = [currentAppInfo icon];
+    NSString *appName = [currentAppInfo localizedName];
+    NSData *imageData = [icon TIFFRepresentation];
+    NSBitmapImageRep *imageRep = [NSBitmapImageRep imageRepWithData:imageData];
+    NSDictionary *imageProps = [NSDictionary dictionaryWithObject:[NSNumber numberWithFloat:1.0] forKey:NSImageCompressionFactor];
+    imageData = [imageRep representationUsingType:NSJPEGFileType properties:imageProps];
+
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);         
+    self.currentIconPath = [[paths objectAtIndex:0] stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.png" , appName]];
+
+    [imageData writeToFile:self.currentIconPath atomically:NO];
+
+    // NSURL* url = [[NSBundle mainBundle] URLForResource:@"MyImage" withExtension:@"png"];
+    // NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);         
+    // NSString *filePath = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"banner.png"];
+
+    // NSError *writeError = nil;
+    // [imageData writeToFile:filePath options:NSDataWritingAtomic error:&writeError];
+
+    // if (writeError) {
+    //     NSLog(@"Error writing file: %@", writeError);
+    // }
 }
 
 -(id)init
@@ -52,7 +132,7 @@ return screenRect;
         [[self window] setTitlebarAppearsTransparent:YES];
         [[self window] setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameAqua]];
         [[self window] setOpaque:NO];
-        [[self window] setAlphaValue:0.3];
+        [[self window] setAlphaValue:0.8];
         [[self window] setHasShadow:YES];
         [[self window] setLevel:NSFloatingWindowLevel];
 
@@ -85,34 +165,15 @@ return screenRect;
 - (void)listeningApplicationActivated:(NSNotification *)notification
 {
     NSLog(@"Inside listeningApplicationActivated! ");
-    NSLog([[notification userInfo] description]);
-    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
-    NSRunningApplication* currentAppInfo      = [workspace frontmostApplication];
-    NSLog([currentAppInfo localizedName]);
-
-//    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
-//    NSRunningApplication* currentAppInfo      = [workspace frontmostApplication];
-//    NSImage* icon = [currentAppInfo icon];
-//    NSData *imageData = [icon TIFFRepresentation];
-//    NSBitmapImageRep *imageRep = [NSBitmapImageRep imageRepWithData:imageData];
-//    NSDictionary *imageProps = [NSDictionary dictionaryWithObject:[NSNumber numberWithFloat:1.0] forKey:NSImageCompressionFactor];
-//    imageData = [imageRep representationUsingType:NSJPEGFileType properties:imageProps];
-//
-//    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-//  NSLog([paths objectAtIndex:0]);
-//    NSString *fileName = [[paths objectAtIndex:0]
-//        stringByAppendingPathComponent:[NSString stringWithFormat:@"/ShortcutWizard/%@.png" ,
-//            [currentAppInfo localizedName]
-//        ]
-//    ];
-//
-//    [imageData writeToFile:fileName atomically:NO];
+    [self triggerAppSwitch];
 }
 
 - (void)listeningApplicationLaunched:(NSNotification *)notification
 {
     NSLog(@"Inside listeningApplicationLaunched! ");
-    NSLog([[notification userInfo] description]);
+    [self triggerAppSwitch];
+
+    // NSLog([[notification userInfo] description]);
 
 //    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
 //    NSRunningApplication* currentAppInfo      = [workspace frontmostApplication];
@@ -167,56 +228,12 @@ return screenRect;
 
 
     NSRunningApplication* currentAppInfo = [self.sharedWorkspace frontmostApplication];
-    NSImage* icon = [currentAppInfo icon];
-    NSString *appName = [currentAppInfo localizedName];
-    NSData *imageData = [icon TIFFRepresentation];
-    NSBitmapImageRep *imageRep = [NSBitmapImageRep imageRepWithData:imageData];
-    NSDictionary *imageProps = [NSDictionary dictionaryWithObject:[NSNumber numberWithFloat:1.0] forKey:NSImageCompressionFactor];
-    imageData = [imageRep representationUsingType:NSJPEGFileType properties:imageProps];
 
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);         
-    NSString *fileName = [[paths objectAtIndex:0] stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.png" , appName]];
+    [self prepareProps];
 
-    [imageData writeToFile:fileName atomically:NO];
+    self.rootView = [[RCTRootView alloc] initWithBridge:_bridge moduleName:@"ShortcutWizard" initialProperties:self.props];
 
-    // NSURL* url = [[NSBundle mainBundle] URLForResource:@"MyImage" withExtension:@"png"];
-    // NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);         
-    // NSString *filePath = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"banner.png"];
-
-    // NSError *writeError = nil;
-    // [imageData writeToFile:filePath options:NSDataWritingAtomic error:&writeError];
-
-    // if (writeError) {
-    //     NSLog(@"Error writing file: %@", writeError);
-    // }
-
-    NSDictionary* evernoteShortcuts = @{
-        // @"": @[@"cmd", @""],
-        // @"": @[@"cmd", @""],
-        // @"": @[@"alt", @""],
-        // @"": @[@"alt", @""],
-        // @"": @[@"ctrl", @""],
-        // @"": @[@"ctrl", @""],
-        // @"": @[@"fn", @""],
-        // @"": @[@"fn", @""],
-        @"Bold text": @[@"cmd", @"b"],
-        @"Italicise text": @[@"cmd", @"i"],
-        @"Underline text": @[@"cmd", @"u"],
-        @"Strikethrough text": @[@"ctrl", @"cmd", @"k"],
-        @"New notebook": @[@"cmd", @"shift", @"n"],
-        @"New note": @[@"cmd", @"n"],
-        @"Edit tag on current note": @[@"alt", @"'"]
-    };
-
-    NSDictionary* bridgeValues = @{
-        @"applicationName": appName,
-        @"applicationIconPath": fileName,
-        @"shortcuts": evernoteShortcuts
-    };
-
-    RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:_bridge moduleName:@"ShortcutWizard" initialProperties:bridgeValues];
-
-    [self.window setContentView:rootView];
+    [self.window setContentView:self.rootView];
 }
 
 
@@ -233,8 +250,7 @@ return screenRect;
     return sourceURL;
 }
 
-- (void)loadSourceForBridge:(RCTBridge *)bridge
-withBlock:(RCTSourceLoadBlock)loadCallback
+- (void)loadSourceForBridge:(RCTBridge *)bridge withBlock:(RCTSourceLoadBlock)loadCallback
 {
     [RCTJavaScriptLoader loadBundleAtURL:[self sourceURLForBridge:bridge]
       onComplete:loadCallback];

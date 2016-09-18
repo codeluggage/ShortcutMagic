@@ -9,11 +9,16 @@
 
 #import <Cocoa/Cocoa.h>
 #import "RCTBridge.h"
+#import "RCTRootView.h"
 
 @interface AppDelegate : NSObject <NSApplicationDelegate, NSWindowDelegate>
 
 @property (strong, nonatomic) NSWindow *window;
 @property (nonatomic, readonly) RCTBridge *bridge;
 @property (strong, nonatomic) NSWorkspace *sharedWorkspace;
+@property (strong, nonatomic) NSString *currentApplicationName;
+@property (strong, nonatomic) NSString *currentIconPath;
+@property (strong, nonatomic) NSDictionary *props;
+@property (strong, nonatomic) RCTRootView *rootView;
 
 @end
