@@ -32,12 +32,23 @@
 - (void)prepareProps
 {
     // NSLog([[notification userInfo] description]);
+    // NSString *newAppName = [[[NSWorkspace sharedWorkspace] frontmostApplication] localizedName];
+    // [currentAppInfo localizedName]
+
+
     NSString *previousIconPath = self.currentIconPath;
     NSString *previousApplicationName = self.currentApplicationName;
 
     NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
     NSRunningApplication* currentAppInfo = [workspace frontmostApplication];
-    self.currentApplicationName = [currentAppInfo localizedName];
+    NSString *newAppName = [currentAppInfo localizedName];
+    if ([newAppName isEqualToString:@"ShortcutWizard"]) {
+        NSLog(@"Switching to ShortcutWizard - NO UPDATES HAPPENING");
+        return;
+    }
+
+
+    self.currentApplicationName = newAppName;
 
     [self updateApplicationIcon:currentAppInfo];
 
@@ -184,7 +195,8 @@
         NSLog(@"Got the screen rect: >>>>>>>>>");
         NSLog([NSString stringWithFormat:@"%.1fx%.1f",screenRect.size.width, screenRect.size.height]);
 
-        NSRect contentSize = NSMakeRect(screenRect.size.width - 400, screenRect.size.height - 200, 800, 400); // initial size of main NSWindow
+        // TODO: Can this be sent from javascript so everything is configured in javascript?
+        NSRect contentSize = NSMakeRect(screenRect.size.width - 400, screenRect.size.height - 200, 200, 450); // initial size of main NSWindow
 
         self.window = [[NSWindow alloc] initWithContentRect:contentSize
 //            styleMask:NSBorderlessWindowMask
@@ -201,9 +213,9 @@
 
         [[self window] setTitleVisibility:NSWindowTitleHidden];
         [[self window] setTitlebarAppearsTransparent:YES];
-        [[self window] setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameAqua]];
+        // [[self window] setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameAqua]];
         [[self window] setOpaque:NO];
-        [[self window] setAlphaValue:0.8];
+        [[self window] setAlphaValue:0.7];
         [[self window] setHasShadow:YES];
         [[self window] setLevel:NSFloatingWindowLevel];
 
