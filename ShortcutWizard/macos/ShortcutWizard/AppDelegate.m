@@ -32,44 +32,120 @@
 - (void)prepareProps
 {
     // NSLog([[notification userInfo] description]);
+    // NSString *newAppName = [[[NSWorkspace sharedWorkspace] frontmostApplication] localizedName];
+    // [currentAppInfo localizedName]
+
+
     NSString *previousIconPath = self.currentIconPath;
     NSString *previousApplicationName = self.currentApplicationName;
 
     NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
     NSRunningApplication* currentAppInfo = [workspace frontmostApplication];
+    NSString *newAppName = [currentAppInfo localizedName];
+    if ([newAppName isEqualToString:@"ShortcutWizard"]) {
+        NSLog(@"Switching to ShortcutWizard - NO UPDATES HAPPENING");
+        return;
+    }
+
+
+    self.currentApplicationName = newAppName;
 
     [self updateApplicationIcon:currentAppInfo];
 
-    self.currentApplicationName = [currentAppInfo localizedName];
 
-    NSDictionary* evernoteShortcuts = @{
-        // @"": @[@"cmd", @""],
-        // @"": @[@"cmd", @""],
-        // @"": @[@"alt", @""],
-        // @"": @[@"alt", @""],
-        // @"": @[@"ctrl", @""],
-        // @"": @[@"ctrl", @""],
-        // @"": @[@"fn", @""],
-        // @"": @[@"fn", @""],
-        @"Bold text": @[@"cmd", @"b"],
-        @"Italicise text": @[@"cmd", @"i"],
-        @"Underline text": @[@"cmd", @"u"],
-        @"Strikethrough text": @[@"ctrl", @"cmd", @"k"],
-        @"New notebook": @[@"cmd", @"shift", @"n"],
-        @"New note": @[@"cmd", @"n"],
-        @"Edit tag on current note": @[@"alt", @"'"]
-    };
+    NSDictionary* shortcuts;
+
+    if ([self.currentApplicationName isEqualToString:@"Evernote"]) {
+        NSLog(@"shortcuts for >>>>>>>>>>>>>>> Evernote <<<<<<<<<<<<<<<<<< ");
+        shortcuts = @{
+            @"Bold text": @[@"cmd", @"b"],
+            @"Italicise text": @[@"cmd", @"i"],
+            @"Underline text": @[@"cmd", @"u"],
+            @"Strikethrough text": @[@"ctrl", @"cmd", @"k"],
+            @"New notebook": @[@"cmd", @"shift", @"n"],
+            @"New note": @[@"cmd", @"n"],
+            @"Edit tag on current note": @[@"alt", @"'"]
+        };
+    } else if ([self.currentApplicationName isEqualToString:@"Google Chrome"]) {
+        NSLog(@"shortcuts for >>>>> Google Chrome<<<<< ");
+        shortcuts = @{
+            @"Open last closed tab": @[@"ctrl", @"shift", @"t"],
+            @"New tab": @[@"cmd", @"t"],
+            @"New window": @[@"cmd", @"n"],
+        };
+    } else if ([self.currentApplicationName isEqualToString:@"Xcode"]) {
+        NSLog(@"shortcuts for >>>>> Xcode<<<<< ");
+        shortcuts = @{
+            @"Open quickly": @[@"cmd", @"shift", @"o"],
+            @"Run project": @[@"cmd", @"r"],
+            @"Clean project": @[@"cmd", @"shift", @"k"],
+        };
+    } else if ([self.currentApplicationName isEqualToString:@"iTerm2"]) {
+        NSLog(@"shortcuts for >>>>> iTerm2<<<<< ");
+        shortcuts = @{
+            @"New tab": @[@"cmd", @"t"],
+            @"New window": @[@"cmd", @"n"],
+            @"Delete word backwards": @[@"ctrl", @"w"],
+            @"Go to beginning of line": @[@"ctrl", @"a"],
+            @"Go to end of line": @[@"ctrl", @"e"],
+            @"Cancel/reset line": @[@"ctrl", @"c"],
+        };
+    } else if ([self.currentApplicationName isEqualToString:@"Terminal"]) {
+        NSLog(@"shortcuts for >>>>> Terminal<<<<< ");
+        shortcuts = @{
+            @"New tab": @[@"cmd", @"t"],
+            @"New window": @[@"cmd", @"n"],
+            @"Delete word backwards": @[@"ctrl", @"w"],
+            @"Go to beginning of line": @[@"ctrl", @"a"],
+            @"Go to end of line": @[@"ctrl", @"e"],
+            @"Cancel/reset line": @[@"ctrl", @"c"],
+        };
+    } else if ([self.currentApplicationName isEqualToString:@"Sublime Text"]) {
+        NSLog(@"shortcuts for >>>>> Sublime Text<<<<< ");
+        shortcuts = @{
+            @"New tab": @[@"cmd", @"t"],
+            @"New window": @[@"cmd", @"n"],
+            @"Open file": @[@"cmd", @"o"],
+            @"Suggest text completion": @[@"ctrl", @"space"],
+            @"Open anything": @[@"cmd", @"p"],
+            @"Add next occurrence to selection": @[@"cmd", @"d"],
+        };
+    } else if ([self.currentApplicationName isEqualToString:@"PomoDoneApp"]) {
+        NSLog(@"shortcuts for >>>>> PomoDoneApp<<<<< ");
+        shortcuts = @{
+            @"New task": @[@"cmd", @"n"],
+            @"Toggle mini mode": @[@"m"]
+        };
+    } else if ([self.currentApplicationName isEqualToString:@"ShortcutWizard"]) {
+        NSLog(@"shortcuts for >>>>> ShortcutWizard<<<<< ");
+        shortcuts = @{
+            @"No shortcuts for ShortcutWizard yet!!": @[@"alt"]
+        };
+    } else if ([self.currentApplicationName isEqualToString:@"Finder"]) {
+        NSLog(@"shortcuts for >>>>> Finder<<<<< ");
+        shortcuts = @{
+            @"New tab": @[@"cmd", @"t"],
+            @"New window": @[@"cmd", @"n"],
+        };
+    } else if ([self.currentApplicationName isEqualToString:@"Skype"]) {
+        NSLog(@"shortcuts for >>>>> Skype<<<<< ");
+        shortcuts = @{
+            @"Move to below chat": @[@"cmd", @"shift", @"right arrow"],
+            @"Move to above chat": @[@"cmd", @"shift", @"left arrow"],
+        };
+    }
 
     if (!self.props) {
         self.props = @{
             @"applicationName": self.currentApplicationName,
             @"applicationIconPath": self.currentIconPath,
-            @"shortcuts": evernoteShortcuts
+            @"shortcuts": shortcuts
         };
     } else {
         NSMutableDictionary *newDict = [NSMutableDictionary dictionaryWithDictionary:self.props];
         newDict[@"applicationName"] = self.currentApplicationName;
         newDict[@"applicationIconPath"] = self.currentIconPath;
+        newDict[@"shortcuts"] = shortcuts;
         self.props = [NSDictionary dictionaryWithDictionary:newDict];
     }
 }
@@ -82,16 +158,22 @@
 
 -(void)updateApplicationIcon:(NSRunningApplication *)currentAppInfo
 {
+    NSString *iconPath = [NSString stringWithFormat:@"%@.png" , [currentAppInfo localizedName]];
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);         
+    NSString* originalFile = [paths[0] stringByAppendingPathComponent:iconPath];
+    self.currentIconPath = [[paths objectAtIndex:0] stringByAppendingPathComponent:iconPath];
+
+    if ([[NSFileManager defaultManager] fileExistsAtPath:originalFile]) {
+        // File already exists
+        NSLog(@"########################################################## ICON EXISTS");
+        return;
+    }
+
     NSImage* icon = [currentAppInfo icon];
-    NSString *appName = [currentAppInfo localizedName];
     NSData *imageData = [icon TIFFRepresentation];
     NSBitmapImageRep *imageRep = [NSBitmapImageRep imageRepWithData:imageData];
     NSDictionary *imageProps = [NSDictionary dictionaryWithObject:[NSNumber numberWithFloat:1.0] forKey:NSImageCompressionFactor];
     imageData = [imageRep representationUsingType:NSJPEGFileType properties:imageProps];
-
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);         
-    self.currentIconPath = [[paths objectAtIndex:0] stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.png" , appName]];
-
     [imageData writeToFile:self.currentIconPath atomically:NO];
 
     // NSURL* url = [[NSBundle mainBundle] URLForResource:@"MyImage" withExtension:@"png"];
@@ -113,7 +195,8 @@
         NSLog(@"Got the screen rect: >>>>>>>>>");
         NSLog([NSString stringWithFormat:@"%.1fx%.1f",screenRect.size.width, screenRect.size.height]);
 
-        NSRect contentSize = NSMakeRect(screenRect.size.width - 400, screenRect.size.height - 200, 800, 400); // initial size of main NSWindow
+        // TODO: Can this be sent from javascript so everything is configured in javascript?
+        NSRect contentSize = NSMakeRect(screenRect.size.width - 400, screenRect.size.height - 200, 200, 450); // initial size of main NSWindow
 
         self.window = [[NSWindow alloc] initWithContentRect:contentSize
 //            styleMask:NSBorderlessWindowMask
@@ -130,9 +213,9 @@
 
         [[self window] setTitleVisibility:NSWindowTitleHidden];
         [[self window] setTitlebarAppearsTransparent:YES];
-        [[self window] setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameAqua]];
+        // [[self window] setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameAqua]];
         [[self window] setOpaque:NO];
-        [[self window] setAlphaValue:0.8];
+        [[self window] setAlphaValue:0.7];
         [[self window] setHasShadow:YES];
         [[self window] setLevel:NSFloatingWindowLevel];
 
