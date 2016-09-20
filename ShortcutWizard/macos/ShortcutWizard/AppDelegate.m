@@ -2,16 +2,16 @@
 
 #import "RCTBridge.h"
 #import "RCTJavaScriptLoader.h"
-#import <Cocoa/Cocoa.h>
 
-@interface AppDelegate() <RCTBridgeDelegate>
+// TODO: Is this necessary as long all this is 1 file?
+// @interface AppDelegate() <RCTBridgeDelegate>
 
-+ (NSRect) screenResolution;
+// + (NSRect) screenResolution;
 // - (void)triggerAppSwitch:(NSNotification *)notification;
-- (void)prepareProps;
-- (void)triggerAppSwitch;
+// - (void)prepareProps;
+// - (void)triggerAppSwitch;
 
-@end
+// @end
 
 @implementation AppDelegate
 
@@ -27,6 +27,39 @@
   }
 
   return screenRect;
+}
+
+- (NSAppleScript *)loadAndCompileApplescript:(NSString *)path
+{
+    // TODO: 
+    // check for: NSAppleScriptErrorMessage
+    // - compileAndReturnError:
+    // Compiles the receiver, if it is not already compiled.
+    // - executeAndReturnError:
+    // Executes the receiver, compiling it first if it is not already compiled.
+    // - executeAppleEvent:error:
+    // Executes an Apple event in the context of the receiver, as a means of allowing the application to invoke a handler in the script.
+
+
+    // TODO: Access local applescript file:
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);         
+    NSString* originalFile = [paths[0] stringByAppendingPathComponent:[path stringByAppendingString:@".scpt"]];
+    NSURL *fileUrl = [NSURL urlWithPath:originalFile];
+    NSDictionary<NSString *,id> errorInfo;
+
+    return [NSAppleScript initWithContentsOfURL:fileUrl error:&errorInfo];
+}
+
+- (NSDictionary *)runApplescript:(NSAppleScript *)script
+{
+    // [script executeAndReturnError:error];
+
+    return @{};
+}
+
+- (NSDictionary *)readMenuItems
+{
+    return [self runApplescript:self.appleScript];
 }
 
 - (void)prepareProps
@@ -191,6 +224,9 @@
 -(id)init
 {
     if(self = [super init]) {
+        // testing applescript:
+        self.appleScript = [self loadAndCompileApplescript:"read-menu-items-applescript"];
+
         NSRect screenRect = [AppDelegate screenResolution];
         NSLog(@"Got the screen rect: >>>>>>>>>");
         NSLog([NSString stringWithFormat:@"%.1fx%.1f",screenRect.size.width, screenRect.size.height]);
