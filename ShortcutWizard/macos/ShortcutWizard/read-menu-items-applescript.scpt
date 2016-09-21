@@ -1,12 +1,35 @@
--- Taken from http://macscripter.net/viewtopic.php?id=40374&p=2
--- Optimised from a script by Yvan Koenig.
--- completed by Yvan Koenig (2013/07/27)
-# optionally added the separators
+-- tell application "System Events"
+--     tell process "Safari"
+--         -- get the menu bar items from the main menu
+--         tell menu bar 1
+--             set menuBarItems to menu bar items -- apple menu, application menu, file menu etc.
+--         end tell
+
+--         -- get the menu items from a menu bar item
+--         set fileMenuBarItem to item 3 of menuBarItems -- the file menu
+--         tell menu 1 of fileMenuBarItem -- you have to have "menu 1" here
+--             set menuItems to menu items
+--         end tell
+
+--         -- query the menu bar item
+--         set closeWindowMenuItem to item 6 of menuItems -- close window menu item
+--         tell closeWindowMenuItem
+--             return {name, value} of attributes
+--         end tell
+--     end tell
+-- end tell
+
+
+
+
+
+-- # Taken from http://macscripter.net/viewtopic.php?id=40374&p=2
+-- # Optimised from a script by Yvan Koenig.
+-- # completed by Yvan Koenig (2013/07/27)
+-- # optionally added the separators
 property showSeparators : true
-# drop the submenu items of the Recent Items menu
-# added two modifiers values : 5 & 7 which are used by two services :
-# > Convertir le texte du chinois simplifié au chinois traditionnel
-# > Convertir le texte du chinois traditionnel au chinois simplifié
+-- drop the submenu items of the Recent Items menu
+-- # added two modifiers values : 5 & 7 which are used by two services :
 
 main("Numbers")
 

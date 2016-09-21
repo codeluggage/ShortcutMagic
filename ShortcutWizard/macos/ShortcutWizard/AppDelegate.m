@@ -42,17 +42,30 @@
 
 
 
-    // NSURL *originalUrl = [[NSBundle mainBundle] pathForResource:path ofType:@"scpt"];
-    NSURL *fileUrl = [NSURL fileURLWithPath:[path stringByAppendingPathComponent:@"scpt"]];
-     NSDictionary<NSString *,id> *errorInfo;
-//    void *errorInfo = nil;
+    NSURL *fileUrl = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:path ofType:@"scpt"]];
+    NSLog(@"Applescript url: %@", [fileUrl absoluteString]);
 
-    return [[NSAppleScript alloc] initWithContentsOfURL:fileUrl error:&errorInfo];
+    NSDictionary<NSString *,id> *errorInfo;
+    NSAppleScript *hold = [[NSAppleScript alloc] initWithContentsOfURL:fileUrl error:&errorInfo];
+    NSLog(@"Applescript hold: %@", hold);
+    NSLog(@"Applescript error: %@", errorInfo);
+
+    BOOL compiled = [hold compileAndReturnError:&errorInfo];
+    if (compiled) {
+        NSLog(@"Compiled successfully");
+    } else {
+        NSLog(@"Compile failed: %@", errorInfo);
+    }
+
+    return hold;
 }
 
 - (NSDictionary *)runApplescript:(NSAppleScript *)script
 {
-    // [script executeAndReturnError:error];
+    NSDictionary<NSString *,id> *errorInfo;
+    NSAppleEventDescriptor *descriptor = [script executeAndReturnError:&errorInfo];
+
+    NSLog(@"Executed applescript: %@", descriptor);
 
     return @{};
 }
@@ -226,6 +239,8 @@
     if(self = [super init]) {
         // testing applescript:
         self.appleScript = [self loadAndCompileApplescript:@"read-menu-items-applescript"];
+        [self readMenuItems];
+      NSLog(@"Applescript: %@", self.appleScript);
 
         NSRect screenRect = [AppDelegate screenResolution];
         NSLog(@"Got the screen rect: >>>>>>>>>");
