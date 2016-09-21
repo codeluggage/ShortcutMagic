@@ -41,13 +41,13 @@
     // Executes an Apple event in the context of the receiver, as a means of allowing the application to invoke a handler in the script.
 
 
-    // TODO: Access local applescript file:
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);         
-    NSString* originalFile = [paths[0] stringByAppendingPathComponent:[path stringByAppendingString:@".scpt"]];
-    NSURL *fileUrl = [NSURL urlWithPath:originalFile];
-    NSDictionary<NSString *,id> errorInfo;
 
-    return [NSAppleScript initWithContentsOfURL:fileUrl error:&errorInfo];
+    // NSURL *originalUrl = [[NSBundle mainBundle] pathForResource:path ofType:@"scpt"];
+    NSURL *fileUrl = [NSURL fileURLWithPath:[path stringByAppendingPathComponent:@"scpt"]];
+     NSDictionary<NSString *,id> *errorInfo;
+//    void *errorInfo = nil;
+
+    return [[NSAppleScript alloc] initWithContentsOfURL:fileUrl error:&errorInfo];
 }
 
 - (NSDictionary *)runApplescript:(NSAppleScript *)script
@@ -225,7 +225,7 @@
 {
     if(self = [super init]) {
         // testing applescript:
-        self.appleScript = [self loadAndCompileApplescript:"read-menu-items-applescript"];
+        self.appleScript = [self loadAndCompileApplescript:@"read-menu-items-applescript"];
 
         NSRect screenRect = [AppDelegate screenResolution];
         NSLog(@"Got the screen rect: >>>>>>>>>");
