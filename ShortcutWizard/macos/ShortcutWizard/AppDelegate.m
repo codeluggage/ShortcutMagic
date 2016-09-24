@@ -238,7 +238,7 @@
 {
     if(self = [super init]) {
         // testing applescript:
-        self.appleScript = [self loadAndCompileApplescript:@"read-menu-items-applescript"];
+        self.appleScript = [self loadAndCompileApplescript:@"readMenuItems"];
         [self readMenuItems];
       NSLog(@"Applescript: %@", self.appleScript);
 

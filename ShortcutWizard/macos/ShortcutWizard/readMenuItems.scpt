@@ -43,6 +43,8 @@ for (var i = 0; i < outerItems.length; i++) {
 
 console.log(JSON.stringify(allItems));
 
+return allItems;
+
 
 // #!/bin/sh
 
