@@ -3,6 +3,8 @@
 #import "RCTBridge.h"
 #import "RCTJavaScriptLoader.h"
 
+
+
 // TODO: Is this necessary as long all this is 1 file?
 // @interface AppDelegate() <RCTBridgeDelegate>
 
@@ -29,7 +31,7 @@
   return screenRect;
 }
 
-- (NSAppleScript *)loadAndCompileApplescript:(NSString *)path
+- (OSAScript *)loadAndCompileApplescript:(NSString *)path
 {
     // TODO: 
     // check for: NSAppleScriptErrorMessage
@@ -40,15 +42,18 @@
     // - executeAppleEvent:error:
     // Executes an Apple event in the context of the receiver, as a means of allowing the application to invoke a handler in the script.
 
+    NSString *source = [NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:path ofType:@"scpt"]
+                        encoding:NSUTF8StringEncoding error:nil];
+    OSAScript *hold = [[OSAScript alloc] initWithSource:source language:[OSALanguage languageForName:@"JavaScript"]];
+  
 
-
-    NSURL *fileUrl = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:path ofType:@"scpt"]];
-    NSLog(@"Applescript url: %@", [fileUrl absoluteString]);
-
+//    NSURL *fileUrl = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:path ofType:@"scpt"]];
+//    NSLog(@"Applescript url: %@", [fileUrl absoluteString]);
+//
     NSDictionary<NSString *,id> *errorInfo;
-    NSAppleScript *hold = [[NSAppleScript alloc] initWithContentsOfURL:fileUrl error:&errorInfo];
-    NSLog(@"Applescript hold: %@", hold);
-    NSLog(@"Applescript error: %@", errorInfo);
+//    NSAppleScript *hold = [[NSAppleScript alloc] initWithContentsOfURL:fileUrl error:&errorInfo];
+//    NSLog(@"Applescript hold: %@", hold);
+//    NSLog(@"Applescript error: %@", errorInfo);
 
     BOOL compiled = [hold compileAndReturnError:&errorInfo];
     if (compiled) {
@@ -60,19 +65,14 @@
     return hold;
 }
 
-- (NSDictionary *)runApplescript:(NSAppleScript *)script
-{
-    NSDictionary<NSString *,id> *errorInfo;
-    NSAppleEventDescriptor *descriptor = [script executeAndReturnError:&errorInfo];
-
-    NSLog(@"Executed applescript: %@", descriptor);
-
-    return @{};
-}
-
 - (NSDictionary *)readMenuItems
 {
-    return [self runApplescript:self.appleScript];
+    NSDictionary<NSString *,id> *errorInfo;
+    NSAppleEventDescriptor *descriptor = [self.appleScript executeAndReturnError:&errorInfo];
+  NSLog(@"%@", errorInfo);
+    NSLog(@"descriptor %@", descriptor);
+  
+  return @{};
 }
 
 - (void)prepareProps

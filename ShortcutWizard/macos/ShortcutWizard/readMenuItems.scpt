@@ -17,15 +17,15 @@ var fileMenu = evernote.menuBars[0];
 var outerItems = fileMenu.menus;
 var allItems = [];
 
-console.log("Found " + outerItems.length + " items");
+// console.log("Found " + outerItems.length + " items");
 
 for (var i = 0; i < outerItems.length; i++) {
 	var items = outerItems[i].menuItems(); // Note ()
 
-	console.log("Loop#2, found " + items.length + " items");
+	// console.log("Loop#2, found " + items.length + " items");
 		
 	for (var j = 0; j < items.length; j++) {
-		console.log("Loop#3 ");
+		// console.log("Loop#3 ");
 		
     	item = items[j];
 		if (item) {	
@@ -41,10 +41,13 @@ for (var i = 0; i < outerItems.length; i++) {
 	}
 }
 
-console.log(JSON.stringify(allItems));
+// $.NSLog(allItems);
 
-return allItems;
+function returnItems() {
+	return allItems;
+}
 
+returnItems()
 
 // #!/bin/sh
 

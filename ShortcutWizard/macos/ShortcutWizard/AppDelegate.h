@@ -9,6 +9,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import <Foundation/Foundation.h>
+#import <OSAKit/OSAKit.h>
 #import "RCTBridge.h"
 #import "RCTRootView.h"
 
@@ -22,6 +23,6 @@
 @property (strong, nonatomic) NSDictionary *props;
 @property (strong, nonatomic) RCTRootView *rootView;
 
-@property (strong, nonatomic) NSAppleScript *appleScript;
+@property (strong, nonatomic) OSAScript *appleScript;
 
 @end
