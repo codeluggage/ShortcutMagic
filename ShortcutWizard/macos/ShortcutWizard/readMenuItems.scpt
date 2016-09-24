@@ -1,53 +1,60 @@
 ObjC.import("Cocoa");
-$.NSLog("Hi everybody!");
-// Do this to work with it easier: 
-
 var se = Application("System Events");
-
-// for (var thing in se) {
-// 	console.log('System Events: ' + thing + " " + JSON.stringify(thing));
-// }
-
 var evernote = se.processes.byName('Evernote');
-// for (var evernoteThing in evernote) {
-// 	console.log('Evernote: ' + evernoteThing + " " + JSON.stringify(evernoteThing));
-// }
-
 var fileMenu = evernote.menuBars[0];
 var outerItems = fileMenu.menus;
 var allItems = [];
 
-// console.log("Found " + outerItems.length + " items");
+console.log("Found " + outerItems.length + " items");
 
 for (var i = 0; i < outerItems.length; i++) {
 	var items = outerItems[i].menuItems(); // Note ()
 
-	// console.log("Loop#2, found " + items.length + " items");
+	console.log("Loop#2, found " + items.length + " items");
 		
 	for (var j = 0; j < items.length; j++) {
 		// console.log("Loop#3 ");
 		
     	item = items[j];
+
+    	var attributes = [];
 		if (item) {	
-			// console.log("Inner most loop, title: " + item.title());
+			attributes.push({
+				"name": item.attributes["AXMenuItemCmdChar"].name(),
+				"value": item.attributes["AXMenuItemCmdChar"].value()
+			});
+			attributes.push({
+				"name": item.attributes["AXMenuItemCmdVirtualKey"].name(),
+				"value": item.attributes["AXMenuItemCmdVirtualKey"].value()
+			});
+			attributes.push({
+				"name": item.attributes["AXMenuItemCmdGlyph"].name(),
+				"value": item.attributes["AXMenuItemCmdGlyph"].value()
+			});
+
+			attributes.push({
+				"name": item.attributes["AXMenuItemCmdModifiers"].name(),
+				"value": item.attributes["AXMenuItemCmdModifiers"].value()
+			});
+
+
 			allItems.push({
 				"title": item.title(),
-				"properties": item.properties()
+				"properties": item.properties(),
+				"attributes": attributes
 			});
 		}
-		
-		//console.log(item.title());
-		//console.log(JSON.stringify(item.properties()));
 	}
+
 }
 
-// $.NSLog(allItems);
+// function returnItems() {
+// 	return allItems;
+// }
 
-function returnItems() {
-	return allItems;
-}
-
-returnItems()
+// Can this be done by just saying 'allItems'?
+// returnItems()
+allItems;
 
 // #!/bin/sh
 
@@ -79,4 +86,56 @@ returnItems()
 // 			//console.log(JSON.stringify(item.properties()));
 // 		}
 // 	}
+// }
+
+
+
+// ObjC.import("Cocoa");
+// var se = Application("System Events");
+// var evernote = se.processes.byName('Evernote');
+// var fileMenu = evernote.menuBars[0];
+// var outerItems = fileMenu.menus;
+// var allItems = [];
+
+// console.log("Found " + outerItems.length + " items");
+
+// for (var i = 0; i < outerItems.length; i++) {
+// 	var items = outerItems[i].menuItems(); // Note ()
+
+// 	console.log("Loop#2, found " + items.length + " items");
+		
+// 	for (var j = 0; j < items.length; j++) {
+// 		// console.log("Loop#3 ");
+		
+//     	item = items[j];
+
+//     	var attributes = [];
+// 		if (item) {	
+// 			attributes.push({
+// 				"name": item.attributes["AXMenuItemCmdChar"].name(),
+// 				"value": item.attributes["AXMenuItemCmdChar"].value()
+// 			});
+// 			attributes.push({
+// 				"name": item.attributes["AXMenuItemCmdVirtualKey"].name(),
+// 				"value": item.attributes["AXMenuItemCmdVirtualKey"].value()
+// 			});
+// 			attributes.push({
+// 				"name": item.attributes["AXMenuItemCmdGlyph"].name(),
+// 				"value": item.attributes["AXMenuItemCmdGlyph"].value()
+// 			});
+
+// 			attributes.push({
+// 				"name": item.attributes["AXMenuItemCmdModifiers"].name(),
+// 				"value": item.attributes["AXMenuItemCmdModifiers"].value()
+// 			});
+
+
+// 			allItems.push({
+// 				"title": item.title(),
+// 				"properties": item.properties(),
+// 				"attributes": attributes
+// 			});
+// 		}
+// 	}
+
 // }
