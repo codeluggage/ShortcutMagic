@@ -14,28 +14,37 @@ for (var i = 0; i < outerItems.length; i++) {
 		
 	for (var j = 0; j < items.length; j++) {
 		// console.log("Loop#3 ");
-		
-    	item = items[j];
-
     	var attributes = [];
+
+    	item = items[j];
 		if (item) {	
 			attributes.push({
 				"name": item.attributes["AXMenuItemCmdChar"].name(),
 				"value": item.attributes["AXMenuItemCmdChar"].value()
 			});
+			console.log(attributes[attributes.length - 1].name);
+			console.log(attributes[attributes.length - 1].value);
+
 			attributes.push({
 				"name": item.attributes["AXMenuItemCmdVirtualKey"].name(),
 				"value": item.attributes["AXMenuItemCmdVirtualKey"].value()
 			});
+			console.log(attributes[attributes.length - 1].name);
+			console.log(attributes[attributes.length - 1].value);
+			
 			attributes.push({
 				"name": item.attributes["AXMenuItemCmdGlyph"].name(),
 				"value": item.attributes["AXMenuItemCmdGlyph"].value()
 			});
+			console.log(attributes[attributes.length - 1].name);
+			console.log(attributes[attributes.length - 1].value);
 
 			attributes.push({
 				"name": item.attributes["AXMenuItemCmdModifiers"].name(),
 				"value": item.attributes["AXMenuItemCmdModifiers"].value()
 			});
+			console.log(attributes[attributes.length - 1].name);
+			console.log(attributes[attributes.length - 1].value);
 
 
 			allItems.push({
