@@ -7,6 +7,9 @@ var allItems = [];
 
 console.log("Found " + outerItems.length + " items");
 
+var totalCount = 0;
+var maxCount = 100;
+
 for (var i = 0; i < outerItems.length; i++) {
 	var items = outerItems[i].menuItems(); // Note ()
 
@@ -18,43 +21,53 @@ for (var i = 0; i < outerItems.length; i++) {
 
     	item = items[j];
 		if (item) {	
-			attributes.push({
-				"name": item.attributes["AXMenuItemCmdChar"].name(),
-				"value": item.attributes["AXMenuItemCmdChar"].value()
-			});
-			console.log(attributes[attributes.length - 1].name);
-			console.log(attributes[attributes.length - 1].value);
+			if (item.attributes["AXMenuItemCmdChar"].name) {
+				attributes.push({
+					"name": item.attributes["AXMenuItemCmdChar"].name(),
+					"value": item.attributes["AXMenuItemCmdChar"].value()
+				});
+				console.log(attributes[attributes.length - 1].name);
+				console.log(attributes[attributes.length - 1].value);
+			}
 
-			attributes.push({
-				"name": item.attributes["AXMenuItemCmdVirtualKey"].name(),
-				"value": item.attributes["AXMenuItemCmdVirtualKey"].value()
-			});
-			console.log(attributes[attributes.length - 1].name);
-			console.log(attributes[attributes.length - 1].value);
-			
-			attributes.push({
-				"name": item.attributes["AXMenuItemCmdGlyph"].name(),
-				"value": item.attributes["AXMenuItemCmdGlyph"].value()
-			});
-			console.log(attributes[attributes.length - 1].name);
-			console.log(attributes[attributes.length - 1].value);
+			if (item.attributes["AXMenuItemCmdVirtualKey"].name) {
+				attributes.push({
+					"name": item.attributes["AXMenuItemCmdVirtualKey"].name(),
+					"value": item.attributes["AXMenuItemCmdVirtualKey"].value()
+				});
+				console.log(attributes[attributes.length - 1].name);
+				console.log(attributes[attributes.length - 1].value);
+			}
 
-			attributes.push({
-				"name": item.attributes["AXMenuItemCmdModifiers"].name(),
-				"value": item.attributes["AXMenuItemCmdModifiers"].value()
-			});
-			console.log(attributes[attributes.length - 1].name);
-			console.log(attributes[attributes.length - 1].value);
+			if (item.attributes["AXMenuItemCmdGlyph"].name) {
+				attributes.push({
+					"name": item.attributes["AXMenuItemCmdGlyph"].name(),
+					"value": item.attributes["AXMenuItemCmdGlyph"].value()
+				});
+				console.log(attributes[attributes.length - 1].name);
+				console.log(attributes[attributes.length - 1].value);
+			}
 
+			if (item.attributes["AXMenuItemCmdModifiers"].name) {
+				attributes.push({
+					"name": item.attributes["AXMenuItemCmdModifiers"].name(),
+					"value": item.attributes["AXMenuItemCmdModifiers"].value()
+				});
+				console.log(attributes[attributes.length - 1].name);
+				console.log(attributes[attributes.length - 1].value);
+			}
 
 			allItems.push({
 				"title": item.title(),
 				"properties": item.properties(),
 				"attributes": attributes
 			});
+			
+			totalCount++;
 		}
 	}
 
+	if (totalCount > maxCount) break;
 }
 
 // function returnItems() {
