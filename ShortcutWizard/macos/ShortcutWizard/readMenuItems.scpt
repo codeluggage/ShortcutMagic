@@ -1,5 +1,17 @@
+ObjC.import("Cocoa");
+$.NSLog("Hi everybody!");
+// Do this to work with it easier: 
+
 var se = Application("System Events");
+
+// for (var thing in se) {
+// 	console.log('System Events: ' + thing + " " + JSON.stringify(thing));
+// }
+
 var evernote = se.processes.byName('Evernote');
+// for (var evernoteThing in evernote) {
+// 	console.log('Evernote: ' + evernoteThing + " " + JSON.stringify(evernoteThing));
+// }
 
 var fileMenu = evernote.menuBars[0];
 var outerItems = fileMenu.menus;
@@ -20,7 +32,7 @@ for (var i = 0; i < outerItems.length; i++) {
 			// console.log("Inner most loop, title: " + item.title());
 			allItems.push({
 				"title": item.title(),
-				"item": item
+				"properties": item.properties()
 			});
 		}
 		
