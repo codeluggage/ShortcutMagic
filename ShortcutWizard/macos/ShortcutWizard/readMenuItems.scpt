@@ -6,50 +6,51 @@ function readMenuItems(readApplication) {
 	var outerItems = fileMenu.menus;
 	var allItems = [];
 
-	// console.log("Found " + outerItems.length + " items");
+	console.log("Found " + outerItems.length + " items");
 
 	var totalCount = 0;
-	var maxCount = 5;
+	var maxCount = 100;
 
 	for (var i = 0; i < outerItems.length; i++) {
-		var items = outerItems[i].menuItems(); // Note ()
+		var items = outerItems[i].menuItems();
 
-		// console.log("Loop#2, found " + items.length + " items");
+		console.log("Loop#2, found " + items.length + " items");
 			
 		for (var j = 0; j < items.length; j++) {
-			// console.log("Loop#3 ");
-	    	var attributes = [];
+			console.log("Loop#3 ");
+	    	var attributes = {};
 
 	    	item = items[j];
 	    	try {
 				var axCmdCharName = item.attributes["AXMenuItemCmdChar"].name();
 				var axCmdCharVal = item.attributes["AXMenuItemCmdChar"].value();
 				if (axCmdCharVal) {
-					attributes.push([axCmdCharName, axCmdCharVal]);
+					attributes[axCmdCharName] = axCmdCharVal;
 				}
 				var axCmdVirtualName = item.attributes["AXMenuItemCmdVirtualKey"].name();
 				var axCmdVirtualVal = item.attributes["AXMenuItemCmdVirtualKey"].value();
 				if (axCmdVirtualVal) {
-					attributes.push([axCmdVirtualName, axCmdVirtualVal]);
+					attributes[axCmdVirtualName] = axCmdVirtualVal;
 				}
 				var axCmdGlyphName = item.attributes["AXMenuItemCmdGlyph"].name();
 				var axCmdGlyphVal = item.attributes["AXMenuItemCmdGlyph"].value();
 				if (axCmdGlyphVal) {
-					attributes.push([axCmdGlyphName, axCmdGlyphVal]);
+					attributes[axCmdGlyphName] = axCmdGlyphVal;
 				}
 				var axCmdModName = item.attributes["AXMenuItemCmdModifiers"].name();
 				var axCmdModVal = item.attributes["AXMenuItemCmdModifiers"].value();
 				if (axCmdModVal) {
-					attributes.push([axCmdModName, axCmdModVal]);
+					attributes[axCmdModName] = axCmdModVal;
 				}
 			} catch (err) {
 				console.log('ERROR: ' + err);
 			}
 
-			if (attributes.length) {
-				allItems.push(item.title());
-				allItems.push(attributes);
+			console.log("About to insert title: " + item.title() + " and attributes: ");
+			for (key in attributes) {
+				console.log("Key: " + key + " value: " + attributes[key]);
 			}
+			allItems[item.title()] = attributes;
 			// allItems.push({
 			// 	"title": item.title(),
 			// 	"properties": item.properties(),
@@ -62,6 +63,10 @@ function readMenuItems(readApplication) {
 	}
 
 	return allItems;
+}
+
+function run(argv) {
+	return readMenuItems(argv);
 }
 
 	// #!/bin/sh

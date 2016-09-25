@@ -130,30 +130,32 @@
 
 - (NSDictionary *)readMenuItems:(NSString*)applicationName
 {
-    NSDictionary<NSString *,id> *errorInfo;
-
     NSLog(@"About to call readMenuItems with %@", applicationName);
-    NSAppleEventDescriptor *descriptor = [self.appleScript executeHandlerWithName:@"readMenuItems"
+
+    NSDictionary<NSString *,id> *errorInfo;
+    NSAppleEventDescriptor *desc = [self.appleScript executeHandlerWithName:@"readMenuItems"
         arguments:@[applicationName] error:&errorInfo];
-    descriptor = [descriptor coerceToDescriptorType:typeAEList];
-    NSLog(@"error: %@", errorInfo);
+    // descriptor = [descriptor coerceToDescriptorType:typeAEList];
+    if (errorInfo) {
+        NSLog(@"error: %@", errorInfo);
+    }
+
     NSLog(@"-----------------------------------------------");
 
-
-    NSMutableArray* info = [NSMutableArray array] ;
-    NSLog(@"Found number of items: %ld", [descriptor numberOfItems]);
+    NSMutableDictionary* info = [NSMutableDictionary dictionary] ;
+    NSInteger numItems = [desc numberOfItems];
+    NSLog(@"Found number of items: %ld", numItems);
   
-    for (NSInteger i = 0; i < [descriptor numberOfItems]; i++) {
-        NSArray *arr = [self unwrapArrayValue:[descriptor descriptorAtIndex:i]];
-        if (!arr) {
-            NSString *obj = [self unwrapValue:[descriptor descriptorAtIndex:i]];
-            NSLog(@"Loop %ld with obj: %@", i, obj);
-            if (obj) {
-                [info addObject:obj];
-            }
-        } else {
-            [info addObject:arr];
-        }
+    for (NSInteger i = 0; i < [desc numberOfItems]; i++) {
+        NSAppleEventDescriptor *usrfDesc = [desc descriptorForKeyword:'usrf'];
+        NSInteger usrfNumItems = [usrfDesc numberOfItems];
+        NSLog(@"With usrf: %@, found %ld", usrfDesc, usrfNumItems);
+        NSAppleEventDescriptor *utxtDesc = [desc descriptorForKeyword:'utxt'];
+        NSInteger utxtNumItems = [utxtDesc numberOfItems];
+        NSLog(@"With usrf: %@, found %ld", utxtDesc, utxtNumItems);
+
+        
+
     }
 
 
