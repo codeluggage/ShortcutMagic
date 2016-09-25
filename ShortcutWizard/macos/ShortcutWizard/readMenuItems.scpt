@@ -5,22 +5,29 @@ function readMenuItems(readApplication) {
 	var fileMenu = evernote.menuBars[0];
 	var outerItems = fileMenu.menus;
 	var allItems = [];
+	var item;
+	var title;
+	var attributes = {};
 
-	console.log("Found " + outerItems.length + " items");
+	// console.log("Found " + outerItems.length + " items");
 
 	var totalCount = 0;
-	var maxCount = 100;
+	var maxCount = 20;
 
 	for (var i = 0; i < outerItems.length; i++) {
 		var items = outerItems[i].menuItems();
 
-		console.log("Loop#2, found " + items.length + " items");
+		// console.log("Loop#2, found " + items.length + " items");
 			
 		for (var j = 0; j < items.length; j++) {
-			console.log("Loop#3 ");
-	    	var attributes = {};
-
+			// console.log("Loop#3 ");
 	    	item = items[j];
+	    	attributes = {};
+			title = item.title();
+			if (!title) continue;
+
+			attributes["title"] = title;
+
 	    	try {
 				var axCmdCharName = item.attributes["AXMenuItemCmdChar"].name();
 				var axCmdCharVal = item.attributes["AXMenuItemCmdChar"].value();
@@ -46,15 +53,23 @@ function readMenuItems(readApplication) {
 				console.log('ERROR: ' + err);
 			}
 
-			console.log("About to insert title: " + item.title() + " and attributes: ");
-			for (key in attributes) {
-				console.log("Key: " + key + " value: " + attributes[key]);
-			}
-			allItems[item.title()] = attributes;
+			// console.log("About to insert title: " + item.title() + " and attributes: ");
+			// for (key in attributes) {
+				// console.log("Key: " + key + " value: " + attributes[key]);
+			// }
+			// allItems[item.title()] = attributes;
+
+	    	console.log('---------------------');
+	    	for (key in attributes) {
+	    		console.log("Key: " + key + " value: " + attributes[key]);
+	    	}
+	    	console.log('---------------------');
+
+			allItems.push(attributes);
 			// allItems.push({
-			// 	"title": item.title(),
-			// 	"properties": item.properties(),
-			// 	"attributes": attributes
+				// "title": item.title(),
+				// "properties": item.properties(),
+				// "attributes": attributes
 			// });
 				totalCount++;
 		}
