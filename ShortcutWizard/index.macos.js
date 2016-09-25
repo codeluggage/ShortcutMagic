@@ -11,7 +11,6 @@ import {
     ListView,
 } from 'react-native-macos';
 
-
 const styles = StyleSheet.create({
     view: {
         flexDirection: 'column',

@@ -8,6 +8,8 @@
  */
 
 #import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
+#import <OSAKit/OSAKit.h>
 #import "RCTBridge.h"
 #import "RCTRootView.h"
 
@@ -20,5 +22,7 @@
 @property (strong, nonatomic) NSString *currentIconPath;
 @property (strong, nonatomic) NSDictionary *props;
 @property (strong, nonatomic) RCTRootView *rootView;
+
+@property (strong, nonatomic) OSAScript *appleScript;
 
 @end

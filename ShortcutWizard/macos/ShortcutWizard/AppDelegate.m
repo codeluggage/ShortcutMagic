@@ -2,16 +2,18 @@
 
 #import "RCTBridge.h"
 #import "RCTJavaScriptLoader.h"
-#import <Cocoa/Cocoa.h>
 
-@interface AppDelegate() <RCTBridgeDelegate>
 
-+ (NSRect) screenResolution;
+
+// TODO: Is this necessary as long all this is 1 file?
+// @interface AppDelegate() <RCTBridgeDelegate>
+
+// + (NSRect) screenResolution;
 // - (void)triggerAppSwitch:(NSNotification *)notification;
-- (void)prepareProps;
-- (void)triggerAppSwitch;
+// - (void)prepareProps;
+// - (void)triggerAppSwitch;
 
-@end
+// @end
 
 @implementation AppDelegate
 
@@ -27,6 +29,216 @@
   }
 
   return screenRect;
+}
+
+- (OSAScript *)loadAndCompileApplescript:(NSString *)path
+{
+    // TODO: 
+    // check for: NSAppleScriptErrorMessage
+    // - compileAndReturnError:
+    // Compiles the receiver, if it is not already compiled.
+    // - executeAndReturnError:
+    // Executes the receiver, compiling it first if it is not already compiled.
+    // - executeAppleEvent:error:
+    // Executes an Apple event in the context of the receiver, as a means of allowing the application to invoke a handler in the script.
+
+    NSString *source = [NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:path ofType:@"scpt"]
+                        encoding:NSUTF8StringEncoding error:nil];
+    OSAScript *hold = [[OSAScript alloc] initWithSource:source language:[OSALanguage languageForName:@"JavaScript"]];
+  
+
+//    NSURL *fileUrl = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:path ofType:@"scpt"]];
+//    NSLog(@"Applescript url: %@", [fileUrl absoluteString]);
+//
+    NSDictionary<NSString *,id> *errorInfo;
+//    NSAppleScript *hold = [[NSAppleScript alloc] initWithContentsOfURL:fileUrl error:&errorInfo];
+//    NSLog(@"Applescript hold: %@", hold);
+//    NSLog(@"Applescript error: %@", errorInfo);
+
+    BOOL compiled = [hold compileAndReturnError:&errorInfo];
+    if (compiled) {
+        NSLog(@"Compiled successfully");
+    } else {
+        NSLog(@"Compile failed: %@", errorInfo);
+    }
+
+    return hold;
+}
+
+- (NSArray *)unwrapArrayValue:(NSAppleEventDescriptor *)desc
+{
+    NSMutableArray *mutable = [[NSMutableArray alloc] init];
+    NSInteger numItems = [desc numberOfItems];
+    for (NSUInteger j = 0; j < numItems; j++) {
+        NSAppleEventDescriptor *secondDesc = [desc descriptorAtIndex:j];
+        NSString *obj = [self unwrapValue:secondDesc];
+        NSLog(@"inner loop 1 with descriptor: %@ obj: %@", secondDesc, obj);
+
+        if (!obj) {
+            NSAppleEventDescriptor *keywordDescriptor = [secondDesc descriptorForKeyword:'utxt'];
+            obj = [keywordDescriptor stringValue];
+            NSLog(@"inner loop 2 with descriptor: %@ obj: %@", keywordDescriptor, obj);
+            if (!obj) {
+                NSAppleEventDescriptor *lastDescriptor = [secondDesc descriptorForKeyword:'usrf'];
+                obj = [lastDescriptor stringValue];
+                NSLog(@"inner loop 3 with descriptor: %@ obj: %@", lastDescriptor, obj);
+            }
+        }
+
+        if (obj) {
+            [mutable addObject:obj];
+        }
+    }
+
+    return [NSArray arrayWithArray:mutable];
+}
+
+- (NSString *)unwrapValue:(NSAppleEventDescriptor *)desc
+{
+    NSString *obj = [desc stringValue];
+    if (!obj) {
+        desc = [desc descriptorForKeyword:'utxt'];
+        obj = [desc stringValue];
+    }
+
+    if (!obj) {
+        desc = [desc descriptorForKeyword:'usrf'];
+        NSInteger numItems = [desc numberOfItems];
+        if (numItems > 1) {
+            for (NSUInteger j = 0; j < numItems; j++) {
+                NSAppleEventDescriptor *subsub = [desc descriptorAtIndex:j];
+                NSString *obj = [subsub stringValue];
+                NSLog(@"inner loop 1 with descriptor: %@ obj: %@", subsub, obj);
+                if (!obj) {
+                    NSAppleEventDescriptor *keywordDescriptor = [subsub descriptorForKeyword:'utxt'];
+                    obj = [keywordDescriptor stringValue];
+                    NSLog(@"inner loop 2 with descriptor: %@ obj: %@", keywordDescriptor, obj);
+                    if (!obj) {
+                        NSAppleEventDescriptor *lastDescriptor = [subsub descriptorForKeyword:'usrf'];
+                        obj = [lastDescriptor stringValue];
+                        NSLog(@"inner loop 3 with descriptor: %@ obj: %@", lastDescriptor, obj);
+                    }
+                }
+            }
+        } else {
+            obj = [desc stringValue];
+        }
+    }
+
+    return obj;
+}
+
+- (NSArray *)unwrapUsrf:(NSAppleEventDescriptor *)desc
+{
+    NSMutableArray *mutable = [[NSMutableArray alloc] init];
+    NSInteger numItems = [desc numberOfItems];
+
+    for (NSUInteger j = 0; j <= numItems; j++) {
+        NSAppleEventDescriptor *secondDesc = [desc descriptorAtIndex:j];
+        AEKeyword keywordForIndex = [desc keywordForDescriptorAtIndex:j];
+      
+        NSString *obj = [secondDesc stringValue];
+
+        if (!obj) {
+            NSAppleEventDescriptor *keywordDescriptor = [secondDesc descriptorForKeyword:'utxt'];
+            obj = [keywordDescriptor stringValue];
+            NSLog(@"inner loop 2 with descriptor: %@ obj: %@", keywordDescriptor, obj);
+            if (!obj) {
+                NSAppleEventDescriptor *lastDescriptor = [secondDesc descriptorForKeyword:'usrf'];
+              
+              NSAppleEventDescriptor *holdParam = [secondDesc paramDescriptorForKeyword:keywordForIndex];
+              obj = [holdParam stringValue];
+              if (obj) {
+                [mutable addObject:obj];
+              }
+              NSAppleEventDescriptor *holdAttribute = [secondDesc attributeDescriptorForKeyword:keywordForIndex];
+              obj = [holdAttribute stringValue];
+              if (obj) {
+                [mutable addObject:obj];
+              }
+              
+                obj = [lastDescriptor stringValue];
+                NSLog(@"inner loop 3 with descriptor: %@ obj: %@", lastDescriptor, obj);
+            }
+        } else {
+          NSLog(@"inner loop 1 with obj: %@", obj);
+          [mutable addObject:obj];
+        }
+    }
+
+    return [NSArray arrayWithArray:mutable];
+}
+
+- (NSString *)unwrapUtxt:(NSAppleEventDescriptor *)desc
+{
+    NSString *obj = [desc stringValue];
+    if (!obj) {
+        desc = [desc descriptorForKeyword:'utxt'];
+        obj = [desc stringValue];
+    }
+
+    return obj;
+}
+
+- (NSString*)fourCharNSStringForFourCharCode:(FourCharCode)aCode
+{
+  char fourChar[5] = {(aCode >> 24) & 0xFF, (aCode >> 16) & 0xFF, (aCode >> 8) & 0xFF, aCode & 0xFF, 0};
+  
+  NSString *fourCharString = [NSString stringWithCString:fourChar encoding:NSUTF8StringEncoding];
+  
+  return fourCharString;
+}
+
+- (NSArray *)readMenuItems:(NSString*)applicationName
+{
+    NSLog(@"About to call readMenuItems with %@", applicationName);
+
+    NSDictionary<NSString *,id> *errorInfo;
+    // NSAppleEventDescriptor *desc = [self.appleScript executeHandlerWithName:@"readMenuItems"
+    //     arguments:@[applicationName] error:&errorInfo];
+    NSAppleEventDescriptor *desc = [self.appleScript executeHandlerWithName:@"readShortcutMenuItems"
+        arguments:@[applicationName] error:&errorInfo];
+    desc = [desc coerceToDescriptorType:typeAEList];
+    if (errorInfo) {
+        NSLog(@"error: %@", errorInfo);
+    }
+
+    NSLog(@"=========================================");
+
+    NSMutableArray* info = [[NSMutableArray alloc] init] ;
+    NSInteger numItems = [desc numberOfItems];
+    NSLog(@"Found number of items: %ld", numItems);
+  
+    for (NSInteger i = 0; i < numItems; i++) {
+        NSAppleEventDescriptor *usrfDesc = [[desc descriptorAtIndex:i] descriptorForKeyword:'usrf'];
+      NSInteger usrfNumItems = [usrfDesc numberOfItems];
+      if (usrfNumItems) {
+        NSArray *unwrappedUsrf = [self unwrapUsrf:usrfDesc];
+        NSLog(@"With usrf: %@, found %ld, unwarpped: %@", usrfDesc, usrfNumItems, unwrappedUsrf);
+        [info addObject:unwrappedUsrf];
+      }
+
+        NSLog(@"<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< end %ld", i);
+    }
+
+
+    // NSAppleEventDescriptor *listDescriptor = [descriptor coerceToDescriptorType:typeAEList];
+    // NSLog(@"%@", listDescriptor);
+    // NSMutableArray *result = [[NSMutableArray alloc] init];
+    // for (NSInteger i = 0; i < [listDescriptor numberOfItems]; ++i) {
+    //     AEKeyword keyword = [listDescriptor keywordForDescriptorAtIndex:i];
+    //     NSString *finalString = [[listDescriptor descriptorForKeyword:keyword] stringValue];
+      
+    //     if (finalString) {
+    //         NSLog(@"inserting %@", finalString);
+    //         [result addObject:finalString];
+    //     }
+    // }
+    // NSLog(@"%@", result);
+    NSLog(@"return value from applescript: %@", info);
+    NSLog(@"-----------------------------------------------");
+
+    return [NSArray arrayWithArray:info];
 }
 
 - (void)prepareProps
@@ -53,87 +265,7 @@
     [self updateApplicationIcon:currentAppInfo];
 
 
-    NSDictionary* shortcuts;
-
-    if ([self.currentApplicationName isEqualToString:@"Evernote"]) {
-        NSLog(@"shortcuts for >>>>>>>>>>>>>>> Evernote <<<<<<<<<<<<<<<<<< ");
-        shortcuts = @{
-            @"Bold text": @[@"cmd", @"b"],
-            @"Italicise text": @[@"cmd", @"i"],
-            @"Underline text": @[@"cmd", @"u"],
-            @"Strikethrough text": @[@"ctrl", @"cmd", @"k"],
-            @"New notebook": @[@"cmd", @"shift", @"n"],
-            @"New note": @[@"cmd", @"n"],
-            @"Edit tag on current note": @[@"alt", @"'"]
-        };
-    } else if ([self.currentApplicationName isEqualToString:@"Google Chrome"]) {
-        NSLog(@"shortcuts for >>>>> Google Chrome<<<<< ");
-        shortcuts = @{
-            @"Open last closed tab": @[@"ctrl", @"shift", @"t"],
-            @"New tab": @[@"cmd", @"t"],
-            @"New window": @[@"cmd", @"n"],
-        };
-    } else if ([self.currentApplicationName isEqualToString:@"Xcode"]) {
-        NSLog(@"shortcuts for >>>>> Xcode<<<<< ");
-        shortcuts = @{
-            @"Open quickly": @[@"cmd", @"shift", @"o"],
-            @"Run project": @[@"cmd", @"r"],
-            @"Clean project": @[@"cmd", @"shift", @"k"],
-        };
-    } else if ([self.currentApplicationName isEqualToString:@"iTerm2"]) {
-        NSLog(@"shortcuts for >>>>> iTerm2<<<<< ");
-        shortcuts = @{
-            @"New tab": @[@"cmd", @"t"],
-            @"New window": @[@"cmd", @"n"],
-            @"Delete word backwards": @[@"ctrl", @"w"],
-            @"Go to beginning of line": @[@"ctrl", @"a"],
-            @"Go to end of line": @[@"ctrl", @"e"],
-            @"Cancel/reset line": @[@"ctrl", @"c"],
-        };
-    } else if ([self.currentApplicationName isEqualToString:@"Terminal"]) {
-        NSLog(@"shortcuts for >>>>> Terminal<<<<< ");
-        shortcuts = @{
-            @"New tab": @[@"cmd", @"t"],
-            @"New window": @[@"cmd", @"n"],
-            @"Delete word backwards": @[@"ctrl", @"w"],
-            @"Go to beginning of line": @[@"ctrl", @"a"],
-            @"Go to end of line": @[@"ctrl", @"e"],
-            @"Cancel/reset line": @[@"ctrl", @"c"],
-        };
-    } else if ([self.currentApplicationName isEqualToString:@"Sublime Text"]) {
-        NSLog(@"shortcuts for >>>>> Sublime Text<<<<< ");
-        shortcuts = @{
-            @"New tab": @[@"cmd", @"t"],
-            @"New window": @[@"cmd", @"n"],
-            @"Open file": @[@"cmd", @"o"],
-            @"Suggest text completion": @[@"ctrl", @"space"],
-            @"Open anything": @[@"cmd", @"p"],
-            @"Add next occurrence to selection": @[@"cmd", @"d"],
-        };
-    } else if ([self.currentApplicationName isEqualToString:@"PomoDoneApp"]) {
-        NSLog(@"shortcuts for >>>>> PomoDoneApp<<<<< ");
-        shortcuts = @{
-            @"New task": @[@"cmd", @"n"],
-            @"Toggle mini mode": @[@"m"]
-        };
-    } else if ([self.currentApplicationName isEqualToString:@"ShortcutWizard"]) {
-        NSLog(@"shortcuts for >>>>> ShortcutWizard<<<<< ");
-        shortcuts = @{
-            @"No shortcuts for ShortcutWizard yet!!": @[@"alt"]
-        };
-    } else if ([self.currentApplicationName isEqualToString:@"Finder"]) {
-        NSLog(@"shortcuts for >>>>> Finder<<<<< ");
-        shortcuts = @{
-            @"New tab": @[@"cmd", @"t"],
-            @"New window": @[@"cmd", @"n"],
-        };
-    } else if ([self.currentApplicationName isEqualToString:@"Skype"]) {
-        NSLog(@"shortcuts for >>>>> Skype<<<<< ");
-        shortcuts = @{
-            @"Move to below chat": @[@"cmd", @"shift", @"right arrow"],
-            @"Move to above chat": @[@"cmd", @"shift", @"left arrow"],
-        };
-    }
+    NSArray* shortcuts = [self readMenuItems:self.currentApplicationName];
 
     if (!self.props) {
         self.props = @{
@@ -191,6 +323,10 @@
 -(id)init
 {
     if(self = [super init]) {
+        self.appleScript = [self loadAndCompileApplescript:@"readMenuItems"]; 
+      
+          NSLog(@"Applescript: %@", self.appleScript);
+
         NSRect screenRect = [AppDelegate screenResolution];
         NSLog(@"Got the screen rect: >>>>>>>>>");
         NSLog([NSString stringWithFormat:@"%.1fx%.1f",screenRect.size.width, screenRect.size.height]);
