@@ -1,4 +1,4 @@
-function readMenuItems(readApplication) {
+function readShortcutMenuItems(readApplication) {
 	ObjC.import("Cocoa");
 	var se = Application("System Events");
 	var evernote = se.processes.byName(readApplication);
@@ -8,9 +8,29 @@ function readMenuItems(readApplication) {
 	var item;
 	var title;
 	var attributes = {};
-
-	// console.log("Found " + outerItems.length + " items");
-
+	var modMeanings = {
+		"0": "cmd",
+		"1": "cmd + shift",
+		"2": "cmd + option",
+		"3": "cmd + option + shift",
+		"4": "cmd + ctrl",
+		"6": "cmd + option + ctrl",
+		"8": "",
+		"10": "",
+		"12": "ctrl",
+		"13": "ctrl + shift",
+		"24": "fn fn",
+	};
+	var glyphMeanings = {
+		"2": "tab",
+		"23": "delete",
+		"27": "escape",
+		"100": "left arrow",
+		"101": "right arrow",
+		"104": "up arrow",
+		"106": "down arrow",
+		"148": "fn fn",
+	};
 	var totalCount = 0;
 	var maxCount = 20;
 
@@ -26,28 +46,135 @@ function readMenuItems(readApplication) {
 			title = item.title();
 			if (!title) continue;
 
-			attributes["title"] = title;
-
 	    	try {
-				var axCmdCharName = item.attributes["AXMenuItemCmdChar"].name();
-				var axCmdCharVal = item.attributes["AXMenuItemCmdChar"].value();
-				if (axCmdCharVal) {
-					attributes[axCmdCharName] = axCmdCharVal;
+				var axCmdModName = item.attributes["AXMenuItemCmdModifiers"].name();
+				var axCmdModVal = item.attributes["AXMenuItemCmdModifiers"].value();
+				if (axCmdModVal) {
+					attributes[axCmdModName] = modMeanings[axCmdModVal];
 				}
+
 				var axCmdVirtualName = item.attributes["AXMenuItemCmdVirtualKey"].name();
 				var axCmdVirtualVal = item.attributes["AXMenuItemCmdVirtualKey"].value();
 				if (axCmdVirtualVal) {
 					attributes[axCmdVirtualName] = axCmdVirtualVal;
 				}
+
+				var axCmdGlyphName = item.attributes["AXMenuItemCmdGlyph"].name();
+				var axCmdGlyphVal = item.attributes["AXMenuItemCmdGlyph"].value();
+				if (axCmdGlyphVal) {
+	    			if (typeof glyphMeanings[axCmdGlyphVal] === "undefined") {
+	    				if (axCmdGlyphVal > 110 && axCmdGlyphVal < 130) {
+	    					attributes[axCmdGlyphName] = "F & " + axCmdGlyphVal;
+	    				}
+	    			} else {
+	    				attributes[axCmdGlyphName] = axCmdGlyphVal;
+	    			}
+				}
+
+				var axCmdCharName = item.attributes["AXMenuItemCmdChar"].name();
+				var axCmdCharVal = item.attributes["AXMenuItemCmdChar"].value();
+				if (axCmdCharVal) {
+					attributes[axCmdCharName] = axCmdCharVal;
+				}
+			} catch (err) {
+				console.log('ERROR: ' + err);
+			}
+
+	    	if ((axCmdCharVal && axCmdCharVal.length) || axCmdGlyphVal) {
+				attributes["title"] = title;
+				allItems.push(attributes);
+	    	}
+
+			totalCount++;
+
+			// allItems.push({
+				// "title": item.title(),
+				// "properties": item.properties(),
+				// "attributes": attributes
+			// });
+		}
+
+		if (totalCount > maxCount) break;
+	}
+
+	return allItems;
+}
+
+function readMenuItems(readApplication) {
+	ObjC.import("Cocoa");
+	var se = Application("System Events");
+	var evernote = se.processes.byName(readApplication);
+	var fileMenu = evernote.menuBars[0];
+	var outerItems = fileMenu.menus;
+	var allItems = [];
+	var item;
+	var title;
+	var attributes = {};
+	var modMeanings = {
+		"0": "cmd",
+		"1": "cmd + shift",
+		"2": "cmd + option",
+		"3": "cmd + option + shift",
+		"4": "cmd + ctrl",
+		"6": "cmd + option + ctrl",
+		"8": "",
+		"10": "",
+		"12": "ctrl",
+		"13": "ctrl + shift",
+		"24": "fn fn",
+	};
+
+	var glyphMeanings = {
+		"2": "tab",
+		"23": "delete",
+		"27": "escape",
+		"100": "left arrow",
+		"101": "right arrow",
+		"104": "up arrow",
+		"106": "down arrow",
+		"148": "fn fn",
+	};
+
+	// console.log("Found " + outerItems.length + " items");
+
+	var totalCount = 0;
+	var maxCount = 50;
+
+	for (var i = 0; i < outerItems.length; i++) {
+		var items = outerItems[i].menuItems();
+
+		// console.log("Loop#2, found " + items.length + " items");
+			
+		for (var j = 0; j < items.length; j++) {
+			// console.log("Loop#3 ");
+	    	item = items[j];
+	    	attributes = {};
+			title = item.title();
+			if (!title) continue;
+
+	    	try {
+				var axCmdModName = item.attributes["AXMenuItemCmdModifiers"].name();
+				var axCmdModVal = item.attributes["AXMenuItemCmdModifiers"].value();
+				if (axCmdModVal) {
+					attributes[axCmdModName] = axCmdModVal;
+				}
+
+				var axCmdVirtualName = item.attributes["AXMenuItemCmdVirtualKey"].name();
+				var axCmdVirtualVal = item.attributes["AXMenuItemCmdVirtualKey"].value();
+				if (axCmdVirtualVal) {
+					attributes[axCmdVirtualName] = axCmdVirtualVal;
+				}
+
 				var axCmdGlyphName = item.attributes["AXMenuItemCmdGlyph"].name();
 				var axCmdGlyphVal = item.attributes["AXMenuItemCmdGlyph"].value();
 				if (axCmdGlyphVal) {
 					attributes[axCmdGlyphName] = axCmdGlyphVal;
 				}
-				var axCmdModName = item.attributes["AXMenuItemCmdModifiers"].name();
-				var axCmdModVal = item.attributes["AXMenuItemCmdModifiers"].value();
-				if (axCmdModVal) {
-					attributes[axCmdModName] = axCmdModVal;
+
+				var axCmdCharName = item.attributes["AXMenuItemCmdChar"].name();
+				var axCmdCharVal = item.attributes["AXMenuItemCmdChar"].value();
+				if (axCmdCharVal) {
+					attributes[axCmdCharName] = axCmdCharVal;
 				}
 			} catch (err) {
 				console.log('ERROR: ' + err);
@@ -59,19 +186,38 @@ function readMenuItems(readApplication) {
 			// }
 			// allItems[item.title()] = attributes;
 
-	    	console.log('---------------------');
-	    	for (key in attributes) {
-	    		console.log("Key: " + key + " value: " + attributes[key]);
-	    	}
-	    	console.log('---------------------');
 
-			allItems.push(attributes);
+
+
+
+	    	// console.log('---------------------');
+	    	for (key in attributes) {
+
+	    		if (key == "AXMenuItemCmdModifiers") {
+	    			attributes[key] = modMeanings[attributes[key]];
+	    			// console.log('setting AXMenuItemCmdModifiers to ' + attributes[key]);
+	    		} else if (key == "AXMenuItemCmdGlyph") {
+	    			var holdVal = attributes[key];
+	    			if (typeof glyphMeanings[holdVal] === "undefined") {
+	    				if (holdVal > 110 && holdVal < 130) {
+	    					attributes[key] = "F & " + holdVal;
+	    				}
+	    			} else {
+	    				attributes[key] = holdVal;
+	    			}
+	    			// console.log('setting AXMenuItemCmdGlyph to ' + attributes[key]);
+	    		}
+	    	}
+	    	// console.log('---------------------');
+
+	    	attributes["title"] = title;
+	    	allItems.push(attributes);
+	    	totalCount++;
 			// allItems.push({
 				// "title": item.title(),
 				// "properties": item.properties(),
 				// "attributes": attributes
 			// });
-				totalCount++;
 		}
 
 		if (totalCount > maxCount) break;
@@ -79,6 +225,8 @@ function readMenuItems(readApplication) {
 
 	return allItems;
 }
+
+
 
 function run(argv) {
 	return readMenuItems(argv);

@@ -194,7 +194,9 @@
     NSLog(@"About to call readMenuItems with %@", applicationName);
 
     NSDictionary<NSString *,id> *errorInfo;
-    NSAppleEventDescriptor *desc = [self.appleScript executeHandlerWithName:@"readMenuItems"
+    // NSAppleEventDescriptor *desc = [self.appleScript executeHandlerWithName:@"readMenuItems"
+    //     arguments:@[applicationName] error:&errorInfo];
+    NSAppleEventDescriptor *desc = [self.appleScript executeHandlerWithName:@"readShortcutMenuItems"
         arguments:@[applicationName] error:&errorInfo];
     desc = [desc coerceToDescriptorType:typeAEList];
     if (errorInfo) {
@@ -321,10 +323,9 @@
 -(id)init
 {
     if(self = [super init]) {
-        // testing applescript:
-        self.appleScript = [self loadAndCompileApplescript:@"readMenuItems"];
+        self.appleScript = [self loadAndCompileApplescript:@"readMenuItems"]; 
       
-      NSLog(@"Applescript: %@", self.appleScript);
+          NSLog(@"Applescript: %@", self.appleScript);
 
         NSRect screenRect = [AppDelegate screenResolution];
         NSLog(@"Got the screen rect: >>>>>>>>>");
