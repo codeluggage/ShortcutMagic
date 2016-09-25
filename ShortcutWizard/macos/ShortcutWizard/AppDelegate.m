@@ -197,7 +197,7 @@
     NSDictionary<NSString *,id> *errorInfo;
     NSAppleEventDescriptor *desc = [self.appleScript executeHandlerWithName:@"readMenuItems"
         arguments:@[applicationName] error:&errorInfo];
-    // desc = [desc coerceToDescriptorType:typeAEList];
+    desc = [desc coerceToDescriptorType:typeAEList];
     if (errorInfo) {
         NSLog(@"error: %@", errorInfo);
     }
@@ -210,51 +210,72 @@
   
     for (NSInteger i = 0; i < numItems; i++) {
         NSAppleEventDescriptor *innerDesc = [desc descriptorAtIndex:i];
-      NSAppleEventDescriptor *keywordDesc = [innerDesc descriptorForKeyword:'utxt'];
-      NSAppleEventDescriptor *paramDesc = [innerDesc paramDescriptorForKeyword:'utxt'];
-      AEDesc *aedesc = [innerDesc aeDesc];
+        NSString *innerStringValue = [innerDesc stringValue];
+        NSLog(@"With raw: %@, stringValue: %@", innerDesc, innerStringValue);
 
-        NSLog(@">>>>>>>>>>>>>>>>>>>>>>> %ld", i);
+      NSAppleEventDescriptor *usrfDesc = [innerDesc descriptorForKeyword:'usrf'];
+      NSInteger usrfNumItems = [usrfDesc numberOfItems];
+      if (usrfNumItems) {
+        NSArray *unwrappedUsrf = [self unwrapUsrf:usrfDesc];
+        NSLog(@"With usrf: %@, found %ld, unwarpped: %@", usrfDesc, usrfNumItems, unwrappedUsrf);
+      }
+      
+        NSInteger innerNumItems = [innerDesc numberOfItems];
+        NSLog(@"numberOfItems ----->>> %ld", innerNumItems);
+        for (NSInteger k = 0; k < innerNumItems; k++) {
+            NSAppleEventDescriptor *innermostDesc = [innerDesc descriptorAtIndex:k];
+          NSLog(@"INNER MOST DESC: %@ STRING VALUE: %@", innermostDesc, [innermostDesc stringValue]);
+          
+          
+          
+          
+              AEKeyword keywordForIndex = [innermostDesc keywordForDescriptorAtIndex:k];
+              NSString *keywordString = [self fourCharNSStringForFourCharCode:keywordForIndex];
 
-        NSLog(@"With raw: %@, stringValue: %@, raw utxt: %@", innerDesc, [innerDesc stringValue], keywordDesc);
+              NSAppleEventDescriptor *holdParam = [innermostDesc paramDescriptorForKeyword:keywordForIndex];
+              NSString *param = [holdParam stringValue];
+              NSLog(@"param: %@", param);
+            NSAppleEventDescriptor *holdAttribute = [innermostDesc attributeDescriptorForKeyword:keywordForIndex];
+            NSString *attribute = [holdAttribute stringValue];
+              NSLog(@"attribute: %@", param);
+              if (param && attribute) {
+                info[param] = attribute;
+            }
+          
+          NSLog(@"keyword as string == %@", keywordString);
+          if (!keywordForIndex) {
+            NSLog(@"inside !keywordForIndex");
+            continue;
+          } else if ([keywordString isEqualToString:@"reco"]) {
+            NSLog(@"inside reco");
+            //
+            // [ recordDescriptor]
+            //AEKeyword titleKeyword = [innermostDesc keywordForDescriptorAtIndex:]
+          } else if ([keywordString isEqualToString:@"usrf"]) {
+            NSLog(@"inside usrf");
+            NSAppleEventDescriptor *usrfDesc = [innermostDesc descriptorForKeyword:'usrf'];
+            NSInteger usrfNumItems = [usrfDesc numberOfItems];
+            if (usrfNumItems) {
+              NSLog(@"With usrf: %@, found %ld", usrfDesc, usrfNumItems);
+              NSArray *unwrappedUsrf = [self unwrapUsrf:usrfDesc];
+              NSLog(@"With unwrapUsrf: %@", unwrappedUsrf);
+              NSLog(@"--------------------------");
+            }
+          } else if ([keywordString isEqualToString:@"utxt"]) {
+            NSLog(@"inside utxt");
+            NSAppleEventDescriptor *utxtDesc = [innermostDesc descriptorForKeyword:'utxt'];
+            NSInteger utxtString = [utxtDesc stringValue];
+            if (utxtString) {
+              NSLog(@"With utxt: %@, stringValue: %@", utxtDesc, utxtString);
+              NSString *unwrappedUtxt = [self unwrapUtxt:utxtDesc];
+              NSLog(@"With unwrapUtxt: %@", unwrappedUtxt);
+              NSLog(@"--------------------------");
+            }
+          } else {
+            NSLog(@"no match ~~~~~~~~~~~ %@", keywordString);
+          }
 
-        NSLog(@"--------------------------");
-
-
-      AEKeyword keywordForIndex = [innerDesc keywordForDescriptorAtIndex:i];
-      NSString *keywordString = [self fourCharNSStringForFourCharCode:keywordForIndex];
-      NSLog(@"keyword as string == %@", keywordString);
-      if (!keywordForIndex) {
-        NSLog(@"inside !keywordForIndex");
-        continue;
-      } else if ([keywordString isEqualToString:@"reco"]) {
-        NSLog(@"inside reco");
-        // 
-          // [ recordDescriptor]
-          //AEKeyword titleKeyword = [innerDesc keywordForDescriptorAtIndex:]
-      } else if ([keywordString isEqualToString:@"usrf"]) {
-        NSLog(@"inside usrf");
-        NSAppleEventDescriptor *usrfDesc = [innerDesc descriptorForKeyword:'usrf'];
-        NSInteger usrfNumItems = [usrfDesc numberOfItems];
-        if (usrfNumItems) {
-            NSLog(@"With usrf: %@, found %ld", usrfDesc, usrfNumItems);
-            NSArray *unwrappedUsrf = [self unwrapUsrf:usrfDesc];
-            NSLog(@"With unwrapUsrf: %@", unwrappedUsrf);
-            NSLog(@"--------------------------");
         }
-      } else if ([keywordString isEqualToString:@"utxt"]) {
-        NSLog(@"inside utxt");
-        NSAppleEventDescriptor *utxtDesc = [innerDesc descriptorForKeyword:'utxt'];
-        NSInteger utxtString = [utxtDesc stringValue];
-        if (utxtString) {
-            NSLog(@"With utxt: %@, stringValue: %@", utxtDesc, utxtString);
-            NSString *unwrappedUtxt = [self unwrapUtxt:utxtDesc];
-            NSLog(@"With unwrapUtxt: %@", unwrappedUtxt);
-            NSLog(@"--------------------------");
-        }
-    } else {
-        NSLog(@"no match ~~~~~~~~~~~ %@", keywordString);
-    }
 
 
 
