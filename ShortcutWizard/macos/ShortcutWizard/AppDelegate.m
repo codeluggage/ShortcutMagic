@@ -219,6 +219,13 @@
         NSArray *unwrappedUsrf = [self unwrapUsrf:usrfDesc];
         NSLog(@"With usrf: %@, found %ld, unwarpped: %@", usrfDesc, usrfNumItems, unwrappedUsrf);
       }
+
+      NSAppleEventDescriptor *utxtDesc = [innerDesc descriptorForKeyword:'utxt'];
+      NSInteger utxtString = [utxtDesc stringValue];
+      if (utxtString) {
+          NSString *unwrappedUtxt = [self unwrapUtxt:utxtDesc];
+          NSLog(@"With utxt: %@, stringValue: %@, unwrapped: %@", utxtDesc, utxtString, unwrappedUtxt);
+      }
       
         NSInteger innerNumItems = [innerDesc numberOfItems];
         NSLog(@"numberOfItems ----->>> %ld", innerNumItems);
