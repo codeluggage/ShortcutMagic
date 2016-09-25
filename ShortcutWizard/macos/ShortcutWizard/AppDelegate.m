@@ -135,11 +135,9 @@
 
     for (NSUInteger j = 0; j <= numItems; j++) {
         NSAppleEventDescriptor *secondDesc = [desc descriptorAtIndex:j];
-      
         AEKeyword keywordForIndex = [desc keywordForDescriptorAtIndex:j];
       
         NSString *obj = [secondDesc stringValue];
-        NSLog(@"inner loop 1 with descriptor: %@ obj: %@", secondDesc, obj);
 
         if (!obj) {
             NSAppleEventDescriptor *keywordDescriptor = [secondDesc descriptorForKeyword:'utxt'];
@@ -163,6 +161,7 @@
                 NSLog(@"inner loop 3 with descriptor: %@ obj: %@", lastDescriptor, obj);
             }
         } else {
+          NSLog(@"inner loop 1 with obj: %@", obj);
           [mutable addObject:obj];
         }
     }
@@ -190,7 +189,7 @@
   return fourCharString;
 }
 
-- (NSDictionary *)readMenuItems:(NSString*)applicationName
+- (NSArray *)readMenuItems:(NSString*)applicationName
 {
     NSLog(@"About to call readMenuItems with %@", applicationName);
 
@@ -204,88 +203,18 @@
 
     NSLog(@"=========================================");
 
-    NSMutableDictionary* info = [NSMutableDictionary dictionary] ;
+    NSMutableArray* info = [[NSMutableArray alloc] init] ;
     NSInteger numItems = [desc numberOfItems];
     NSLog(@"Found number of items: %ld", numItems);
   
     for (NSInteger i = 0; i < numItems; i++) {
-        NSAppleEventDescriptor *innerDesc = [desc descriptorAtIndex:i];
-        NSString *innerStringValue = [innerDesc stringValue];
-        NSLog(@"With raw: %@, stringValue: %@", innerDesc, innerStringValue);
-
-      NSAppleEventDescriptor *usrfDesc = [innerDesc descriptorForKeyword:'usrf'];
+        NSAppleEventDescriptor *usrfDesc = [[desc descriptorAtIndex:i] descriptorForKeyword:'usrf'];
       NSInteger usrfNumItems = [usrfDesc numberOfItems];
       if (usrfNumItems) {
         NSArray *unwrappedUsrf = [self unwrapUsrf:usrfDesc];
         NSLog(@"With usrf: %@, found %ld, unwarpped: %@", usrfDesc, usrfNumItems, unwrappedUsrf);
+        [info addObject:unwrappedUsrf];
       }
-
-      NSAppleEventDescriptor *utxtDesc = [innerDesc descriptorForKeyword:'utxt'];
-      NSInteger utxtString = [utxtDesc stringValue];
-      if (utxtString) {
-          NSString *unwrappedUtxt = [self unwrapUtxt:utxtDesc];
-          NSLog(@"With utxt: %@, stringValue: %@, unwrapped: %@", utxtDesc, utxtString, unwrappedUtxt);
-      }
-      
-        NSInteger innerNumItems = [innerDesc numberOfItems];
-        NSLog(@"numberOfItems ----->>> %ld", innerNumItems);
-        for (NSInteger k = 0; k < innerNumItems; k++) {
-            NSAppleEventDescriptor *innermostDesc = [innerDesc descriptorAtIndex:k];
-          NSLog(@"INNER MOST DESC: %@ STRING VALUE: %@", innermostDesc, [innermostDesc stringValue]);
-          
-          
-          
-          
-              AEKeyword keywordForIndex = [innermostDesc keywordForDescriptorAtIndex:k];
-              NSString *keywordString = [self fourCharNSStringForFourCharCode:keywordForIndex];
-
-              NSAppleEventDescriptor *holdParam = [innermostDesc paramDescriptorForKeyword:keywordForIndex];
-              NSString *param = [holdParam stringValue];
-              NSLog(@"param: %@", param);
-            NSAppleEventDescriptor *holdAttribute = [innermostDesc attributeDescriptorForKeyword:keywordForIndex];
-            NSString *attribute = [holdAttribute stringValue];
-              NSLog(@"attribute: %@", param);
-              if (param && attribute) {
-                info[param] = attribute;
-            }
-          
-          NSLog(@"keyword as string == %@", keywordString);
-          if (!keywordForIndex) {
-            NSLog(@"inside !keywordForIndex");
-            continue;
-          } else if ([keywordString isEqualToString:@"reco"]) {
-            NSLog(@"inside reco");
-            //
-            // [ recordDescriptor]
-            //AEKeyword titleKeyword = [innermostDesc keywordForDescriptorAtIndex:]
-          } else if ([keywordString isEqualToString:@"usrf"]) {
-            NSLog(@"inside usrf");
-            NSAppleEventDescriptor *usrfDesc = [innermostDesc descriptorForKeyword:'usrf'];
-            NSInteger usrfNumItems = [usrfDesc numberOfItems];
-            if (usrfNumItems) {
-              NSLog(@"With usrf: %@, found %ld", usrfDesc, usrfNumItems);
-              NSArray *unwrappedUsrf = [self unwrapUsrf:usrfDesc];
-              NSLog(@"With unwrapUsrf: %@", unwrappedUsrf);
-              NSLog(@"--------------------------");
-            }
-          } else if ([keywordString isEqualToString:@"utxt"]) {
-            NSLog(@"inside utxt");
-            NSAppleEventDescriptor *utxtDesc = [innermostDesc descriptorForKeyword:'utxt'];
-            NSInteger utxtString = [utxtDesc stringValue];
-            if (utxtString) {
-              NSLog(@"With utxt: %@, stringValue: %@", utxtDesc, utxtString);
-              NSString *unwrappedUtxt = [self unwrapUtxt:utxtDesc];
-              NSLog(@"With unwrapUtxt: %@", unwrappedUtxt);
-              NSLog(@"--------------------------");
-            }
-          } else {
-            NSLog(@"no match ~~~~~~~~~~~ %@", keywordString);
-          }
-
-        }
-
-
-
 
         NSLog(@"<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< end %ld", i);
     }
@@ -307,7 +236,7 @@
     NSLog(@"return value from applescript: %@", info);
     NSLog(@"-----------------------------------------------");
 
-    return @{};
+    return [NSArray arrayWithArray:info];
 }
 
 - (void)prepareProps
@@ -334,87 +263,7 @@
     [self updateApplicationIcon:currentAppInfo];
 
 
-    NSDictionary* shortcuts;
-
-    if ([self.currentApplicationName isEqualToString:@"Evernote"]) {
-        NSLog(@"shortcuts for >>>>>>>>>>>>>>> Evernote <<<<<<<<<<<<<<<<<< ");
-        shortcuts = @{
-            @"Bold text": @[@"cmd", @"b"],
-            @"Italicise text": @[@"cmd", @"i"],
-            @"Underline text": @[@"cmd", @"u"],
-            @"Strikethrough text": @[@"ctrl", @"cmd", @"k"],
-            @"New notebook": @[@"cmd", @"shift", @"n"],
-            @"New note": @[@"cmd", @"n"],
-            @"Edit tag on current note": @[@"alt", @"'"]
-        };
-    } else if ([self.currentApplicationName isEqualToString:@"Google Chrome"]) {
-        NSLog(@"shortcuts for >>>>> Google Chrome<<<<< ");
-        shortcuts = @{
-            @"Open last closed tab": @[@"ctrl", @"shift", @"t"],
-            @"New tab": @[@"cmd", @"t"],
-            @"New window": @[@"cmd", @"n"],
-        };
-    } else if ([self.currentApplicationName isEqualToString:@"Xcode"]) {
-        NSLog(@"shortcuts for >>>>> Xcode<<<<< ");
-        shortcuts = @{
-            @"Open quickly": @[@"cmd", @"shift", @"o"],
-            @"Run project": @[@"cmd", @"r"],
-            @"Clean project": @[@"cmd", @"shift", @"k"],
-        };
-    } else if ([self.currentApplicationName isEqualToString:@"iTerm2"]) {
-        NSLog(@"shortcuts for >>>>> iTerm2<<<<< ");
-        shortcuts = @{
-            @"New tab": @[@"cmd", @"t"],
-            @"New window": @[@"cmd", @"n"],
-            @"Delete word backwards": @[@"ctrl", @"w"],
-            @"Go to beginning of line": @[@"ctrl", @"a"],
-            @"Go to end of line": @[@"ctrl", @"e"],
-            @"Cancel/reset line": @[@"ctrl", @"c"],
-        };
-    } else if ([self.currentApplicationName isEqualToString:@"Terminal"]) {
-        NSLog(@"shortcuts for >>>>> Terminal<<<<< ");
-        shortcuts = @{
-            @"New tab": @[@"cmd", @"t"],
-            @"New window": @[@"cmd", @"n"],
-            @"Delete word backwards": @[@"ctrl", @"w"],
-            @"Go to beginning of line": @[@"ctrl", @"a"],
-            @"Go to end of line": @[@"ctrl", @"e"],
-            @"Cancel/reset line": @[@"ctrl", @"c"],
-        };
-    } else if ([self.currentApplicationName isEqualToString:@"Sublime Text"]) {
-        NSLog(@"shortcuts for >>>>> Sublime Text<<<<< ");
-        shortcuts = @{
-            @"New tab": @[@"cmd", @"t"],
-            @"New window": @[@"cmd", @"n"],
-            @"Open file": @[@"cmd", @"o"],
-            @"Suggest text completion": @[@"ctrl", @"space"],
-            @"Open anything": @[@"cmd", @"p"],
-            @"Add next occurrence to selection": @[@"cmd", @"d"],
-        };
-    } else if ([self.currentApplicationName isEqualToString:@"PomoDoneApp"]) {
-        NSLog(@"shortcuts for >>>>> PomoDoneApp<<<<< ");
-        shortcuts = @{
-            @"New task": @[@"cmd", @"n"],
-            @"Toggle mini mode": @[@"m"]
-        };
-    } else if ([self.currentApplicationName isEqualToString:@"ShortcutWizard"]) {
-        NSLog(@"shortcuts for >>>>> ShortcutWizard<<<<< ");
-        shortcuts = @{
-            @"No shortcuts for ShortcutWizard yet!!": @[@"alt"]
-        };
-    } else if ([self.currentApplicationName isEqualToString:@"Finder"]) {
-        NSLog(@"shortcuts for >>>>> Finder<<<<< ");
-        shortcuts = @{
-            @"New tab": @[@"cmd", @"t"],
-            @"New window": @[@"cmd", @"n"],
-        };
-    } else if ([self.currentApplicationName isEqualToString:@"Skype"]) {
-        NSLog(@"shortcuts for >>>>> Skype<<<<< ");
-        shortcuts = @{
-            @"Move to below chat": @[@"cmd", @"shift", @"right arrow"],
-            @"Move to above chat": @[@"cmd", @"shift", @"left arrow"],
-        };
-    }
+    NSArray* shortcuts = [self readMenuItems:self.currentApplicationName];
 
     if (!self.props) {
         self.props = @{
@@ -435,7 +284,6 @@
 {
     [self prepareProps];
     self.rootView.appProperties = self.props;
-    [self readMenuItems:self.props[@"applicationName"]];
 }
 
 -(void)updateApplicationIcon:(NSRunningApplication *)currentAppInfo
