@@ -46,6 +46,8 @@ function readShortcutMenuItems(readApplication) {
 			title = item.title();
 			if (!title) continue;
 
+			attributes["title"] = title;
+
 	    	try {
 				var axCmdModName = item.attributes["AXMenuItemCmdModifiers"].name();
 				var axCmdModVal = item.attributes["AXMenuItemCmdModifiers"].value();
@@ -81,7 +83,6 @@ function readShortcutMenuItems(readApplication) {
 			}
 
 	    	if ((axCmdCharVal && axCmdCharVal.length) || axCmdGlyphVal) {
-				attributes["title"] = title;
 				allItems.push(attributes);
 	    	}
 
