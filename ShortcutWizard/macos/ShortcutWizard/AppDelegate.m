@@ -65,14 +65,56 @@
     return hold;
 }
 
-- (NSDictionary *)readMenuItems
+- (NSDictionary *)readMenuItems:(NSString*)applicationName
 {
     NSDictionary<NSString *,id> *errorInfo;
-    NSAppleEventDescriptor *descriptor = [self.appleScript executeAndReturnError:&errorInfo];
-  NSLog(@"%@", errorInfo);
-    NSLog(@"descriptor %@", descriptor);
+
+    NSLog(@"About to call readMenuItems with %@", applicationName);
+    NSAppleEventDescriptor *descriptor = [self.appleScript executeHandlerWithName:@"readMenuItems"
+        arguments:@[applicationName] error:&errorInfo];
+    NSLog(@"error: %@", errorInfo);
+    NSLog(@"-----------------------------------------------");
+
+
+    NSMutableArray* info = [NSMutableArray array] ;
+    NSLog(@"Found number of items: %ld", [descriptor numberOfItems]);
   
-  return @{};
+    for (NSInteger i = 0; i < [descriptor numberOfItems]; i++) {
+      
+    // This loop should only execute once; [descriptor numberOfItems] = 1
+        NSAppleEventDescriptor* subdescriptor = [descriptor descriptorAtIndex:i] ;
+        NSInteger nItems = [subdescriptor numberOfItems];
+      NSLog(@"outer loop with descriptor: %@ and obj: %@", subdescriptor, [subdescriptor stringValue]);
+    // nItems should be 2 x number of values in the record
+          
+            for (NSUInteger j = 0; j < [subdescriptor numberOfItems]; j++) {
+                NSAppleEventDescriptor *subsub = [subdescriptor descriptorAtIndex:j];
+                NSString *obj = [subsub stringValue];
+                NSLog(@"absolute inner most loop with descriptor: %@ obj: %@", subsub, obj);
+                if (obj) {
+                    [info addObject:obj];
+                }
+            }
+        }
+
+
+    // NSAppleEventDescriptor *listDescriptor = [descriptor coerceToDescriptorType:typeAEList];
+    // NSLog(@"%@", listDescriptor);
+    // NSMutableArray *result = [[NSMutableArray alloc] init];
+    // for (NSInteger i = 0; i < [listDescriptor numberOfItems]; ++i) {
+    //     AEKeyword keyword = [listDescriptor keywordForDescriptorAtIndex:i];
+    //     NSString *finalString = [[listDescriptor descriptorForKeyword:keyword] stringValue];
+      
+    //     if (finalString) {
+    //         NSLog(@"inserting %@", finalString);
+    //         [result addObject:finalString];
+    //     }
+    // }
+    // NSLog(@"%@", result);
+    NSLog(@"return value from applescript: %@", info);
+    NSLog(@"-----------------------------------------------");
+
+    return @{};
 }
 
 - (void)prepareProps
@@ -200,6 +242,7 @@
 {
     [self prepareProps];
     self.rootView.appProperties = self.props;
+    [self readMenuItems:self.props[@"applicationName"]];
 }
 
 -(void)updateApplicationIcon:(NSRunningApplication *)currentAppInfo
@@ -239,7 +282,7 @@
     if(self = [super init]) {
         // testing applescript:
         self.appleScript = [self loadAndCompileApplescript:@"readMenuItems"];
-        [self readMenuItems];
+      
       NSLog(@"Applescript: %@", self.appleScript);
 
         NSRect screenRect = [AppDelegate screenResolution];
