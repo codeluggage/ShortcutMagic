@@ -9,7 +9,7 @@ function readMenuItems(readApplication) {
 	// console.log("Found " + outerItems.length + " items");
 
 	var totalCount = 0;
-	var maxCount = 10;
+	var maxCount = 5;
 
 	for (var i = 0; i < outerItems.length; i++) {
 		var items = outerItems[i].menuItems(); // Note ()
@@ -25,36 +25,30 @@ function readMenuItems(readApplication) {
 				var axCmdCharName = item.attributes["AXMenuItemCmdChar"].name();
 				var axCmdCharVal = item.attributes["AXMenuItemCmdChar"].value();
 				if (axCmdCharVal) {
-					attributes.push(axCmdCharName);
-					attributes.push(axCmdCharVal);
+					attributes.push([axCmdCharName, axCmdCharVal]);
 				}
 				var axCmdVirtualName = item.attributes["AXMenuItemCmdVirtualKey"].name();
 				var axCmdVirtualVal = item.attributes["AXMenuItemCmdVirtualKey"].value();
 				if (axCmdVirtualVal) {
-					attributes.push(axCmdVirtualName);
-					attributes.push(axCmdVirtualVal);
+					attributes.push([axCmdVirtualName, axCmdVirtualVal]);
 				}
 				var axCmdGlyphName = item.attributes["AXMenuItemCmdGlyph"].name();
 				var axCmdGlyphVal = item.attributes["AXMenuItemCmdGlyph"].value();
 				if (axCmdGlyphVal) {
-					attributes.push(axCmdGlyphName);
-					attributes.push(axCmdGlyphVal);
+					attributes.push([axCmdGlyphName, axCmdGlyphVal]);
 				}
 				var axCmdModName = item.attributes["AXMenuItemCmdModifiers"].name();
 				var axCmdModVal = item.attributes["AXMenuItemCmdModifiers"].value();
 				if (axCmdModVal) {
-					attributes.push(axCmdModName);
-					attributes.push(axCmdModVal);
+					attributes.push([axCmdModName, axCmdModVal]);
 				}
 			} catch (err) {
 				console.log('ERROR: ' + err);
 			}
 
 			if (attributes.length) {
-				allItems.push({
-					"title": item.title(),
-					"attributes": attributes
-				});
+				allItems.push(item.title());
+				allItems.push(attributes);
 			}
 			// allItems.push({
 			// 	"title": item.title(),

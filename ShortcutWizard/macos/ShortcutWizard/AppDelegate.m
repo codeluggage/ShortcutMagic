@@ -65,6 +65,69 @@
     return hold;
 }
 
+- (NSArray *)unwrapArrayValue:(NSAppleEventDescriptor *)desc
+{
+    NSMutableArray *mutable = [[NSMutableArray alloc] init];
+    NSInteger numItems = [desc numberOfItems];
+    for (NSUInteger j = 0; j < numItems; j++) {
+        NSAppleEventDescriptor *secondDesc = [desc descriptorAtIndex:j];
+        NSString *obj = [self unwrapValue:secondDesc];
+        NSLog(@"inner loop 1 with descriptor: %@ obj: %@", secondDesc, obj);
+
+        if (!obj) {
+            NSAppleEventDescriptor *keywordDescriptor = [secondDesc descriptorForKeyword:'utxt'];
+            obj = [keywordDescriptor stringValue];
+            NSLog(@"inner loop 2 with descriptor: %@ obj: %@", keywordDescriptor, obj);
+            if (!obj) {
+                NSAppleEventDescriptor *lastDescriptor = [secondDesc descriptorForKeyword:'usrf'];
+                obj = [lastDescriptor stringValue];
+                NSLog(@"inner loop 3 with descriptor: %@ obj: %@", lastDescriptor, obj);
+            }
+        }
+
+        if (obj) {
+            [mutable addObject:obj];
+        }
+    }
+
+    return [NSArray arrayWithArray:mutable];
+}
+
+- (NSString *)unwrapValue:(NSAppleEventDescriptor *)desc
+{
+    NSString *obj = [desc stringValue];
+    if (!obj) {
+        desc = [desc descriptorForKeyword:'utxt'];
+        obj = [desc stringValue];
+    }
+
+    if (!obj) {
+        desc = [desc descriptorForKeyword:'usrf'];
+        NSInteger numItems = [desc numberOfItems];
+        if (numItems > 1) {
+            for (NSUInteger j = 0; j < numItems; j++) {
+                NSAppleEventDescriptor *subsub = [desc descriptorAtIndex:j];
+                NSString *obj = [subsub stringValue];
+                NSLog(@"inner loop 1 with descriptor: %@ obj: %@", subsub, obj);
+                if (!obj) {
+                    NSAppleEventDescriptor *keywordDescriptor = [subsub descriptorForKeyword:'utxt'];
+                    obj = [keywordDescriptor stringValue];
+                    NSLog(@"inner loop 2 with descriptor: %@ obj: %@", keywordDescriptor, obj);
+                    if (!obj) {
+                        NSAppleEventDescriptor *lastDescriptor = [subsub descriptorForKeyword:'usrf'];
+                        obj = [lastDescriptor stringValue];
+                        NSLog(@"inner loop 3 with descriptor: %@ obj: %@", lastDescriptor, obj);
+                    }
+                }
+            }
+        } else {
+            obj = [desc stringValue];
+        }
+    }
+
+    return obj;
+}
+
 - (NSDictionary *)readMenuItems:(NSString*)applicationName
 {
     NSDictionary<NSString *,id> *errorInfo;
@@ -72,6 +135,7 @@
     NSLog(@"About to call readMenuItems with %@", applicationName);
     NSAppleEventDescriptor *descriptor = [self.appleScript executeHandlerWithName:@"readMenuItems"
         arguments:@[applicationName] error:&errorInfo];
+    descriptor = [descriptor coerceToDescriptorType:typeAEList];
     NSLog(@"error: %@", errorInfo);
     NSLog(@"-----------------------------------------------");
 
@@ -80,22 +144,17 @@
     NSLog(@"Found number of items: %ld", [descriptor numberOfItems]);
   
     for (NSInteger i = 0; i < [descriptor numberOfItems]; i++) {
-      
-    // This loop should only execute once; [descriptor numberOfItems] = 1
-        NSAppleEventDescriptor* subdescriptor = [descriptor descriptorAtIndex:i] ;
-        NSInteger nItems = [subdescriptor numberOfItems];
-      NSLog(@"outer loop with descriptor: %@ and obj: %@", subdescriptor, [subdescriptor stringValue]);
-    // nItems should be 2 x number of values in the record
-          
-            for (NSUInteger j = 0; j < [subdescriptor numberOfItems]; j++) {
-                NSAppleEventDescriptor *subsub = [subdescriptor descriptorAtIndex:j];
-                NSString *obj = [subsub stringValue];
-                NSLog(@"absolute inner most loop with descriptor: %@ obj: %@", subsub, obj);
-                if (obj) {
-                    [info addObject:obj];
-                }
+        NSArray *arr = [self unwrapArrayValue:[descriptor descriptorAtIndex:i]];
+        if (!arr) {
+            NSString *obj = [self unwrapValue:[descriptor descriptorAtIndex:i]];
+            NSLog(@"Loop %ld with obj: %@", i, obj);
+            if (obj) {
+                [info addObject:obj];
             }
+        } else {
+            [info addObject:arr];
         }
+    }
 
 
     // NSAppleEventDescriptor *listDescriptor = [descriptor coerceToDescriptorType:typeAEList];
