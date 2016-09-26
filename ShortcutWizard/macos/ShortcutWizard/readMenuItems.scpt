@@ -32,7 +32,7 @@ function readShortcutMenuItems(readApplication) {
 		"148": "fn fn",
 	};
 	var totalCount = 0;
-	var maxCount = 20;
+	var maxCount = 99999;
 
 	for (var i = 0; i < outerItems.length; i++) {
 		var items = outerItems[i].menuItems();

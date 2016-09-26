@@ -138,7 +138,8 @@ const ShortcutWizard = React.createClass({
         if (shortcuts) {
             for (var key of Object.keys(shortcuts)) {
                 // console.log(`>>>> ECHOOO key: ${key}`);
-                shortcutRows.push(`[${shortcuts[key].join(" + ")}]: ${key}`);
+                shortcutRows.push(`[${key}]: ${shortcuts[key].join(" + ")}`);
+                // shortcutRows.push(`${key} ${shortcuts[key])`);
             }
         }
 

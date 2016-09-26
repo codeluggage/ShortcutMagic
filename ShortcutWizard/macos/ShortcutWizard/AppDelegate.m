@@ -128,7 +128,7 @@
     return obj;
 }
 
-- (NSArray *)unwrapUsrf:(NSAppleEventDescriptor *)desc
+- (NSMutableArray *)unwrapUsrf:(NSAppleEventDescriptor *)desc ignoreWords:(NSArray *)words
 {
     NSMutableArray *mutable = [[NSMutableArray alloc] init];
     NSInteger numItems = [desc numberOfItems];
@@ -148,25 +148,29 @@
               
               NSAppleEventDescriptor *holdParam = [secondDesc paramDescriptorForKeyword:keywordForIndex];
               obj = [holdParam stringValue];
-              if (obj) {
+              if (obj && ![words containsObject:obj]) {
                 [mutable addObject:obj];
               }
               NSAppleEventDescriptor *holdAttribute = [secondDesc attributeDescriptorForKeyword:keywordForIndex];
               obj = [holdAttribute stringValue];
-              if (obj) {
+              if (obj && ![words containsObject:obj]) {
                 [mutable addObject:obj];
               }
               
-                obj = [lastDescriptor stringValue];
-                NSLog(@"inner loop 3 with descriptor: %@ obj: %@", lastDescriptor, obj);
+              obj = [lastDescriptor stringValue];
+              if (obj && ![words containsObject:obj]) {
+                [mutable addObject:obj];
+              }
             }
         } else {
           NSLog(@"inner loop 1 with obj: %@", obj);
-          [mutable addObject:obj];
+          if (obj && ![words containsObject:obj]) {
+              [mutable addObject:obj];
+          }
         }
     }
 
-    return [NSArray arrayWithArray:mutable];
+    return mutable;
 }
 
 - (NSString *)unwrapUtxt:(NSAppleEventDescriptor *)desc
@@ -213,9 +217,28 @@
         NSAppleEventDescriptor *usrfDesc = [[desc descriptorAtIndex:i] descriptorForKeyword:'usrf'];
       NSInteger usrfNumItems = [usrfDesc numberOfItems];
       if (usrfNumItems) {
-        NSArray *unwrappedUsrf = [self unwrapUsrf:usrfDesc];
+        NSMutableArray *unwrappedUsrf = [self unwrapUsrf:usrfDesc ignoreWords:@[
+            // Remove these
+            @"title",
+            @"AXMenuItemCmdModifiers",
+            @"AXMenuItemCmdVirtualKey",
+            @"AXMenuItemCmdGlyph",
+        ]];
+
+        // Replace this one
+        NSInteger usrfCmdCharIndex = [unwrappedUsrf indexOfObject:@"AXMenuItemCmdChar"];
+        if (usrfCmdCharIndex != NSNotFound) {
+          if ([unwrappedUsrf count] == 3) {
+            [unwrappedUsrf replaceObjectAtIndex:usrfCmdCharIndex withObject:@"cmd"];
+          } else {
+            [unwrappedUsrf removeObjectAtIndex:usrfCmdCharIndex];
+          }
+        }
+
         NSLog(@"With usrf: %@, found %ld, unwarpped: %@", usrfDesc, usrfNumItems, unwrappedUsrf);
-        [info addObject:unwrappedUsrf];
+        if (unwrappedUsrf) {
+            [info addObject:unwrappedUsrf];
+        }
       }
 
         NSLog(@"<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< end %ld", i);
