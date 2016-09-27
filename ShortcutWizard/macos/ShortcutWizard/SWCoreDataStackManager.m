@@ -6,14 +6,14 @@
  Singleton controller to manage the main Core Data stack for the application. It vends a persistent store coordinator, and for convenience the managed object model and URL for the persistent store and application documents directory.
  */
 
-#import "AAPLCoreDataStackManager.h"
+#import "SWCoreDataStackManager.h"
 
-NSString *const ApplicationDocumentsDirectoryName = @"com.example.apple-samplecode.Earthquakes";
-NSString *const MainStoreFileName = @"Earthquakes.storedata";
+NSString *const ApplicationDocumentsDirectoryName = @"ShortcutWizard";
+NSString *const MainStoreFileName = @"ShortcutWizard.storedata";
 NSString *const ErrorDomain = @"CoreDataStackManager";
 
 
-@interface AAPLCoreDataStackManager ()
+@interface SWCoreDataStackManager ()
 // Managed object model for the application.
 @property (nonatomic, readonly) NSManagedObjectModel *managedObjectModel;
 // Primary persistent store coordinator for the application.
@@ -27,7 +27,7 @@ NSString *const ErrorDomain = @"CoreDataStackManager";
 
 
 
-@implementation AAPLCoreDataStackManager
+@implementation SWCoreDataStackManager
 @synthesize managedObjectModel = _managedObjectModel;
 @synthesize persistentStoreCoordinator = _persistentStoreCoordinator;
 @synthesize mainQueueContext = _mainQueueContext;
@@ -35,7 +35,7 @@ NSString *const ErrorDomain = @"CoreDataStackManager";
 @synthesize storeURL = _storeURL;
 
 + (instancetype)sharedManager {
-    static AAPLCoreDataStackManager *sharedManager = nil;
+    static SWCoreDataStackManager *sharedManager = nil;
     static dispatch_once_t once;
     
     dispatch_once(&once, ^{
@@ -49,7 +49,7 @@ NSString *const ErrorDomain = @"CoreDataStackManager";
 
     if (! _managedObjectModel) {
         
-        NSURL *modelURL = [[NSBundle mainBundle] URLForResource:@"Earthquakes" withExtension:@"momd"];
+        NSURL *modelURL = [[NSBundle mainBundle] URLForResource:@"ShortcutWizard" withExtension:@"momd"];
         _managedObjectModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
     }
     return _managedObjectModel;

@@ -3,10 +3,10 @@
  See LICENSE.txt for this sample’s licensing information
  
  Abstract:
- Managed object class for the Quake entity.
+ Managed object class for the ShortcutWizard entity.
  */
 
-#import "AAPLQuake.h"
+#import "SWShortcuts.h"
 
 NSString *const JSONPropertiesKeyCode = @"code";
 NSString *const JSONPropertiesKeyMagnitude = @"mag";
@@ -15,7 +15,7 @@ NSString *const JSONPropertiesKeyDetailURL = @"detail";
 NSString *const JSONPropertiesKeyTime = @"time";
 NSString *const JSONPropertiesKeyLocation = @"geometry";
 
-@implementation AAPLQuake
+@implementation SWShortcutWizard
 
 @dynamic magnitude;
 @dynamic placeName;
@@ -26,8 +26,8 @@ NSString *const JSONPropertiesKeyLocation = @"geometry";
 @dynamic detailURL;
 @dynamic code;
 
-- (void)updateFromDictionary:(NSDictionary *)quakeDictionary {
-    [quakeDictionary enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
+- (void)updateFromDictionary:(NSDictionary *)shortcutDictionary {
+    [shortcutDictionary enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
         // Ignore the key / value pair if the value is NSNull.
         if ([value isEqual:[NSNull null]]) {
             return;

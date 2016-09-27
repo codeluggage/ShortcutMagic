@@ -8,7 +8,7 @@
 
 @import Cocoa;
 
-@interface AAPLCoreDataStackManager : NSObject
+@interface SWCoreDataStackManager : NSObject
 
 + (instancetype)sharedManager;
 

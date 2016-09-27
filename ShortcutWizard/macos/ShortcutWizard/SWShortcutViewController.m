@@ -3,22 +3,22 @@
  See LICENSE.txt for this sample’s licensing information
  
  Abstract:
- View controller to manage a a table view that displays a collection of quakes.
+ View controller to manage a a table view that displays a collection of shortcuts.
  
-  When requested (by clicking the Fetch Quakes button), the controller creates an asynchronous NSURLSession task to retrieve JSON data about earthquakes. Earthquake data are compared with any existing managed objects to determine whether there are new quakes. New managed objects are created to represent new data, and saved to the persistent store on a private queue.
+  When requested (by clicking the Fetch ShortcutWizards button), the controller creates an asynchronous NSURLSession task to retrieve JSON data about earthshortcuts. Earthquake data are compared with any existing managed objects to determine whether there are new shortcuts. New managed objects are created to represent new data, and saved to the persistent store on a private queue.
  */
 
-#import "AAPLQuakesViewController.h"
-#import "AAPLQuake.h"
-#import "AAPLCoreDataStackManager.h"
+#import "SWShortcutViewController.h"
+#import "SWShortcuts.h"
+#import "SWCoreDataStackManager.h"
 
-@interface AAPLQuakesViewController () <NSTableViewDataSource, NSTableViewDelegate>
+@interface SWShortcutWizardsViewController () <NSTableViewDataSource, NSTableViewDelegate>
 
 @property (weak) IBOutlet NSTableView *tableView;
-@property (weak) IBOutlet NSButton *fetchQuakesButton;
+@property (weak) IBOutlet NSButton *fetchShortcutWizardsButton;
 @property (weak) IBOutlet NSProgressIndicator *progressIndicator;
 
-@property (nonatomic) NSArray<AAPLQuake *> *quakes;
+@property (nonatomic) NSArray<SWShortcutWizard *> *shortcuts;
 @property (nonatomic) NSManagedObjectContext *managedObjectContext;
 
 @end
@@ -30,7 +30,7 @@ NSString *const ColumnIdentifierMagnitude = @"magnitude";
 NSString *EARTHQUAKES_ERROR_DOMAIN = @"EARTHQUAKES_ERROR_DOMAIN";
 
 
-@implementation AAPLQuakesViewController
+@implementation SWShortcutWizardsViewController
 
 #pragma mark - View Life Cycle
 
@@ -43,7 +43,7 @@ NSString *EARTHQUAKES_ERROR_DOMAIN = @"EARTHQUAKES_ERROR_DOMAIN";
                                                object:nil
      ];
 
-    self.managedObjectContext = [AAPLCoreDataStackManager sharedManager].mainQueueContext;
+    self.managedObjectContext = [SWCoreDataStackManager sharedManager].mainQueueContext;
     [self reloadTableView:self];
 }
 
@@ -54,9 +54,9 @@ NSString *EARTHQUAKES_ERROR_DOMAIN = @"EARTHQUAKES_ERROR_DOMAIN";
 
 #pragma mark - Core Data Batch importing
 
-- (IBAction)fetchQuakes:(id)sender {
+- (IBAction)fetchShortcutWizards:(id)sender {
     // Ensure the button can't be pressed again until the fetch is complete.
-    self.fetchQuakesButton.enabled = NO;
+    self.fetchShortcutWizardsButton.enabled = NO;
     self.progressIndicator.hidden = NO;
     [self.progressIndicator startAnimation:nil];
 
@@ -65,7 +65,7 @@ NSString *EARTHQUAKES_ERROR_DOMAIN = @"EARTHQUAKES_ERROR_DOMAIN";
     // we'll use the http version of the URL and add "earthquake.usgs.gov" to the "NSExceptionDomains"
     // value in the apps's info.plist. When you commmunicate with your own servers, or when the services you
     // use offer a secure communication option, you should always prefer to use HTTPS.
-    NSURL *jsonURL = [NSURL URLWithString:@"http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson"];
+    NSURL *jsonURL = [NSURL URLWithString:@"http://earthquake.usgs.gov/earthshortcuts/feed/v1.0/summary/all_month.geojson"];
 
     NSURLSession *session = [NSURLSession sessionWithConfiguration: [NSURLSessionConfiguration ephemeralSessionConfiguration]];
 
@@ -78,7 +78,7 @@ NSString *EARTHQUAKES_ERROR_DOMAIN = @"EARTHQUAKES_ERROR_DOMAIN";
                 NSDictionary *dict = @{NSLocalizedDescriptionKey:description, NSUnderlyingErrorKey:error};
                 NSError *connectionError = [NSError errorWithDomain:EARTHQUAKES_ERROR_DOMAIN code:101 userInfo:dict];
                 [NSApp presentError:connectionError];
-                self.fetchQuakesButton.enabled = YES;
+                self.fetchShortcutWizardsButton.enabled = YES;
                 [self.progressIndicator stopAnimation:nil];
                 self.progressIndicator.hidden = YES;
 
@@ -96,7 +96,7 @@ NSString *EARTHQUAKES_ERROR_DOMAIN = @"EARTHQUAKES_ERROR_DOMAIN";
                 NSDictionary *dict = @{NSLocalizedDescriptionKey:description, NSUnderlyingErrorKey:anyError};
                 NSError *jsonDataError = [NSError errorWithDomain:EARTHQUAKES_ERROR_DOMAIN code:102 userInfo:dict];
                 [NSApp presentError:jsonDataError];
-                self.fetchQuakesButton.enabled = YES;
+                self.fetchShortcutWizardsButton.enabled = YES;
                 [self.progressIndicator stopAnimation:nil];
                 self.progressIndicator.hidden = YES;
 
@@ -111,7 +111,7 @@ NSString *EARTHQUAKES_ERROR_DOMAIN = @"EARTHQUAKES_ERROR_DOMAIN";
                 NSDictionary *dict = @{NSLocalizedDescriptionKey:description, NSUnderlyingErrorKey:anyError};
                 NSError *coreDataError = [NSError errorWithDomain:EARTHQUAKES_ERROR_DOMAIN code:102 userInfo:dict];
                 [NSApp presentError:coreDataError];
-                self.fetchQuakesButton.enabled = YES;
+                self.fetchShortcutWizardsButton.enabled = YES;
                 [self.progressIndicator stopAnimation:nil];
                 self.progressIndicator.hidden = YES;
 
@@ -122,7 +122,7 @@ NSString *EARTHQUAKES_ERROR_DOMAIN = @"EARTHQUAKES_ERROR_DOMAIN";
         // Bounce back to the main queue to reload the table view and reenable the fetch button.
         [[NSOperationQueue mainQueue] addOperationWithBlock: ^{
             [self reloadTableView:nil];
-            self.fetchQuakesButton.enabled = YES;
+            self.fetchShortcutWizardsButton.enabled = YES;
             [self.progressIndicator stopAnimation:nil];
             self.progressIndicator.hidden = YES;
 
@@ -134,13 +134,13 @@ NSString *EARTHQUAKES_ERROR_DOMAIN = @"EARTHQUAKES_ERROR_DOMAIN";
 
 - (BOOL)importFromJsonDictionary:(NSDictionary *)jsonDictionary error:(NSError * __autoreleasing *)error {
     
-    // Create a context on a private queue to fetch existing quakes to compare with incoming data and create new quakes as required.
-    NSManagedObjectContext *taskContext = [[AAPLCoreDataStackManager sharedManager] newPrivateQueueContextWithNewPSC:error];
+    // Create a context on a private queue to fetch existing shortcuts to compare with incoming data and create new shortcuts as required.
+    NSManagedObjectContext *taskContext = [[SWCoreDataStackManager sharedManager] newPrivateQueueContextWithNewPSC:error];
     if (!taskContext) {
         return false;
     }
     
-    // Sort the dictionaries by code; this way they can be compared in parallel with existing quakes.
+    // Sort the dictionaries by code; this way they can be compared in parallel with existing shortcuts.
     NSArray *featuresArray = jsonDictionary[@"features"];
     NSArray *sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"properties.code" ascending:YES]];
     featuresArray = [featuresArray sortedArrayUsingDescriptors:sortDescriptors];
@@ -170,30 +170,30 @@ NSString *EARTHQUAKES_ERROR_DOMAIN = @"EARTHQUAKES_ERROR_DOMAIN";
 - (BOOL)importFromFeaturesArray:(NSArray *)featuresArray usingContext:(NSManagedObjectContext *)taskContext
                       error:(NSError * __autoreleasing *)error {
     
-    // Create a request to fetch existing quakes with the same codes as those in the JSON data.
-    // Existing quakes will be updated with new data; if there isn't a match, then create a new quake to represent the event.
-    NSFetchRequest *matchingQuakeRequest = [NSFetchRequest fetchRequestWithEntityName:@"Quake"];
+    // Create a request to fetch existing shortcuts with the same codes as those in the JSON data.
+    // Existing shortcuts will be updated with new data; if there isn't a match, then create a new quake to represent the event.
+    NSFetchRequest *matchingShortcutWizardRequest = [NSFetchRequest fetchRequestWithEntityName:@"ShortcutWizard"];
     
     // Get the codes for each of the features and store them in an array.
     NSArray *codes = [featuresArray valueForKeyPath:@"properties.code"];
     
-    matchingQuakeRequest.predicate = [NSPredicate predicateWithFormat:@"code in %@" argumentArray:@[codes]];
+    matchingShortcutWizardRequest.predicate = [NSPredicate predicateWithFormat:@"code in %@" argumentArray:@[codes]];
     
     [taskContext performBlockAndWait:^{
         
-        NSArray *matchingQuakes = [taskContext executeFetchRequest:matchingQuakeRequest error:error];
-        if (matchingQuakes) {
+        NSArray *matchingShortcutWizards = [taskContext executeFetchRequest:matchingShortcutWizardRequest error:error];
+        if (matchingShortcutWizards) {
             
-            for (NSManagedObject *matchingQuake in matchingQuakes) {
-                [taskContext deleteObject: matchingQuake];
+            for (NSManagedObject *matchingShortcutWizard in matchingShortcutWizards) {
+                [taskContext deleteObject: matchingShortcutWizard];
             }
         }
         
         for (NSDictionary *result in featuresArray) {
             // For each feature in turn, retrieve the properties for the quake and create a new quake or update an existing one accordingly.
-            NSDictionary * quakeDictionary = result[@"properties"];
-            AAPLQuake *quake = [NSEntityDescription insertNewObjectForEntityForName:@"Quake" inManagedObjectContext:taskContext];
-            [quake updateFromDictionary:quakeDictionary];
+            NSDictionary * shortcutDictionary = result[@"properties"];
+            SWShortcutWizard *shortcut = [NSEntityDescription insertNewObjectForEntityForName:@"ShortcutWizard" inManagedObjectContext:taskContext];
+            [shortcut updateFromDictionary:shortcutDictionary];
         }
         
         if ([taskContext hasChanges]) {
@@ -226,16 +226,16 @@ NSString *EARTHQUAKES_ERROR_DOMAIN = @"EARTHQUAKES_ERROR_DOMAIN";
 
 #pragma mark - Convenience
 
-/// Fetch quakes ordered in time and reload the table view.
+/// Fetch shortcuts ordered in time and reload the table view.
 - (void)reloadTableView:(id)sender {
-    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Quake"];
+    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"ShortcutWizard"];
     request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"time" ascending:NO]];
 
     NSError *anyError;
 
-    NSArray *fetchedQuakes = [self.managedObjectContext executeFetchRequest:request error:&anyError];
+    NSArray *fetchedShortcutWizards = [self.managedObjectContext executeFetchRequest:request error:&anyError];
 
-    if (!fetchedQuakes) {
+    if (!fetchedShortcutWizards) {
         NSLog(@"Error fetching: %@", [anyError localizedDescription]);
         NSString *description = NSLocalizedString(@"Error attepmpting to update data", @"Failed to fetch earthquake data");
         NSDictionary *dict = @{NSLocalizedDescriptionKey:description, NSUnderlyingErrorKey:anyError};
@@ -244,7 +244,7 @@ NSString *EARTHQUAKES_ERROR_DOMAIN = @"EARTHQUAKES_ERROR_DOMAIN";
         return;
     }
 
-    self.quakes = fetchedQuakes;
+    self.shortcuts = fetchedShortcutWizards;
 
     [self.tableView reloadData];
 }
@@ -252,7 +252,7 @@ NSString *EARTHQUAKES_ERROR_DOMAIN = @"EARTHQUAKES_ERROR_DOMAIN";
 #pragma mark - NSTableViewDataSource
 
 -(NSInteger)numberOfRowsInTableView:(NSTableView *)tableView {
-    return self.quakes.count;
+    return self.shortcuts.count;
 }
 
 #pragma mark - NSTableViewDelegate
@@ -262,16 +262,16 @@ NSString *EARTHQUAKES_ERROR_DOMAIN = @"EARTHQUAKES_ERROR_DOMAIN";
     
     NSTableCellView *cellView = [tableView makeViewWithIdentifier:identifier owner:self];
 
-    AAPLQuake *quake = self.quakes[row];
+    SWShortcutWizard *shortcut = self.shortcuts[row];
 
     if ([identifier isEqualToString:ColumnIdentifierPlace]) {
-        cellView.textField.stringValue = quake.placeName;
+        cellView.textField.stringValue = shortcut.placeName;
     }
     else if ([identifier isEqualToString:ColumnIdentifierTime]) {
-        cellView.textField.objectValue = quake.time;
+        cellView.textField.objectValue = shortcut.time;
     }
     else if ([identifier isEqualToString:ColumnIdentifierMagnitude]) {
-        cellView.textField.objectValue = @(quake.magnitude);
+        cellView.textField.objectValue = @(shortcut.magnitude);
     }
 
     return cellView;
