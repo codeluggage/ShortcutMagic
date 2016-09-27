@@ -21,6 +21,7 @@
 @property (strong, nonatomic) NSString *currentApplicationName;
 @property (strong, nonatomic) NSString *currentIconPath;
 @property (strong, nonatomic) NSDictionary *props;
+@property (strong, nonatomic) NSDictionary *shortcuts;
 @property (strong, nonatomic) RCTRootView *rootView;
 
 @property (strong, nonatomic) OSAScript *appleScript;
