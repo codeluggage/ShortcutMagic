@@ -1,9 +1,6 @@
 function readShortcutMenuItems(readApplication) {
 	ObjC.import("Cocoa");
 	var se = Application("System Events");
-	var evernote = se.processes.byName(readApplication);
-	var fileMenu = evernote.menuBars[0];
-	var outerItems = fileMenu.menus;
 	var allItems = [];
 	var item;
 	var title;
@@ -33,69 +30,118 @@ function readShortcutMenuItems(readApplication) {
 	};
 	var totalCount = 0;
 	var maxCount = 99999;
+	var fromApplication = se.processes.byName(readApplication);
+	var menuBar = fromApplication.menuBars;
+	console.log('menuBar: ' + menuBar);
+	for (var holdObj in menuBar) {
+		console.log('menuBar holdobj: ' + holdObj);
+		console.log('menuBar json holdobj: ' + JSON.stringify(holdObj));
+		console.log('menuBar[holdobj]: ' + menuBar[holdObj].attributes());
+		// console.log('menuBar[holdobj].sources: ' + menuBar[holdObj].sources());
+		for (var holdSecondObj in menuBar[holdObj].attributes()) {
+			console.log('holdsecond: ' + holdSecondObj);
+			// console.log('holdsecond sources: ' + holdSecondObj.sources());
+			var holdsec = menuBar[holdObj][holdSecondObj];
 
-	for (var i = 0; i < outerItems.length; i++) {
-		var items = outerItems[i].menuItems();
-
-		// console.log("Loop#2, found " + items.length + " items");
-			
-		for (var j = 0; j < items.length; j++) {
-			// console.log("Loop#3 ");
-	    	item = items[j];
-	    	attributes = {};
-			title = item.title();
-			if (!title) continue;
-
-			attributes["title"] = title;
-
-	    	try {
-				var axCmdModName = item.attributes["AXMenuItemCmdModifiers"].name();
-				var axCmdModVal = item.attributes["AXMenuItemCmdModifiers"].value();
-				if (axCmdModVal) {
-					attributes[axCmdModName] = modMeanings[axCmdModVal];
-				}
-
-				var axCmdVirtualName = item.attributes["AXMenuItemCmdVirtualKey"].name();
-				var axCmdVirtualVal = item.attributes["AXMenuItemCmdVirtualKey"].value();
-				if (axCmdVirtualVal) {
-					attributes[axCmdVirtualName] = axCmdVirtualVal;
-				}
-
-				var axCmdGlyphName = item.attributes["AXMenuItemCmdGlyph"].name();
-				var axCmdGlyphVal = item.attributes["AXMenuItemCmdGlyph"].value();
-				if (axCmdGlyphVal) {
-	    			if (typeof glyphMeanings[axCmdGlyphVal] === "undefined") {
-	    				if (axCmdGlyphVal > 110 && axCmdGlyphVal < 130) {
-	    					attributes[axCmdGlyphName] = "F & " + axCmdGlyphVal;
-	    				}
-	    			} else {
-	    				attributes[axCmdGlyphName] = axCmdGlyphVal;
-	    			}
-				}
-
-				var axCmdCharName = item.attributes["AXMenuItemCmdChar"].name();
-				var axCmdCharVal = item.attributes["AXMenuItemCmdChar"].value();
-				if (axCmdCharVal) {
-					attributes[axCmdCharName] = axCmdCharVal;
-				}
-			} catch (err) {
-				console.log('ERROR: ' + err);
+			console.log('holdsec: ' + holdsec);
+			console.log('holdsec: ' + JSON.stringify(holdsec));
+			console.log('holdsec length: ' + holdsec.lenght);
+			// console.log('holdsec sources: ' + holdsec.sources());
+			// console.log('holdsec: ' + holdsec.title());
+			for (var holdsecondsecond in holdsec) {
+				console.log('holdsecsec: ' + holdsecondsecond);
+				console.log('holdsecsec: ' + holdsecondsecond.sources());
 			}
+			// console.log(menuBar[holdObj][holdSecondObj].properties());
 
-	    	if ((axCmdCharVal && axCmdCharVal.length) || axCmdGlyphVal) {
-				allItems.push(attributes);
-	    	}
-
-			totalCount++;
-
-			// allItems.push({
-				// "title": item.title(),
-				// "properties": item.properties(),
-				// "attributes": attributes
-			// });
 		}
 
-		if (totalCount > maxCount) break;
+		for (var holdthird = 0; holdthird < menuBar[holdObj].length; holdthird++) {
+			console.log('holdthird: ' + menuBar[holdObj][holdthird]);
+			console.log('holdthird: ' + menuBar[holdObj][holdthird].attributes());
+			console.log('holdthird: ' + menuBar[holdObj][holdthird].properties());
+		}
+
+
+		console.log('menuBar[holdobj].length loop: ' + menuBar[holdObj].length);
+	}
+	console.log('menuBar WHOSE: ' + menuBar.whose({name: "MenuBars"}));
+	console.log('menubar.length: ' + menuBar.length);
+
+	for (var k = 0; k < menuBar.length; k++) {
+		var fileMenu = menuBar[k];
+		var fileMenuJSONed = JSON.stringify(fileMenu);
+		console.log('fileMenu: ' + fileMenuJSONed);
+		if (!fileMenu || typeof fileMenu === "undefined" || fileMenuJSONed == undefined) continue;
+
+		var outerItems = fileMenu.menus;
+		if (!outerItems || typeof outerItems === "undefined") continue;
+
+		console.log('outerItems.length: ' + outerItems.length);
+
+		for (var i = 0; i < outerItems.length; i++) {
+			var items = outerItems[i].menuItems();
+
+			// console.log("Loop#2, found " + items.length + " items");
+				
+			for (var j = 0; j < items.length; j++) {
+				// console.log("Loop#3 ");
+		    	item = items[j];
+		    	attributes = {};
+				title = item.title();
+				if (!title) continue;
+
+				attributes["title"] = title;
+
+		    	try {
+					var axCmdModName = item.attributes["AXMenuItemCmdModifiers"].name();
+					var axCmdModVal = item.attributes["AXMenuItemCmdModifiers"].value();
+					if (axCmdModVal) {
+						attributes[axCmdModName] = modMeanings[axCmdModVal];
+					}
+
+					var axCmdVirtualName = item.attributes["AXMenuItemCmdVirtualKey"].name();
+					var axCmdVirtualVal = item.attributes["AXMenuItemCmdVirtualKey"].value();
+					if (axCmdVirtualVal) {
+						attributes[axCmdVirtualName] = axCmdVirtualVal;
+					}
+
+					var axCmdGlyphName = item.attributes["AXMenuItemCmdGlyph"].name();
+					var axCmdGlyphVal = item.attributes["AXMenuItemCmdGlyph"].value();
+					if (axCmdGlyphVal) {
+		    			if (typeof glyphMeanings[axCmdGlyphVal] === "undefined") {
+		    				if (axCmdGlyphVal > 110 && axCmdGlyphVal < 130) {
+		    					attributes[axCmdGlyphName] = "F & " + axCmdGlyphVal;
+		    				}
+		    			} else {
+		    				attributes[axCmdGlyphName] = axCmdGlyphVal;
+		    			}
+					}
+
+					var axCmdCharName = item.attributes["AXMenuItemCmdChar"].name();
+					var axCmdCharVal = item.attributes["AXMenuItemCmdChar"].value();
+					if (axCmdCharVal) {
+						attributes[axCmdCharName] = axCmdCharVal;
+					}
+				} catch (err) {
+					console.log('ERROR: ' + err);
+				}
+
+		    	if ((axCmdCharVal && axCmdCharVal.length) || axCmdGlyphVal) {
+					allItems.push(attributes);
+		    	}
+
+				totalCount++;
+
+				// allItems.push({
+					// "title": item.title(),
+					// "properties": item.properties(),
+					// "attributes": attributes
+				// });
+			}
+
+			if (totalCount > maxCount) break;
+		}
 	}
 
 	return allItems;
@@ -104,8 +150,8 @@ function readShortcutMenuItems(readApplication) {
 function readMenuItems(readApplication) {
 	ObjC.import("Cocoa");
 	var se = Application("System Events");
-	var evernote = se.processes.byName(readApplication);
-	var fileMenu = evernote.menuBars[0];
+	var fromApplication = se.processes.byName(readApplication);
+	var fileMenu = fromApplication.menuBars[0];
 	var outerItems = fileMenu.menus;
 	var allItems = [];
 	var item;
@@ -230,13 +276,13 @@ function readMenuItems(readApplication) {
 
 
 function run(argv) {
-	return readMenuItems(argv);
+	return readShortcutMenuItems(argv);
 }
 
 	// #!/bin/sh
 
 	// var se = Application("System Events");
-	// var evernote = se.processes.byName('Evernote');
+	// var fromApplication = se.processes.byName('Evernote');
 
 	// var menus = evernote.menuBars;
 	// console.log('Menus: ' + menus + " - with length: " + menus.length);
