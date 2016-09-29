@@ -23,14 +23,16 @@ try
 			get every menu bar
 			tell menu bar 1
 				set m1 to every menu bar item
-				if (m1 is not {}) then
+				if (m1 is not equal to {}) then
 					set m2 to every menu of every menu bar item
-					if (m2 is not {}) then
+					if (m2 is not equal to {}) then
 						set m3 to every menu item of every menu of every menu bar item
-						if (m2 is not {} and title of m2 as string is not "") then
-							set m3 to every menu of every menu item of every menu of every menu bar item
-							if (m3 is not {}) then
-								get every menu item of every menu of every menu item of every menu of every menu bar item
+						if (m2 is not equal to {}) then
+							if (title of m2 is not equal to "") then
+								set m3 to every menu of every menu item of every menu of every menu bar item
+								if (m3 is not {}) then
+									get every menu item of every menu of every menu item of every menu of every menu bar item
+								end if
 							end if
 						end if
 					end if
