@@ -1,3 +1,37 @@
+function unwrapItem(menuItem) {
+	var unwrapped = undefined;
+	console.log('>>>> start unwrap');
+
+	var name = ifExistsGetName(menuItem);
+	console.log(name);
+
+	if (menuItem.menu)
+
+
+
+
+
+	console.log('<<<< end unwrap');
+	return unwrapped;
+}
+
+function ifExistsGetName(menuItem) {
+	var name = undefined;
+	console.log('>>>> start ifExistsGetName');
+
+	if (menuItem !== "undefined") {
+		if (menuItem.name !== "undefined") {
+			name = menuItem.name();
+		} else if (menuItem.title() !== "undefined") {
+			name = menuItem.title();
+		}
+	}
+
+	console.log('<<<< end ifExistsGetName');
+	return name;
+}
+
+
 function readShortcutMenuItems(readApplication) {
 	ObjC.import("Cocoa");
 	var se = Application("System Events");
@@ -33,6 +67,7 @@ function readShortcutMenuItems(readApplication) {
 	var fromApplication = se.processes.byName(readApplication);
 	var menuBar = fromApplication.menuBars;
 	console.log('menuBar: ' + menuBar);
+
 	for (var holdObj in menuBar) {
 		console.log('menuBar holdobj: ' + holdObj);
 		console.log('menuBar json holdobj: ' + JSON.stringify(holdObj));
