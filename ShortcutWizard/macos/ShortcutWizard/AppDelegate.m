@@ -177,6 +177,9 @@
   }
 
     [[NSOperationQueue mainQueue] addOperationWithBlock: ^{
+      
+      NSArray *alreadyExists = [self.shortcuts objectForKey:applicationName];
+      if (!alreadyExists) {
         NSDictionary<NSString *,id> *errorInfo;
         NSAppleEventDescriptor *desc = [self.appleScript executeHandlerWithName:@"readShortcuts"
             arguments:@[applicationName] error:&errorInfo];
@@ -200,14 +203,21 @@
       
       if (!self.shortcuts) {
         self.shortcuts = [[NSDictionary alloc] initWithObjectsAndKeys:info, applicationName, nil];
+        NSLog(@"read first time with new self.shortcuts: %@", self.shortcuts);
       } else {
         // We checked for existence of applicationName above
         NSMutableDictionary *newDict = [[NSMutableDictionary alloc] initWithDictionary:self.shortcuts copyItems:YES];
-        [newDict setObject:info forKey:applicationName];
+        [newDict setObject:[NSArray arrayWithArray:info] forKey:applicationName];
         self.shortcuts = [[NSDictionary alloc] initWithDictionary:newDict];
         NSLog(@"Now self.shortcuts is: %@", self.shortcuts);
       }
+        
         block([NSArray arrayWithArray:info]);
+        
+      } else {
+        NSLog(@"done with alreadyExists: %@", alreadyExists);
+        block(alreadyExists);
+      }
     }];
 }
 
