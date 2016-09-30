@@ -241,6 +241,7 @@
     self.currentApplicationName = newAppName;
 
     // todo: combine this with similar calls below
+    NSLog(@"About to run check shortcuts in dict: %@", [self.shortcuts allKeys]);
     NSArray *currentShortcuts = [self.shortcuts objectForKey:self.currentApplicationName];
     if ([currentShortcuts count]) {
         // Case 1 - our shortcuts already exist in memory
@@ -249,6 +250,7 @@
             @"applicationIconPath": self.currentIconPath,
             @"shortcuts": currentShortcuts
         }];
+        NSLog(@"CASE 1 - for %@ found: %ld", self.currentApplicationName, [currentShortcuts count]);
     } else {
         // Case 2 - Read from user defaults:
         NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
@@ -264,8 +266,13 @@
             }
         }
       
+        NSLog(@"About to run check shortcuts in dict: %@", [shortcuts allKeys]);
+        NSLog(@"CASE 2 - read from disk: %ld", [shortcuts count]);
+      
         if (!shortcuts) {
-            [self readMenuItems:self.currentApplicationName withBlock:^(NSArray *shortcuts){
+            [self readMenuItems:self.currentApplicationName withBlock:^(NSArray *shortcuts) {
+              
+                NSLog(@"CASE 3 - returned block count: %ld", [shortcuts count]);
                 [self updateApplicationIcon:currentAppInfo];
                 if (!self.props) {
                     [self updateProps:@{
@@ -286,6 +293,7 @@
                     // TODO: Will this work correctly with just 1 set of shortcuts?
                     [standardUserDefaults setObject:shortcuts forKey:self.currentApplicationName];
                     [standardUserDefaults synchronize];
+                    NSLog(@"CASE 3 - also synchronizing");
                 }
             }];
         }
