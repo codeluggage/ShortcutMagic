@@ -240,22 +240,56 @@
     }
     self.currentApplicationName = newAppName;
 
-    [self readMenuItems:self.currentApplicationName withBlock:^(NSArray *shortcuts){
-        [self updateApplicationIcon:currentAppInfo];
-        if (!self.props) {
-            [self updateProps:@{
-                @"applicationName": self.currentApplicationName,
-                @"applicationIconPath": self.currentIconPath,
-                @"shortcuts": shortcuts
-            }];
-        } else {
-            NSMutableDictionary *newDict = [NSMutableDictionary dictionaryWithDictionary:self.props];
-            newDict[@"applicationName"] = self.currentApplicationName;
-            newDict[@"applicationIconPath"] = self.currentIconPath;
-            newDict[@"shortcuts"] = shortcuts;
-            [self updateProps:[NSDictionary dictionaryWithDictionary:newDict]];
+    // todo: combine this with similar calls below
+    NSArray *currentShortcuts = [self.shortcuts objectForKey:self.currentApplicationName];
+    if ([currentShortcuts count]) {
+        // Case 1 - our shortcuts already exist in memory
+        [self updateProps:@{
+            @"applicationName": self.currentApplicationName,
+            @"applicationIconPath": self.currentIconPath,
+            @"shortcuts": currentShortcuts
+        }];
+    } else {
+        // Case 2 - Read from user defaults:
+        NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
+        NSDictionary *shortcuts = nil;
+        if (standardUserDefaults) {
+            shortcuts = [standardUserDefaults dictionaryForKey:self.currentApplicationName];
+            if (shortcuts) {
+                [self updateProps:@{
+                    @"applicationName": self.currentApplicationName,
+                    @"applicationIconPath": self.currentIconPath,
+                    @"shortcuts": shortcuts
+                }];
+            }
         }
-    }];
+      
+        if (!shortcuts) {
+            [self readMenuItems:self.currentApplicationName withBlock:^(NSArray *shortcuts){
+                [self updateApplicationIcon:currentAppInfo];
+                if (!self.props) {
+                    [self updateProps:@{
+                        @"applicationName": self.currentApplicationName,
+                        @"applicationIconPath": self.currentIconPath,
+                        @"shortcuts": shortcuts
+                    }];
+                } else {
+                    NSMutableDictionary *newDict = [NSMutableDictionary dictionaryWithDictionary:self.props];
+                    newDict[@"applicationName"] = self.currentApplicationName;
+                    newDict[@"applicationIconPath"] = self.currentIconPath;
+                    newDict[@"shortcuts"] = shortcuts;
+                    [self updateProps:[NSDictionary dictionaryWithDictionary:newDict]];
+                }
+
+                NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
+                if (standardUserDefaults) {
+                    // TODO: Will this work correctly with just 1 set of shortcuts?
+                    [standardUserDefaults setObject:shortcuts forKey:self.currentApplicationName];
+                    [standardUserDefaults synchronize];
+                }
+            }];
+        }
+    }
 }
 
 - (void)triggerAppSwitch
@@ -279,7 +313,6 @@
 
     if ([[NSFileManager defaultManager] fileExistsAtPath:originalFile]) {
         // File already exists
-        NSLog(@"########################################################## ICON EXISTS");
         return;
     }
 
