@@ -44,7 +44,7 @@
 
     NSString *source = [NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:path ofType:@"scpt"]
                         encoding:NSUTF8StringEncoding error:nil];
-    OSAScript *hold = [[OSAScript alloc] initWithSource:source language:[OSALanguage languageForName:@"JavaScript"]];
+    OSAScript *hold = [[OSAScript alloc] initWithSource:source];
   
 
 //    NSURL *fileUrl = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:path ofType:@"scpt"]];
@@ -128,45 +128,19 @@
     return obj;
 }
 
-- (NSArray *)unwrapUsrf:(NSAppleEventDescriptor *)desc
+- (NSMutableArray *)unwrapUsrf:(NSAppleEventDescriptor *)desc
 {
     NSMutableArray *mutable = [[NSMutableArray alloc] init];
     NSInteger numItems = [desc numberOfItems];
 
     for (NSUInteger j = 0; j <= numItems; j++) {
-        NSAppleEventDescriptor *secondDesc = [desc descriptorAtIndex:j];
-        AEKeyword keywordForIndex = [desc keywordForDescriptorAtIndex:j];
-      
-        NSString *obj = [secondDesc stringValue];
-
-        if (!obj) {
-            NSAppleEventDescriptor *keywordDescriptor = [secondDesc descriptorForKeyword:'utxt'];
-            obj = [keywordDescriptor stringValue];
-            NSLog(@"inner loop 2 with descriptor: %@ obj: %@", keywordDescriptor, obj);
-            if (!obj) {
-                NSAppleEventDescriptor *lastDescriptor = [secondDesc descriptorForKeyword:'usrf'];
-              
-              NSAppleEventDescriptor *holdParam = [secondDesc paramDescriptorForKeyword:keywordForIndex];
-              obj = [holdParam stringValue];
-              if (obj) {
-                [mutable addObject:obj];
-              }
-              NSAppleEventDescriptor *holdAttribute = [secondDesc attributeDescriptorForKeyword:keywordForIndex];
-              obj = [holdAttribute stringValue];
-              if (obj) {
-                [mutable addObject:obj];
-              }
-              
-                obj = [lastDescriptor stringValue];
-                NSLog(@"inner loop 3 with descriptor: %@ obj: %@", lastDescriptor, obj);
-            }
-        } else {
-          NSLog(@"inner loop 1 with obj: %@", obj);
-          [mutable addObject:obj];
+        NSString *obj = [[desc descriptorAtIndex:j] stringValue];
+        if ([obj length]) {
+            [mutable addObject:obj];
         }
     }
 
-    return [NSArray arrayWithArray:mutable];
+    return mutable;
 }
 
 - (NSString *)unwrapUtxt:(NSAppleEventDescriptor *)desc
@@ -189,56 +163,62 @@
   return fourCharString;
 }
 
-- (NSArray *)readMenuItems:(NSString*)applicationName
+- (void)readMenuItems:(NSString*)applicationName withBlock:(void (^)(NSArray *))block
 {
     NSLog(@"About to call readMenuItems with %@", applicationName);
 
-    NSDictionary<NSString *,id> *errorInfo;
     // NSAppleEventDescriptor *desc = [self.appleScript executeHandlerWithName:@"readMenuItems"
     //     arguments:@[applicationName] error:&errorInfo];
-    NSAppleEventDescriptor *desc = [self.appleScript executeHandlerWithName:@"readShortcutMenuItems"
-        arguments:@[applicationName] error:&errorInfo];
-    desc = [desc coerceToDescriptorType:typeAEList];
-    if (errorInfo) {
-        NSLog(@"error: %@", errorInfo);
-    }
-
-    NSLog(@"=========================================");
-
-    NSMutableArray* info = [[NSMutableArray alloc] init] ;
-    NSInteger numItems = [desc numberOfItems];
-    NSLog(@"Found number of items: %ld", numItems);
   
-    for (NSInteger i = 0; i < numItems; i++) {
-        NSAppleEventDescriptor *usrfDesc = [[desc descriptorAtIndex:i] descriptorForKeyword:'usrf'];
-      NSInteger usrfNumItems = [usrfDesc numberOfItems];
-      if (usrfNumItems) {
-        NSArray *unwrappedUsrf = [self unwrapUsrf:usrfDesc];
-        NSLog(@"With usrf: %@, found %ld, unwarpped: %@", usrfDesc, usrfNumItems, unwrappedUsrf);
-        [info addObject:unwrappedUsrf];
-      }
+  NSArray *applicationShortcuts = [self.shortcuts objectForKey:applicationName];
+  if (applicationShortcuts) {
+    block([NSArray arrayWithArray:applicationShortcuts]);
+    return;
+  }
 
-        NSLog(@"<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< end %ld", i);
-    }
-
-
-    // NSAppleEventDescriptor *listDescriptor = [descriptor coerceToDescriptorType:typeAEList];
-    // NSLog(@"%@", listDescriptor);
-    // NSMutableArray *result = [[NSMutableArray alloc] init];
-    // for (NSInteger i = 0; i < [listDescriptor numberOfItems]; ++i) {
-    //     AEKeyword keyword = [listDescriptor keywordForDescriptorAtIndex:i];
-    //     NSString *finalString = [[listDescriptor descriptorForKeyword:keyword] stringValue];
+    [[NSOperationQueue mainQueue] addOperationWithBlock: ^{
       
-    //     if (finalString) {
-    //         NSLog(@"inserting %@", finalString);
-    //         [result addObject:finalString];
-    //     }
-    // }
-    // NSLog(@"%@", result);
-    NSLog(@"return value from applescript: %@", info);
-    NSLog(@"-----------------------------------------------");
+      NSArray *alreadyExists = [self.shortcuts objectForKey:applicationName];
+      if (!alreadyExists) {
+        NSDictionary<NSString *,id> *errorInfo;
+        NSAppleEventDescriptor *desc = [self.appleScript executeHandlerWithName:@"readShortcuts"
+            arguments:@[applicationName] error:&errorInfo];
+        
+        if (errorInfo) {
+            NSLog(@"error: %@", errorInfo);
+        }
 
-    return [NSArray arrayWithArray:info];
+        NSMutableArray* info = [[NSMutableArray alloc] init] ;
+        NSInteger numItems = [desc numberOfItems];
+        NSLog(@"Found number of items: %ld", numItems);
+      
+        for (NSInteger i = 0; i < numItems; i++) {
+          NSAppleEventDescriptor *justHold = [desc descriptorAtIndex:i];
+          NSInteger numItemsInner = [justHold numberOfItems];
+          
+          for (NSInteger z = 0; z < numItemsInner; z++) {
+            [info addObject:[self unwrapUsrf:[justHold descriptorAtIndex:z]]];
+          }
+        }
+      
+      if (!self.shortcuts) {
+        self.shortcuts = [[NSDictionary alloc] initWithObjectsAndKeys:info, applicationName, nil];
+        NSLog(@"read first time with new self.shortcuts: %@", self.shortcuts);
+      } else {
+        // We checked for existence of applicationName above
+        NSMutableDictionary *newDict = [[NSMutableDictionary alloc] initWithDictionary:self.shortcuts copyItems:YES];
+        [newDict setObject:[NSArray arrayWithArray:info] forKey:applicationName];
+        self.shortcuts = [[NSDictionary alloc] initWithDictionary:newDict];
+        NSLog(@"Now self.shortcuts is: %@", self.shortcuts);
+      }
+        
+        block([NSArray arrayWithArray:info]);
+        
+      } else {
+        NSLog(@"done with alreadyExists: %@", alreadyExists);
+        block(alreadyExists);
+      }
+    }];
 }
 
 - (void)prepareProps
@@ -258,33 +238,35 @@
         NSLog(@"Switching to ShortcutWizard - NO UPDATES HAPPENING");
         return;
     }
-
-
     self.currentApplicationName = newAppName;
 
-    [self updateApplicationIcon:currentAppInfo];
-
-
-    NSArray* shortcuts = [self readMenuItems:self.currentApplicationName];
-
-    if (!self.props) {
-        self.props = @{
-            @"applicationName": self.currentApplicationName,
-            @"applicationIconPath": self.currentIconPath,
-            @"shortcuts": shortcuts
-        };
-    } else {
-        NSMutableDictionary *newDict = [NSMutableDictionary dictionaryWithDictionary:self.props];
-        newDict[@"applicationName"] = self.currentApplicationName;
-        newDict[@"applicationIconPath"] = self.currentIconPath;
-        newDict[@"shortcuts"] = shortcuts;
-        self.props = [NSDictionary dictionaryWithDictionary:newDict];
-    }
+    [self readMenuItems:self.currentApplicationName withBlock:^(NSArray *shortcuts){
+        [self updateApplicationIcon:currentAppInfo];
+        if (!self.props) {
+            [self updateProps:@{
+                @"applicationName": self.currentApplicationName,
+                @"applicationIconPath": self.currentIconPath,
+                @"shortcuts": shortcuts
+            }];
+        } else {
+            NSMutableDictionary *newDict = [NSMutableDictionary dictionaryWithDictionary:self.props];
+            newDict[@"applicationName"] = self.currentApplicationName;
+            newDict[@"applicationIconPath"] = self.currentIconPath;
+            newDict[@"shortcuts"] = shortcuts;
+            [self updateProps:[NSDictionary dictionaryWithDictionary:newDict]];
+        }
+    }];
 }
 
 - (void)triggerAppSwitch
 {
     [self prepareProps];
+    // self.rootView.appProperties = self.props; // moved to after the block finishes
+}
+
+-(void)updateProps:(NSDictionary *)newProps
+{
+    self.props = newProps;
     self.rootView.appProperties = self.props;
 }
 

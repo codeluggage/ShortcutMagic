@@ -48,7 +48,7 @@ end tell
 tell application "System Events"
    set theProcess to (first application process whose frontmost is true)
    
-   set theProcess to process "TextEdit"
+   set theProcess to process "Evernote"
    tell theProcess
        tell menu 1 of menu bar item 4 of menu bar 1
            #set cutEnabled to (properties of (get first menu item whose value of attribute "AXMenuItemCmdChar" is "X"))
@@ -77,7 +77,7 @@ end tell
 
 
 -- another example:
-set theApp to "TextEdit"
+set theApp to "Evernote"
 activate application theApp
 tell application "System Events"
    #tell (first application process whose frontmost is true) -- Or a named, frontmost process.
@@ -90,9 +90,6 @@ tell application "System Events"
 end tell
 end tell
 
-
--- another example:
-tell application "TextEdit" to activate
 
 tell application "System Events"
    tell (first application process whose frontmost is true)
