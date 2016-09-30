@@ -183,7 +183,7 @@
         NSDictionary<NSString *,id> *errorInfo;
         NSAppleEventDescriptor *desc = [self.appleScript executeHandlerWithName:@"readShortcuts"
             arguments:@[applicationName] error:&errorInfo];
-        desc = [desc coerceToDescriptorType:typeAEList];
+        
         if (errorInfo) {
             NSLog(@"error: %@", errorInfo);
         }
@@ -243,17 +243,17 @@
     [self readMenuItems:self.currentApplicationName withBlock:^(NSArray *shortcuts){
         [self updateApplicationIcon:currentAppInfo];
         if (!self.props) {
-            self.props = @{
+            [self updateProps:@{
                 @"applicationName": self.currentApplicationName,
                 @"applicationIconPath": self.currentIconPath,
                 @"shortcuts": shortcuts
-            };
+            }];
         } else {
             NSMutableDictionary *newDict = [NSMutableDictionary dictionaryWithDictionary:self.props];
             newDict[@"applicationName"] = self.currentApplicationName;
             newDict[@"applicationIconPath"] = self.currentIconPath;
             newDict[@"shortcuts"] = shortcuts;
-            self.props = [NSDictionary dictionaryWithDictionary:newDict];
+            [self updateProps:[NSDictionary dictionaryWithDictionary:newDict]];
         }
     }];
 }
@@ -264,8 +264,9 @@
     // self.rootView.appProperties = self.props; // moved to after the block finishes
 }
 
--(void)readShortcuts:(NSArray *)info 
+-(void)updateProps:(NSDictionary *)newProps
 {
+    self.props = newProps;
     self.rootView.appProperties = self.props;
 }
 

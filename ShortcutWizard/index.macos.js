@@ -135,45 +135,56 @@ const ShortcutWizard = React.createClass({
         var shortcutRows = [];
         var shortcuts = this.props.shortcuts;
 
+
         if (shortcuts) {
-            for (var key of Object.keys(shortcuts)) {
+            for (var i = 0; i < shortcuts.length; i++) {
+                console.log('shortcuts:::::' + i);
                 // console.log(`>>>> ECHOOO key: ${key}`);
-                shortcutRows.push(`[${key}]: ${shortcuts[key].join(" + ")}`);
+                // shortcutRows.push(`[${key}]: ${shortcuts[key].join(" + ")}`);
                 // shortcutRows.push(`${key} ${shortcuts[key])`);
+                var innerShortcuts = shortcuts[i];
+                for (var j = 0; j < innerShortcuts.length; j++) {
+                    console.log('shortcuts2:::::' + j);
+                    shortcutRows.push(innerShortcuts[j]);
+                }
             }
+        } else {
+            shortcutRows.push("No shortcuts yet...");
         }
 
+        var holdSource = shortcutDataSource.cloneWithRows(shortcutRows);
+        console.log('>>>>>> shortcutRows: ' + JSON.stringify(shortcutRows));
+        console.log('>>>>>> shortcutRows again: ' + shortcutRows);
+        console.log('>>>>>> holdsource: ' + JSON.stringify(holdSource));
         var newState = {
-            shortcutDataSource: shortcutRows.length ? shortcutDataSource.cloneWithRows(shortcutRows) : null,
-            image: this.props.applicationIconPath ? this.props.applicationIconPath : ''
+            shortcutDataSource: holdSource,
+            image: this.props.applicationIconPath ? this.props.applicationIconPath : '' // TODO: Replace with default image
         };
-        newState.fullyInitialized = (newState.shortcutDataSource && newState.image); // TODO: kan jeg lese newState her?
 
-        if (this.state && this.state.fullyInitialized) {
-            console.log('Already initialized, comparing against new props...');
-            if (this.state == newState) {
-                console.log('Old and new props are the same, skipping');
-                return;
-            }
-        }
+        // newState.fullyInitialized = (newState.shortcutDataSource && newState.image); 
+
+        // if (this.state && this.state.fullyInitialized) {
+        //     console.log('Already initialized, comparing against new props...');
+        //     if (this.state == newState) {
+        //         console.log('Old and new props are the same, skipping');
+        //         return;
+        //     }
+        // }
 
         console.log('>>> Initializing... ');
-        console.log(`props: [${typeof this.props}]: ${JSON.stringify(this.props)}`);
-        console.log(`props.applicationName: [${typeof this.props.applicationName}]: ${this.props.applicationName}`);
-        console.log(`props.applicationIconPath: [${typeof this.props.applicationIconPath}]: ${this.props.applicationIconPath}`);
-        console.log(`props.shortcuts: [${typeof this.props.shortcuts}]: ${JSON.stringify(this.props.shortcuts)}`);
-
+        console.log('newState: ');
+        console.log(JSON.stringify(newState));
         this.state = newState;
-    },
-
-    componentDidMount() {
-        console.log('>>> componentDidMount');
-        this.initialize();
     },
 
     componentWillMount() {
         console.log('>>> componentWillMount()');
         console.log((this.props) ? this.props : "No props");
+    },
+
+    componentDidMount() {
+        console.log('>>> componentDidMount');
+        this.initialize();
     },
 
     componentWillUpdate(nextProps, nextState) {
@@ -183,7 +194,7 @@ const ShortcutWizard = React.createClass({
 
     componentDidUpdate(prevProps, prevState) {
         console.log('>>> componentDidUpdate()');
-        console.log((this.props) ? this.props : "No props");
+        this.initialize();
     },
 
     componentWillUnmount() {
@@ -236,22 +247,30 @@ const ShortcutWizard = React.createClass({
     }, 
 
     render: function() {
-        this.initialize();
+        console.log('>>> render hit');
 
-        return (
-            <View style={styles.view}>
-                <Text style={styles.titleText}>{this.props.applicationName}</Text>
-                <Image style={styles.image} source={{uri: this.props.applicationIconPath}} /> 
+        if (this.state && this.props) {
+            return (
+                <View style={styles.view}>
+                    <Text style={styles.titleText}>{ (this.props) ? this.props.applicationName : "Starting..." }</Text>
 
-                <Text>{'\n'}</Text>
+                    <Image style={styles.image} source={{uri: this.props.applicationIconPath}} />
 
-                <ListView dataSource={this.state.shortcutDataSource}
-                    renderRow={this._renderRow}
-                    renderScrollComponent={props => <RecyclerViewBackedScrollView {...props} />}
-                    renderSeparator={this._renderSeparator} 
-                />
-            </View>
-        );
+                    <Text>{'\n'}</Text>
+
+                    <ListView dataSource={this.state.shortcutDataSource}
+                        renderRow={this._renderRow}
+                        renderScrollComponent={props => <RecyclerViewBackedScrollView {...props} />}
+                        renderSeparator={this._renderSeparator} 
+                    />
+                </View>
+            );
+        } else {
+            return (
+                <View style={styles.view}>
+                </View>
+            );
+        }
     }
 
 // render() {
