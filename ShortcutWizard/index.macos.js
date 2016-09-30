@@ -135,21 +135,38 @@ const ShortcutWizard = React.createClass({
         var shortcutRows = [];
         var shortcuts = this.props.shortcuts;
 
+        console.log('<<< shortcuts: ' + shortcuts);
 
         if (shortcuts) {
             for (var i = 0; i < shortcuts.length; i++) {
-                console.log('shortcuts:::::' + i);
                 // console.log(`>>>> ECHOOO key: ${key}`);
                 // shortcutRows.push(`[${key}]: ${shortcuts[key].join(" + ")}`);
                 // shortcutRows.push(`${key} ${shortcuts[key])`);
                 var innerShortcuts = shortcuts[i];
+                if (!innerShortcuts || innerShortcuts == []) continue;
+
+                var mergedShortcut = "";
                 for (var j = 0; j < innerShortcuts.length; j++) {
-                    console.log('shortcuts2:::::' + j);
-                    shortcutRows.push(innerShortcuts[j]);
+                    if (j == 1) {
+                        mergedShortcut = mergedShortcut + " - ";
+                    } else {
+                        mergedShortcut = mergedShortcut + " " + innerShortcuts[j];
+                    }
                 }
+                shortcutRows.push(mergedShortcut);
             }
         } else {
             shortcutRows.push("No shortcuts yet...");
+        }
+
+        var currentIndex = shortcutRows.length, temporaryValue, randomIndex;
+        while (0 !== currentIndex) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex -= 1;
+
+            temporaryValue = shortcutRows[currentIndex];
+            shortcutRows[currentIndex] = shortcutRows[randomIndex];
+            shortcutRows[randomIndex] = temporaryValue;
         }
 
         var holdSource = shortcutDataSource.cloneWithRows(shortcutRows);
