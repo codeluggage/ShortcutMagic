@@ -44,7 +44,7 @@
 
     NSString *source = [NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:path ofType:@"scpt"]
                         encoding:NSUTF8StringEncoding error:nil];
-    OSAScript *hold = [[OSAScript alloc] initWithSource:source language:[OSALanguage languageForName:@"JavaScript"]];
+    OSAScript *hold = [[OSAScript alloc] initWithSource:source];
   
 
 //    NSURL *fileUrl = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:path ofType:@"scpt"]];
@@ -208,48 +208,24 @@
 
     [[NSOperationQueue mainQueue] addOperationWithBlock: ^{
         NSDictionary<NSString *,id> *errorInfo;
-        NSAppleEventDescriptor *desc = [self.appleScript executeHandlerWithName:@"readShortcutMenuItems"
+        NSAppleEventDescriptor *desc = [self.appleScript executeHandlerWithName:@"readShortcuts"
             arguments:@[applicationName] error:&errorInfo];
         desc = [desc coerceToDescriptorType:typeAEList];
         if (errorInfo) {
             NSLog(@"error: %@", errorInfo);
         }
 
-        NSLog(@"=========================================");
-
         NSMutableArray* info = [[NSMutableArray alloc] init] ;
         NSInteger numItems = [desc numberOfItems];
         NSLog(@"Found number of items: %ld", numItems);
       
         for (NSInteger i = 0; i < numItems; i++) {
-            NSAppleEventDescriptor *usrfDesc = [[desc descriptorAtIndex:i] descriptorForKeyword:'usrf'];
-          NSInteger usrfNumItems = [usrfDesc numberOfItems];
-          if (usrfNumItems) {
-            NSMutableArray *unwrappedUsrf = [self unwrapUsrf:usrfDesc ignoreWords:@[
-                // Remove these
-                @"title",
-                @"AXMenuItemCmdModifiers",
-                @"AXMenuItemCmdVirtualKey",
-                @"AXMenuItemCmdGlyph",
-            ]];
-
-            // Replace this one
-            NSInteger usrfCmdCharIndex = [unwrappedUsrf indexOfObject:@"AXMenuItemCmdChar"];
-            if (usrfCmdCharIndex != NSNotFound) {
-              if ([unwrappedUsrf count] == 3) {
-                [unwrappedUsrf replaceObjectAtIndex:usrfCmdCharIndex withObject:@"cmd"];
-              } else {
-                [unwrappedUsrf removeObjectAtIndex:usrfCmdCharIndex];
-              }
-            }
-
-            NSLog(@"With usrf: %@, found %ld, unwarpped: %@", usrfDesc, usrfNumItems, unwrappedUsrf);
-            if (unwrappedUsrf) {
-                [info addObject:unwrappedUsrf];
-            }
+          NSAppleEventDescriptor *justHold = [desc descriptorAtIndex:i];
+          NSInteger numItemsInner = [justHold numberOfItems];
+          
+          for (NSInteger z = 0; z < numItemsInner; z++) {
+            [info addObject:[self unwrapUsrf:[justHold descriptorAtIndex:z] ignoreWords:@[]]];
           }
-
-            NSLog(@"<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< end %ld", i);
         }
 
 
