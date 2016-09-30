@@ -128,45 +128,15 @@
     return obj;
 }
 
-- (NSMutableArray *)unwrapUsrf:(NSAppleEventDescriptor *)desc ignoreWords:(NSArray *)words
+- (NSMutableArray *)unwrapUsrf:(NSAppleEventDescriptor *)desc
 {
     NSMutableArray *mutable = [[NSMutableArray alloc] init];
     NSInteger numItems = [desc numberOfItems];
 
     for (NSUInteger j = 0; j <= numItems; j++) {
-        NSAppleEventDescriptor *secondDesc = [desc descriptorAtIndex:j];
-        AEKeyword keywordForIndex = [desc keywordForDescriptorAtIndex:j];
-      
-        NSString *obj = [secondDesc stringValue];
-
-        if (!obj) {
-            NSAppleEventDescriptor *keywordDescriptor = [secondDesc descriptorForKeyword:'utxt'];
-            obj = [keywordDescriptor stringValue];
-            NSLog(@"inner loop 2 with descriptor: %@ obj: %@", keywordDescriptor, obj);
-            if (!obj) {
-                NSAppleEventDescriptor *lastDescriptor = [secondDesc descriptorForKeyword:'usrf'];
-              
-              NSAppleEventDescriptor *holdParam = [secondDesc paramDescriptorForKeyword:keywordForIndex];
-              obj = [holdParam stringValue];
-              if (obj && ![words containsObject:obj]) {
-                [mutable addObject:obj];
-              }
-              NSAppleEventDescriptor *holdAttribute = [secondDesc attributeDescriptorForKeyword:keywordForIndex];
-              obj = [holdAttribute stringValue];
-              if (obj && ![words containsObject:obj]) {
-                [mutable addObject:obj];
-              }
-              
-              obj = [lastDescriptor stringValue];
-              if (obj && ![words containsObject:obj]) {
-                [mutable addObject:obj];
-              }
-            }
-        } else {
-          NSLog(@"inner loop 1 with obj: %@", obj);
-          if (obj && ![words containsObject:obj]) {
-              [mutable addObject:obj];
-          }
+        NSString *obj = [[desc descriptorAtIndex:j] stringValue];
+        if ([obj length]) {
+            [mutable addObject:obj];
         }
     }
 
@@ -224,26 +194,9 @@
           NSInteger numItemsInner = [justHold numberOfItems];
           
           for (NSInteger z = 0; z < numItemsInner; z++) {
-            [info addObject:[self unwrapUsrf:[justHold descriptorAtIndex:z] ignoreWords:@[]]];
+            [info addObject:[self unwrapUsrf:[justHold descriptorAtIndex:z]]];
           }
         }
-
-
-        // NSAppleEventDescriptor *listDescriptor = [descriptor coerceToDescriptorType:typeAEList];
-        // NSLog(@"%@", listDescriptor);
-        // NSMutableArray *result = [[NSMutableArray alloc] init];
-        // for (NSInteger i = 0; i < [listDescriptor numberOfItems]; ++i) {
-        //     AEKeyword keyword = [listDescriptor keywordForDescriptorAtIndex:i];
-        //     NSString *finalString = [[listDescriptor descriptorForKeyword:keyword] stringValue];
-          
-        //     if (finalString) {
-        //         NSLog(@"inserting %@", finalString);
-        //         [result addObject:finalString];
-        //     }
-        // }
-        // NSLog(@"%@", result);
-        NSLog(@"return value from applescript: %@", info);
-        NSLog(@"-----------------------------------------------");
       
       if (!self.shortcuts) {
         self.shortcuts = [[NSDictionary alloc] initWithObjectsAndKeys:info, applicationName, nil];
@@ -251,6 +204,8 @@
         // We checked for existence of applicationName above
         NSMutableDictionary *newDict = [[NSMutableDictionary alloc] initWithDictionary:self.shortcuts copyItems:YES];
         [newDict setObject:info forKey:applicationName];
+        self.shortcuts = [[NSDictionary alloc] initWithDictionary:newDict];
+        NSLog(@"Now self.shortcuts is: %@", self.shortcuts);
       }
         block([NSArray arrayWithArray:info]);
     }];
