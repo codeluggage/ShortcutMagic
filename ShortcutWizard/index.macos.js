@@ -12,8 +12,11 @@ import {
 } from 'react-native-macos';
 
 const styles = StyleSheet.create({
+    textDivider: {
+        paddingBottom: 20
+    },
     scrollView: {
-        backgroundColor: 'white',
+        backgroundColor: '#888888',
         height: 300,
     },
     view: {
@@ -38,7 +41,8 @@ const styles = StyleSheet.create({
     titleText: {
         fontWeight: '700',
         fontSize: 20,
-        textAlign: 'center'
+        textAlign: 'center',
+        paddingBottom: 30
     },
     rowText: {
         marginLeft: 5,
@@ -182,6 +186,10 @@ const ShortcutWizard = React.createClass({
     }, 
 
     _renderRow: function(rowData: string, sectionID: number, rowID: number, highlightRow: (sectionID: number, rowID: number) => void) {
+        if (this.shortcuts && this.shortcuts != []) {
+            var shortcutTitle = this.shortcuts[rowID].title;
+        }
+
         return (
             <TouchableHighlight onPress={() => {
                 this._pressRow(rowID);
@@ -189,6 +197,10 @@ const ShortcutWizard = React.createClass({
             }}>
                 <View>
                     <View style={styles.row}>
+                        <Text style={styles.rowText}>
+                            {shortcutTitle}
+                            "\n"
+                        </Text>
                         <Text style={styles.rowText}>
                             {rowData}
                         </Text>
@@ -206,12 +218,9 @@ const ShortcutWizard = React.createClass({
                 <View style={styles.view}>
                     <Text style={styles.titleText}>{ (this.props) ? this.props.applicationName : "Starting..." }</Text>
 
-                    <Text>{'\n'}</Text>
-
                     <Image style={styles.image} source={{uri: this.props.applicationIconPath}} />
 
-                    <Text>{'\n'}</Text>
-
+                    <Text style={styles.textDivider} > </Text>
 
                     <ListView 
                         dataSource={this.state.shortcutDataSource}
