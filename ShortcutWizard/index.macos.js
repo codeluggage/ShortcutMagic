@@ -87,10 +87,15 @@ const ShortcutWizard = React.createClass({
                 let keys = innerShortcuts.keys;
                 if (!keys || keys == []) continue;
 
+                // Ignore position in React side for now
+                // let position = innerShortcuts.position;
+                // if (!position || position == [] || position == "") continue;
+
                 shortcutRows.push({
                     "title": title,
-                    "keys": keys
-                })
+                    "keys": keys,
+                    // "position": position
+                });
 
                 // let mergedShortcut = "";
                 // for (let j = 0; j < innerShortcuts.length; j++) {

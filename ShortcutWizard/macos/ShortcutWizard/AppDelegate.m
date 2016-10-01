@@ -151,6 +151,8 @@
   
   if (numItems) {
     NSString *title = nil;
+    BOOL findPosition = NO;
+    NSString *position = nil;
     NSMutableArray *keys = [[NSMutableArray alloc] init];
     for (NSUInteger j = 0; j <= numItems; j++) {
       NSAppleEventDescriptor *innerDesc = [desc descriptorAtIndex:j];
@@ -164,23 +166,35 @@
           title = obj;
         }
       }
+      
+      
       NSLog(@"descriptor: %@", innerDesc);
       for (NSUInteger i = 0; i <= [innerDesc numberOfItems]; i++) {
         NSAppleEventDescriptor *innerDescriptor2 = [innerDesc descriptorAtIndex:i];
         obj = [innerDescriptor2 stringValue];
         
         if (obj) {
-          [keys addObject:obj];
+          if (findPosition) {
+            position = obj;
+            findPosition = NO;
+          } else {
+            [keys addObject:obj];
+          }
+        }
+        
+        if (!findPosition && [obj isEqualToString:@"position"]) {
+          findPosition = YES;
         }
       }
-      
     }
     
+
     NSLog(@"keys: %@", keys);
     
     return @{
              @"title": title,
-             @"keys": [NSArray arrayWithArray:keys]
+             @"keys": [NSArray arrayWithArray:keys],
+             @"position": position ? position : @"No position"
              };
   }
   
