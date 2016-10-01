@@ -56,9 +56,7 @@
 //    NSLog(@"Applescript error: %@", errorInfo);
 
     BOOL compiled = [hold compileAndReturnError:&errorInfo];
-    if (compiled) {
-        NSLog(@"Compiled successfully");
-    } else {
+    if (!compiled) {
         NSLog(@"Compile failed: %@", errorInfo);
     }
 
@@ -235,23 +233,27 @@
     NSRunningApplication* currentAppInfo = [workspace frontmostApplication];
     NSString *newAppName = [currentAppInfo localizedName];
     if ([newAppName isEqualToString:@"ShortcutWizard"]) {
-        NSLog(@"Switching to ShortcutWizard - NO UPDATES HAPPENING");
+        NSLog(@"Switching to ShortcutWizard - TODO: SHOW UI");
         return;
     }
     self.currentApplicationName = newAppName;
+    [self updateApplicationIcon:currentAppInfo];
 
     // todo: combine this with similar calls below
-    NSLog(@"About to run check shortcuts in dict: %@", [self.shortcuts allKeys]);
     NSArray *currentShortcuts = [self.shortcuts objectForKey:self.currentApplicationName];
-    if ([currentShortcuts count]) {
+    NSInteger currentShortcutsCount = [currentShortcuts count];
+    if (currentShortcutsCount) {
         // Case 1 - our shortcuts already exist in memory
+        NSLog(@"CASE 1 - for %@ found: %ld", self.currentApplicationName, currentShortcutsCount);
+      
         [self updateProps:@{
             @"applicationName": self.currentApplicationName,
             @"applicationIconPath": self.currentIconPath,
             @"shortcuts": currentShortcuts
         }];
-        NSLog(@"CASE 1 - for %@ found: %ld", self.currentApplicationName, [currentShortcuts count]);
     } else {
+        [self updateProps:@{@"applicationName": self.currentApplicationName,
+                            @"applicationIconPath": self.currentIconPath}];
         // Case 2 - Read from user defaults:
         NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
         NSDictionary *shortcuts = nil;
@@ -266,14 +268,14 @@
             }
         }
       
-        NSLog(@"About to run check shortcuts in dict: %@", [shortcuts allKeys]);
+        //NSLog(@"About to run check shortcuts in dict: %@", [shortcuts allKeys]);
         NSLog(@"CASE 2 - read from disk: %ld", [shortcuts count]);
       
         if (!shortcuts) {
             [self readMenuItems:self.currentApplicationName withBlock:^(NSArray *shortcuts) {
               
                 NSLog(@"CASE 3 - returned block count: %ld", [shortcuts count]);
-                [self updateApplicationIcon:currentAppInfo];
+
                 if (!self.props) {
                     [self updateProps:@{
                         @"applicationName": self.currentApplicationName,
@@ -348,7 +350,7 @@
     if(self = [super init]) {
         self.appleScript = [self loadAndCompileApplescript:@"readMenuItems"]; 
       
-          NSLog(@"Applescript: %@", self.appleScript);
+          //NSLog(@"Applescript: %@", self.appleScript);
 
         NSRect screenRect = [AppDelegate screenResolution];
         NSLog(@"Got the screen rect: >>>>>>>>>");
