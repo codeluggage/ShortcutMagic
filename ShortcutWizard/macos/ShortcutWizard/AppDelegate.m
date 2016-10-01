@@ -201,19 +201,19 @@
       
       if (!self.shortcuts) {
         self.shortcuts = [[NSDictionary alloc] initWithObjectsAndKeys:info, applicationName, nil];
-        NSLog(@"read first time with new self.shortcuts: %@", self.shortcuts);
+        //NSLog(@"read first time with new self.shortcuts: %@", self.shortcuts);
       } else {
         // We checked for existence of applicationName above
         NSMutableDictionary *newDict = [[NSMutableDictionary alloc] initWithDictionary:self.shortcuts copyItems:YES];
         [newDict setObject:[NSArray arrayWithArray:info] forKey:applicationName];
         self.shortcuts = [[NSDictionary alloc] initWithDictionary:newDict];
-        NSLog(@"Now self.shortcuts is: %@", self.shortcuts);
+        //NSLog(@"Now self.shortcuts is: %@", self.shortcuts);
       }
         
         block([NSArray arrayWithArray:info]);
         
       } else {
-        NSLog(@"done with alreadyExists: %@", alreadyExists);
+        //NSLog(@"done with alreadyExists: %@", alreadyExists);
         block(alreadyExists);
       }
     }];

@@ -12,11 +12,15 @@ import {
 } from 'react-native-macos';
 
 const styles = StyleSheet.create({
+    scrollView: {
+        backgroundColor: 'white',
+        height: 300,
+    },
     view: {
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'white'
+        backgroundColor: 'white',
     },
     row: {
         flexDirection: 'column',
@@ -41,81 +45,6 @@ const styles = StyleSheet.create({
         fontSize: 12,
         textAlign: 'left'
     },
-    // thumb: {
-    //     width: 64,
-    //     height: 64,
-    // },
-    // container: {
-    //     flex: 1,
-    //     justifyContent: 'center',
-    //     alignItems: 'center',
-    //     backgroundColor: '#F5FCFF',
-    // },
-    // welcome: {
-    //     fontSize: 20,
-    //     textAlign: 'center',
-    //     margin: 2,
-    // },
-    // instructions: {
-    //     textAlign: 'center',
-    //     color: '#333333',
-    //     marginBottom: 5,
-    // },
-    // icon: {
-    //     width: 24,
-    //     height: 24,
-    // },
-    // block: {
-    //     padding: 10,
-    // },
-    // button: {
-    //     color: '#007AFF',
-    // },
-    // disabledButton: {
-    //     color: '#007AFF',
-    //     opacity: 0.5,
-    // },
-    // nativeFeedbackButton: {
-    //     textAlign: 'center',
-    //     margin: 10,
-    // },
-    // hitSlopButton: {
-    //     color: 'white',
-    // },
-    // wrapper: {
-    //     borderRadius: 8,
-    // },
-    // wrapperCustom: {
-    //     borderRadius: 8,
-    //     padding: 6,
-    // },
-    // hitSlopWrapper: {
-    //     backgroundColor: 'red',
-    //     marginVertical: 30,
-    // },
-    // logBox: {
-    //     padding: 20,
-    //     margin: 10,
-    //     borderWidth: StyleSheet.hairlineWidth,
-    //     borderColor: '#f0f0f0',
-    //     backgroundColor: '#f9f9f9',
-    // },
-    // eventLogBox: {
-    //     padding: 10,
-    //     margin: 10,
-    //     height: 120,
-    //     borderWidth: StyleSheet.hairlineWidth,
-    //     borderColor: '#f0f0f0',
-    //     backgroundColor: '#f9f9f9',
-    // },
-    // forceTouchBox: {
-    //     padding: 10,
-    //     margin: 10,
-    //     borderWidth: StyleSheet.hairlineWidth,
-    //     borderColor: '#f0f0f0',
-    //     backgroundColor: '#f9f9f9',
-    //     alignItems: 'center',
-    // },
 });
 
 
@@ -133,8 +62,6 @@ function randomizeShortcuts(shortcutRows) {
 
     return shortcutRows;
 };
-
-
 
 
 const ShortcutWizard = React.createClass({
@@ -233,23 +160,6 @@ const ShortcutWizard = React.createClass({
         this._pressData = {};
     },
 
-    _renderRow: function(rowData: string, sectionID: number, rowID: number, highlightRow: (sectionID: number, rowID: number) => void) {
-        return (
-            <TouchableHighlight onPress={() => {
-                this._pressRow(rowID);
-                highlightRow(sectionID, rowID);
-            }}>
-                <View>
-                    <View style={styles.row}>
-                        <Text style={styles.rowText}>
-                            {rowData}
-                        </Text>
-                    </View>
-                </View>
-            </TouchableHighlight>
-        );
-    },
-
     _pressRow: function(rowID: number) {
         console.log('pressed row: ' + rowID);
 
@@ -271,6 +181,23 @@ const ShortcutWizard = React.createClass({
         );
     }, 
 
+    _renderRow: function(rowData: string, sectionID: number, rowID: number, highlightRow: (sectionID: number, rowID: number) => void) {
+        return (
+            <TouchableHighlight onPress={() => {
+                this._pressRow(rowID);
+                highlightRow(sectionID, rowID);
+            }}>
+                <View>
+                    <View style={styles.row}>
+                        <Text style={styles.rowText}>
+                            {rowData}
+                        </Text>
+                    </View>
+                </View>
+            </TouchableHighlight>
+        );
+    },
+
     render: function() {
         console.log('>>> render hit');
 
@@ -279,11 +206,18 @@ const ShortcutWizard = React.createClass({
                 <View style={styles.view}>
                     <Text style={styles.titleText}>{ (this.props) ? this.props.applicationName : "Starting..." }</Text>
 
+                    <Text>{'\n'}</Text>
+
                     <Image style={styles.image} source={{uri: this.props.applicationIconPath}} />
 
                     <Text>{'\n'}</Text>
 
-                    <ListView dataSource={this.state.shortcutDataSource}
+
+                    <ListView 
+                        dataSource={this.state.shortcutDataSource}
+                        ref={(scrollView) => { _scrollView = scrollView; }}
+                        automaticallyAdjustContentInsets={false}
+                        style={styles.scrollView}
                         renderRow={this._renderRow}
                         renderScrollComponent={props => <RecyclerViewBackedScrollView {...props} />}
                         renderSeparator={this._renderSeparator} 
