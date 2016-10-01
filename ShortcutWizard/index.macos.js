@@ -81,41 +81,51 @@ const ShortcutWizard = React.createClass({
                 let innerShortcuts = shortcuts[i];
                 if (!innerShortcuts || innerShortcuts == []) continue;
 
-                let title = innerShortcuts[0];
+                let title = innerShortcuts.title;
                 if (!title || title == "") continue;
 
-                let mergedShortcut = "";
-                for (let j = 0; j < innerShortcuts.length; j++) {
-                    if (j == 1) {
-                        mergedShortcut = mergedShortcut + " - ";
-                    } else {
-                        mergedShortcut = mergedShortcut + " " + innerShortcuts[j];
-                    }
-                }
+                let keys = innerShortcuts.keys;
+                if (!keys || keys == []) continue;
 
-                if (mergedShortcut && mergedShortcut != "") {
-                    shortcutRows.push(mergedShortcut);
-                }
+                shortcutRows.push({
+                    "title": title,
+                    "keys": keys
+                })
+
+                // let mergedShortcut = "";
+                // for (let j = 0; j < innerShortcuts.length; j++) {
+                //     if (j == 1) {
+                //         mergedShortcut = mergedShortcut + " - ";
+                //     } else {
+                //         mergedShortcut = mergedShortcut + " " + innerShortcuts[j];
+                //     }
+                // }
+
+                // if (mergedShortcut && mergedShortcut != "") {
+                //     shortcutRows.push(mergedShortcut);
+                // }
             }
         } else {
-            shortcutRows.push("No shortcuts yet...");
+            shortcutRows.push({
+                title: "No shortcuts yet...",
+                keys: [""]
+            });
         }
 
         // Randomize for now... 
-        shortcutRows = randomizeShortcuts(shortcutRows);
+        // shortcutRows = randomizeShortcuts(shortcutRows);
+        shortcutRows = shortcutRows;
         let holdThis = this;
-        setTimeout(function() {
-            console.log('setTimeout randomize running... ');
-            holdThis.state = {
-                ...holdThis.state,
-                shortcuts: randomizeShortcuts(holdThis.shortcuts)
-            };
-        }, 10);
+        // setTimeout(function() {
+        //     console.log('setTimeout randomize running... ');
+        //     let oldState = holdThis.state;
+        //     holdThis.state["shortcuts"] = randomizeShortcuts(holdThis.shortcuts);
+        // }, 10);
 
         let holdSource = shortcutDataSource.cloneWithRows(shortcutRows);
         let newState = {
             shortcutDataSource: holdSource,
-            image: this.props.applicationIconPath ? this.props.applicationIconPath : '' // TODO: Replace with default image
+            image: this.props.applicationIconPath ? this.props.applicationIconPath : '' // TODO: Replace with default image,
         };
 
         // newState.fullyInitialized = (newState.shortcutDataSource && newState.image); 
@@ -186,28 +196,31 @@ const ShortcutWizard = React.createClass({
     }, 
 
     _renderRow: function(rowData: string, sectionID: number, rowID: number, highlightRow: (sectionID: number, rowID: number) => void) {
-        if (this.shortcuts && this.shortcuts != []) {
-            var shortcutTitle = this.shortcuts[rowID].title;
-        }
-
-        return (
-            <TouchableHighlight onPress={() => {
-                this._pressRow(rowID);
-                highlightRow(sectionID, rowID);
-            }}>
-                <View>
-                    <View style={styles.row}>
-                        <Text style={styles.rowText}>
-                            {shortcutTitle}
-                            "\n"
-                        </Text>
-                        <Text style={styles.rowText}>
-                            {rowData}
-                        </Text>
+        console.log('Hit render row with row data: ' + JSON.stringify(rowData));
+        if (rowData && rowData.title && rowData.keys.length) {
+            return (
+                <TouchableHighlight onPress={() => {
+                        this._pressRow(rowID);
+                        highlightRow(sectionID, rowID);
+                    }}>
+                    <View>
+                        <View style={styles.row}>
+                            <Text style={styles.rowText}>
+                                {rowData.title}
+                            </Text>
+                            <Text style={styles.textDivider}></Text>
+                            <Text style={styles.rowText}>
+                                {rowData.keys}
+                            </Text>
+                        </View>
                     </View>
-                </View>
-            </TouchableHighlight>
-        );
+                </TouchableHighlight>
+            );
+        } else {
+            return (
+                <View style={styles.row}> </View>
+            );
+        }
     },
 
     render: function() {

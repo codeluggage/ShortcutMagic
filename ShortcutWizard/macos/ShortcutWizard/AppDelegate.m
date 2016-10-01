@@ -125,22 +125,6 @@
 
     return obj;
 }
-
-- (NSMutableArray *)unwrapUsrf:(NSAppleEventDescriptor *)desc
-{
-    NSMutableArray *mutable = [[NSMutableArray alloc] init];
-    NSInteger numItems = [desc numberOfItems];
-
-    for (NSUInteger j = 0; j <= numItems; j++) {
-        NSString *obj = [[desc descriptorAtIndex:j] stringValue];
-        if ([obj length]) {
-            [mutable addObject:obj];
-        }
-    }
-
-    return mutable;
-}
-
 - (NSString *)unwrapUtxt:(NSAppleEventDescriptor *)desc
 {
     NSString *obj = [desc stringValue];
@@ -161,6 +145,49 @@
   return fourCharString;
 }
 
+- (NSDictionary *)unwrapUsrf:(NSAppleEventDescriptor *)desc
+{
+  NSInteger numItems = [desc numberOfItems];
+  
+  if (numItems) {
+    NSString *title = nil;
+    NSMutableArray *keys = [[NSMutableArray alloc] init];
+    for (NSUInteger j = 0; j <= numItems; j++) {
+      NSAppleEventDescriptor *innerDesc = [desc descriptorAtIndex:j];
+      if (!innerDesc) continue;
+      
+      NSLog(@"inner desc: %@", innerDesc);
+      
+      NSString *obj = [innerDesc stringValue];
+      if ([obj length]) {
+        if (title == nil) {
+          title = obj;
+        }
+      }
+      NSLog(@"descriptor: %@", innerDesc);
+      for (NSUInteger i = 0; i <= [innerDesc numberOfItems]; i++) {
+        NSAppleEventDescriptor *innerDescriptor2 = [innerDesc descriptorAtIndex:i];
+        obj = [innerDescriptor2 stringValue];
+        
+        if (obj) {
+          [keys addObject:obj];
+        }
+      }
+      
+    }
+    
+    NSLog(@"keys: %@", keys);
+    
+    return @{
+             @"title": title,
+             @"keys": [NSArray arrayWithArray:keys]
+             };
+  }
+  
+  return nil;
+}
+
+
 - (void)readMenuItems:(NSString*)applicationName withBlock:(void (^)(NSArray *))block
 {
     NSLog(@"About to call readMenuItems with %@", applicationName);
@@ -170,14 +197,11 @@
   
   NSArray *applicationShortcuts = [self.shortcuts objectForKey:applicationName];
   if (applicationShortcuts) {
-    block([NSArray arrayWithArray:applicationShortcuts]);
+    block(applicationShortcuts);
     return;
   }
 
-    [[NSOperationQueue mainQueue] addOperationWithBlock: ^{
-      
-      NSArray *alreadyExists = [self.shortcuts objectForKey:applicationName];
-      if (!alreadyExists) {
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         NSDictionary<NSString *,id> *errorInfo;
         NSAppleEventDescriptor *desc = [self.appleScript executeHandlerWithName:@"readShortcuts"
             arguments:@[applicationName] error:&errorInfo];
@@ -195,7 +219,10 @@
           NSInteger numItemsInner = [justHold numberOfItems];
           
           for (NSInteger z = 0; z < numItemsInner; z++) {
-            [info addObject:[self unwrapUsrf:[justHold descriptorAtIndex:z]]];
+            NSDictionary *unwrapped = [self unwrapUsrf:[justHold descriptorAtIndex:z]];
+            if (unwrapped) {
+              [info addObject:unwrapped];
+            }
           }
         }
       
@@ -211,24 +238,11 @@
       }
         
         block([NSArray arrayWithArray:info]);
-        
-      } else {
-        //NSLog(@"done with alreadyExists: %@", alreadyExists);
-        block(alreadyExists);
-      }
     }];
 }
 
 - (void)prepareProps
 {
-    // NSLog([[notification userInfo] description]);
-    // NSString *newAppName = [[[NSWorkspace sharedWorkspace] frontmostApplication] localizedName];
-    // [currentAppInfo localizedName]
-
-
-    NSString *previousIconPath = self.currentIconPath;
-    NSString *previousApplicationName = self.currentApplicationName;
-
     NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
     NSRunningApplication* currentAppInfo = [workspace frontmostApplication];
     NSString *newAppName = [currentAppInfo localizedName];
@@ -257,8 +271,11 @@
         // Case 2 - Read from user defaults:
         NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
         NSDictionary *shortcuts = nil;
+      NSLog(@"std usr def %@", standardUserDefaults);
         if (standardUserDefaults) {
+          
             shortcuts = [standardUserDefaults dictionaryForKey:self.currentApplicationName];
+            NSLog(@"shortcuts from user defaults: %@", shortcuts);
             if (shortcuts) {
                 [self updateProps:@{
                     @"applicationName": self.currentApplicationName,
