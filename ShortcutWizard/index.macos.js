@@ -81,8 +81,8 @@ const ShortcutWizard = React.createClass({
                 let innerShortcuts = shortcuts[i];
                 if (!innerShortcuts || innerShortcuts == []) continue;
 
-                let title = innerShortcuts.title;
-                if (!title || title == "") continue;
+                let name = innerShortcuts.name;
+                if (!name || name == "") continue;
 
                 let keys = innerShortcuts.keys;
                 if (!keys || keys == []) continue;
@@ -92,7 +92,7 @@ const ShortcutWizard = React.createClass({
                 // if (!position || position == [] || position == "") continue;
 
                 shortcutRows.push({
-                    "title": title,
+                    "name": name,
                     "keys": keys,
                     // "position": position
                 });
@@ -112,7 +112,7 @@ const ShortcutWizard = React.createClass({
             }
         } else {
             shortcutRows.push({
-                title: "No shortcuts yet...",
+                name: "No shortcuts yet...",
                 keys: [""]
             });
         }
@@ -202,7 +202,7 @@ const ShortcutWizard = React.createClass({
 
     _renderRow: function(rowData: string, sectionID: number, rowID: number, highlightRow: (sectionID: number, rowID: number) => void) {
         console.log('Hit render row with row data: ' + JSON.stringify(rowData));
-        if (rowData && rowData.title && rowData.keys.length) {
+        if (rowData && rowData.name && rowData.keys.length) {
             return (
                 <TouchableHighlight onPress={() => {
                         this._pressRow(rowID);
@@ -211,7 +211,7 @@ const ShortcutWizard = React.createClass({
                     <View>
                         <View style={styles.row}>
                             <Text style={styles.rowText}>
-                                {rowData.title}
+                                {rowData.name}
                             </Text>
                             <Text style={styles.textDivider}></Text>
                             <Text style={styles.rowText}>
