@@ -48,7 +48,7 @@
 
 - (NSDictionary *)explainOrKeep:(NSMutableArray *)set
 {
-  NSLog(@"explainOrKeep before: %@", set);
+//  NSLog(@"explainOrKeep before: %@", set);
   
   if ([set count] < 2) return nil;
   
@@ -61,7 +61,7 @@
   __block BOOL nextPosition = NO;
   
   [set enumerateObjectsUsingBlock:^(NSString *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-    // First is name
+    // Skip first index - that is always the name
     if (obj && idx != 0) {
       if (nextPosition) {
         nextPosition = NO;
@@ -123,20 +123,9 @@
         mod = @"⌃⌥⇧";
         break;
       }
-        
-        // set cmdmods to text items of "⌘ ⇧⌘ ⌥⌘ ⌥⇧⌘ ⌃⌘ ⌃⇧⌘ ⌃⌥⌘ ⌃⌥⇧⌘ - ⇧ ⌥ ⌥⇧ ⌃ ⌃⇧ ⌃⌥ ⌃⌥⇧"
-        //    for () {
-        //
-        //    }
-        //    -- repeat with i from 1 to (count menuglyphs)
-        //    -- if item i of holdCmdGlyph is glyph then
-        //						-- return modifier & item (i + 1) of menuglyphs
-        //						-- end
-        //						-- end repeat
-        //
-        
+
         [newSet setObject:mod forKey:@"mod"];
-      } else if (nextCmdGlyph) {
+    } else if (nextCmdGlyph) {
         nextCmdGlyph = NO;
         
         NSInteger switchCase = [obj integerValue];
@@ -289,7 +278,7 @@
     }
   }];
 
-  NSLog(@"explain after: %@", newSet);
+//  NSLog(@"explain after: %@", newSet);
   return newSet;
 }
 
@@ -320,14 +309,13 @@
       NSInteger numItems = [desc numberOfItems];
       
       if (numItems) {
-        NSMutableDictionary *merged = [[NSMutableDictionary alloc] init];
         NSMutableArray *set = [[NSMutableArray alloc] init];
         
         for (NSUInteger j = 0; j <= numItems; j++) {
           NSAppleEventDescriptor *innerDesc = [desc descriptorAtIndex:j];
           if (!innerDesc) continue;
           
-          NSLog(@"inner desc: %@", innerDesc);
+//          NSLog(@"inner desc: %@", innerDesc);
           NSString *str = [innerDesc stringValue];
           if (str) {
             [set addObject:str];
@@ -335,7 +323,7 @@
             if ([set count] > 1) {
               NSDictionary *newMerged = [self explainOrKeep:set];
               if ([newMerged count] > 1) {
-                [merged setObject:newMerged forKey:newMerged[@"name"]];
+                [info setObject:newMerged forKey:newMerged[@"name"]];
                 [set removeAllObjects];
               }
             }
@@ -374,25 +362,14 @@
                     }
                 }
               }
-              
-              
-//              NSDictionary *unwrapped = [self unwrapUsrf:innerDescriptor2];
-//              if (unwrapped) {
-//                [set addObject:unwrapped];
-//              }
             }
           }
           
           NSDictionary *newMerged = [self explainOrKeep:set];
           if (newMerged) {
-            [merged setObject:newMerged forKey:newMerged[@"name"]];
+            [info setObject:newMerged forKey:newMerged[@"name"]];
             [set removeAllObjects];
-            [merged removeAllObjects];
           }
-        }
-        
-          if ([merged count]) {
-            [info setObject:merged forKey:applicationName];
         }
       }
     }
@@ -461,7 +438,7 @@
     [self updateApplicationIcon:currentAppInfo];
 
     // todo: combine this with similar calls below
-    NSArray *currentShortcuts = [self.shortcuts objectForKey:self.currentApplicationName];
+    NSDictionary *currentShortcuts = [self.shortcuts objectForKey:self.currentApplicationName];
     NSInteger currentShortcutsCount = [currentShortcuts count];
     if (currentShortcutsCount) {
         // Case 1 - our shortcuts already exist in memory
@@ -473,32 +450,33 @@
             @"shortcuts": currentShortcuts
         }];
     } else {
-        [self updateProps:@{@"applicationName": self.currentApplicationName,
-                            @"applicationIconPath": self.currentIconPath}];
+//        [self updateProps:@{@"applicationName": self.currentApplicationName,
+//                            @"applicationIconPath": self.currentIconPath}];
       
         // Case 2 - Read from user defaults:
-//        NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
-//        NSDictionary *shortcuts = nil;
-//        NSLog(@"standard userdefaults: %@", standardUserDefaults);
-//        if (standardUserDefaults) {
-//            shortcuts = [standardUserDefaults dictionaryForKey:self.currentApplicationName];
-//            NSLog(@"CASE 2 - shortcuts from user defaults: %@", [shortcuts allValues]);
-//            NSInteger shortcutCount = [shortcuts count];
-//            if (shortcutCount) {
-//                [self updateProps:@{
-//                    @"applicationName": self.currentApplicationName,
-//                    @"applicationIconPath": self.currentIconPath,
-//                    @"shortcuts": shortcuts
-//                }];
-//                return;
-//            }
-//        }
+        NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
+        NSDictionary *shortcuts = nil;
+        NSLog(@"standard userdefaults: %@", standardUserDefaults);
+        if (standardUserDefaults) {
+            shortcuts = [standardUserDefaults dictionaryForKey:self.currentApplicationName];
+            NSLog(@"CASE 2 - shortcuts from user defaults: %@", shortcuts);
+            NSInteger shortcutCount = [shortcuts count];
+            if (shortcutCount) {
+                [self updateProps:@{
+                    @"applicationName": self.currentApplicationName,
+                    @"applicationIconPath": self.currentIconPath,
+                    @"shortcuts": shortcuts
+                }];
+                return;
+            }
+        }
       
         //NSLog(@"About to run check shortcuts in dict: %@", [shortcuts allKeys]);
 
             [self readMenuItems:self.currentApplicationName withBlock:^(NSDictionary *shortcuts) {
               
                 NSLog(@"CASE 3 - returned block count: %ld", [shortcuts count]);
+                self.shortcuts = [[NSDictionary alloc] initWithObjectsAndKeys:shortcuts, self.currentApplicationName, nil];
 
                 if (!self.props) {
                     [self updateProps:@{

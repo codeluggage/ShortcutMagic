@@ -84,7 +84,7 @@ const ShortcutWizard = React.createClass({
                 let name = innerShortcuts.name;
                 if (!name || name == "") continue;
 
-                let keys = innerShortcuts.keys;
+                let keys = innerShortcuts.shortcuts;
                 if (!keys || keys == []) continue;
 
                 // Ignore position in React side for now
