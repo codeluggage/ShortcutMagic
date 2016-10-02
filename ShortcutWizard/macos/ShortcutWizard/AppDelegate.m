@@ -4,7 +4,6 @@
 #import "RCTJavaScriptLoader.h"
 
 
-
 // TODO: Is this necessary as long all this is 1 file?
 // @interface AppDelegate() <RCTBridgeDelegate>
 
@@ -49,7 +48,7 @@
 
 - (NSDictionary *)explainOrKeep:(NSMutableArray *)set
 {
-  NSLog(@"explainOrKeep: %@", set);
+  NSLog(@"explainOrKeep before: %@", set);
   
   if ([set count] < 2) return nil;
   
@@ -62,8 +61,6 @@
   __block BOOL nextPosition = NO;
   
   [set enumerateObjectsUsingBlock:^(NSString *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-    NSLog(@"explainorkeep-->0: %@", obj);
-
     // First is name
     if (obj && idx != 0) {
       if (nextPosition) {
@@ -71,7 +68,62 @@
         [newSet setObject:obj forKey:@"position"];
       } else if (nextCmdMod) {
         nextCmdMod = NO;
-        [newSet setObject:obj forKey:@"mod"];
+        
+        NSString *mod = @"Unknown";
+        
+        NSInteger switchCase = [obj integerValue];
+        
+    switch (switchCase) {
+      case 0:
+        mod = @"⌘";
+        break;
+      case 1:
+        mod = @"⇧⌘";
+        break;
+      case 2:
+        mod = @"⌥⌘";
+        break;
+      case 3:
+        mod = @"⌥⇧⌘";
+        break;
+      case 4:
+        mod = @"⌃⌘";
+        break;
+      case 5:
+        mod = @"⌃⇧⌘";
+        break;
+      case 6:
+        mod = @"⌃⌥⌘";
+        break;
+      case 7:
+        mod = @"⌃⌥⇧⌘";
+        break;
+      case 8:
+        mod = @"-";
+        break;
+      case 9:
+        mod = @"⇧";
+        break;
+      case 10:
+        mod = @"⌥";
+        break;
+      case 11:
+        mod = @"⌥⇧";
+        break;
+      case 12:
+        mod = @"⌃";
+        break;
+      case 13:
+        mod = @"⌃⇧";
+        break;
+      case 14:
+        mod = @"⌃⌥";
+        break;
+      case 15:
+        mod = @"⌃⌥⇧";
+        break;
+      }
+        
         // set cmdmods to text items of "⌘ ⇧⌘ ⌥⌘ ⌥⇧⌘ ⌃⌘ ⌃⇧⌘ ⌃⌥⌘ ⌃⌥⇧⌘ - ⇧ ⌥ ⌥⇧ ⌃ ⌃⇧ ⌃⌥ ⌃⌥⇧"
         //    for () {
         //
@@ -82,13 +134,146 @@
         //						-- end
         //						-- end repeat
         //
-
+        
+        [newSet setObject:mod forKey:@"mod"];
       } else if (nextCmdGlyph) {
         nextCmdGlyph = NO;
-        [newSet setObject:obj forKey:@"glyph"];
-        // set menuglyphs to text items of "2 ⇥ 3 ⇤ 4 ⌤ 9 ␣ 10 ⌦ 11 ↩ 16 ↓ 23 ⌫ 24 ← 25 ↑ 26 → 27 ⎋ 28 ⌧ 98 ⇞ 99 ⇪ 100 ← 101 → 102 ↖ 104 ↑ 105 ↘ 106 ↓ 107 ⇟ 111 F1 112 F2 113 F3 114 F4 115 F5 116 F6 117 F7 118 F8 119 F9 120 F10 121 F11 122 F12 135 F13 136 F14 137 F15 140 ⏏ 143 F16 144 F17 145 F18 146 F19"
         
+        NSInteger switchCase = [obj integerValue];
+        NSString *glyph = @"Unknown";
+       
+        switch (switchCase) {
+          case 2:
+            glyph = @"⇥";
+            break;
+          case 3:
+            glyph = @"⇤";
+            break;
+          case 4:
+            glyph = @"⌤";
+            break;
+          case 9:
+            glyph = @"␣";
+            break;
+          case 10:
+            glyph = @"⌦";
+            break;
+          case 11:
+            glyph = @"↩";
+            break;
+          case 16:
+            glyph = @"↓";
+            break;
+          case 23:
+            glyph = @"⌫";
+            break;
+          case 24:
+            glyph = @"←";
+            break;
+          case 25:
+            glyph = @"↑";
+            break;
+          case 26:
+            glyph = @"→";
+            break;
+          case 27:
+            glyph = @"⎋";
+            break;
+          case 28:
+            glyph = @"⌧";
+            break;
+          case 98:
+            glyph = @"⇞";
+            break;
+          case 99:
+            glyph = @"⇪";
+            break;
+          case 100:
+            glyph = @"←";
+            break;
+          case 101:
+            glyph = @"→";
+            break;
+          case 102:
+            glyph = @"↖";
+            break;
+          case 104:
+            glyph = @"↑";
+            break;
+          case 105:
+            glyph = @"↘";
+            break;
+          case 106:
+            glyph = @"↓";
+            break;
+          case 107:
+            glyph = @"⇟";
+            break;
+          case 111:
+            glyph = @"F1";
+            break;
+          case 112:
+            glyph = @"F2";
+            break;
+          case 113:
+            glyph = @"F3";
+            break;
+          case 114:
+            glyph = @"F4";
+            break;
+          case 115:
+            glyph = @"F5";
+            break;
+          case 116:
+            glyph = @"F6";
+            break;
+          case 117:
+            glyph = @"F7";
+            break;
+          case 118:
+            glyph = @"F8";
+            break;
+          case 119:
+            glyph = @"F9";
+            break;
+          case 120:
+            glyph = @"F10";
+            break;
+          case 121:
+            glyph = @"F11";
+            break;
+          case 122:
+            glyph = @"F12";
+            break;
+          case 135:
+            glyph = @"F13";
+            break;
+          case 136:
+            glyph = @"F14";
+            break;
+          case 137:
+            glyph = @"F15";
+            break;
+          case 140:
+            glyph = @"⏏";
+            break;
+          case 143:
+            glyph = @"F16";
+            break;
+          case 144:
+            glyph = @"F17";
+            break;
+          case 145:
+            glyph = @"F18";
+            break;
+          case 146:
+            glyph = @"F19";
+            break;
+        }
 
+        [newSet setObject:glyph forKey:@"glyph"];
+
+        // set menuglyphs to text items of "2 ⇥ 3 ⇤ 4 ⌤ 9 ␣ 10 ⌦ 11 ↩ 16 ↓ 23 ⌫ 24 ← 25 ↑ 26 → 27 ⎋ 28 ⌧ 98 ⇞ 99 ⇪ 100 ← 101 → 102 ↖ 104 ↑ 105 ↘ 106 ↓ 107 ⇟ 111 F1 112 F2 113 F3 114 F4 115 F5 116 F6 117 F7 118 F8 119 F9 120 F10 121 F11 122 F12 135 F13 136 F14 137 F15 140 ⏏ 143 F16 144 F17 145 F18 146 F19"
       } else if (nextCmdChar) {
         nextCmdChar = NO;
         [newSet setObject:obj forKey:@"char"];
@@ -102,60 +287,10 @@
         nextCmdChar = YES;
       }
     }
-
-    
   }];
 
+  NSLog(@"explain after: %@", newSet);
   return newSet;
-}
-
-- (NSDictionary *)unwrapUsrf:(NSAppleEventDescriptor *)desc
-{
-  NSInteger numItems = [desc numberOfItems];
-  if (numItems) {
-    NSString *name = nil;
-    BOOL findPosition = NO;
-    NSString *position = nil;
-    NSMutableArray *keys = [[NSMutableArray alloc] init];
-    for (NSUInteger j = 0; j < numItems; j++) {
-      NSAppleEventDescriptor *innerDesc = [desc descriptorAtIndex:j];
-      if (!innerDesc) continue;
-      NSLog(@"inner desc: %@", innerDesc);
-      NSString *obj = [innerDesc stringValue];
-      if ([obj length]) {
-        if (name == nil) {
-          name = obj;
-        }
-      }
-      NSLog(@"descriptor: %@", innerDesc);
-      for (NSUInteger i = 0; i < [innerDesc numberOfItems]; i++) {
-        NSAppleEventDescriptor *innerDescriptor2 = [innerDesc descriptorAtIndex:i];
-        obj = [innerDescriptor2 stringValue];
-        if (obj) {
-          if (findPosition) {
-            position = obj;
-            findPosition = NO;
-          } else {
-            [keys addObject:obj];
-            if (!findPosition && [obj isEqualToString:@"position"]) {
-              findPosition = YES;
-            }
-          }
-        }
-        
-        
-        NSLog(@"keys: %@", keys);
-        
-        return @{
-                 @"name": name,
-                 @"keys": [NSArray arrayWithArray:keys],
-                 @"position": position ? position : @"No position"
-                 };
-      }
-    }
-  }
-    
-  return nil;
 }
 
 - (void)readMenuItems:(NSString*)applicationName withBlock:(void (^)(NSDictionary *))callback
@@ -249,17 +384,19 @@
           }
           
           NSDictionary *newMerged = [self explainOrKeep:set];
-          if ([newMerged count] > 1) {
+          if (newMerged) {
             [merged setObject:newMerged forKey:newMerged[@"name"]];
             [set removeAllObjects];
+            [merged removeAllObjects];
           }
         }
         
-        NSLog(@"set: %@ merged: %@", set, merged);
-        [info setObject:merged forKey:applicationName];
+          if ([merged count]) {
+            [info setObject:merged forKey:applicationName];
+        }
       }
     }
-    }
+  }
     
     
     // TODO: Merge with past shortcuts?
@@ -341,11 +478,11 @@
       
         // Case 2 - Read from user defaults:
 //        NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
-        NSDictionary *shortcuts = nil;
-//        NSLog(@"std usr def %@", standardUserDefaults);
+//        NSDictionary *shortcuts = nil;
+//        NSLog(@"standard userdefaults: %@", standardUserDefaults);
 //        if (standardUserDefaults) {
 //            shortcuts = [standardUserDefaults dictionaryForKey:self.currentApplicationName];
-//            NSLog(@"shortcuts from user defaults: %@", [shortcuts allValues]);
+//            NSLog(@"CASE 2 - shortcuts from user defaults: %@", [shortcuts allValues]);
 //            NSInteger shortcutCount = [shortcuts count];
 //            if (shortcutCount) {
 //                [self updateProps:@{
@@ -353,6 +490,7 @@
 //                    @"applicationIconPath": self.currentIconPath,
 //                    @"shortcuts": shortcuts
 //                }];
+//                return;
 //            }
 //        }
       

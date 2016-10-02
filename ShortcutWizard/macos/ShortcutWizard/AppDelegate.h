@@ -13,7 +13,7 @@
 #import "RCTBridge.h"
 #import "RCTRootView.h"
 
-@interface AppDelegate : NSObject <NSApplicationDelegate, NSWindowDelegate>
+@interface AppDelegate : NSObject <NSApplicationDelegate, NSWindowDelegate, RCTBridgeDelegate>
 
 @property (strong, nonatomic) NSWindow *window;
 @property (nonatomic, readonly) RCTBridge *bridge;
