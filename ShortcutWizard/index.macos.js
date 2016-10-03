@@ -70,32 +70,36 @@ function randomizeShortcuts(shortcutRows) {
 
 const ShortcutWizard = React.createClass({
     initialize() {
-        let shortcutDataSource = new ListView.DataSource({
-            rowHasChanged: (row1, row2) => row1 !== row2
-        });
         let shortcutRows = [];
         let shortcuts = this.props.shortcuts;
+        // console.log('|||||||||||| props: ' + JSON.stringify(this.props));
+        // console.log('|||||||||||| shortcuts: ' + JSON.stringify(shortcuts));
 
         if (shortcuts) {
-            for (let i = 0; i < shortcuts.length; i++) {
-                let innerShortcuts = shortcuts[i];
-                if (!innerShortcuts || innerShortcuts == []) continue;
+            let shortcutNames = Object.keys(shortcuts);
+            for (var i = 0; i < shortcutNames.length; i++) {
+                // console.log('loop.... ' + i);
+                let innerShortcuts = shortcuts[shortcutNames[i]];
+                // console.log('innertshorcuts |||| = ' + JSON.stringify(innerShortcuts));
+                if (!innerShortcuts || !innerShortcuts == []) continue;
 
                 let name = innerShortcuts.name;
                 if (!name || name == "") continue;
 
-                let keys = innerShortcuts.shortcuts;
-                if (!keys || keys == []) continue;
+                shortcutRows.push(innerShortcuts.name);
+
+                // let keys = innerShortcuts.shortcuts;
+                // if (!keys || keys == []) continue;
 
                 // Ignore position in React side for now
                 // let position = innerShortcuts.position;
                 // if (!position || position == [] || position == "") continue;
 
-                shortcutRows.push({
-                    "name": name,
-                    "keys": keys,
-                    // "position": position
-                });
+                // shortcutRows.push({
+                //     "name": name,
+                //     "keys": keys,
+                //     // "position": position
+                // });
 
                 // let mergedShortcut = "";
                 // for (let j = 0; j < innerShortcuts.length; j++) {
@@ -109,50 +113,48 @@ const ShortcutWizard = React.createClass({
                 // if (mergedShortcut && mergedShortcut != "") {
                 //     shortcutRows.push(mergedShortcut);
                 // }
-            }
-        } else {
+            // }
+        } 
+    } else if (!shortcutRows.length) {
             shortcutRows.push({
-                name: "No shortcuts yet...",
-                keys: [""]
+                name: "No shortcuts yet..."
             });
         }
 
         // Randomize for now... 
         // shortcutRows = randomizeShortcuts(shortcutRows);
-        shortcutRows = shortcutRows;
-        let holdThis = this;
+        // shortcutRows = shortcutRows;
+        // let holdThis = this;
         // setTimeout(function() {
         //     console.log('setTimeout randomize running... ');
         //     let oldState = holdThis.state;
         //     holdThis.state["shortcuts"] = randomizeShortcuts(holdThis.shortcuts);
         // }, 10);
 
-        let holdSource = shortcutDataSource.cloneWithRows(shortcutRows);
-        let newState = {
-            shortcutDataSource: holdSource,
-            image: this.props.applicationIconPath ? this.props.applicationIconPath : '' // TODO: Replace with default image,
+        if (!this.state) {
+            // console.log('>>>>>>>> INSIDE !this.state');
+            this.state = {
+                shortcutDataSource: new ListView.DataSource({
+                    rowHasChanged: (row1, row2) => row1 !== row2
+                })
+            };
+            // console.log('>>>>>>>> INSIDE !this.state AFTER: ' + JSON.stringify(this.state));
+        }
+
+        // console.log('>>>>>>>> ABOUT TO SET STATE ' + JSON.stringify(this.state));
+        this.state = {
+            shortcutDataSource: this.state.shortcutDataSource.cloneWithRows(shortcutRows),
+            image: this.props.applicationIconPath ? this.props.applicationIconPath : '', // TODO: Replace with default image,
+            shortcuts: shortcuts
         };
-
-        // newState.fullyInitialized = (newState.shortcutDataSource && newState.image); 
-
-        // if (this.state && this.state.fullyInitialized) {
-        //     console.log('Already initialized, comparing against new props...');
-        //     if (this.state == newState) {
-        //         console.log('Old and new props are the same, skipping');
-        //         return;
-        //     }
-        // }
-
-        console.log('>>> Initializing... ');
-        console.log('newState length: ');
-        console.log(Object.keys(newState).length);
-        this.state = newState;
+        // console.log('>>>>>>>> ABOUT TO SET STATE, AFTER ' + JSON.stringify(this.state));
     },
 
-    componentWillMount() {
-        console.log('>>> componentWillMount() with props: ' + (this.props) ? this.props.length : "No props");
+    componentWillMount: function() {
+        this._pressData = {};
+        // this.initialize();
     },
-
+    
     componentDidMount() {
         console.log('>>> componentDidMount');
         this.initialize();
@@ -162,11 +164,12 @@ const ShortcutWizard = React.createClass({
         console.log('>>> componentWillUpdate() with props: ' + (this.props) ? this.props : "No props" +
             " nextState: " + (nextState) ? nextState.length : "No next state" + 
             " nextProps: " + (nextProps) ? nextProps.length : "No next props");
+        // this.initialize();
     },
 
     componentDidUpdate(prevProps, prevState) {
         console.log('>>> componentDidUpdate() ');
-        this.initialize();
+        // this.initialize();
     },
 
     componentWillUnmount() {
@@ -174,10 +177,6 @@ const ShortcutWizard = React.createClass({
     },
 
     _pressData: ({}: {[key: number]: boolean}),
-
-    componentWillMount: function() {
-        this._pressData = {};
-    },
 
     _pressRow: function(rowID: number) {
         console.log('pressed row: ' + rowID);
@@ -200,9 +199,9 @@ const ShortcutWizard = React.createClass({
         );
     }, 
 
-    _renderRow: function(rowData: string, sectionID: number, rowID: number, highlightRow: (sectionID: number, rowID: number) => void) {
+    _renderRow: function(rowData, sectionID, rowID, highlightRow: (sectionID: number, rowID: number) => void) {
         console.log('Hit render row with row data: ' + JSON.stringify(rowData));
-        if (rowData && rowData.name && rowData.keys.length) {
+        if (rowData) {
             return (
                 <TouchableHighlight onPress={() => {
                         this._pressRow(rowID);
@@ -215,7 +214,9 @@ const ShortcutWizard = React.createClass({
                             </Text>
                             <Text style={styles.textDivider}></Text>
                             <Text style={styles.rowText}>
-                                {rowData.keys}
+                                {rowData.mod}
+                                {rowData.glyph}
+                                {rowData.char}
                             </Text>
                         </View>
                     </View>
@@ -229,7 +230,14 @@ const ShortcutWizard = React.createClass({
     },
 
     render: function() {
+        this.initialize();
+        
         console.log('>>> render hit');
+        if (this.state) {
+            console.log('json stringify state: ' + JSON.stringify(this.state));
+        } else {
+            console.log('state is ' + this.state);
+        }
 
         if (this.state && this.props) {
             return (
