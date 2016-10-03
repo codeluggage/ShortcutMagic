@@ -75,27 +75,38 @@ const ShortcutWizard = React.createClass({
         });
 
         return {
-            dataSource: ds.cloneWithRows(["Loading shortcuts :)"])
+            dataSource: ds.cloneWithRows(["Loading shortcuts", "Please wait :)"])
         };
     },
-    initialize() {
+    _genRows: function(props) {
+        console.log('>>> _genRows called, with props: ' + JSON.stringify(props));
+
         let shortcutRows = [];
-        let shortcuts = this.props.shortcuts;
-        // console.log('|||||||||||| props: ' + JSON.stringify(this.props));
-        // console.log('|||||||||||| shortcuts: ' + JSON.stringify(shortcuts));
-
+        let shortcuts = (props) ? props.shortcuts : (this.props) ? this.props.shortcuts : null;
         if (shortcuts) {
-            let shortcutNames = Object.keys(shortcuts);
-            for (var i = 0; i < shortcutNames.length; i++) {
-                let innerShortcuts = shortcuts[shortcutNames[i]];
-                if (!innerShortcuts || !innerShortcuts == []) continue;
+            // console.log('|||||||||||| props: ' + JSON.stringify(this.props));
+            // console.log('|||||||||||| shortcuts: ' + JSON.stringify(shortcuts));
+                let shortcutNames = Object.keys(shortcuts);
+                for (var i = 0; i < shortcutNames.length; i++) {
+                    console.log('looping genrows: ' + i);
+                    let innerShortcuts = shortcuts[shortcutNames[i]];
+                    if (!innerShortcuts || !innerShortcuts == []) continue;
 
-                let name = innerShortcuts.name;
-                if (!name || name == "") continue;
+                    console.log('looping genrows: ' + innerShortcuts);
 
-                shortcutRows.push(innerShortcuts);
-            } 
+                    let name = innerShortcuts.name;
+                    if (!name || name == "") continue;
 
+                    console.log('looping genrows: ' + name);
+
+                    shortcutRows.push(...innerShortcuts);
+                } 
+        }
+
+        console.log('Returning from _genRows' + shortcutRows);
+        return shortcutRows;
+    },
+    initialize() {
         // Randomize for now... 
         // shortcutRows = randomizeShortcuts(shortcutRows);
         // shortcutRows = shortcutRows;
@@ -109,12 +120,14 @@ const ShortcutWizard = React.createClass({
 
             // console.log('>>>>>>>> ABOUT TO SET STATE ' + JSON.stringify(this.state));
 
+            console.log('in initialise, with genrows: ');
+            console.log(this._genRows());
+
             this.setState({
-                dataSource: this.state.dataSource.cloneWithRows(shortcutRows),
+                dataSource: this.state.dataSource.cloneWithRows(this._genRows()),
                 image: this.props.applicationIconPath ? this.props.applicationIconPath : '', // TODO: Replace with default image,
-                shortcuts: shortcuts
             });
-        }
+        // }
         // console.log('>>>>>>>> ABOUT TO SET STATE, AFTER ' + JSON.stringify(this.state));
     },
 
@@ -157,8 +170,9 @@ const ShortcutWizard = React.createClass({
     //     }
     //     // console.log('>>>>>>>> ABOUT TO SET STATE, AFTER ' + JSON.stringify(this.state));
     // },
-    
+
     componentWillMount: function() {
+        console.log('componentWillMount');
         this._pressData = {};
         // this.initialize();
     },
@@ -207,13 +221,19 @@ const ShortcutWizard = React.createClass({
         );
     }, 
 
-    // componentWillReceiveProps( nextProps ) {
-    //     console.log('componentWillReceiveProps( nextProps )' + JSON.stringify(nextProps));
-    //     this.initializeWithProps(nextProps);
-    //     // this.setState({
-    //     //     dataSource: this.state.dataSource.cloneWithRows( nextProps.data )
-    //     // });
-    // },
+    componentWillReceiveProps( nextProps ) {
+        // console.log('componentWillReceiveProps( nextProps )' + JSON.stringify(nextProps));
+        // this.initializeWithProps(nextProps);
+
+        this.setState({
+            dataSource: this.state.dataSource.cloneWithRows(this._genRows(nextProps)),
+            image: this.props.applicationIconPath ? this.props.applicationIconPath : '', // TODO: Replace with default image,
+        });
+
+        // this.setState({
+        //     dataSource: this.state.dataSource.cloneWithRows( nextProps.data )
+        // });
+    },
 
     _renderRow: function(rowData, sectionID, rowID, highlightRow: (sectionID: number, rowID: number) => void) {
         console.log('Hit render row with row data: ' + JSON.stringify(rowData));
