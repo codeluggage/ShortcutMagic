@@ -69,6 +69,15 @@ function randomizeShortcuts(shortcutRows) {
 
 
 const ShortcutWizard = React.createClass({
+    getInitialState () {
+        var ds = new ListView.DataSource({
+            rowHasChanged: (row1, row2) => row1 !== row2
+        });
+
+        return {
+            dataSource: ds.cloneWithRows(["Loading shortcuts :)"])
+        };
+    },
     initialize() {
         let shortcutRows = [];
         let shortcuts = this.props.shortcuts;
@@ -78,48 +87,14 @@ const ShortcutWizard = React.createClass({
         if (shortcuts) {
             let shortcutNames = Object.keys(shortcuts);
             for (var i = 0; i < shortcutNames.length; i++) {
-                // console.log('loop.... ' + i);
                 let innerShortcuts = shortcuts[shortcutNames[i]];
-                // console.log('innertshorcuts |||| = ' + JSON.stringify(innerShortcuts));
                 if (!innerShortcuts || !innerShortcuts == []) continue;
 
                 let name = innerShortcuts.name;
                 if (!name || name == "") continue;
 
-                shortcutRows.push(innerShortcuts.name);
-
-                // let keys = innerShortcuts.shortcuts;
-                // if (!keys || keys == []) continue;
-
-                // Ignore position in React side for now
-                // let position = innerShortcuts.position;
-                // if (!position || position == [] || position == "") continue;
-
-                // shortcutRows.push({
-                //     "name": name,
-                //     "keys": keys,
-                //     // "position": position
-                // });
-
-                // let mergedShortcut = "";
-                // for (let j = 0; j < innerShortcuts.length; j++) {
-                //     if (j == 1) {
-                //         mergedShortcut = mergedShortcut + " - ";
-                //     } else {
-                //         mergedShortcut = mergedShortcut + " " + innerShortcuts[j];
-                //     }
-                // }
-
-                // if (mergedShortcut && mergedShortcut != "") {
-                //     shortcutRows.push(mergedShortcut);
-                // }
-            // }
-        } 
-    } else if (!shortcutRows.length) {
-            shortcutRows.push({
-                name: "No shortcuts yet..."
-            });
-        }
+                shortcutRows.push(innerShortcuts);
+            } 
 
         // Randomize for now... 
         // shortcutRows = randomizeShortcuts(shortcutRows);
@@ -131,25 +106,58 @@ const ShortcutWizard = React.createClass({
         //     holdThis.state["shortcuts"] = randomizeShortcuts(holdThis.shortcuts);
         // }, 10);
 
-        if (!this.state) {
-            // console.log('>>>>>>>> INSIDE !this.state');
-            this.state = {
-                shortcutDataSource: new ListView.DataSource({
-                    rowHasChanged: (row1, row2) => row1 !== row2
-                })
-            };
-            // console.log('>>>>>>>> INSIDE !this.state AFTER: ' + JSON.stringify(this.state));
-        }
 
-        // console.log('>>>>>>>> ABOUT TO SET STATE ' + JSON.stringify(this.state));
-        this.state = {
-            shortcutDataSource: this.state.shortcutDataSource.cloneWithRows(shortcutRows),
-            image: this.props.applicationIconPath ? this.props.applicationIconPath : '', // TODO: Replace with default image,
-            shortcuts: shortcuts
-        };
+            // console.log('>>>>>>>> ABOUT TO SET STATE ' + JSON.stringify(this.state));
+
+            this.setState({
+                dataSource: this.state.dataSource.cloneWithRows(shortcutRows),
+                image: this.props.applicationIconPath ? this.props.applicationIconPath : '', // TODO: Replace with default image,
+                shortcuts: shortcuts
+            });
+        }
         // console.log('>>>>>>>> ABOUT TO SET STATE, AFTER ' + JSON.stringify(this.state));
     },
 
+    // initializeWithProps(props) {
+    //     let shortcutRows = [];
+    //     let shortcuts = props.shortcuts;
+    //     // console.log('|||||||||||| props: ' + JSON.stringify(this.props));
+    //     // console.log('|||||||||||| shortcuts: ' + JSON.stringify(shortcuts));
+
+    //     if (shortcuts) {
+    //         let shortcutNames = Object.keys(shortcuts);
+    //         for (var i = 0; i < shortcutNames.length; i++) {
+    //             let innerShortcuts = shortcuts[shortcutNames[i]];
+    //             if (!innerShortcuts || !innerShortcuts == []) continue;
+
+    //             let name = innerShortcuts.name;
+    //             if (!name || name == "") continue;
+
+    //             shortcutRows.push(innerShortcuts);
+    //         } 
+
+    //     // Randomize for now... 
+    //     // shortcutRows = randomizeShortcuts(shortcutRows);
+    //     // shortcutRows = shortcutRows;
+    //     // let holdThis = this;
+    //     // setTimeout(function() {
+    //     //     console.log('setTimeout randomize running... ');
+    //     //     let oldState = holdThis.state;
+    //     //     holdThis.state["shortcuts"] = randomizeShortcuts(holdThis.shortcuts);
+    //     // }, 10);
+
+
+    //         // console.log('>>>>>>>> ABOUT TO SET STATE ' + JSON.stringify(this.state));
+
+    //         this.setState({
+    //             dataSource: this.state.dataSource.cloneWithRows(shortcutRows),
+    //             image: this.props.applicationIconPath ? this.props.applicationIconPath : '', // TODO: Replace with default image,
+    //             shortcuts: shortcuts
+    //         });
+    //     }
+    //     // console.log('>>>>>>>> ABOUT TO SET STATE, AFTER ' + JSON.stringify(this.state));
+    // },
+    
     componentWillMount: function() {
         this._pressData = {};
         // this.initialize();
@@ -182,7 +190,7 @@ const ShortcutWizard = React.createClass({
         console.log('pressed row: ' + rowID);
 
         this._pressData[rowID] = !this._pressData[rowID];
-        // this.setState({shortcutDataSource: this.state.shortcutDataSource.cloneWithRows(
+        // this.setState({dataSource: this.state.dataSource.cloneWithRows(
         //     this._genRows(this._pressData)
         // )});
     },
@@ -198,6 +206,14 @@ const ShortcutWizard = React.createClass({
             />
         );
     }, 
+
+    // componentWillReceiveProps( nextProps ) {
+    //     console.log('componentWillReceiveProps( nextProps )' + JSON.stringify(nextProps));
+    //     this.initializeWithProps(nextProps);
+    //     // this.setState({
+    //     //     dataSource: this.state.dataSource.cloneWithRows( nextProps.data )
+    //     // });
+    // },
 
     _renderRow: function(rowData, sectionID, rowID, highlightRow: (sectionID: number, rowID: number) => void) {
         console.log('Hit render row with row data: ' + JSON.stringify(rowData));
@@ -223,15 +239,13 @@ const ShortcutWizard = React.createClass({
                 </TouchableHighlight>
             );
         } else {
-            return (
-                <View style={styles.row}> </View>
-            );
+            return ( <Text>No row</Text> );
         }
     },
 
     render: function() {
-        this.initialize();
-        
+        // this.initialize();
+
         console.log('>>> render hit');
         if (this.state) {
             console.log('json stringify state: ' + JSON.stringify(this.state));
@@ -249,7 +263,7 @@ const ShortcutWizard = React.createClass({
                     <Text style={styles.textDivider} > </Text>
 
                     <ListView 
-                        dataSource={this.state.shortcutDataSource}
+                        dataSource={this.state.dataSource}
                         ref={(scrollView) => { _scrollView = scrollView; }}
                         automaticallyAdjustContentInsets={false}
                         style={styles.scrollView}
