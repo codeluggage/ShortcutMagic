@@ -454,21 +454,17 @@
 //                            @"applicationIconPath": self.currentIconPath}];
       
         // Case 2 - Read from user defaults:
-        NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
-        NSDictionary *shortcuts = nil;
-        NSLog(@"standard userdefaults: %@", standardUserDefaults);
-        if (standardUserDefaults) {
-            shortcuts = [standardUserDefaults dictionaryForKey:self.currentApplicationName];
+        NSDictionary *shortcuts = [[NSUserDefaults standardUserDefaults] dictionaryForKey:self.currentApplicationName];
+        if (shortcuts) {
             NSLog(@"CASE 2 - shortcuts from user defaults: %@", shortcuts);
-            NSInteger shortcutCount = [shortcuts count];
-            if (shortcutCount) {
+//            NSInteger shortcutCount = [shortcuts count];
+          
                 [self updateProps:@{
                     @"applicationName": self.currentApplicationName,
                     @"applicationIconPath": self.currentIconPath,
                     @"shortcuts": shortcuts
                 }];
                 return;
-            }
         }
       
         //NSLog(@"About to run check shortcuts in dict: %@", [shortcuts allKeys]);
@@ -512,6 +508,7 @@
 
 -(void)updateProps:(NSDictionary *)newProps
 {
+    NSLog(@"Sending new props with count: %ld", [[newProps objectForKey:@"shortcuts"] count]);
     self.props = newProps;
     self.rootView.appProperties = self.props;
 }

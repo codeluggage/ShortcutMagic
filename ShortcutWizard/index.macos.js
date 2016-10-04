@@ -75,61 +75,78 @@ const ShortcutWizard = React.createClass({
         });
 
         return {
+            ds: ds,
             dataSource: ds.cloneWithRows(["Loading shortcuts", "Please wait :)"])
         };
     },
     _genRows: function(props) {
         console.log('>>> _genRows called, with props: ' + JSON.stringify(props));
 
+    },
+    initialize() {
         let shortcutRows = [];
-        let shortcuts = (props) ? props.shortcuts : (this.props) ? this.props.shortcuts : null;
+        let shortcuts = (this.props) ? this.props.shortcuts : null;
         if (shortcuts) {
             // console.log('|||||||||||| props: ' + JSON.stringify(this.props));
             // console.log('|||||||||||| shortcuts: ' + JSON.stringify(shortcuts));
-                let shortcutNames = Object.keys(shortcuts);
-                for (var i = 0; i < shortcutNames.length; i++) {
-                    console.log('looping genrows: ' + i);
-                    let innerShortcuts = shortcuts[shortcutNames[i]];
-                    if (!innerShortcuts || !innerShortcuts == []) continue;
+            let shortcutNames = Object.keys(shortcuts);
+            for (var i = 0; i < shortcutNames.length; i++) {
+                // console.log('looping : ' + i);
+                // console.log('looping >: ' + shortcutNames[i]);
+                let innerShortcuts = shortcuts[shortcutNames[i]];
+                // console.log('looping >: ' + innerShortcuts);
 
-                    console.log('looping genrows: ' + innerShortcuts);
+                if (!innerShortcuts || innerShortcuts == []) continue;
 
-                    let name = innerShortcuts.name;
-                    if (!name || name == "") continue;
+                let name = innerShortcuts.name;
+                // console.log('looping >: ' + name);
 
-                    console.log('looping genrows: ' + name);
+                if (!name || name == "") continue;
 
-                    shortcutRows.push(...innerShortcuts);
-                } 
+                // console.log('looping genrows: ' + name);
+
+                let mergedString = "";
+                let innerValues = Object.keys(innerShortcuts);
+                for (var j = 0; j < innerValues.length; j++) {
+                    let innerKey = innerValues[j];
+                    let innerValue = innerShortcuts[innerValues[j]];
+                    console.log('>>> inner loop 2 key: ' + innerKey + ' val: ' + innerValue);
+                    if (!innerKey || !innerValue) continue;
+
+                    mergedString += innerKey + ": " + innerValue + " ";
+                }
+
+                if (mergedString == "") continue;
+
+                console.log('>>> made it through, writing string: ' + mergedString);
+                shortcutRows.push(mergedString);
+            } 
         }
 
-        console.log('Returning from _genRows' + shortcutRows);
-        return shortcutRows;
-    },
-    initialize() {
-        // Randomize for now... 
-        // shortcutRows = randomizeShortcuts(shortcutRows);
-        // shortcutRows = shortcutRows;
-        // let holdThis = this;
-        // setTimeout(function() {
-        //     console.log('setTimeout randomize running... ');
-        //     let oldState = holdThis.state;
-        //     holdThis.state["shortcuts"] = randomizeShortcuts(holdThis.shortcuts);
-        // }, 10);
-
-
-            // console.log('>>>>>>>> ABOUT TO SET STATE ' + JSON.stringify(this.state));
-
-            console.log('in initialise, with genrows: ');
-            console.log(this._genRows());
-
-            this.setState({
-                dataSource: this.state.dataSource.cloneWithRows(this._genRows()),
-                image: this.props.applicationIconPath ? this.props.applicationIconPath : '', // TODO: Replace with default image,
+        console.log('Returning from initialize, "genrows" length: ' + shortcutRows.length);
+        let dataSource;
+        if (!this.state || !this.state.datasource) {
+            dataSource = new ListView.DataSource({
+                rowHasChanged: (row1, row2) => row1 !== row2
             });
-        // }
-        // console.log('>>>>>>>> ABOUT TO SET STATE, AFTER ' + JSON.stringify(this.state));
+        } else {
+            dataSource = this.state.dataSource;
+        }
+
+        if (shortcutRows.length == 0) {
+            shortcutRows.push("No shortcuts read");
+        }
+
+        var newState = {
+            dataSource: dataSource.cloneWithRows(shortcutRows),
+            // dataSource: shortcutRows.length ? this.state.ds.cloneWithRows(shortcutRows) : null,
+            image: this.props.applicationIconPath ? this.props.applicationIconPath : ''
+        };
+
+        console.log('>> setting state to: ' + JSON.stringify(newState));
+        this.state = newState;
     },
+
 
     // initializeWithProps(props) {
     //     let shortcutRows = [];
@@ -221,14 +238,16 @@ const ShortcutWizard = React.createClass({
         );
     }, 
 
-    componentWillReceiveProps( nextProps ) {
+    componentDidReceiveProps() {
+        this.initialize();
+        // console.log('>>>>> componentWillReceiveProps: ' + JSON.stringify(nextProps));
         // console.log('componentWillReceiveProps( nextProps )' + JSON.stringify(nextProps));
         // this.initializeWithProps(nextProps);
 
-        this.setState({
-            dataSource: this.state.dataSource.cloneWithRows(this._genRows(nextProps)),
-            image: this.props.applicationIconPath ? this.props.applicationIconPath : '', // TODO: Replace with default image,
-        });
+        // this.setState({
+        //     dataSource: this.state.dataSource.cloneWithRows(this._genRows(nextProps)),
+        //     image: this.props.applicationIconPath ? this.props.applicationIconPath : '', // TODO: Replace with default image,
+        // });
 
         // this.setState({
         //     dataSource: this.state.dataSource.cloneWithRows( nextProps.data )
@@ -259,7 +278,7 @@ const ShortcutWizard = React.createClass({
                 </TouchableHighlight>
             );
         } else {
-            return ( <Text>No row</Text> );
+            return ( <View><Text>No row</Text></View> );
         }
     },
 
