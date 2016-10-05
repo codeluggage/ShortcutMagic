@@ -423,29 +423,31 @@
 {
     NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
     NSRunningApplication* currentAppInfo = [workspace frontmostApplication];
-    NSString *newAppName = [currentAppInfo localizedName];
+    __block NSString *newAppName = [currentAppInfo localizedName];
     if ([newAppName isEqualToString:@"ShortcutWizard"]) {
         NSLog(@"Switching to ShortcutWizard - TODO: SHOW UI");
         return;
     }
     self.currentApplicationName = newAppName;
     [self updateApplicationIcon:currentAppInfo];
+  
+    __block NSString *newAppIconPath = self.currentIconPath;
 
     // todo: combine this with similar calls below
-    NSDictionary *currentShortcuts = [self.shortcuts objectForKey:self.currentApplicationName];
+    NSDictionary *currentShortcuts = [self.shortcuts objectForKey:newAppName];
     NSInteger currentShortcutsCount = [currentShortcuts count];
     if (currentShortcutsCount) {
         // Case 1 - our shortcuts already exist in memory
-        NSLog(@"CASE 1 - for %@ found: %ld", self.currentApplicationName, currentShortcutsCount);
+        NSLog(@"CASE 1 - for %@ found: %ld", newAppName, currentShortcutsCount);
       
         [self updateProps:@{
-            @"applicationName": self.currentApplicationName,
-            @"applicationIconPath": self.currentIconPath,
+            @"applicationName": newAppName,
+            @"applicationIconPath": newAppIconPath,
             @"shortcuts": currentShortcuts
         }];
     } else {
-//        [self updateProps:@{@"applicationName": self.currentApplicationName,
-//                            @"applicationIconPath": self.currentIconPath}];
+//        [self updateProps:@{@"applicationName": newAppName,
+//                            @"applicationIconPath": newAppIconPath}];
       
         // Case 2 - Read from user defaults:
         NSDictionary *shortcuts = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"shortcuts"];
@@ -453,11 +455,11 @@
             self.shortcuts = shortcuts;
             NSLog(@"CASE 2 - shortcuts from user defaults count: %ld, keys: %@", [self.shortcuts count], [self.shortcuts allKeys]);
 //            NSInteger shortcutCount = [shortcuts count];
-          NSDictionary *appilcationShortcuts = [self.shortcuts objectForKey:self.currentApplicationName];
+          NSDictionary *appilcationShortcuts = [self.shortcuts objectForKey:newAppName];
           if (appilcationShortcuts) {
                 [self updateProps:@{
-                    @"applicationName": self.currentApplicationName,
-                    @"applicationIconPath": self.currentIconPath,
+                    @"applicationName": newAppName,
+                    @"applicationIconPath": newAppIconPath,
                     @"shortcuts": appilcationShortcuts
                 }];
                 return;
@@ -465,21 +467,24 @@
         }
       
       
-        NSLog(@"Calling readMenuItems with name: %@, already have keys: %@", self.currentApplicationName, [self.shortcuts allKeys]);
-        [self readMenuItems:self.currentApplicationName withBlock:^(NSDictionary *shortcuts) {
+        NSLog(@"Calling readMenuItems with name: %@, already have keys: %@", newAppName, [self.shortcuts allKeys]);
+        [self readMenuItems:newAppName withBlock:^(NSDictionary *shortcuts) {
           
             NSLog(@"CASE 3 - returned block count: %ld", [shortcuts count]);
             if (self.shortcuts) {
+              
               NSMutableDictionary *merge = [NSMutableDictionary dictionaryWithDictionary:self.shortcuts];
-              [merge addEntriesFromDictionary:[[NSDictionary alloc] initWithObjectsAndKeys:shortcuts, self.currentApplicationName, nil]];
+              [merge addEntriesFromDictionary:[[NSDictionary alloc] initWithObjectsAndKeys:shortcuts, newAppName, nil]];
+              
+              NSLog(@"inside case3 and self.shortcuts existed already, merged = %@", merge);
               self.shortcuts = [NSDictionary dictionaryWithDictionary:merge];
             } else {
-              self.shortcuts = [[NSDictionary alloc] initWithObjectsAndKeys:shortcuts, self.currentApplicationName, nil];
+              self.shortcuts = [[NSDictionary alloc] initWithObjectsAndKeys:shortcuts, newAppName, nil];
             }
           
             [self updateProps:@{
-                @"applicationName": self.currentApplicationName,
-                @"applicationIconPath": self.currentIconPath,
+                @"applicationName": newAppName,
+                @"applicationIconPath": newAppIconPath,
                 @"shortcuts": shortcuts
             }];
 

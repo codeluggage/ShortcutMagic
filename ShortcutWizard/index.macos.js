@@ -84,6 +84,7 @@ const ShortcutWizard = React.createClass({
 
     // },
     initialize() {
+        console.log('>> initialize hit');
         let shortcutRows = [];
         let shortcuts = (this.props) ? this.props.shortcuts : null;
         if (shortcuts) {
@@ -164,6 +165,7 @@ const ShortcutWizard = React.createClass({
 
 
 
+        console.log('>> initialize - setting state for name: ' + this.props.applicationName);
         this.state = newState;
     },
 
@@ -229,7 +231,7 @@ const ShortcutWizard = React.createClass({
 
     componentDidUpdate(prevProps, prevState) {
         console.log(' componentDidUpdate() ');
-        this.initialize();
+        // this.initialize();
     },
 
     componentWillUnmount() {
@@ -260,7 +262,7 @@ const ShortcutWizard = React.createClass({
     }, 
 
     componentDidReceiveProps() {
-        this.initialize();
+        // this.initialize();
         // console.log(' componentWillReceiveProps: ' + JSON.stringify(nextProps));
         // console.log('componentWillReceiveProps( nextProps )' + JSON.stringify(nextProps));
         // this.initializeWithProps(nextProps);
@@ -318,7 +320,7 @@ const ShortcutWizard = React.createClass({
     },
 
     render: function() {
-        // this.initialize();
+        this.initialize();
 
         console.log('>>> render hit');
         // if (this.state) {
