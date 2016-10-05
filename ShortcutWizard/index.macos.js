@@ -79,10 +79,10 @@ const ShortcutWizard = React.createClass({
             dataSource: ds.cloneWithRows(["Loading shortcuts", "Please wait :)"])
         };
     },
-    _genRows: function(props) {
-        console.log('>>> _genRows called, with props: ' + JSON.stringify(props));
+    // _genRows: function(props) {
+    //     console.log('--- _genRows called, with props: ' + JSON.stringify(props));
 
-    },
+    // },
     initialize() {
         let shortcutRows = [];
         let shortcuts = (this.props) ? this.props.shortcuts : null;
@@ -103,27 +103,29 @@ const ShortcutWizard = React.createClass({
 
                 if (!name || name == "") continue;
 
+                shortcutRows.push(name);
+
                 // console.log('looping genrows: ' + name);
 
-                let mergedString = "";
-                let innerValues = Object.keys(innerShortcuts);
-                for (var j = 0; j < innerValues.length; j++) {
-                    let innerKey = innerValues[j];
-                    let innerValue = innerShortcuts[innerValues[j]];
-                    console.log('>>> inner loop 2 key: ' + innerKey + ' val: ' + innerValue);
-                    if (!innerKey || !innerValue) continue;
+                // let mergedString = "";
+                // let innerValues = Object.keys(innerShortcuts);
+                // for (var j = 0; j < innerValues.length; j++) {
+                //     let innerKey = innerValues[j];
+                //     let innerValue = innerShortcuts[innerValues[j]];
+                //     // console.log('--- inner loop 2 key: ' + innerKey + ' val: ' + innerValue);
+                //     if (!innerKey || !innerValue) continue;
 
-                    mergedString += innerKey + ": " + innerValue + " ";
-                }
+                //     mergedString += innerKey + ": " + innerValue + " ";
+                // }
 
-                if (mergedString == "") continue;
+                // if (mergedString == "") continue;
 
-                console.log('>>> made it through, writing string: ' + mergedString);
-                shortcutRows.push(mergedString);
+                // console.log('---- made it through, writing string: ' + mergedString);
+                // shortcutRows.push(mergedString);
             } 
         }
 
-        console.log('Returning from initialize, "genrows" length: ' + shortcutRows.length);
+        // console.log('Returning from initialize, "genrows" length: ' + shortcutRows.length);
         let dataSource;
         if (!this.state || !this.state.datasource) {
             dataSource = new ListView.DataSource({
@@ -137,13 +139,31 @@ const ShortcutWizard = React.createClass({
             shortcutRows.push("No shortcuts read");
         }
 
+        // Randomize for now... 
+        shortcutRows = randomizeShortcuts(shortcutRows);
+        // let holdThis = this;
+        // setTimeout(function() {
+        //     shortcutRows = randomizeShortcuts(holdThis.shortcutRows)
+        //     var newState = {
+        //         ...holdThis.state,
+        //         shortcutRows: shortcutRows,
+        //         dataSource: dataSource.cloneWithRows(shortcutRows),
+        //     };
+        //     holdThis.state = newState;
+        // }, 10);
+
         var newState = {
+            shortcutRows: shortcutRows,
+            // dataSource: dataSource.cloneWithRows(["1", "2", "3"]),
             dataSource: dataSource.cloneWithRows(shortcutRows),
             // dataSource: shortcutRows.length ? this.state.ds.cloneWithRows(shortcutRows) : null,
             image: this.props.applicationIconPath ? this.props.applicationIconPath : ''
         };
 
-        console.log('>> setting state to: ' + JSON.stringify(newState));
+        // console.log('--- setting state to: ' + JSON.stringify(newState));
+
+
+
         this.state = newState;
     },
 
@@ -177,7 +197,7 @@ const ShortcutWizard = React.createClass({
     //     // }, 10);
 
 
-    //         // console.log('>>>>>>>> ABOUT TO SET STATE ' + JSON.stringify(this.state));
+    //         // console.log('ABOUT TO SET STATE ' + JSON.stringify(this.state));
 
     //         this.setState({
     //             dataSource: this.state.dataSource.cloneWithRows(shortcutRows),
@@ -185,7 +205,7 @@ const ShortcutWizard = React.createClass({
     //             shortcuts: shortcuts
     //         });
     //     }
-    //     // console.log('>>>>>>>> ABOUT TO SET STATE, AFTER ' + JSON.stringify(this.state));
+    //     // console.log('ABOUT TO SET STATE, AFTER ' + JSON.stringify(this.state));
     // },
 
     componentWillMount: function() {
@@ -195,24 +215,24 @@ const ShortcutWizard = React.createClass({
     },
     
     componentDidMount() {
-        console.log('>>> componentDidMount');
+        console.log(' componentDidMount');
         this.initialize();
     },
 
     componentWillUpdate(nextProps, nextState) {
-        console.log('>>> componentWillUpdate() with props: ' + (this.props) ? this.props : "No props" +
+        console.log(' componentWillUpdate() with props: ' + (this.props) ? this.props : "No props" +
             " nextState: " + (nextState) ? nextState.length : "No next state" + 
             " nextProps: " + (nextProps) ? nextProps.length : "No next props");
         // this.initialize();
     },
 
     componentDidUpdate(prevProps, prevState) {
-        console.log('>>> componentDidUpdate() ');
-        // this.initialize();
+        console.log(' componentDidUpdate() ');
+        this.initialize();
     },
 
     componentWillUnmount() {
-        console.log('>>> componentWillUnmount() props:' + (this.props) ? this.props.length : "No props");
+        console.log(' componentWillUnmount() props:' + (this.props) ? this.props.length : "No props");
     },
 
     _pressData: ({}: {[key: number]: boolean}),
@@ -240,7 +260,7 @@ const ShortcutWizard = React.createClass({
 
     componentDidReceiveProps() {
         this.initialize();
-        // console.log('>>>>> componentWillReceiveProps: ' + JSON.stringify(nextProps));
+        // console.log(' componentWillReceiveProps: ' + JSON.stringify(nextProps));
         // console.log('componentWillReceiveProps( nextProps )' + JSON.stringify(nextProps));
         // this.initializeWithProps(nextProps);
 
@@ -254,9 +274,31 @@ const ShortcutWizard = React.createClass({
         // });
     },
 
-    _renderRow: function(rowData, sectionID, rowID, highlightRow: (sectionID: number, rowID: number) => void) {
-        console.log('Hit render row with row data: ' + JSON.stringify(rowData));
+    _renderRow: function(rowData: string, sectionID: number, rowID: number, highlightRow: (sectionID: number, rowID: number) => void) {
+        // console.log('Hit render row with row data: ' + JSON.stringify(rowData));
+        // console.log('Hit render row with : ' + sectionID + " " + rowID);
         if (rowData) {
+            let shortcut = (this.state && this.state.shortcuts) ? this.state.shortcuts[rowId] : undefined;
+
+            // fix these ifs
+            let title = shortcut ? (
+                <Text style={styles.rowText}>
+                    {shortcut}
+                </Text>
+            ) : (
+                <Text style={styles.rowText}>
+                    {rowData}
+                </Text>
+            );
+
+            let card = shortcut ? (
+                <Text style={styles.rowText}>
+                    {shortcut.mod ? shortcut.mod : undefined}}
+                    {shortcut.glyph ? shortcut.glyph : undefined}}
+                    {shortcut.char ? shortcut.char : undefined}
+                </Text>
+            ) : undefined;
+
             return (
                 <TouchableHighlight onPress={() => {
                         this._pressRow(rowID);
@@ -264,21 +306,13 @@ const ShortcutWizard = React.createClass({
                     }}>
                     <View>
                         <View style={styles.row}>
-                            <Text style={styles.rowText}>
-                                {rowData.name}
-                            </Text>
+                            {title}
                             <Text style={styles.textDivider}></Text>
-                            <Text style={styles.rowText}>
-                                {rowData.mod}
-                                {rowData.glyph}
-                                {rowData.char}
-                            </Text>
+                            {card}
                         </View>
                     </View>
                 </TouchableHighlight>
             );
-        } else {
-            return ( <View><Text>No row</Text></View> );
         }
     },
 
@@ -286,18 +320,18 @@ const ShortcutWizard = React.createClass({
         // this.initialize();
 
         console.log('>>> render hit');
-        if (this.state) {
-            console.log('json stringify state: ' + JSON.stringify(this.state));
-        } else {
-            console.log('state is ' + this.state);
-        }
+        // if (this.state) {
+        //     console.log('json stringify state: ' + JSON.stringify(this.state));
+        // } else {
+        //     console.log('NO STATE IN RENDER');
+        // }
 
-        if (this.state && this.props) {
+        if (this.state) {
             return (
                 <View style={styles.view}>
                     <Text style={styles.titleText}>{ (this.props) ? this.props.applicationName : "Starting..." }</Text>
 
-                    <Image style={styles.image} source={{uri: this.props.applicationIconPath}} />
+                    <Image style={styles.image} source={{uri: (this.props) ? this.props.applicationIconPath : "" }} />
 
                     <Text style={styles.textDivider} > </Text>
 
