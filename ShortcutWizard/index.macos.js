@@ -220,9 +220,10 @@ const ShortcutWizard = React.createClass({
     },
 
     componentWillUpdate(nextProps, nextState) {
-        console.log(' componentWillUpdate() with props: ' + (this.props) ? this.props : "No props" +
-            " nextState: " + (nextState) ? nextState.length : "No next state" + 
-            " nextProps: " + (nextProps) ? nextProps.length : "No next props");
+        console.log('componentWillUpdate');
+        // console.log(' componentWillUpdate() with props: ' + (this.props) ? this.props : "No props" +
+        //     " nextState: " + (nextState) ? nextState.length : "No next state" + 
+        //     " nextProps: " + (nextProps) ? nextProps.length : "No next props");
         // this.initialize();
     },
 

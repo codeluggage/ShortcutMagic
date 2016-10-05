@@ -286,12 +286,6 @@
 {
   NSLog(@"About to call readMenuItems with %@", applicationName);
   
-  NSDictionary *applicationShortcuts = [self.shortcuts objectForKey:applicationName];
-  if (applicationShortcuts) {
-    callback(applicationShortcuts);
-    return;
-  }
-  
   [[NSOperationQueue mainQueue] addOperationWithBlock:^{
     NSDictionary<NSString *,id> *errorInfo;
     NSAppleEventDescriptor *desc = [self.appleScript executeHandlerWithName:@"readShortcuts"
@@ -392,38 +386,38 @@
   }];
 }
 
-- (void)savePropsToPreferences
-{
-  // Register the preference defaults early.
-
-  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  NSMutableDictionary *shortcuts = [[NSMutableDictionary alloc] init];
-  [self.shortcuts enumerateKeysAndObjectsUsingBlock:^(NSString * key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-    NSLog(@"looping with %@", obj);
-    
-    // TODO: 
-    
-    
-    [shortcuts setObject:obj forKey:key];
-//    [defaults setDictionary:@{
-//                              [NSNumber numberWithInteger:
-//                               } forKey:@"CacheDataAggressively"];
-  }];
-  
-
-//  [defaults setObject:[NSDate dateWithTimeIntervalSinceNow:(3600 * 24 * 7)]
-//               forKey:@"CacheExpirationDate"]; // Set a 1-week expiration
-  
-  [defaults synchronize];
-  
-  // The user wants to use lazy caching.
-  //[defaults setBool:NO forKey:@"CacheDataAggressively"];
-  //[defaults removeObjectForKey:@"CacheExpirationDate"];
-  
-  
-  
-  // Other initialization...
-}
+//- (void)savePropsToPreferences
+//{
+//  // Register the preference defaults early.
+//
+//  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+//  NSMutableDictionary *shortcuts = [[NSMutableDictionary alloc] init];
+//  [self.shortcuts enumerateKeysAndObjectsUsingBlock:^(NSString * key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+//    NSLog(@"looping with %@", obj);
+//    
+//    // TODO: 
+//    
+//    
+//    [shortcuts setObject:obj forKey:key];
+////    [defaults setDictionary:@{
+////                              [NSNumber numberWithInteger:
+////                               } forKey:@"CacheDataAggressively"];
+//  }];
+//  
+//
+////  [defaults setObject:[NSDate dateWithTimeIntervalSinceNow:(3600 * 24 * 7)]
+////               forKey:@"CacheExpirationDate"]; // Set a 1-week expiration
+//  
+//  [defaults synchronize];
+//  
+//  // The user wants to use lazy caching.
+//  //[defaults setBool:NO forKey:@"CacheDataAggressively"];
+//  //[defaults removeObjectForKey:@"CacheExpirationDate"];
+//  
+//  
+//  
+//  // Other initialization...
+//}
 
 - (void)prepareProps
 {
@@ -454,49 +448,48 @@
 //                            @"applicationIconPath": self.currentIconPath}];
       
         // Case 2 - Read from user defaults:
-        NSDictionary *shortcuts = [[NSUserDefaults standardUserDefaults] dictionaryForKey:self.currentApplicationName];
+        NSDictionary *shortcuts = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"shortcuts"];
         if (shortcuts) {
-            NSLog(@"CASE 2 - shortcuts from user defaults: %@", shortcuts);
+            self.shortcuts = shortcuts;
+            NSLog(@"CASE 2 - shortcuts from user defaults count: %ld, keys: %@", [self.shortcuts count], [self.shortcuts allKeys]);
 //            NSInteger shortcutCount = [shortcuts count];
-          
+          NSDictionary *appilcationShortcuts = [self.shortcuts objectForKey:self.currentApplicationName];
+          if (appilcationShortcuts) {
                 [self updateProps:@{
                     @"applicationName": self.currentApplicationName,
                     @"applicationIconPath": self.currentIconPath,
-                    @"shortcuts": shortcuts
+                    @"shortcuts": appilcationShortcuts
                 }];
                 return;
+          }
         }
       
-        //NSLog(@"About to run check shortcuts in dict: %@", [shortcuts allKeys]);
-
-            [self readMenuItems:self.currentApplicationName withBlock:^(NSDictionary *shortcuts) {
-              
-                NSLog(@"CASE 3 - returned block count: %ld", [shortcuts count]);
-                self.shortcuts = [[NSDictionary alloc] initWithObjectsAndKeys:shortcuts, self.currentApplicationName, nil];
-
-                if (!self.props) {
-                    [self updateProps:@{
-                        @"applicationName": self.currentApplicationName,
-                        @"applicationIconPath": self.currentIconPath,
-                        @"shortcuts": shortcuts
-                    }];
-                } else {
-                    NSMutableDictionary *newDict = [NSMutableDictionary dictionaryWithDictionary:self.props];
-                    newDict[@"applicationName"] = self.currentApplicationName;
-                    newDict[@"applicationIconPath"] = self.currentIconPath;
-                    newDict[@"shortcuts"] = shortcuts;
-                    [self updateProps:[NSDictionary dictionaryWithDictionary:newDict]];
-                }
-
-                NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
-                if (standardUserDefaults) {
-                    // TODO: Will this work correctly with just 1 set of shortcuts?
-                    [standardUserDefaults setObject:shortcuts forKey:self.currentApplicationName];
-                    [standardUserDefaults synchronize];
-                    NSLog(@"CASE 3 - also synchronizing");
-                }
-            }];
       
+        NSLog(@"Calling readMenuItems with name: %@, already have keys: %@", self.currentApplicationName, [self.shortcuts allKeys]);
+        [self readMenuItems:self.currentApplicationName withBlock:^(NSDictionary *shortcuts) {
+          
+            NSLog(@"CASE 3 - returned block count: %ld", [shortcuts count]);
+            if (self.shortcuts) {
+              NSMutableDictionary *merge = [NSMutableDictionary dictionaryWithDictionary:self.shortcuts];
+              [merge addEntriesFromDictionary:[[NSDictionary alloc] initWithObjectsAndKeys:shortcuts, self.currentApplicationName, nil]];
+              self.shortcuts = [NSDictionary dictionaryWithDictionary:merge];
+            } else {
+              self.shortcuts = [[NSDictionary alloc] initWithObjectsAndKeys:shortcuts, self.currentApplicationName, nil];
+            }
+          
+            [self updateProps:@{
+                @"applicationName": self.currentApplicationName,
+                @"applicationIconPath": self.currentIconPath,
+                @"shortcuts": shortcuts
+            }];
+
+            NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
+            if (standardUserDefaults) {
+                [standardUserDefaults setObject:self.shortcuts forKey:@"shortcuts"];
+                [standardUserDefaults synchronize];
+                NSLog(@"CASE 3 - also synchronizing");
+            }
+        }];
     }
 }
 
@@ -508,7 +501,23 @@
 
 -(void)updateProps:(NSDictionary *)newProps
 {
-    NSLog(@"Sending new props with count: %ld", [[newProps objectForKey:@"shortcuts"] count]);
+    NSLog(@"Sending new props with shortcut: %@ count: %ld", [newProps objectForKey:@"applicationName"], [[newProps objectForKey:@"shortcuts"] count]);
+
+  // TODO: merge this
+//  if (!self.props) {
+//    [self updateProps:@{
+//                        @"applicationName": self.currentApplicationName,
+//                        @"applicationIconPath": self.currentIconPath,
+//                        @"shortcuts": shortcuts
+//                        }];
+//  } else {
+//    NSMutableDictionary *newDict = [NSMutableDictionary dictionaryWithDictionary:self.props];
+//    newDict[@"applicationName"] = self.currentApplicationName;
+//    newDict[@"applicationIconPath"] = self.currentIconPath;
+//    newDict[@"shortcuts"] = shortcuts;
+//    [self updateProps:[NSDictionary dictionaryWithDictionary:newDict]];
+//  }
+  
     self.props = newProps;
     self.rootView.appProperties = self.props;
 }
