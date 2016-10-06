@@ -218,7 +218,7 @@ const ShortcutWizard = React.createClass({
     _pressData: ({}: {[key: number]: boolean}),
 
     _pressRow: function(rowID: number) {
-        console.log('pressed row: ' + rowID);
+        console.log('pressed row: ' + rowID + " with value: " + this.props.shortcuts[rowID]);
 
         this._pressData[rowID] = !this._pressData[rowID];
         // this.setState({dataSource: this.state.dataSource.cloneWithRows(
@@ -299,6 +299,7 @@ const ShortcutWizard = React.createClass({
 
             return (
                 <TouchableHighlight onPress={() => {
+                        console.log('ORIGINAL CLOSURE VALUE FOR ROW: ' + shortcut + " json: " + JSON.stringify(shortcut));
                         this._pressRow(rowID);
                         highlightRow(sectionID, rowID);
                     }}>

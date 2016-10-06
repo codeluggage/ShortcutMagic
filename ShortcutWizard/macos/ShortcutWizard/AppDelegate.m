@@ -320,7 +320,7 @@
             
             if ([set count] > 1) {
               NSDictionary *newMerged = [self explainOrKeep:set];
-              if ([newMerged count] > 1) {
+              if ([newMerged count] > 2 && ([newMerged objectForKey:@"char"] || [newMerged objectForKey:@"glyph"])) {
                 [info setObject:newMerged forKey:newMerged[@"name"]];
                 [set removeAllObjects];
               }
@@ -364,8 +364,11 @@
           }
           
           NSDictionary *newMerged = [self explainOrKeep:set];
-          if (newMerged) {
+            if ([newMerged count] > 2 && ([newMerged objectForKey:@"char"] || [newMerged objectForKey:@"glyph"])) {
+            
             [info setObject:newMerged forKey:newMerged[@"name"]];
+            [set removeAllObjects];
+          } else {
             [set removeAllObjects];
           }
         }
