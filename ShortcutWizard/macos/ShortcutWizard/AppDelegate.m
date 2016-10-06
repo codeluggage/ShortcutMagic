@@ -69,8 +69,7 @@
       } else if (nextCmdMod) {
         nextCmdMod = NO;
         
-        NSString *mod = @"Unknown";
-        
+        NSString *mod = nil;
         NSInteger switchCase = [obj integerValue];
         
     switch (switchCase) {
@@ -98,9 +97,10 @@
       case 7:
         mod = @"⌃⌥⇧⌘";
         break;
-      case 8:
-        mod = @"-";
-        break;
+        // TOOD: Determine what '8' is in this key table
+//      case 8:
+//        mod = @"-";
+//        break;
       case 9:
         mod = @"⇧";
         break;
@@ -124,13 +124,16 @@
         break;
       }
 
-        [newSet setObject:mod forKey:@"mod"];
+        if (mod) {
+          [newSet setObject:mod forKey:@"mod"];
+        }
     } else if (nextCmdGlyph) {
         nextCmdGlyph = NO;
         
         NSInteger switchCase = [obj integerValue];
-        NSString *glyph = @"Unknown";
+        NSString *glyph = nil;
        
+        // set menuglyphs to text items of "2 ⇥ 3 ⇤ 4 ⌤ 9 ␣ 10 ⌦ 11 ↩ 16 ↓ 23 ⌫ 24 ← 25 ↑ 26 → 27 ⎋ 28 ⌧ 98 ⇞ 99 ⇪ 100 ← 101 → 102 ↖ 104 ↑ 105 ↘ 106 ↓ 107 ⇟ 111 F1 112 F2 113 F3 114 F4 115 F5 116 F6 117 F7 118 F8 119 F9 120 F10 121 F11 122 F12 135 F13 136 F14 137 F15 140 ⏏ 143 F16 144 F17 145 F18 146 F19"
         switch (switchCase) {
           case 2:
             glyph = @"⇥";
@@ -142,7 +145,7 @@
             glyph = @"⌤";
             break;
           case 9:
-            glyph = @"␣";
+            glyph = @"Space";
             break;
           case 10:
             glyph = @"⌦";
@@ -260,9 +263,10 @@
             break;
         }
 
-        [newSet setObject:glyph forKey:@"glyph"];
+        if (glyph) {
+          [newSet setObject:glyph forKey:@"glyph"];
+        }
 
-        // set menuglyphs to text items of "2 ⇥ 3 ⇤ 4 ⌤ 9 ␣ 10 ⌦ 11 ↩ 16 ↓ 23 ⌫ 24 ← 25 ↑ 26 → 27 ⎋ 28 ⌧ 98 ⇞ 99 ⇪ 100 ← 101 → 102 ↖ 104 ↑ 105 ↘ 106 ↓ 107 ⇟ 111 F1 112 F2 113 F3 114 F4 115 F5 116 F6 117 F7 118 F8 119 F9 120 F10 121 F11 122 F12 135 F13 136 F14 137 F15 140 ⏏ 143 F16 144 F17 145 F18 146 F19"
       } else if (nextCmdChar) {
         nextCmdChar = NO;
         [newSet setObject:obj forKey:@"char"];
