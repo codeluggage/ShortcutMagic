@@ -51,6 +51,13 @@ const styles = StyleSheet.create({
     },
 });
 
+const modifierStrings = {
+    cmd: "⌘",
+    shift: "⇧",
+    alt: "⌥",
+    ctrl: "⌃"
+};
+
 
 function randomizeShortcuts(shortcutRows) {
     if (!shortcutRows) return undefined;
@@ -277,30 +284,54 @@ const ShortcutWizard = React.createClass({
         // });
     },
 
+
+    // TODO: 
+    // imageDrag: function(nextMousePos) {
+    //     if (dragStarts) {
+    //         self.props.dragMessage = "Set position and size for this specific app";
+    //     }
+
+    //     if (dragEnds) {
+    //         self.props.updatePosition = nextMousePos;
+    //         self.props.dragMessage = undefined;
+    //     }
+
+    //     if (dragMoves) {
+    //         self.props.updatePosition = nextMousePos;
+    //     }
+    // }
+
     _renderRow: function(rowData: string, sectionID: number, rowID: number, highlightRow: (sectionID: number, rowID: number) => void) {
         // console.log('Hit render row with row data: ' + JSON.stringify(rowData));
         // console.log('Hit render row with : ' + sectionID + " " + rowID);
         if (rowData) {
-            let shortcut = (this.state && this.state.shortcuts) ? this.state.shortcuts[rowId] : undefined;
+            let shortcut = (this.props && this.props.shortcuts) ? this.props.shortcuts[rowData] : undefined;
+            console.log('>> hit renderrow with shortcut: ' + JSON.stringify(shortcut) + " "  + shortcut);
+            console.log('>> and props: ' + this.props + " " + JSON.stringify(this.props));
 
             // fix these ifs
             let title = shortcut ? (
                 <Text style={styles.rowText}>
-                    {shortcut}
+                    {shortcut.name}
                 </Text>
             ) : (
                 <Text style={styles.rowText}>
-                    {rowData}
+                skrow
                 </Text>
             );
 
             let card = shortcut ? (
-                <Text style={styles.rowText}>
-                    {shortcut.mod ? shortcut.mod : undefined}}
-                    {shortcut.glyph ? shortcut.glyph : undefined}}
-                    {shortcut.char ? shortcut.char : undefined}
-                </Text>
+                <View style={{flexDirection: 'column'}}>
+                    <Text style={styles.rowText}>
+                        {shortcut.mod ? shortcut.mod : undefined}
+                        {shortcut.glyph ? shortcut.glyph : undefined}
+                        {shortcut.char ? (shortcut.mod ? shortcut.char : modifierStrings["cmd"] + shortcut.char) : undefined}
+                    </Text>
+                </View>
             ) : undefined;
+
+            // console.log(JSON.stringify(cycle));
+            // console.log('>> hit renderRow, with title jsx: ' + cycle.decycle(title) + " card jsx: " + cycle.decycle(card));
 
             return (
                 <TouchableHighlight onPress={() => {
