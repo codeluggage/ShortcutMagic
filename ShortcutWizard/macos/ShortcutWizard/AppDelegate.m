@@ -59,6 +59,7 @@
   __block BOOL nextCmdMod = NO;
   __block BOOL nextCmdGlyph = NO;
   __block BOOL nextPosition = NO;
+  __block BOOL nextMenuName = NO;
   
   [set enumerateObjectsUsingBlock:^(NSString *obj, NSUInteger idx, BOOL * _Nonnull stop) {
     // Skip first index - that is always the name
@@ -66,6 +67,9 @@
       if (nextPosition) {
         nextPosition = NO;
         [newSet setObject:obj forKey:@"position"];
+      } else if (nextMenuName) {
+        nextMenuName = NO;
+        [newSet setObject:obj forKey:@"menuName"];
       } else if (nextCmdMod) {
         nextCmdMod = NO;
         
@@ -270,6 +274,8 @@
       } else if (nextCmdChar) {
         nextCmdChar = NO;
         [newSet setObject:obj forKey:@"char"];
+      } else if ([obj isEqualToString:@"menuName"]) {
+        nextMenuName = YES;
       } else if ([obj isEqualToString:@"position"]) {
         nextPosition = YES;
       } else if ([obj isEqualToString:@"AXMenuItemCmdModifiers"]) {
@@ -363,14 +369,13 @@
             }
           }
           
-          NSDictionary *newMerged = [self explainOrKeep:set];
+            NSDictionary *newMerged = [self explainOrKeep:set];
             if ([newMerged count] > 2 && ([newMerged objectForKey:@"char"] || [newMerged objectForKey:@"glyph"])) {
-            
-            [info setObject:newMerged forKey:newMerged[@"name"]];
-            [set removeAllObjects];
-          } else {
-            [set removeAllObjects];
-          }
+              [info setObject:newMerged forKey:newMerged[@"name"]];
+              [set removeAllObjects];
+            } else {
+              [set removeAllObjects];
+            }
         }
       }
     }
@@ -440,6 +445,17 @@
   
     __block NSString *newAppIconPath = self.currentIconPath;
 
+  
+  
+  
+//  // TEMP - REMOVE BAD DICTS:
+//  NSMutableDictionary* hold = [[NSMutableDictionary alloc] initWithDictionary:self.shortcuts ];
+//  [hold removeObjectForKey:@"Sublime Text"];
+//  self.shortcuts = [[NSDictionary alloc] initWithDictionary:hold];
+  
+  
+  
+  
     // todo: combine this with similar calls below
     NSDictionary *currentShortcuts = [self.shortcuts objectForKey:newAppName];
     NSInteger currentShortcutsCount = [currentShortcuts count];
@@ -457,21 +473,21 @@
 //                            @"applicationIconPath": newAppIconPath}];
       
         // Case 2 - Read from user defaults:
-        NSDictionary *shortcuts = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"shortcuts"];
-        if (shortcuts) {
-            self.shortcuts = shortcuts;
-            NSLog(@"CASE 2 - shortcuts from user defaults count: %ld, keys: %@", [self.shortcuts count], [self.shortcuts allKeys]);
-//            NSInteger shortcutCount = [shortcuts count];
-          NSDictionary *appilcationShortcuts = [self.shortcuts objectForKey:newAppName];
-          if (appilcationShortcuts) {
-                [self updateProps:@{
-                    @"applicationName": newAppName,
-                    @"applicationIconPath": newAppIconPath,
-                    @"shortcuts": appilcationShortcuts
-                }];
-                return;
-          }
-        }
+//        NSDictionary *shortcuts = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"shortcuts"];
+//        if (shortcuts) {
+//            self.shortcuts = shortcuts;
+//            NSLog(@"CASE 2 - shortcuts from user defaults count: %ld, keys: %@", [self.shortcuts count], [self.shortcuts allKeys]);
+////            NSInteger shortcutCount = [shortcuts count];
+//          NSDictionary *appilcationShortcuts = [self.shortcuts objectForKey:newAppName];
+//          if (appilcationShortcuts) {
+//                [self updateProps:@{
+//                    @"applicationName": newAppName,
+//                    @"applicationIconPath": newAppIconPath,
+//                    @"shortcuts": appilcationShortcuts
+//                }];
+//                return;
+//          }
+//        }
       
       
         NSLog(@"Calling readMenuItems with name: %@, already have keys: %@", newAppName, [self.shortcuts allKeys]);
@@ -483,7 +499,7 @@
               NSMutableDictionary *merge = [NSMutableDictionary dictionaryWithDictionary:self.shortcuts];
               [merge addEntriesFromDictionary:[[NSDictionary alloc] initWithObjectsAndKeys:shortcuts, newAppName, nil]];
               
-              NSLog(@"inside case3 and self.shortcuts existed already, merged = %@", merge);
+              // NSLog(@"inside case3 and self.shortcuts existed already, merged = %@", merge);
               self.shortcuts = [NSDictionary dictionaryWithDictionary:merge];
             } else {
               self.shortcuts = [[NSDictionary alloc] initWithObjectsAndKeys:shortcuts, newAppName, nil];

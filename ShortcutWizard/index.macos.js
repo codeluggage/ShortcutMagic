@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
     },
     scrollView: {
         backgroundColor: '#888888',
-        height: 300,
+        height: 360,
     },
     view: {
         flexDirection: 'column',
@@ -31,12 +31,12 @@ const styles = StyleSheet.create({
     row: {
         flexDirection: 'column',
         justifyContent: 'center',
-        padding: 5,
+        padding: 2,
         backgroundColor: 'white',
     },
     image: {
-        width: 110,
-        height: 110,
+        width: 35,
+        height: 35,
         backgroundColor: 'white',
         // flex: 1,
         // marginRight: 10,
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         fontSize: 20,
         textAlign: 'center',
-        paddingBottom: 30
+        paddingBottom: 10
     },
     rowText: {
         marginLeft: 5,
@@ -55,6 +55,13 @@ const styles = StyleSheet.create({
     },
 });
 
+// TODO: Make additional explanations (beginner mode?) a setting
+// const modifierStrings = {
+//     cmd: "⌘ (Command) ",
+//     shift: "⇧ (Shift) ",
+//     alt: "⌥ (Alt) ",
+//     ctrl: "⌃ (Control) "
+// };
 const modifierStrings = {
     cmd: "⌘",
     shift: "⇧",
@@ -280,9 +287,21 @@ const ShortcutWizard = React.createClass({
             // console.log('>> and props: ' + this.props + " " + JSON.stringify(this.props));
 
             // fix these ifs
+            let shortcutNameStyle = styles.rowText;
+            shortcutNameStyle['fontWeight'] = 'bold';
+            shortcutNameStyle['textAlign'] = 'right';
+
+            let shortcutMenuNameStyle = styles.rowText;
+            shortcutMenuNameStyle['textAlign'] = 'left';
+
             let title = shortcut ? (
-                <Text style={styles.rowText}>
-                    {shortcut.name}
+                <Text style={{flexDirection: 'column'}}>
+                    <Text style={shortcutMenuNameStyle}>
+                        {shortcut.menuName}
+                    </Text>
+                    <Text style={shortcutNameStyle}>
+                        : {shortcut.name}
+                    </Text>
                 </Text>
             ) : undefined;
 
@@ -328,17 +347,19 @@ const ShortcutWizard = React.createClass({
         if (this.state) {
             return (
                 <View style={styles.view}>
+                    <Text style={{paddingBottom: 3}} > </Text>
+
                     <Text style={styles.titleText}>{ (this.props) ? this.props.applicationName : "Starting..." }</Text>
 
                     <Image style={styles.image} source={{uri: (this.props) ? this.props.applicationIconPath : "" }} />
 
-                    <Text style={styles.textDivider} > </Text>
+                    <Text style={{paddingBottom: 1}} > </Text>
 
                     <ListView 
+                        style={styles.scrollView}
                         dataSource={this.state.dataSource}
                         ref={(scrollView) => { _scrollView = scrollView; }}
                         automaticallyAdjustContentInsets={false}
-                        style={styles.scrollView}
                         renderRow={this._renderRow}
                         renderScrollComponent={props => <RecyclerViewBackedScrollView {...props} />}
                         renderSeparator={this._renderSeparator} 
