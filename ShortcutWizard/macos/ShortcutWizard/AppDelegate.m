@@ -472,22 +472,22 @@
 //        [self updateProps:@{@"applicationName": newAppName,
 //                            @"applicationIconPath": newAppIconPath}];
       
-        // Case 2 - Read from user defaults:
-//        NSDictionary *shortcuts = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"shortcuts"];
-//        if (shortcuts) {
-//            self.shortcuts = shortcuts;
-//            NSLog(@"CASE 2 - shortcuts from user defaults count: %ld, keys: %@", [self.shortcuts count], [self.shortcuts allKeys]);
-////            NSInteger shortcutCount = [shortcuts count];
-//          NSDictionary *appilcationShortcuts = [self.shortcuts objectForKey:newAppName];
-//          if (appilcationShortcuts) {
-//                [self updateProps:@{
-//                    @"applicationName": newAppName,
-//                    @"applicationIconPath": newAppIconPath,
-//                    @"shortcuts": appilcationShortcuts
-//                }];
-//                return;
-//          }
-//        }
+//         Case 2 - Read from user defaults:
+        NSDictionary *shortcuts = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"shortcuts"];
+        if (shortcuts) {
+            self.shortcuts = shortcuts;
+            NSLog(@"CASE 2 - shortcuts from user defaults count: %ld, keys: %@", [self.shortcuts count], [self.shortcuts allKeys]);
+//            NSInteger shortcutCount = [shortcuts count];
+          NSDictionary *appilcationShortcuts = [self.shortcuts objectForKey:newAppName];
+          if (appilcationShortcuts) {
+                [self updateProps:@{
+                    @"applicationName": newAppName,
+                    @"applicationIconPath": newAppIconPath,
+                    @"shortcuts": appilcationShortcuts
+                }];
+                return;
+          }
+        }
       
       
         NSLog(@"Calling readMenuItems with name: %@, already have keys: %@", newAppName, [self.shortcuts allKeys]);
