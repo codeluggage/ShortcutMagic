@@ -15,9 +15,6 @@ const styles = StyleSheet.create({
     textDivider: {
         paddingBottom: 20
     },
-    listItemTextDivider: {
-        paddingBottom: 1
-    },
     scrollView: {
         backgroundColor: '#888888',
         height: 360,
@@ -286,35 +283,41 @@ const ShortcutWizard = React.createClass({
             // console.log('>> hit renderrow with shortcut: ' + JSON.stringify(shortcut) + " "  + shortcut);
             // console.log('>> and props: ' + this.props + " " + JSON.stringify(this.props));
 
-            // fix these ifs
-            let shortcutNameStyle = styles.rowText;
-            shortcutNameStyle['fontWeight'] = 'bold';
-            shortcutNameStyle['textAlign'] = 'right';
+            // fix these json merges:
+            let shortcutNameStyle = {
+                // ...styles.rowText,
+                fontWeight: 'bold',
+                textAlign: 'right',
+                color: 'blue',
+                // paddingLeft: 10,
+            };
 
-            let shortcutMenuNameStyle = styles.rowText;
-            shortcutMenuNameStyle['textAlign'] = 'left';
+            let shortcutMenuNameStyle = {
+                // ...styles.rowText,
+                textAlign: 'right',
+                // fontWeight: 'italic',
+                fontWeight: '200',
+            };
 
             let title = shortcut ? (
-                <Text style={{flexDirection: 'column'}}>
-                    <Text style={shortcutMenuNameStyle}>
-                        {shortcut.menuName}
-                    </Text>
-                    <Text style={shortcutNameStyle}>
-                        : {shortcut.name}
-                    </Text>
-                </Text>
+                <Text style={shortcutNameStyle}> {shortcut.name} </Text>
             ) : undefined;
 
-            let card = shortcut ? (
-                <Text style={{flexDirection: 'column', color: 'green'}}>
-                        {shortcut.mod ? shortcut.mod : undefined}
-                        {shortcut.glyph ? shortcut.glyph : undefined}
-                        {shortcut.char ? (shortcut.mod ? shortcut.char : modifierStrings["cmd"] + shortcut.char) : undefined}
-                </Text>
+            let menuName = shortcut ? (
+                <Text style={shortcutMenuNameStyle}> [{shortcut.menuName}] {"\n"} </Text>
             ) : undefined;
 
-            // console.log(JSON.stringify(cycle));
-            // console.log('>> hit renderRow, with title jsx: ' + cycle.decycle(title) + " card jsx: " + cycle.decycle(card));
+            let shortcutKeys = shortcut ? (
+                <Text style={{
+                    flexDirection: 'column', 
+                    color: 'green',
+                    padding: 6
+                }}>
+                    {shortcut.mod ? shortcut.mod : undefined}
+                    {shortcut.glyph ? shortcut.glyph : undefined}
+                    {shortcut.char ? (shortcut.mod ? shortcut.char : modifierStrings["cmd"] + shortcut.char) : undefined}
+                </Text>
+            ) : undefined;
 
             return (
                 <TouchableHighlight onPress={() => {
@@ -324,9 +327,9 @@ const ShortcutWizard = React.createClass({
                     }}>
                     <View>
                         <View style={styles.row}>
+                            {shortcutKeys}
                             {title}
-                            <Text style={styles.listItemTextDivider} > </Text>
-                            {card}
+                            {menuName}
                         </View>
                     </View>
                 </TouchableHighlight>
