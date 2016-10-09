@@ -16,6 +16,8 @@
 
 @implementation AppDelegate
 
+RCT_EXPORT_MODULE();
+
 + (NSRect) screenResolution {
   NSRect screenRect = NSZeroRect;
   NSArray *screenArray = [NSScreen screens];
@@ -30,6 +32,34 @@
   
   return screenRect;
 }
+
+// ================ calling from react
+
+//- (dispatch_queue_t)methodQueue
+//{
+//  return dispatch_queue_create("com.ShortcutWizard.serialqueue", DISPATCH_QUEUE_SERIAL);
+//}
+
+RCT_EXPORT_METHOD(loadShortcutsForApp:(NSString *)appName callback:(RCTResponseSenderBlock)callback)
+{
+  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ 
+    [self readMenuItems:appName withBlock:^(NSDictionary *shortcuts) {
+//      NSLog(@"========== RETURNED FROM readMenuItems called from react - about to save");
+      [self mergeAndSaveShortcuts:shortcuts withName:appName];
+//      NSLog(@"======== after mergedSaved, self.shortcuts: %@", self.shortcuts);
+      callback(@[[NSString stringWithFormat:@"results returned to callback: %@", shortcuts]]);
+    }];
+  });
+}
+
+//RCT_EXPORT_METHOD(addEvent:(NSString *)name location:(NSString *)location)
+//{
+//  
+//}
+
+
+// <<<<<<<<<<<<< calling from react
+
 
 - (OSAScript *)loadAndCompileApplescript:(NSString *)path
 {
@@ -478,47 +508,53 @@
             self.shortcuts = shortcuts;
             NSLog(@"CASE 2 - shortcuts from user defaults count: %ld, keys: %@", [self.shortcuts count], [self.shortcuts allKeys]);
 //            NSInteger shortcutCount = [shortcuts count];
-          NSDictionary *appilcationShortcuts = [self.shortcuts objectForKey:newAppName];
+            NSDictionary *appilcationShortcuts = [self.shortcuts objectForKey:newAppName];
           if (appilcationShortcuts) {
-                [self updateProps:@{
-                    @"applicationName": newAppName,
-                    @"applicationIconPath": newAppIconPath,
-                    @"shortcuts": appilcationShortcuts
-                }];
-                return;
-          }
-        }
-      
-      
-        NSLog(@"Calling readMenuItems with name: %@, already have keys: %@", newAppName, [self.shortcuts allKeys]);
-        [self readMenuItems:newAppName withBlock:^(NSDictionary *shortcuts) {
-          
-            NSLog(@"CASE 3 - returned block count: %ld", [shortcuts count]);
-            if (self.shortcuts) {
-              
-              NSMutableDictionary *merge = [NSMutableDictionary dictionaryWithDictionary:self.shortcuts];
-              [merge addEntriesFromDictionary:[[NSDictionary alloc] initWithObjectsAndKeys:shortcuts, newAppName, nil]];
-              
-              // NSLog(@"inside case3 and self.shortcuts existed already, merged = %@", merge);
-              self.shortcuts = [NSDictionary dictionaryWithDictionary:merge];
-            } else {
-              self.shortcuts = [[NSDictionary alloc] initWithObjectsAndKeys:shortcuts, newAppName, nil];
-            }
-          
             [self updateProps:@{
-                @"applicationName": newAppName,
-                @"applicationIconPath": newAppIconPath,
-                @"shortcuts": shortcuts
-            }];
-
-            NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
-            if (standardUserDefaults) {
-                [standardUserDefaults setObject:self.shortcuts forKey:@"shortcuts"];
-                [standardUserDefaults synchronize];
-                NSLog(@"CASE 3 - also synchronizing");
-            }
-        }];
+                                @"applicationName": newAppName,
+                                @"applicationIconPath": newAppIconPath,
+                                @"shortcuts": appilcationShortcuts
+                                }];
+          }
+        } else {
+          NSLog(@"Calling readMenuItems with name: %@, already have keys: %@", newAppName, [self.shortcuts allKeys]);
+          [self readMenuItems:newAppName withBlock:^(NSDictionary *shortcuts) {
+            NSLog(@"CASE 3 - returned block count: %ld", [shortcuts count]);
+            
+            [self mergeAndSaveShortcuts:shortcuts withName:newAppName];
+            
+            [self updateProps:@{
+                                @"applicationName": newAppName,
+                                @"applicationIconPath": newAppIconPath,
+                                @"shortcuts": shortcuts
+                                }];
+          }];
+        }
     }
+}
+
+- (void)mergeAndSaveShortcuts:(NSDictionary *)shortcuts withName:(NSString *)name
+{
+  if (self.shortcuts) {
+    NSMutableDictionary *merge = [NSMutableDictionary dictionaryWithDictionary:self.shortcuts];
+    [merge addEntriesFromDictionary:[[NSDictionary alloc] initWithObjectsAndKeys:shortcuts, name, nil]];
+    
+    // NSLog(@"inside case3 and self.shortcuts existed already, merged = %@", merge);
+    self.shortcuts = [NSDictionary dictionaryWithDictionary:merge];
+  } else {
+    self.shortcuts = [[NSDictionary alloc] initWithObjectsAndKeys:shortcuts, name, nil];
+  }
+  
+  [self saveShortcuts:self.shortcuts];
+}
+
+- (void)saveShortcuts:(NSDictionary *)shortcuts
+{
+  NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
+  if (standardUserDefaults) {
+    [standardUserDefaults setObject:shortcuts forKey:@"shortcuts"];
+    [standardUserDefaults synchronize];
+  }
 }
 
 - (void)triggerAppSwitch
