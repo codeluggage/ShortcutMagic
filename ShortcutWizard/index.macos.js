@@ -15,7 +15,7 @@ import {
 // ======================= Bridge to native
 import { NativeModules } from 'react-native';
 
-var ShortcutWizard = NativeModules.ShortcutWizard;
+var AppDelegate = NativeModules.AppDelegate;
 
 
 
@@ -358,8 +358,12 @@ const ShortcutWizard = React.createClass({
 
                     <Image style={styles.image} source={{uri: (this.props) ? this.props.applicationIconPath : "" }} />
                     <Button 
+                        title="Reload shortcuts"
                         onClick={() => {
-                            
+                            console.log('CLICKED -> with applicationName', this.props.applicationName);
+                            AppDelegate.loadShortcutsForApp(this.props.applicationName, function(results) {
+                                // console.log('RETURNED loadShortcutsForApp, results: ', results);
+                            });
                         }} />
 
                     <Text style={{paddingBottom: 1}} > </Text>

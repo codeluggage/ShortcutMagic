@@ -12,8 +12,9 @@
 #import <OSAKit/OSAKit.h>
 #import "RCTBridge.h"
 #import "RCTRootView.h"
+#import "RCTBridgeModule.h"
 
-@interface AppDelegate : NSObject <NSApplicationDelegate, NSWindowDelegate, RCTBridgeDelegate>
+@interface AppDelegate : NSObject <NSApplicationDelegate, NSWindowDelegate, RCTBridgeDelegate, RCTBridgeModule>
 
 @property (strong, nonatomic) NSWindow *window;
 @property (nonatomic, readonly) RCTBridge *bridge;
