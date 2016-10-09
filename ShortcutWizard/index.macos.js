@@ -285,33 +285,22 @@ const ShortcutWizard = React.createClass({
 
             // fix these json merges:
             let shortcutNameStyle = {
-                // ...styles.rowText,
-                fontWeight: 'bold',
                 textAlign: 'right',
                 color: 'blue',
-                // paddingLeft: 10,
+                fontWeight: '400',
             };
 
-            let shortcutMenuNameStyle = {
-                // ...styles.rowText,
-                textAlign: 'right',
-                // fontWeight: 'italic',
-                fontWeight: '200',
-            };
-
-            let title = shortcut ? (
-                <Text style={shortcutNameStyle}> {shortcut.name} </Text>
+            let titleAndMenu = shortcut ? (
+                <Text style={shortcutNameStyle}>[{shortcut.menuName}] - {shortcut.name}</Text>
             ) : undefined;
 
-            let menuName = shortcut ? (
-                <Text style={shortcutMenuNameStyle}> [{shortcut.menuName}] {"\n"} </Text>
-            ) : undefined;
 
             let shortcutKeys = shortcut ? (
                 <Text style={{
-                    flexDirection: 'column', 
                     color: 'green',
-                    padding: 6
+                    fontWeight: 'bold',
+                    paddingBottom: 8,
+                    paddingTop: 8
                 }}>
                     {shortcut.mod ? shortcut.mod : undefined}
                     {shortcut.glyph ? shortcut.glyph : undefined}
@@ -325,12 +314,14 @@ const ShortcutWizard = React.createClass({
                         this._pressRow(rowID);
                         highlightRow(sectionID, rowID);
                     }}>
-                    <View>
-                        <View style={styles.row}>
-                            {shortcutKeys}
-                            {title}
-                            {menuName}
-                        </View>
+                    <View style={{
+                        flexDirection: 'column',
+                        paddingTop: 4,
+                    }}>
+                        <Text style={styles.row}>
+                            {titleAndMenu}
+                        </Text>
+                        {shortcutKeys}
                     </View>
                 </TouchableHighlight>
             );
