@@ -9,7 +9,18 @@ import {
     RecyclerViewBackedScrollView,
     TouchableHighlight,
     ListView,
+    Button,
 } from 'react-native-macos';
+
+// ======================= Bridge to native
+import { NativeModules } from 'react-native';
+
+var ShortcutWizard = NativeModules.ShortcutWizard;
+
+
+
+// <<<<<<<<<<<<<<<<<<<<<<< Bridge to native
+
 
 const styles = StyleSheet.create({
     textDivider: {
@@ -310,10 +321,10 @@ const ShortcutWizard = React.createClass({
 
             return (
                 <TouchableHighlight onPress={() => {
-                        console.log('ORIGINAL CLOSURE VALUE FOR ROW: ' + shortcut + " json: " + JSON.stringify(shortcut));
-                        this._pressRow(rowID);
-                        highlightRow(sectionID, rowID);
-                    }}>
+                    console.log('ORIGINAL CLOSURE VALUE FOR ROW: ' + shortcut + " json: " + JSON.stringify(shortcut));
+                    this._pressRow(rowID);
+                    highlightRow(sectionID, rowID);
+                }}>
                     <View style={{
                         flexDirection: 'column',
                         paddingTop: 4,
@@ -346,6 +357,10 @@ const ShortcutWizard = React.createClass({
                     <Text style={styles.titleText}>{ (this.props) ? this.props.applicationName : "Starting..." }</Text>
 
                     <Image style={styles.image} source={{uri: (this.props) ? this.props.applicationIconPath : "" }} />
+                    <Button 
+                        onClick={() => {
+                            
+                        }} />
 
                     <Text style={{paddingBottom: 1}} > </Text>
 

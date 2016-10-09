@@ -2,6 +2,7 @@
 
 #import "RCTBridge.h"
 #import "RCTJavaScriptLoader.h"
+#import "RCTBridgeModule.h"
 
 
 // TODO: Is this necessary as long all this is 1 file?
@@ -30,6 +31,30 @@
   
   return screenRect;
 }
+
+// ================ calling from react
+
+- (dispatch_queue_t)methodQueue
+{
+  return dispatch_queue_create("com.shortcutwizard.serialqueue", DISPATCH_QUEUE_SERIAL);
+}
+
+RCT_EXPORT_METHOD(callableFromReact:(NSString *)param callback:(RCTResponseSenderBlock)callback)
+{
+  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ 
+    
+    //callback(@[]);
+  });
+}
+
+RCT_EXPORT_METHOD(addEvent:(NSString *)name location:(NSString *)location)
+{
+  
+}
+
+
+// <<<<<<<<<<<<< calling from react
+
 
 - (OSAScript *)loadAndCompileApplescript:(NSString *)path
 {
