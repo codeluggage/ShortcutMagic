@@ -356,15 +356,18 @@ const ShortcutWizard = React.createClass({
 
                     <Text style={styles.titleText}>{ (this.props) ? this.props.applicationName : "Starting..." }</Text>
 
-                    <Image style={styles.image} source={{uri: (this.props) ? this.props.applicationIconPath : "" }} />
-                    <Button 
-                        title="Reload shortcuts"
-                        onClick={() => {
-                            console.log('CLICKED -> with applicationName', this.props.applicationName);
-                            AppDelegate.loadShortcutsForApp(this.props.applicationName, function(results) {
-                                // console.log('RETURNED loadShortcutsForApp, results: ', results);
-                            });
-                        }} />
+                    <View style={{flexDirection: 'column'}}>
+                        <Image style={styles.image} source={{uri: (this.props) ? this.props.applicationIconPath : "" }} />
+                        <Button 
+                            title="Reload"
+                            onClick={() => {
+                                console.log('CLICKED -> with applicationName', this.props.applicationName);
+                                AppDelegate.loadShortcutsForApp(this.props.applicationName, function(results) {
+                                    // console.log('RETURNED loadShortcutsForApp, results: ', results);
+                                });
+                            }}
+                        />
+                    </View>
 
                     <Text style={{paddingBottom: 1}} > </Text>
 
