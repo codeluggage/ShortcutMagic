@@ -52,6 +52,20 @@ RCT_EXPORT_METHOD(loadShortcutsForApp:(NSString *)appName callback:(RCTResponseS
   });
 }
 
+RCT_EXPORT_METHOD(clickMenu:(NSString *)appName withArray:(NSDictionary *)shortcut)
+{
+  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    NSLog(@"----- hit clickMenu with: %@ and %@", appName, shortcut);
+    if ([self.currentApplicationName isEqualToString:appName]) {
+      // Simply execute the menu
+      NSLog(@"clickMenu with app already open - NOT IMPLEMENTED");
+    } else {
+      // Switch app, then execute menu?
+      NSLog(@"clickMenu with app not open - NOT IMPLEMENTED");
+    }
+  });
+}
+
 //RCT_EXPORT_METHOD(addEvent:(NSString *)name location:(NSString *)location)
 //{
 //  
