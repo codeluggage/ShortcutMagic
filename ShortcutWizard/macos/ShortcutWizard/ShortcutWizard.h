@@ -3,9 +3,9 @@
 #import <OSAKit/OSAKit.h>
 #import "RCTBridge.h"
 #import "RCTRootView.h"
-#import "RCTBridgeModule.h"
+#import "SWMenuExecutor.h"
 
-@interface AppDelegate : NSObject <NSApplicationDelegate, NSWindowDelegate, RCTBridgeDelegate, RCTBridgeModule>
+@interface ShortcutWizard : NSObject <NSApplicationDelegate, NSWindowDelegate, RCTBridgeDelegate, SWMenuExecutorDelegate>
 
 @property (strong, nonatomic) NSWindow *window;
 @property (nonatomic, readonly) RCTBridge *bridge;
@@ -17,5 +17,6 @@
 @property (strong, nonatomic) RCTRootView *rootView;
 
 @property (strong, nonatomic) OSAScript *appleScript;
+@property (strong, nonatomic) SWMenuExecutor *menuExecutor;
 
 @end

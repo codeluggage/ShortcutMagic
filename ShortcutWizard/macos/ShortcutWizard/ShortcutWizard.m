@@ -1,11 +1,10 @@
-#import "AppDelegate.h"
-
+#import "ShortcutWizard.h"
 #import "RCTBridge.h"
 #import "RCTJavaScriptLoader.h"
 
 
 // TODO: Is this necessary as long all this is 1 file?
-// @interface AppDelegate() <RCTBridgeDelegate>
+// @interface ShortcutWizard() <RCTBridgeDelegate>
 
 // + (NSRect) screenResolution;
 // - (void)triggerAppSwitch:(NSNotification *)notification;
@@ -14,9 +13,7 @@
 
 // @end
 
-@implementation AppDelegate
-
-RCT_EXPORT_MODULE();
+@implementation ShortcutWizard
 
 + (NSRect) screenResolution {
   NSRect screenRect = NSZeroRect;
@@ -32,48 +29,6 @@ RCT_EXPORT_MODULE();
   
   return screenRect;
 }
-
-// ================ calling from react
-
-//- (dispatch_queue_t)methodQueue
-//{
-//  return dispatch_queue_create("com.ShortcutWizard.serialqueue", DISPATCH_QUEUE_SERIAL);
-//}
-
-RCT_EXPORT_METHOD(loadShortcutsForApp:(NSString *)appName callback:(RCTResponseSenderBlock)callback)
-{
-  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ 
-    [self readMenuItems:appName withBlock:^(NSDictionary *shortcuts) {
-//      NSLog(@"========== RETURNED FROM readMenuItems called from react - about to save");
-      [self mergeAndSaveShortcuts:shortcuts withName:appName];
-//      NSLog(@"======== after mergedSaved, self.shortcuts: %@", self.shortcuts);
-      callback(@[[NSString stringWithFormat:@"results returned to callback: %@", shortcuts]]);
-    }];
-  });
-}
-
-RCT_EXPORT_METHOD(clickMenu:(NSString *)appName withArray:(NSDictionary *)shortcut)
-{
-  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-    NSLog(@"----- hit clickMenu with: %@ and %@", appName, shortcut);
-    if ([self.currentApplicationName isEqualToString:appName]) {
-      // Simply execute the menu
-      NSLog(@"clickMenu with app already open - NOT IMPLEMENTED");
-    } else {
-      // Switch app, then execute menu?
-      NSLog(@"clickMenu with app not open - NOT IMPLEMENTED");
-    }
-  });
-}
-
-//RCT_EXPORT_METHOD(addEvent:(NSString *)name location:(NSString *)location)
-//{
-//  
-//}
-
-
-// <<<<<<<<<<<<< calling from react
-
 
 - (OSAScript *)loadAndCompileApplescript:(NSString *)path
 {
@@ -278,11 +233,14 @@ RCT_EXPORT_METHOD(clickMenu:(NSString *)appName withArray:(NSDictionary *)shortc
 -(id)init
 {
     if(self = [super init]) {
+        self.menuExecutor = [[SWMenuExecutor alloc] initWithDelegate:self];
+        NSLog(@"made an executor: %@", self.menuExecutor);
+        NSLog(@"made an executor delegate: %@", self.menuExecutor.delegate);
         self.appleScript = [self loadAndCompileApplescript:@"readMenuItems"]; 
       
           //NSLog(@"Applescript: %@", self.appleScript);
 
-        NSRect screenRect = [AppDelegate screenResolution];
+        NSRect screenRect = [ShortcutWizard screenResolution];
         NSLog(@"Got the screen rect: >>>>>>>>>");
         NSLog(@"%.1fx%.1f",screenRect.size.width, screenRect.size.height);
 
