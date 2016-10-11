@@ -1,11 +1,11 @@
-#import "AppDelegate.h"
+#import "ShortcutWizard.h"
 
 #import "RCTBridge.h"
 #import "RCTJavaScriptLoader.h"
 
 
 // TODO: Is this necessary as long all this is 1 file?
-// @interface AppDelegate() <RCTBridgeDelegate>
+// @interface ShortcutWizard() <RCTBridgeDelegate>
 
 // + (NSRect) screenResolution;
 // - (void)triggerAppSwitch:(NSNotification *)notification;
@@ -14,7 +14,7 @@
 
 // @end
 
-@implementation AppDelegate
+@implementation ShortcutWizard
 
 RCT_EXPORT_MODULE();
 
@@ -52,7 +52,7 @@ RCT_EXPORT_METHOD(loadShortcutsForApp:(NSString *)appName callback:(RCTResponseS
   });
 }
 
-RCT_EXPORT_METHOD(clickMenu:(NSString *)appName withArray:(NSDictionary *)shortcut)
+RCT_EXPORT_METHOD(clickMenu:(NSString *)appName withDictionary:(NSDictionary *)shortcut)
 {
   dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
     NSLog(@"----- hit clickMenu with: %@ and %@", appName, shortcut);
@@ -282,7 +282,7 @@ RCT_EXPORT_METHOD(clickMenu:(NSString *)appName withArray:(NSDictionary *)shortc
       
           //NSLog(@"Applescript: %@", self.appleScript);
 
-        NSRect screenRect = [AppDelegate screenResolution];
+        NSRect screenRect = [ShortcutWizard screenResolution];
         NSLog(@"Got the screen rect: >>>>>>>>>");
         NSLog(@"%.1fx%.1f",screenRect.size.width, screenRect.size.height);
 

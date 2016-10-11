@@ -8,14 +8,14 @@
  */
 
  #import <Cocoa/Cocoa.h>
- #import "AppDelegate.h"
+ #import "ShortcutWizard.h"
 
  int main(int argc, char * argv[]) {
      @autoreleasepool {
          NSApplication * application = [NSApplication sharedApplication];
          NSMenu *mainMenu = [[NSMenu alloc] initWithTitle:@"ShortcutWizard"];
          [NSApp setMainMenu:mainMenu];
-         AppDelegate * appDelegate = [[AppDelegate alloc] init];
+         ShortcutWizard *appDelegate = [[ShortcutWizard alloc] init];
          [application setDelegate:appDelegate];
          [application run];
          return EXIT_SUCCESS;

@@ -15,7 +15,7 @@ import {
 // ======================= Bridge to native
 import { NativeModules } from 'react-native';
 
-var AppDelegate = NativeModules.AppDelegate;
+var ShortcutWizard = NativeModules.ShortcutWizard;
 
 
 
@@ -23,6 +23,11 @@ var AppDelegate = NativeModules.AppDelegate;
 
 
 const styles = StyleSheet.create({
+    shortcutNameStyle : {
+        textAlign: 'right',
+        color: 'blue',
+        fontWeight: '400',
+    },
     textDivider: {
         paddingBottom: 20
     },
@@ -94,7 +99,7 @@ function randomizeShortcuts(shortcutRows) {
 };
 
 
-const ShortcutWizard = React.createClass({
+const ShortcutWizardApp = React.createClass({
     getInitialState () {
         var ds = new ListView.DataSource({
             rowHasChanged: (row1, row2) => row1 !== row2
@@ -285,15 +290,8 @@ const ShortcutWizard = React.createClass({
             // console.log('>> hit renderrow with shortcut: ' + JSON.stringify(shortcut) + " "  + shortcut);
             // console.log('>> and props: ' + this.props + " " + JSON.stringify(this.props));
 
-            // fix these json merges:
-            let shortcutNameStyle = {
-                textAlign: 'right',
-                color: 'blue',
-                fontWeight: '400',
-            };
-
             let titleAndMenu = shortcut ? (
-                <Text style={shortcutNameStyle}>[{shortcut.menuName}] - {shortcut.name}</Text>
+                <Text style={styles.shortcutNameStyle}>[{shortcut.menuName}] - {shortcut.name}</Text>
             ) : undefined;
 
 
@@ -314,7 +312,7 @@ const ShortcutWizard = React.createClass({
                 <TouchableHighlight onPress={() => {
                     this._pressData[rowID] = !this._pressData[rowID];
                     // highlightRow(sectionID, rowID);
-                    AppDelegate.clickMenu(this.props.applicationName, shortcut);
+                    ShortcutWizard.clickMenu(this.props.applicationName, shortcut);
                 }}>
                     <View style={{
                         flexDirection: 'column',
@@ -340,20 +338,20 @@ const ShortcutWizard = React.createClass({
         //     console.log('NO STATE IN RENDER');
         // }
 
-        if (this.state) {
+        if (this.state && this.props && this.props.shortcuts) {
             return (
                 <View style={styles.view}>
                     <Text style={{paddingBottom: 3}} > </Text>
 
-                    <Text style={styles.titleText}>{ (this.props) ? this.props.applicationName : "Starting..." }</Text>
+                    <Text style={styles.titleText}>{this.props.applicationName}</Text>
 
                     <View style={{flexDirection: 'column'}}>
-                        <Image style={styles.image} source={{uri: (this.props) ? this.props.applicationIconPath : "" }} />
+                        <Image style={styles.image} source={{uri: this.props.applicationIconPath}} />
                         <Button 
                             title="Reload"
                             onClick={() => {
                                 console.log('CLICKED -> with applicationName', this.props.applicationName);
-                                AppDelegate.loadShortcutsForApp(this.props.applicationName, function(results) {
+                                ShortcutWizard.loadShortcutsForApp(this.props.applicationName, function(results) {
                                     // console.log('RETURNED loadShortcutsForApp, results: ', results);
                                 });
                             }}
@@ -376,6 +374,13 @@ const ShortcutWizard = React.createClass({
         } else {
             return (
                 <View style={styles.view}>
+                    <Text style={styles.titleText}>
+                        {"\n"}
+                        Welcome to ShortcutWizard!
+                        {"\n"}
+                        {"\n"}
+                        Change app to see shortcuts
+                    </Text>
                 </View>
             );
         }
@@ -438,4 +443,4 @@ const ShortcutWizard = React.createClass({
 // </View>
 
 
-AppRegistry.registerComponent('ShortcutWizard', () => ShortcutWizard);
+AppRegistry.registerComponent('ShortcutWizard', () => ShortcutWizardApp);

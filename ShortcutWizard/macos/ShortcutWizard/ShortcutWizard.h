@@ -5,7 +5,7 @@
 #import "RCTRootView.h"
 #import "RCTBridgeModule.h"
 
-@interface AppDelegate : NSObject <NSApplicationDelegate, NSWindowDelegate, RCTBridgeDelegate, RCTBridgeModule>
+@interface ShortcutWizard : NSObject <NSApplicationDelegate, NSWindowDelegate, RCTBridgeDelegate, RCTBridgeModule>
 
 @property (strong, nonatomic) NSWindow *window;
 @property (nonatomic, readonly) RCTBridge *bridge;
