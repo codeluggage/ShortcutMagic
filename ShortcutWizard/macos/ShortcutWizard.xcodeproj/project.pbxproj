@@ -18,8 +18,8 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		146834051AC3E58100842450 /* libReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 146834041AC3E56700842450 /* libReact.a */; };
 		832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 832341B51AAA6A8300B99B32 /* libRCTText.a */; };
+		AC1534591DADA84E00E6696E /* SWMenuExecutor.m in Sources */ = {isa = PBXBuildFile; fileRef = AC1534581DADA84E00E6696E /* SWMenuExecutor.m */; };
 		AC4E3D551D9A228E00A7AED7 /* SWCoreDataStackManager.m in Sources */ = {isa = PBXBuildFile; fileRef = AC4E3D501D9A228E00A7AED7 /* SWCoreDataStackManager.m */; };
-		AC4E3D561D9A228E00A7AED7 /* SWShortcuts.m in Sources */ = {isa = PBXBuildFile; fileRef = AC4E3D521D9A228E00A7AED7 /* SWShortcuts.m */; };
 		AC4E3D571D9A228E00A7AED7 /* SWShortcutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AC4E3D541D9A228E00A7AED7 /* SWShortcutViewController.m */; };
 		AC8E9B1C1DAACED8001791AA /* DraggableImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = AC8E9B1B1DAACED8001791AA /* DraggableImageView.m */; };
 		ACC83D2A1D96EE4000C338B2 /* readMenuItems.scpt in Resources */ = {isa = PBXBuildFile; fileRef = ACC83D291D96EE4000C338B2 /* readMenuItems.scpt */; };
@@ -102,6 +102,8 @@
 		146833FF1AC3E56700842450 /* React.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = React.xcodeproj; path = "../node_modules/react-native-macos/React/React.xcodeproj"; sourceTree = "<group>"; };
 		78C398B01ACF4ADC00677621 /* RCTLinking.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTLinking.xcodeproj; path = "../node_modules/react-native-macos/Libraries/LinkingIOS/RCTLinking.xcodeproj"; sourceTree = "<group>"; };
 		832341B01AAA6A8300B99B32 /* RCTText.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTText.xcodeproj; path = "../node_modules/react-native-macos/Libraries/Text/RCTText.xcodeproj"; sourceTree = "<group>"; };
+		AC1534571DADA84E00E6696E /* SWMenuExecutor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SWMenuExecutor.h; path = ShortcutWizard/SWMenuExecutor.h; sourceTree = "<group>"; };
+		AC1534581DADA84E00E6696E /* SWMenuExecutor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SWMenuExecutor.m; path = ShortcutWizard/SWMenuExecutor.m; sourceTree = "<group>"; };
 		AC4E3D4F1D9A228E00A7AED7 /* SWCoreDataStackManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SWCoreDataStackManager.h; path = ShortcutWizard/SWCoreDataStackManager.h; sourceTree = "<group>"; };
 		AC4E3D501D9A228E00A7AED7 /* SWCoreDataStackManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SWCoreDataStackManager.m; path = ShortcutWizard/SWCoreDataStackManager.m; sourceTree = "<group>"; };
 		AC4E3D511D9A228E00A7AED7 /* SWShortcuts.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SWShortcuts.h; path = ShortcutWizard/SWShortcuts.h; sourceTree = "<group>"; };
@@ -191,6 +193,8 @@
 		13B07FAE1A68108700A75B9A /* ShortcutWizard */ = {
 			isa = PBXGroup;
 			children = (
+				AC1534571DADA84E00E6696E /* SWMenuExecutor.h */,
+				AC1534581DADA84E00E6696E /* SWMenuExecutor.m */,
 				AC4E3D4F1D9A228E00A7AED7 /* SWCoreDataStackManager.h */,
 				AC4E3D501D9A228E00A7AED7 /* SWCoreDataStackManager.m */,
 				AC4E3D511D9A228E00A7AED7 /* SWShortcuts.h */,
@@ -479,7 +483,7 @@
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				AC4E3D571D9A228E00A7AED7 /* SWShortcutViewController.m in Sources */,
 				AC8E9B1C1DAACED8001791AA /* DraggableImageView.m in Sources */,
-				AC4E3D561D9A228E00A7AED7 /* SWShortcuts.m in Sources */,
+				AC1534591DADA84E00E6696E /* SWMenuExecutor.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

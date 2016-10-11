@@ -15,7 +15,7 @@ import {
 // ======================= Bridge to native
 import { NativeModules } from 'react-native';
 
-var ShortcutWizard = NativeModules.ShortcutWizard;
+var ShortcutWizard = NativeModules.SWMenuExecutor;
 
 
 
