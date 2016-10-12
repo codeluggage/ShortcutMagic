@@ -13,34 +13,30 @@
 
 RCT_EXPORT_MODULE();
 
+static SWMenuExecutor *singletonInstance = nil;
+
++ (SWMenuExecutor *)singleton
+{
+  if (singletonInstance == nil) {
+    singletonInstance = [[SWMenuExecutor alloc] init];
+    singletonInstance.scripts = @{};
+  }
+  
+  return singletonInstance;
+}
+
 //- (dispatch_queue_t)methodQueue
 //{
 //  return dispatch_queue_create("com.ShortcutWizard.serialqueue", DISPATCH_QUEUE_SERIAL);
 //}
 
-RCT_EXPORT_METHOD(loadShortcutsForApp:(NSString *)appName callback:(RCTResponseSenderBlock)callback)
-{
-  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ 
-    [self.delegate readMenuItems:appName withBlock:^(NSDictionary *shortcuts) {
-//      NSLog(@"========== RETURNED FROM readMenuItems called from react - about to save");
-      [self.delegate mergeAndSaveShortcuts:shortcuts withName:appName];
-//      NSLog(@"======== after mergedSaved, self.shortcuts: %@", self.shortcuts);
-      callback(@[[NSString stringWithFormat:@"results returned to callback: %@", shortcuts]]);
-    }];
-  });
-}
-
 RCT_EXPORT_METHOD(clickMenu:(NSString *)appName withDictionary:(NSDictionary *)shortcut)
 {
   dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-    NSLog(@"----- hit clickMenu with: %@ and %@", appName, shortcut);
-    if ([[self.delegate currentApplicationName] isEqualToString:appName]) {
-      // Simply execute the menu
-      NSLog(@"clickMenu with app already open - NOT IMPLEMENTED");
-    } else {
-      // Switch app, then execute menu?
-      NSLog(@"clickMenu with app not open - NOT IMPLEMENTED");
-    }
+      NSLog(@"----- hit clickMenu with: %@ and %@", appName, shortcut);
+      OSAScript *executeMenu = [SWMenuExecutor scriptForKey:@"executeMenu"];
+      NSDictionary<NSString *,id> *errorInfo;
+      [executeMenu executeHandlerWithName:@"executeMenu" arguments:@[appName, shortcut] error:&errorInfo];
   });
 }
 
@@ -49,14 +45,31 @@ RCT_EXPORT_METHOD(clickMenu:(NSString *)appName withDictionary:(NSDictionary *)s
 //  
 //}
 
-- (instancetype)initWithDelegate:(id)delegate
-{
-  self = [super init];
-	if (self && delegate) {
-		self.delegate = delegate;
-	}
 
-	return self;
++ (OSAScript *)loadAndCompileApplescript:(NSString *)path
+{
+  NSString *source = [NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:path ofType:@"scpt"]
+                                               encoding:NSUTF8StringEncoding error:nil];
+  OSAScript *hold = [[OSAScript alloc] initWithSource:source];
+  NSDictionary<NSString *,id> *errorInfo;
+  BOOL compiled = [hold compileAndReturnError:&errorInfo];
+  if (!compiled) {
+    NSLog(@"Compile failed: %@", errorInfo);
+    return nil;
+  }
+  
+  return hold;
+}
+
++ (OSAScript *)scriptForKey:(NSString *)key
+{
+  SWMenuExecutor *instance = [SWMenuExecutor singleton];
+  OSAScript *script = [instance.scripts objectForKey:key];
+  if (!script) {
+    script = [SWMenuExecutor loadAndCompileApplescript:key];
+  }
+  
+  return script;
 }
 
 @end
