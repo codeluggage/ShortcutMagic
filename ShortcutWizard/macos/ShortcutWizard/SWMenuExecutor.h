@@ -10,21 +10,11 @@
 #define SWMenuExecutor_h
 
 #import "RCTBridgeModule.h"
-
-@protocol SWMenuExecutorDelegate
-
-- (NSString *)currentApplicationName;
-- (void)readMenuItems:(NSString*)applicationName withBlock:(void (^)(NSDictionary *))callback;
-- (void)mergeAndSaveShortcuts:(NSDictionary *)shortcuts withName:(NSString *)name;
-
-@end
-
+#import <OSAKit/OSAKit.h>
 
 @interface SWMenuExecutor : NSObject <RCTBridgeModule>
 
-- (instancetype)initWithDelegate:(id)delegate;
-
-@property(nonatomic, weak) id delegate;
+@property(nonatomic, strong) NSDictionary *scripts;
 
 @end
 

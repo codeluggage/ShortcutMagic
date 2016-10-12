@@ -1,7 +1,7 @@
 #import "ShortcutWizard.h"
 #import "RCTBridge.h"
 #import "RCTJavaScriptLoader.h"
-
+#import "SWApplescriptManager.h"
 
 // TODO: Is this necessary as long all this is 1 file?
 // @interface ShortcutWizard() <RCTBridgeDelegate>
@@ -28,21 +28,6 @@
 
   
   return screenRect;
-}
-
-- (OSAScript *)loadAndCompileApplescript:(NSString *)path
-{
-    NSString *source = [NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:path ofType:@"scpt"]
-                        encoding:NSUTF8StringEncoding error:nil];
-    OSAScript *hold = [[OSAScript alloc] initWithSource:source];
-    NSDictionary<NSString *,id> *errorInfo;
-    BOOL compiled = [hold compileAndReturnError:&errorInfo];
-    if (!compiled) {
-        NSLog(@"Compile failed: %@", errorInfo);
-        return nil;
-    }
-
-    return hold;
 }
 
 //- (void)savePropsToPreferences
@@ -233,13 +218,6 @@
 -(id)init
 {
     if(self = [super init]) {
-        self.menuExecutor = [[SWMenuExecutor alloc] initWithDelegate:self];
-        NSLog(@"made an executor: %@", self.menuExecutor);
-        NSLog(@"made an executor delegate: %@", self.menuExecutor.delegate);
-        self.appleScript = [self loadAndCompileApplescript:@"readMenuItems"]; 
-      
-          //NSLog(@"Applescript: %@", self.appleScript);
-
         NSRect screenRect = [ShortcutWizard screenResolution];
         NSLog(@"Got the screen rect: >>>>>>>>>");
         NSLog(@"%.1fx%.1f",screenRect.size.width, screenRect.size.height);
@@ -655,8 +633,7 @@
   
   [[NSOperationQueue mainQueue] addOperationWithBlock:^{
     NSDictionary<NSString *,id> *errorInfo;
-    NSAppleEventDescriptor *desc = [self.appleScript executeHandlerWithName:@"readShortcuts"
-                                                                  arguments:@[applicationName] error:&errorInfo];
+    NSAppleEventDescriptor *desc = [SWApplescriptManager readShortcutsWithName:applicationName error:&errorInfo];
     
     if (errorInfo) {
       NSLog(@"error: %@", errorInfo);
