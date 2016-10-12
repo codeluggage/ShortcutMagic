@@ -13,10 +13,10 @@
 
 @interface SWApplescriptManager : NSObject
 
-+ (NSAppleEventDescriptor *)readShortcutsWithName:(NSString *)name
++ (NSAppleEventDescriptor  * __nullable)readShortcutsWithName:(NSString  * __nullable)name
 	error:(NSDictionary<NSString *, id> * __nullable * __nullable)errorInfo;
 
-@property(nonatomic, strong) NSDictionary *scripts;
+@property(nonatomic, strong) NSDictionary * __nullable scripts;
 
 @end
 

@@ -26,7 +26,7 @@ static SWApplescriptManager *singletonInstance = nil;
 
 
 
-+ (NSAppleEventDescriptor *)readShortcutsWithName:(NSString *)name
++ (NSAppleEventDescriptor * __nullable)readShortcutsWithName:(NSString  * __nullable)name
                                             error:(NSDictionary<NSString *, id> * __nullable * __nullable)errorInfo
 {
   if (!name || [name isEqualToString:@""]) {
