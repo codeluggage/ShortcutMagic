@@ -36,7 +36,17 @@ RCT_EXPORT_METHOD(clickMenu:(NSString *)appName withDictionary:(NSDictionary *)s
       NSLog(@"----- hit clickMenu with: %@ and %@", appName, shortcut);
       OSAScript *executeMenu = [SWMenuExecutor scriptForKey:@"executeMenu"];
       NSDictionary<NSString *,id> *errorInfo;
-      [executeMenu executeHandlerWithName:@"executeMenu" arguments:@[appName, shortcut] error:&errorInfo];
+      NSString *menuName = [shortcut objectForKey:@"menuName"];
+      NSString *itemName = [shortcut objectForKey:@"name"];
+    NSLog(@"Calling executeMenu with: %@ %@ %@", appName, itemName, menuName);
+    
+//    NSLog(@"sleeping...");
+//    [NSThread sleepForTimeInterval:2.0f];
+//    NSLog(@"done sleeping!");
+    
+      NSAppleEventDescriptor *desc = [executeMenu executeHandlerWithName:@"executeMenu" arguments:@[appName, itemName, menuName] error:&errorInfo];
+    NSLog(@"event desc: %@", desc);
+    NSLog(@"event error: %@", errorInfo);
   });
 }
 
