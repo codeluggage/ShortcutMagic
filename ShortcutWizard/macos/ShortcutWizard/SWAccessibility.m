@@ -13,12 +13,16 @@
 
 +(void)requestAccess
 {
+  NSLog(@"------------- requestAccess called");
   // general API:
 //  Boolean AXIsProcessTrustedWithOptions(CFDictionaryRef options);
   
   // API with bridging:
-//  NSDictionary *options = @{(__bridge id) kAXTrustedCheckOptionPrompt : @YES};
-//  BOOL accessibilityEnabled = AXIsProcessTrustedWithOptions((__bridge CFDictionaryRef) options);
+  NSDictionary *options = @{
+                            (__bridge id)kAXTrustedCheckOptionPrompt : @YES
+                            };
+  BOOL accessibilityEnabled = AXIsProcessTrustedWithOptions((__bridge CFDictionaryRef) options);
+  NSLog(@"------------- requestAccess returned %d", accessibilityEnabled);
 
   // another bridging example:
 //  NSDictionary *options = @{(id)kAXTrustedCheckOptionPrompt: @YES};
