@@ -23,6 +23,7 @@
 		AC1534731DADD70B00E6696E /* SWApplescriptManager.m in Sources */ = {isa = PBXBuildFile; fileRef = AC1534721DADD70B00E6696E /* SWApplescriptManager.m */; };
 		AC4E3D551D9A228E00A7AED7 /* SWCoreDataStackManager.m in Sources */ = {isa = PBXBuildFile; fileRef = AC4E3D501D9A228E00A7AED7 /* SWCoreDataStackManager.m */; };
 		AC4E3D571D9A228E00A7AED7 /* SWShortcutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AC4E3D541D9A228E00A7AED7 /* SWShortcutViewController.m */; };
+		AC743BD31DAE813900C83A28 /* SWAccessibility.m in Sources */ = {isa = PBXBuildFile; fileRef = AC743BD21DAE813900C83A28 /* SWAccessibility.m */; };
 		AC8E9B1C1DAACED8001791AA /* DraggableImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = AC8E9B1B1DAACED8001791AA /* DraggableImageView.m */; };
 		ACC83D2A1D96EE4000C338B2 /* readMenuItems.scpt in Resources */ = {isa = PBXBuildFile; fileRef = ACC83D291D96EE4000C338B2 /* readMenuItems.scpt */; };
 		ACC83D2D1D96EEAB00C338B2 /* systemInfo.scpt in Resources */ = {isa = PBXBuildFile; fileRef = ACC83D2B1D96EEAB00C338B2 /* systemInfo.scpt */; };
@@ -115,6 +116,8 @@
 		AC4E3D521D9A228E00A7AED7 /* SWShortcuts.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SWShortcuts.m; path = ShortcutWizard/SWShortcuts.m; sourceTree = "<group>"; };
 		AC4E3D531D9A228E00A7AED7 /* SWShortcutViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SWShortcutViewController.h; path = ShortcutWizard/SWShortcutViewController.h; sourceTree = "<group>"; };
 		AC4E3D541D9A228E00A7AED7 /* SWShortcutViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SWShortcutViewController.m; path = ShortcutWizard/SWShortcutViewController.m; sourceTree = "<group>"; };
+		AC743BCA1DAE812600C83A28 /* SWAccessibility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SWAccessibility.h; path = ShortcutWizard/SWAccessibility.h; sourceTree = "<group>"; };
+		AC743BD21DAE813900C83A28 /* SWAccessibility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SWAccessibility.m; path = ShortcutWizard/SWAccessibility.m; sourceTree = "<group>"; };
 		AC8E9B131DAACEAD001791AA /* DraggableImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DraggableImageView.h; path = ShortcutWizard/DraggableImageView.h; sourceTree = "<group>"; };
 		AC8E9B1B1DAACED8001791AA /* DraggableImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DraggableImageView.m; path = ShortcutWizard/DraggableImageView.m; sourceTree = "<group>"; };
 		ACC83D291D96EE4000C338B2 /* readMenuItems.scpt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = readMenuItems.scpt; path = ShortcutWizard/readMenuItems.scpt; sourceTree = "<group>"; };
@@ -218,6 +221,8 @@
 				AC1534681DADB6C900E6696E /* executeMenu.scpt */,
 				AC1534711DADD6F900E6696E /* SWApplescriptManager.h */,
 				AC1534721DADD70B00E6696E /* SWApplescriptManager.m */,
+				AC743BCA1DAE812600C83A28 /* SWAccessibility.h */,
+				AC743BD21DAE813900C83A28 /* SWAccessibility.m */,
 			);
 			name = ShortcutWizard;
 			sourceTree = "<group>";
@@ -493,6 +498,7 @@
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				AC4E3D571D9A228E00A7AED7 /* SWShortcutViewController.m in Sources */,
 				AC8E9B1C1DAACED8001791AA /* DraggableImageView.m in Sources */,
+				AC743BD31DAE813900C83A28 /* SWAccessibility.m in Sources */,
 				AC1534591DADA84E00E6696E /* SWMenuExecutor.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

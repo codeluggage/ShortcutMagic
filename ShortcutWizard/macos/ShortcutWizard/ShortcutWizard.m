@@ -2,6 +2,7 @@
 #import "RCTBridge.h"
 #import "RCTJavaScriptLoader.h"
 #import "SWApplescriptManager.h"
+#import "SWAccessibility.h"
 
 // TODO: Is this necessary as long all this is 1 file?
 // @interface ShortcutWizard() <RCTBridgeDelegate>
@@ -218,6 +219,8 @@
 -(id)init
 {
     if(self = [super init]) {
+        [SWAccessibility requestAccess];
+      
         NSRect screenRect = [ShortcutWizard screenResolution];
         NSLog(@"Got the screen rect: >>>>>>>>>");
         NSLog(@"%.1fx%.1f",screenRect.size.width, screenRect.size.height);
