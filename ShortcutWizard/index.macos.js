@@ -15,7 +15,10 @@ import {
 // ======================= Bridge to native
 import { NativeModules } from 'react-native';
 
-var ShortcutWizard = NativeModules.SWMenuExecutor;
+var ShortcutWizard = {
+    NativeApplescriptManager: NativeModules.SWApplescriptManager,
+    NativeClick: NativeModules.SWMenuExecutor 
+};
 
 
 
@@ -32,20 +35,20 @@ const styles = StyleSheet.create({
         paddingBottom: 20
     },
     scrollView: {
-        backgroundColor: '#888888',
+        backgroundColor: '#EFEFEF',
         height: 360,
     },
     view: {
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'white',
+        backgroundColor: '#EFEFEF',
     },
     row: {
         flexDirection: 'column',
         justifyContent: 'center',
         padding: 2,
-        backgroundColor: 'white',
+        backgroundColor: '#EFEFEF',
     },
     image: {
         width: 35,
@@ -107,7 +110,8 @@ const ShortcutWizardApp = React.createClass({
 
         return {
             ds: ds,
-            dataSource: ds.cloneWithRows(["Loading shortcuts", "Please wait :)"])
+            dataSource: ds.cloneWithRows(["Loading shortcuts", "Please wait :)"]),
+            loading: undefined
         };
     },
     // _genRows: function(props) {
@@ -282,6 +286,20 @@ const ShortcutWizardApp = React.createClass({
     //     }
     // }
 
+    _renderLoadingRow: function(rowData: string, sectionID: number, rowID: number, highlightRow: (sectionID: number, rowID: number) => void) {
+        // console.log('Hit render row with row data: ' + JSON.stringify(rowData));
+        // console.log('Hit render row with : ' + sectionID + " " + rowID);
+        if (rowData) {
+            return (
+                <TouchableHighlight onPress={() => {}}>
+                    <Text style={styles.row}>
+                        {rowData}
+                    </Text>
+                </TouchableHighlight>
+            );
+        }
+    },
+
     _renderRow: function(rowData: string, sectionID: number, rowID: number, highlightRow: (sectionID: number, rowID: number) => void) {
         // console.log('Hit render row with row data: ' + JSON.stringify(rowData));
         // console.log('Hit render row with : ' + sectionID + " " + rowID);
@@ -312,7 +330,7 @@ const ShortcutWizardApp = React.createClass({
                 <TouchableHighlight onPress={() => {
                     this._pressData[rowID] = !this._pressData[rowID];
                     // highlightRow(sectionID, rowID);
-                    ShortcutWizard.clickMenu(this.props.applicationName, shortcut);
+                    ShortcutWizard.NativeClick.clickMenu(this.props.applicationName, shortcut);
                 }}>
                     <View style={{
                         flexDirection: 'column',
@@ -331,46 +349,93 @@ const ShortcutWizardApp = React.createClass({
     render: function() {
         this.initialize();
 
-        console.log('>>> render hit');
         // if (this.state) {
         //     console.log('json stringify state: ' + JSON.stringify(this.state));
         // } else {
         //     console.log('NO STATE IN RENDER');
         // }
 
+
         if (this.state && this.props && this.props.shortcuts) {
-            return (
-                <View style={styles.view}>
-                    <Text style={{paddingBottom: 3}} > </Text>
+        console.log('>>> render hit with loading: ', this.state.loading);
+            // TODO: create better "state system" for rendering:
 
-                    <Text style={styles.titleText}>{this.props.applicationName}</Text>
+            if (this.state.loading) {
+                return (
+                    <View style={styles.view}>
+                        <Text style={{paddingBottom: 3}} > </Text>
 
-                    <View style={{flexDirection: 'column'}}>
-                        <Image style={styles.image} source={{uri: this.props.applicationIconPath}} />
-                        <Button 
-                            title="Reload"
-                            onClick={() => {
-                                console.log('CLICKED -> with applicationName', this.props.applicationName);
-                                ShortcutWizard.loadShortcutsForApp(this.props.applicationName, function(results) {
-                                    // console.log('RETURNED loadShortcutsForApp, results: ', results);
-                                });
-                            }}
+                        <Text style={styles.titleText}>{this.props.applicationName}</Text>
+
+                        <View style={{flexDirection: 'column'}}>
+                            <Image style={styles.image} source={{uri: this.props.applicationIconPath}} />
+                            <Button 
+                                title="Reloading..."
+                                onClick={() => {}}
+                            />
+                        </View>
+
+                        <Text style={{paddingBottom: 1}} > </Text>
+
+                        <ListView 
+                            style={styles.scrollView}
+                            dataSource={this.state.dataSource.cloneWithRows(["Click any of these to see where it is - then press enter to click the menu"])}
+                            ref={(scrollView) => { _scrollView = scrollView; }}
+                            automaticallyAdjustContentInsets={false}
+                            renderRow={this._renderLoadingRow}
+                            renderScrollComponent={props => <RecyclerViewBackedScrollView {...props} />}
                         />
                     </View>
+                );
+            } else {
+                return (
+                    <View style={styles.view}>
+                        <Text style={{paddingBottom: 3}} > </Text>
 
-                    <Text style={{paddingBottom: 1}} > </Text>
+                        <Text style={styles.titleText}>{this.props.applicationName}</Text>
 
-                    <ListView 
-                        style={styles.scrollView}
-                        dataSource={this.state.dataSource}
-                        ref={(scrollView) => { _scrollView = scrollView; }}
-                        automaticallyAdjustContentInsets={false}
-                        renderRow={this._renderRow}
-                        renderScrollComponent={props => <RecyclerViewBackedScrollView {...props} />}
-                        renderSeparator={this._renderSeparator} 
-                    />
-                </View>
-            );
+                        <View style={{flexDirection: 'column'}}>
+                            <Image style={styles.image} source={{uri: this.props.applicationIconPath}} />
+                            <Button 
+                                title="Reload"
+                                onClick={() => {
+                                    console.log('CLICKED with applicationName', this.props.applicationName);
+                                    ShortcutWizard.NativeApplescriptManager.loadShortcutsForApp(this.props.applicationName, (res) => {
+                                        if (res) {
+                                            if (res[0]) {
+                                                console.log('error loading shortcuts: ' + res[0]);
+                                                return;
+                                            }
+
+                                            var shortcuts = res[1];
+
+                                            this.props.shortcuts = shortcuts;
+                                        }
+                                        
+                                        this.state.loading = undefined;
+                                        console.log('setting state to not loading, any more: ', this.state.loading);
+                                    });
+
+                                    this.state.loading = "[" + new Date() + "] " + this.props.applicationName;
+                                    console.log('setting state to loading: ', this.state.loading);
+                                }}
+                            />
+                        </View>
+
+                        <Text style={{paddingBottom: 1}} > </Text>
+
+                        <ListView 
+                            style={styles.scrollView}
+                            dataSource={this.state.dataSource}
+                            ref={(scrollView) => { _scrollView = scrollView; }}
+                            automaticallyAdjustContentInsets={false}
+                            renderRow={this._renderRow}
+                            renderScrollComponent={props => <RecyclerViewBackedScrollView {...props} />}
+                            renderSeparator={this._renderSeparator} 
+                        />
+                    </View>
+                );
+            }
         } else {
             return (
                 <View style={styles.view}>
@@ -379,7 +444,9 @@ const ShortcutWizardApp = React.createClass({
                         Welcome to ShortcutWizard!
                         {"\n"}
                         {"\n"}
-                        Change app to see shortcuts
+                        Change app to see its shortcuts :)
+                        {"\n"}
+                        Sorry about the loading time! 
                     </Text>
                 </View>
             );

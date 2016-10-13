@@ -9,12 +9,16 @@
 #ifndef SWApplescriptManager_h
 #define SWApplescriptManager_h
 
+#import "RCTBridgeModule.h"
 #import <OSAKit/OSAKit.h>
 
-@interface SWApplescriptManager : NSObject
+
+@interface SWApplescriptManager : NSObject <RCTBridgeModule>
 
 + (NSAppleEventDescriptor  * __nullable)readShortcutsWithName:(NSString  * __nullable)name
 	error:(NSDictionary<NSString *, id> * __nullable * __nullable)errorInfo;
++ (void)readMenuItems:(NSString * __nonnull)applicationName withBlock:(void (^ __nonnull) (NSDictionary * __nullable))callback;
+
 
 @property(nonatomic, strong) NSDictionary * __nullable scripts;
 
