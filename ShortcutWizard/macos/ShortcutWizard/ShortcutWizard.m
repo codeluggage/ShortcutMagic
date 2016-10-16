@@ -74,7 +74,12 @@
     if ([newAppName isEqualToString:@"ShortcutWizard"]) {
         NSLog(@"Switching to ShortcutWizard - TODO: SHOW UI");
         return;
+    } else if ([newAppName isEqualToString:@"PomoDoneApp Helper"]) {
+      NSLog(@"--------------- TRANSFORMED POMODONEAPP HELPER TO POMODONEAPP");
+      newAppName = @"PomoDoneApp";
     }
+  
+  
     holdSelf.currentApplicationName = newAppName;
     [holdSelf updateApplicationIcon:currentAppInfo];
   

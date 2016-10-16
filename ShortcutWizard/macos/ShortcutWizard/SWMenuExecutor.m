@@ -44,7 +44,14 @@ RCT_EXPORT_METHOD(clickMenu:(NSString *)appName withDictionary:(NSDictionary *)s
 //    [NSThread sleepForTimeInterval:2.0f];
 //    NSLog(@"done sleeping!");
     
-      NSAppleEventDescriptor *desc = [executeMenu executeHandlerWithName:@"executeMenu" arguments:@[appName, itemName, menuName] error:&errorInfo];
+    NSAppleEventDescriptor *desc = [executeMenu executeHandlerWithName:@"executeMenu" arguments:@[appName, itemName, menuName] error:&errorInfo];
+    NSLog(@"event desc: %@", desc);
+    NSLog(@"event error: %@", errorInfo);
+
+    if (errorInfo && [desc descriptorForKey: OSAScriptErrorNumberKey = "-600"]) {
+      NSAppleEventDescriptor *desc = [executeMenu executeHandlerWithName:@"killProcess" arguments:@[appName] error:&errorInfo];
+    }
+
     NSLog(@"event desc: %@", desc);
     NSLog(@"event error: %@", errorInfo);
   });

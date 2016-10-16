@@ -40,6 +40,27 @@ on menu_click_recurse(mList, parentObject)
 end menu_click_recurse
 
 
+-- TODO: fix -600 error
+
+-- set app_name to "System Events"
+-- set the_pid to (do shell script "ps ax | grep " & (quoted form of app_name) & "$
+-- if the_pid is not "" then do shell script ("kill -9 " & the_pid)
+
+-- tell application "System Events"
+-- -- activate  
+-- end tell
+
+-- TODO: Another potential fix for -600 error
+-- tell application "System Events" to set thePID to (unix id of process "Image Events")
+-- set killCMD to ("kill -9 " & thePID) as text
+-- do shell script killCMD with administrator privileges
+
+on killProcess(processName)
+    tell application "System Events" to set thePID to (unix id of process processName)
+    set killCMD to ("kill -9 " & thePID) as text
+    do shell script killCMD with administrator privileges
+end killProcess
+
 on executeMenu(processName, menuItemName, menuName) -- subMenuName)
 	tell application processName 
 		activate
