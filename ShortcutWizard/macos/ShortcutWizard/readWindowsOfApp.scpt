@@ -7,7 +7,7 @@ on readWindowsOfApp(argv)
 			
 			repeat with x from 1 to (count every window of theProcess)
 				set theWindow to window x of theProcess
-				
+				theWindow
 				set innerList to {}
 				
 				try
@@ -18,18 +18,18 @@ on readWindowsOfApp(argv)
 				end try
 				
 				try
-					set holdFrontmost to (value of (first attribute whose name is "frontmost") of theWindow)
-					set end of innerList to ("frontmost::::::::::" & holdFrontmost)
+					set holdFrontmost to get focused of theWindow
+					set end of innerList to holdFrontmost
 				on error
 					set end of innerList to missing value
 				end try
 				
-				try
-					set holdPosition to (value of (first attribute whose name is "AXFullScreen") of theWindow)
-					set end of innerList to holdPosition
-				on error
-					set end of innerList to missing value
-				end try
+				--try
+				--	set holdPosition to (value of (first attribute whose name is "AXFullScreen") of theWindow)
+				--	set end of innerList to holdPosition
+				--on error
+				--	set end of innerList to missing value
+				--end try
 				
 				try
 					-- set holdSize to (value of size of theWindow)   
