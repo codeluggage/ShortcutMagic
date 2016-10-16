@@ -23,6 +23,7 @@
 		AC1534731DADD70B00E6696E /* SWApplescriptManager.m in Sources */ = {isa = PBXBuildFile; fileRef = AC1534721DADD70B00E6696E /* SWApplescriptManager.m */; };
 		AC4E3D551D9A228E00A7AED7 /* SWCoreDataStackManager.m in Sources */ = {isa = PBXBuildFile; fileRef = AC4E3D501D9A228E00A7AED7 /* SWCoreDataStackManager.m */; };
 		AC4E3D571D9A228E00A7AED7 /* SWShortcutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AC4E3D541D9A228E00A7AED7 /* SWShortcutViewController.m */; };
+		AC5C108C1DB33F7A000A51B4 /* SWWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = AC5C108B1DB33F7A000A51B4 /* SWWindow.m */; };
 		AC743BD31DAE813900C83A28 /* SWAccessibility.m in Sources */ = {isa = PBXBuildFile; fileRef = AC743BD21DAE813900C83A28 /* SWAccessibility.m */; };
 		AC8E9B1C1DAACED8001791AA /* DraggableImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = AC8E9B1B1DAACED8001791AA /* DraggableImageView.m */; };
 		ACC83D2A1D96EE4000C338B2 /* readMenuItems.scpt in Resources */ = {isa = PBXBuildFile; fileRef = ACC83D291D96EE4000C338B2 /* readMenuItems.scpt */; };
@@ -116,6 +117,8 @@
 		AC4E3D521D9A228E00A7AED7 /* SWShortcuts.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SWShortcuts.m; path = ShortcutWizard/SWShortcuts.m; sourceTree = "<group>"; };
 		AC4E3D531D9A228E00A7AED7 /* SWShortcutViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SWShortcutViewController.h; path = ShortcutWizard/SWShortcutViewController.h; sourceTree = "<group>"; };
 		AC4E3D541D9A228E00A7AED7 /* SWShortcutViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SWShortcutViewController.m; path = ShortcutWizard/SWShortcutViewController.m; sourceTree = "<group>"; };
+		AC5C108B1DB33F7A000A51B4 /* SWWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SWWindow.m; path = ShortcutWizard/SWWindow.m; sourceTree = "<group>"; };
+		AC5C10941DB33F88000A51B4 /* SWWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SWWindow.h; path = ShortcutWizard/SWWindow.h; sourceTree = "<group>"; };
 		AC743BCA1DAE812600C83A28 /* SWAccessibility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SWAccessibility.h; path = ShortcutWizard/SWAccessibility.h; sourceTree = "<group>"; };
 		AC743BD21DAE813900C83A28 /* SWAccessibility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SWAccessibility.m; path = ShortcutWizard/SWAccessibility.m; sourceTree = "<group>"; };
 		AC8E9B131DAACEAD001791AA /* DraggableImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DraggableImageView.h; path = ShortcutWizard/DraggableImageView.h; sourceTree = "<group>"; };
@@ -223,6 +226,8 @@
 				AC1534721DADD70B00E6696E /* SWApplescriptManager.m */,
 				AC743BCA1DAE812600C83A28 /* SWAccessibility.h */,
 				AC743BD21DAE813900C83A28 /* SWAccessibility.m */,
+				AC5C10941DB33F88000A51B4 /* SWWindow.h */,
+				AC5C108B1DB33F7A000A51B4 /* SWWindow.m */,
 			);
 			name = ShortcutWizard;
 			sourceTree = "<group>";
@@ -492,6 +497,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AC5C108C1DB33F7A000A51B4 /* SWWindow.m in Sources */,
 				13B07FBC1A68108700A75B9A /* ShortcutWizard.m in Sources */,
 				AC4E3D551D9A228E00A7AED7 /* SWCoreDataStackManager.m in Sources */,
 				AC1534731DADD70B00E6696E /* SWApplescriptManager.m in Sources */,

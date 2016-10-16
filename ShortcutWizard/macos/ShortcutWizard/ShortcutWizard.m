@@ -4,15 +4,6 @@
 #import "SWApplescriptManager.h"
 #import "SWAccessibility.h"
 
-// TODO: Is this necessary as long all this is 1 file?
-// @interface ShortcutWizard() <RCTBridgeDelegate>
-
-// + (NSRect) screenResolution;
-// - (void)triggerAppSwitch:(NSNotification *)notification;
-// - (void)prepareProps;
-// - (void)triggerAppSwitch;
-
-// @end
 
 @implementation ShortcutWizard
 
@@ -31,43 +22,10 @@
   return screenRect;
 }
 
-//- (void)savePropsToPreferences
-//{
-//  // Register the preference defaults early.
-//
-//  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-//  NSMutableDictionary *shortcuts = [[NSMutableDictionary alloc] init];
-//  [self.shortcuts enumerateKeysAndObjectsUsingBlock:^(NSString * key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-//    NSLog(@"looping with %@", obj);
-//    
-//    // TODO: 
-//    
-//    
-//    [shortcuts setObject:obj forKey:key];
-////    [defaults setDictionary:@{
-////                              [NSNumber numberWithInteger:
-////                               } forKey:@"CacheDataAggressively"];
-//  }];
-//  
-//
-////  [defaults setObject:[NSDate dateWithTimeIntervalSinceNow:(3600 * 24 * 7)]
-////               forKey:@"CacheExpirationDate"]; // Set a 1-week expiration
-//  
-//  [defaults synchronize];
-//  
-//  // The user wants to use lazy caching.
-//  //[defaults setBool:NO forKey:@"CacheDataAggressively"];
-//  //[defaults removeObjectForKey:@"CacheExpirationDate"];
-//  
-//  
-//  
-//  // Other initialization...
-//}
-
 - (void)prepareProps
 {
   // Is this needed?
-  __block ShortcutWizard *holdSelf = self;
+    __block ShortcutWizard *holdSelf = self;
     NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
     NSRunningApplication* currentAppInfo = [workspace frontmostApplication];
     __block NSString *newAppName = [currentAppInfo localizedName];
@@ -75,21 +33,16 @@
         NSLog(@"Switching to ShortcutWizard - TODO: SHOW UI");
         return;
     }
+
     holdSelf.currentApplicationName = newAppName;
     [holdSelf updateApplicationIcon:currentAppInfo];
   
     __block NSString *newAppIconPath = holdSelf.currentIconPath;
-
-  
-  
   
 //  // TEMP - REMOVE BAD DICTS:
 //  NSMutableDictionary* hold = [[NSMutableDictionary alloc] initWithDictionary:holdSelf.shortcuts ];
 //  [hold removeObjectForKey:@"Sublime Text"];
 //  holdSelf.shortcuts = [[NSDictionary alloc] initWithDictionary:hold];
-  
-  
-  
   
     // todo: combine this with similar calls below
     NSDictionary *currentShortcuts = [holdSelf.shortcuts objectForKey:newAppName];
@@ -177,29 +130,6 @@
     // self.rootView.appProperties = self.props; // moved to after the block finishes
 }
 
--(void)updateProps:(NSDictionary *)newProps
-{
-    NSLog(@"Sending new props with shortcut: %@ count: %ld", [newProps objectForKey:@"applicationName"], [[newProps objectForKey:@"shortcuts"] count]);
-
-  // TODO: merge this
-//  if (!self.props) {
-//    [self updateProps:@{
-//                        @"applicationName": self.currentApplicationName,
-//                        @"applicationIconPath": self.currentIconPath,
-//                        @"shortcuts": shortcuts
-//                        }];
-//  } else {
-//    NSMutableDictionary *newDict = [NSMutableDictionary dictionaryWithDictionary:self.props];
-//    newDict[@"applicationName"] = self.currentApplicationName;
-//    newDict[@"applicationIconPath"] = self.currentIconPath;
-//    newDict[@"shortcuts"] = shortcuts;
-//    [self updateProps:[NSDictionary dictionaryWithDictionary:newDict]];
-//  }
-  
-    self.props = newProps;
-    self.rootView.appProperties = self.props;
-}
-
 -(void)updateApplicationIcon:(NSRunningApplication *)currentAppInfo
 {
     NSString *iconPath = [NSString stringWithFormat:@"%@.png" , [currentAppInfo localizedName]];
@@ -231,6 +161,43 @@
     // }
 }
 
+-(void)updateWindowPosition
+{
+  if (!self.props) {
+    NSLog(@"Can't update frame without props");
+    return;
+  }
+  
+  NSMutableDictionary *windowPositions = self.props[@"windowPositions"];
+  if (windowPositions) {
+    NSString *positionString = windowPositions[self.currentApplicationName];
+    if (positionString) {
+      [self.window setFrame:NSRectFromString(positionString) display:YES animate:YES];
+    }
+  }
+}
+
+-(void)updateProps:(NSDictionary *)newProps
+{
+    NSLog(@"Sending new props with shortcut: %@ count: %ld", [newProps objectForKey:@"applicationName"], [[newProps objectForKey:@"shortcuts"] count]);
+    if (!newProps) {
+      return;
+    }
+
+    if (self.props) {
+      [newProps enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+        self.props[key] = obj;
+      }];
+    } else {
+      self.props = [NSMutableDictionary dictionaryWithDictionary:newProps];
+    }
+
+    [self updateWindowPosition];
+
+    // Update react side:
+    self.rootView.appProperties = self.props;
+}
+
 -(id)init
 {
     if(self = [super init]) {
@@ -243,7 +210,8 @@
         // TODO: Can this be sent from javascript so everything is configured in javascript?
         NSRect contentSize = NSMakeRect(screenRect.size.width - 400, screenRect.size.height - 200, 200, 450); // initial size of main NSWindow
 
-        self.window = [[NSWindow alloc] initWithContentRect:contentSize
+//        SWWindow *window = [[SWWindow alloc] initWithContentRect:contentSize
+        NSWindow *window = [[NSWindow alloc] initWithContentRect:contentSize
 //            styleMask:NSBorderlessWindowMask
             styleMask:NSTitledWindowMask
             backing:NSBackingStoreBuffered
@@ -254,41 +222,32 @@
         NSLog(@"window size:%f-%f", self.window.frame.size.width, self.window.frame.size.height);
         NSLog(@"window pos:%f-%f", self.window.frame.origin.x, self.window.frame.origin.y);
 
-        NSWindowController *windowController = [[NSWindowController alloc] initWithWindow:self.window];
+        NSWindowController *windowController = [[NSWindowController alloc] initWithWindow:window];
 
-        [[self window] setTitleVisibility:NSWindowTitleHidden];
-        [[self window] setTitlebarAppearsTransparent:YES];
-        // [[self window] setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameAqua]];
-        [[self window] setOpaque:NO];
-        [[self window] setAlphaValue:0.7];
-        [[self window] setHasShadow:YES];
-        [[self window] setLevel:NSFloatingWindowLevel];
+        [window setTitleVisibility:NSWindowTitleHidden];
+        [window setTitlebarAppearsTransparent:YES];
+        // [window setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameAqua]];
+        [window setOpaque:NO];
+        [window setAlphaValue:0.7];
+        [window setHasShadow:YES];
+        [window setLevel:NSFloatingWindowLevel];
+//        [window setWorksWhenModal:YES];
+//      window.worksWhenModal = YES;
 
         [windowController setShouldCascadeWindows:NO];
         [windowController setWindowFrameAutosaveName:@"ShortcutWizard"];
 
-        [windowController showWindow:self.window];
 
+        [windowController showWindow:window];
+
+        self.windowController = windowController;
+        [window setDelegate:self];
+        self.window = window;
         [self setUpApplicationMenu];
     }
 
     return self;
 }
-
-// - (void)printLoop
-// {
-//   NSWorkspace* workspace            = [NSWorkspace sharedWorkspace];
-//   NSRunningApplication* currentAppInfo      = [workspace frontmostApplication];
-
-//   [[workspace notificationCenter] addObserver:self
-//                                      selector:@selector(applicationLaunched:)
-//                                          name:NSWorkspaceDidLaunchApplicationNotification
-//                                        object:workspace];
-
-
-// //   NSImage* icon = [currentAppInfo icon];
-//   NSLog([currentAppInfo localizedName]);
-// }
 
 - (void)listeningApplicationActivated:(NSNotification *)notification
 {
@@ -300,46 +259,10 @@
 {
     NSLog(@"Inside listeningApplicationLaunched! ");
     [self triggerAppSwitch];
-
-    // NSLog([[notification userInfo] description]);
-
-//    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
-//    NSRunningApplication* currentAppInfo      = [workspace frontmostApplication];
-//    NSImage* icon = [currentAppInfo icon];
-//    NSData *imageData = [icon TIFFRepresentation];
-//    NSBitmapImageRep *imageRep = [NSBitmapImageRep imageRepWithData:imageData];
-//    NSDictionary *imageProps = [NSDictionary dictionaryWithObject:[NSNumber numberWithFloat:1.0] forKey:NSImageCompressionFactor];
-//    imageData = [imageRep representationUsingType:NSJPEGFileType properties:imageProps];
-//
-//    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);         
-//    NSString *fileName = [[paths objectAtIndex:0] 
-//        stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.png" , 
-//            [currentAppInfo localizedName]
-//        ]
-//    ];
-//
-//    [imageData writeToFile:fileName atomically:NO];
 }
 
 - (void)applicationDidFinishLaunching:(__unused NSNotification *)aNotification
 {
-
-  // NSTimer *myTimer =[NSTimer scheduledTimerWithTimeInterval:0.03
-  //                                                   target:self
-  //                                                 selector:@selector(printLoop)
-  //                                                 userInfo:nil
-  //                                                  repeats:YES];
-
-// APPKIT_EXTERN NSString * NSWorkspaceWillLaunchApplicationNotification;  //  see above
-// APPKIT_EXTERN NSString * NSWorkspaceDidLaunchApplicationNotification;   //  see above
-// APPKIT_EXTERN NSString * NSWorkspaceDidTerminateApplicationNotification;    //  see above
-// APPKIT_EXTERN NSString * const NSWorkspaceDidHideApplicationNotification NS_AVAILABLE_MAC(10_6);
-// APPKIT_EXTERN NSString * const NSWorkspaceDidUnhideApplicationNotification NS_AVAILABLE_MAC(10_6);
-// APPKIT_EXTERN NSString * const NSWorkspaceDidActivateApplicationNotification NS_AVAILABLE_MAC(10_6);
-// APPKIT_EXTERN NSString * const NSWorkspaceDidDeactivateApplicationNotification NS_AVAILABLE_MAC(10_6);
-
-   // [[[NSWorkspace sharedWorkspace] notificationCenter] addObserver:self selector:@selector(activateApp:) name:NSWorkspaceDidActivateApplicationNotification object:nil];
-
     self.sharedWorkspace = [NSWorkspace sharedWorkspace];
 
     [[self.sharedWorkspace notificationCenter] addObserver:self 
@@ -354,13 +277,9 @@
 
     _bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:nil];
 
-
-//    NSRunningApplication* currentAppInfo = [self.sharedWorkspace frontmostApplication];
-
     [self prepareProps];
 
     self.rootView = [[RCTRootView alloc] initWithBridge:_bridge moduleName:@"ShortcutWizard" initialProperties:self.props];
-
     [self.window setContentView:self.rootView];
 }
 
@@ -395,6 +314,24 @@
 - (id)firstResponder
 {
     return [self.window firstResponder];
+}
+
+- (void)windowDidMove:(NSNotification *)notification
+{
+  NSLog(@"************** window did move ****** %@", notification);
+
+  NSMutableDictionary *newDict = [NSMutableDictionary dictionaryWithDictionary:self.props[@"windowPositions"]];
+
+  NSString *windowPosition = NSStringFromRect(NSRectFromCGRect([self.window frame]));
+  newDict[self.currentApplicationName] = windowPosition;
+  
+  self.props[@"windowPositions"] = [NSDictionary dictionaryWithDictionary:newDict];
+}
+
+
+- (void)windowDidResize:(NSNotification *)notification
+{
+  NSLog(@"************** window did resize ****** %@", notification);
 }
 
 @end
