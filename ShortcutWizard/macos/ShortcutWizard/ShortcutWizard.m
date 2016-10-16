@@ -170,8 +170,17 @@
   
   NSMutableDictionary *windowPositions = self.props[@"windowPositions"];
   if (windowPositions) {
-    NSString *positionString = windowPositions[self.currentApplicationName];
-    if (positionString) {
+    NSMutableDictionary *innerWindowPositions = windowPositions[self.currentApplicationName];
+    NSString *positionString = nil;
+    
+    if ([innerWindowPositions count] > 1) {
+      positionString = innerWindowPositions[self.currentApplicationWindowName];
+    } else {
+      // We only have 1 entry, take it as default and apply it:
+      positionString = [[innerWindowPositions allValues] objectAtIndex:0];
+    }
+    
+    if (positionString && [positionString length]) {
       [self.window setFrame:NSRectFromString(positionString) display:YES animate:YES];
     }
   }
@@ -201,6 +210,7 @@
 -(id)init
 {
     if(self = [super init]) {
+      // TODO: Quit if the user says no? Explain about potential app store version that has no accessibility needed?
         [SWAccessibility requestAccess];
       
         NSRect screenRect = [ShortcutWizard screenResolution];
@@ -319,13 +329,28 @@
 - (void)windowDidMove:(NSNotification *)notification
 {
   NSLog(@"************** window did move ****** %@", notification);
+  NSLog(@"STARTING callback to read windows!");
 
-  NSMutableDictionary *newDict = [NSMutableDictionary dictionaryWithDictionary:self.props[@"windowPositions"]];
+  [SWApplescriptManager readWindowsOfApp:self.currentApplicationName withBlock:^(NSDictionary *windows) {
+    NSLog(@"ENDING callback to read windows!");
+    
+    // 1 - get frontmost window name
+    // 2 - save our own current position with frontmost window name
+    
+    NSMutableDictionary *newDict = [NSMutableDictionary dictionaryWithDictionary:self.props[@"windowPositions"]];
+    NSMutableDictionary *currentWindows = newDict[self.currentApplicationWindowName];
+    if (currentWindows) {
+      // set the frontmost as the currently saved position
+    } else {
+      // save frontmost with current position
+    }
+    
 
-  NSString *windowPosition = NSStringFromRect(NSRectFromCGRect([self.window frame]));
-  newDict[self.currentApplicationName] = windowPosition;
-  
-  self.props[@"windowPositions"] = [NSDictionary dictionaryWithDictionary:newDict];
+    NSString *windowPosition = NSStringFromRect(NSRectFromCGRect([self.window frame]));
+    newDict[self.currentApplicationName] = windowPosition;
+    
+    self.props[@"windowPositions"] = [NSDictionary dictionaryWithDictionary:newDict];
+  }];
 }
 
 
