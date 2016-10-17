@@ -163,27 +163,27 @@
 
 -(void)updateWindowPosition
 {
-  if (!self.props) {
-    NSLog(@"Can't update frame without props");
-    return;
-  }
+//  if (!self.props) {
+//    NSLog(@"Can't update frame without props");
+//    return;
+//  }
   
-  NSMutableDictionary *windowPositions = self.props[@"windowPositions"];
-  if (windowPositions) {
-    NSMutableDictionary *innerWindowPositions = windowPositions[self.currentApplicationName];
-    NSString *positionString = nil;
+//  NSMutableDictionary *windowPositions = self.props[@"windowPositions"];
+//  if (windowPositions) {
+//    NSMutableDictionary *innerWindowPositions = windowPositions[self.currentApplicationName];
+//    NSString *positionString = nil;
+  
+  [SWApplescriptManager readWindowOfApp:self.currentApplicationName withBlock:^(NSDictionary *windows) {
     
-    if ([innerWindowPositions count] > 1) {
-      positionString = innerWindowPositions[self.currentApplicationWindowName];
-    } else {
-      // We only have 1 entry, take it as default and apply it:
-      positionString = [[innerWindowPositions allValues] objectAtIndex:0];
-    }
+//    NSString *savedPos = NSStringToRect(currentWindows[@"windowPosition"]);
+    NSRect savedPos = NSRectFromString(windows[@"windowPosition"]);
     
-    if (positionString && [positionString length]) {
-      [self.window setFrame:NSRectFromString(positionString) display:YES animate:YES];
-    }
-  }
+      // TODO: Merge here
+//      self.props[@"windowPositions"] = [NSDictionary dictionaryWithDictionary:currentWindows];
+    
+        [self.window setFrame:savedPos display:YES animate:YES];
+//    }
+  }];
 }
 
 -(void)updateProps:(NSDictionary *)newProps
@@ -328,8 +328,13 @@
 
 - (void)windowDidMove:(NSNotification *)notification
 {
+  __block NSWindow *window = [notification object];
+  __block ShortcutWizard *holdSelf = self;
   NSLog(@"************** window did move ****** %@", notification);
   NSLog(@"STARTING callback to read windows!");
+  if (!self.currentApplicationName) {
+    return;
+  }
 
   [SWApplescriptManager readWindowOfApp:self.currentApplicationName withBlock:^(NSDictionary *windows) {
     NSLog(@"ENDING callback to read windows!");
@@ -341,17 +346,14 @@
     NSMutableDictionary *currentWindows = newDict[self.currentApplicationWindowName];
     if (!currentWindows) {
       currentWindows = [[NSMutableDictionary alloc] init];
-    } else {
-      currentWindows[newDict[@"name"]] = @{@"position": newDict[@"position"]};
     }
     
-
-   // TODO: finish writing windowPositions
+    currentWindows[newDict[@"name"]] = @{
+                                         @"position": newDict[@"position"],
+                                         @"windowPosition": NSStringFromRect([window frame])
+                                         };
     
-//    NSString *windowPosition = NSStringFromRect(NSRectFromCGRect([self.window frame]));
-//    newDict[self.currentApplicationName] = windowPosition;
-//    
-//    self.props[@"windowPositions"] = [NSDictionary dictionaryWithDictionary:newDict];
+    holdSelf.props[@"windowPositions"] = [NSDictionary dictionaryWithDictionary:currentWindows];
   }];
 }
 
