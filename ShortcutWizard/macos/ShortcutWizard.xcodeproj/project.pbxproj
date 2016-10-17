@@ -21,7 +21,8 @@
 		AC1534591DADA84E00E6696E /* SWMenuExecutor.m in Sources */ = {isa = PBXBuildFile; fileRef = AC1534581DADA84E00E6696E /* SWMenuExecutor.m */; };
 		AC1534691DADB6C900E6696E /* executeMenu.scpt in Resources */ = {isa = PBXBuildFile; fileRef = AC1534681DADB6C900E6696E /* executeMenu.scpt */; };
 		AC1534731DADD70B00E6696E /* SWApplescriptManager.m in Sources */ = {isa = PBXBuildFile; fileRef = AC1534721DADD70B00E6696E /* SWApplescriptManager.m */; };
-		AC2D23151DB4189B006DB74D /* readWindowsOfApp.scpt in Resources */ = {isa = PBXBuildFile; fileRef = AC2D23141DB4189B006DB74D /* readWindowsOfApp.scpt */; };
+		AC2D23151DB4189B006DB74D /* readWindowOfApp.scpt in Resources */ = {isa = PBXBuildFile; fileRef = AC2D23141DB4189B006DB74D /* readWindowOfApp.scpt */; };
+		AC2D231E1DB46CC9006DB74D /* readWindowsOfApp.scpt in Resources */ = {isa = PBXBuildFile; fileRef = AC2D231D1DB46CC9006DB74D /* readWindowsOfApp.scpt */; };
 		AC4E3D551D9A228E00A7AED7 /* SWCoreDataStackManager.m in Sources */ = {isa = PBXBuildFile; fileRef = AC4E3D501D9A228E00A7AED7 /* SWCoreDataStackManager.m */; };
 		AC4E3D571D9A228E00A7AED7 /* SWShortcutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AC4E3D541D9A228E00A7AED7 /* SWShortcutViewController.m */; };
 		AC5C108C1DB33F7A000A51B4 /* SWWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = AC5C108B1DB33F7A000A51B4 /* SWWindow.m */; };
@@ -112,7 +113,8 @@
 		AC1534681DADB6C900E6696E /* executeMenu.scpt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = executeMenu.scpt; path = ShortcutWizard/executeMenu.scpt; sourceTree = "<group>"; };
 		AC1534711DADD6F900E6696E /* SWApplescriptManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SWApplescriptManager.h; path = ShortcutWizard/SWApplescriptManager.h; sourceTree = "<group>"; };
 		AC1534721DADD70B00E6696E /* SWApplescriptManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SWApplescriptManager.m; path = ShortcutWizard/SWApplescriptManager.m; sourceTree = "<group>"; };
-		AC2D23141DB4189B006DB74D /* readWindowsOfApp.scpt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = readWindowsOfApp.scpt; path = ShortcutWizard/readWindowsOfApp.scpt; sourceTree = "<group>"; };
+		AC2D23141DB4189B006DB74D /* readWindowOfApp.scpt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = readWindowOfApp.scpt; path = ShortcutWizard/readWindowOfApp.scpt; sourceTree = "<group>"; };
+		AC2D231D1DB46CC9006DB74D /* readWindowsOfApp.scpt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = readWindowsOfApp.scpt; path = ShortcutWizard/readWindowsOfApp.scpt; sourceTree = "<group>"; };
 		AC4E3D4F1D9A228E00A7AED7 /* SWCoreDataStackManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SWCoreDataStackManager.h; path = ShortcutWizard/SWCoreDataStackManager.h; sourceTree = "<group>"; };
 		AC4E3D501D9A228E00A7AED7 /* SWCoreDataStackManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SWCoreDataStackManager.m; path = ShortcutWizard/SWCoreDataStackManager.m; sourceTree = "<group>"; };
 		AC4E3D511D9A228E00A7AED7 /* SWShortcuts.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SWShortcuts.h; path = ShortcutWizard/SWShortcuts.h; sourceTree = "<group>"; };
@@ -206,7 +208,8 @@
 		13B07FAE1A68108700A75B9A /* ShortcutWizard */ = {
 			isa = PBXGroup;
 			children = (
-				AC2D23141DB4189B006DB74D /* readWindowsOfApp.scpt */,
+				AC2D23141DB4189B006DB74D /* readWindowOfApp.scpt */,
+				AC2D231D1DB46CC9006DB74D /* readWindowsOfApp.scpt */,
 				AC1534571DADA84E00E6696E /* SWMenuExecutor.h */,
 				AC1534581DADA84E00E6696E /* SWMenuExecutor.m */,
 				AC4E3D4F1D9A228E00A7AED7 /* SWCoreDataStackManager.h */,
@@ -461,10 +464,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AC2D231E1DB46CC9006DB74D /* readWindowsOfApp.scpt in Resources */,
 				AC1534691DADB6C900E6696E /* executeMenu.scpt in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				ACC83D2D1D96EEAB00C338B2 /* systemInfo.scpt in Resources */,
-				AC2D23151DB4189B006DB74D /* readWindowsOfApp.scpt in Resources */,
+				AC2D23151DB4189B006DB74D /* readWindowOfApp.scpt in Resources */,
 				ACC83D2A1D96EE4000C338B2 /* readMenuItems.scpt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

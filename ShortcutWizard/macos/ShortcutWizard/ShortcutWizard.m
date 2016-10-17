@@ -331,7 +331,7 @@
   NSLog(@"************** window did move ****** %@", notification);
   NSLog(@"STARTING callback to read windows!");
 
-  [SWApplescriptManager readWindowsOfApp:self.currentApplicationName withBlock:^(NSDictionary *windows) {
+  [SWApplescriptManager readWindowOfApp:self.currentApplicationName withBlock:^(NSDictionary *windows) {
     NSLog(@"ENDING callback to read windows!");
     
     // 1 - get frontmost window name
@@ -339,17 +339,19 @@
     
     NSMutableDictionary *newDict = [NSMutableDictionary dictionaryWithDictionary:self.props[@"windowPositions"]];
     NSMutableDictionary *currentWindows = newDict[self.currentApplicationWindowName];
-    if (currentWindows) {
-      // set the frontmost as the currently saved position
+    if (!currentWindows) {
+      currentWindows = [[NSMutableDictionary alloc] init];
     } else {
-      // save frontmost with current position
+      currentWindows[newDict[@"name"]] = @{@"position": newDict[@"position"]};
     }
     
 
-    NSString *windowPosition = NSStringFromRect(NSRectFromCGRect([self.window frame]));
-    newDict[self.currentApplicationName] = windowPosition;
+   // TODO: finish writing windowPositions
     
-    self.props[@"windowPositions"] = [NSDictionary dictionaryWithDictionary:newDict];
+//    NSString *windowPosition = NSStringFromRect(NSRectFromCGRect([self.window frame]));
+//    newDict[self.currentApplicationName] = windowPosition;
+//    
+//    self.props[@"windowPositions"] = [NSDictionary dictionaryWithDictionary:newDict];
   }];
 }
 

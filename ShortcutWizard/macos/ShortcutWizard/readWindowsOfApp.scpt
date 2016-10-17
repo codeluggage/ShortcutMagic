@@ -49,6 +49,7 @@ on readWindowsOfApp(argv)
 	end tell
 end readWindowsOfApp
 
+
 on run (argv)
 	return readWindowsOfApp(argv)
 end run
