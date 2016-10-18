@@ -139,14 +139,11 @@
   
   __block NSWindow *window = self.window;
   
-//  [SWApplescriptManager frontmost
-  
-  
     [self prepareProps];
   
     self.currentApplicationWindowName = [SWApplescriptManager windowNameOfApp:self.currentApplicationName];
   
-  NSDictionary *propsWindows = [[self.props objectForKey:@"windowPositions"] objectForKey:self.currentApplicationName];
+  NSDictionary *propsWindows = [[self.props objectForKey:@"windowPositions"] objectForKey:self.currentApplicationWindowName];
   if (!propsWindows) {
     propsWindows = [[NSDictionary alloc] init];
   }
@@ -177,7 +174,9 @@
     NSMutableDictionary *windowPositions = self.props[@"windowPositions"];
 //    windowPositions[windows[@"name"]];
     NSRect savedPos = NSRectFromString([[windowPositions objectForKey:newDict[@"name"]] objectForKey:@"position"]);
-    [self.window setFrame:savedPos display:YES animate:YES];
+    if (!NSIsEmptyRect(savedPos)) {
+      [self.window setFrame:savedPos display:YES animate:YES];
+    }
   
     // self.rootView.appProperties = self.props; // moved to after the block finishes
 }
@@ -361,7 +360,7 @@
     return;
   }
 
-  [SWApplescriptManager readWindowOfApp:self.currentApplicationName withBlock:^(NSDictionary *windows) {
+    self.currentApplicationName = [SWApplescriptManager windowNameOfApp:self.currentApplicationName];
     NSLog(@"ENDING callback to read windows!");
     
     // 1 - get frontmost window name
@@ -373,13 +372,22 @@
       currentWindows = [[NSMutableDictionary alloc] init];
     }
     
-    currentWindows[newDict[@"name"]] = @{
-                                         @"position": newDict[@"position"],
-                                         @"windowPosition": NSStringFromRect([window frame])
-                                         };
+    NSString *position = newDict[@"position"];
+    if (!position) {
+      position = NSStringFromRect(NSZeroRect);
+    }
+  
+    NSString *windowPosition = newDict[@"windowPosition"];
+    if (!windowPosition) {
+      windowPosition = NSStringFromRect([self.window frame]);
+    }
+  
+    currentWindows[self.currentApplicationWindowName] = @{
+                                                          @"position": position,
+                                                          @"windowPosition": windowPosition
+                                                          };
     
     holdSelf.props[@"windowPositions"] = [NSDictionary dictionaryWithDictionary:currentWindows];
-  }];
 }
 
 
