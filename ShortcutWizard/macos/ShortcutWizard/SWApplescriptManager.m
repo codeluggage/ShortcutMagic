@@ -613,4 +613,18 @@ static SWApplescriptManager *singletonInstance = nil;
   }];
 }
 
++ (NSString *)windowNameOfApp:(NSString * __nonnull)applicationName
+{
+    OSAScript *readWindowsOfApp = [SWApplescriptManager scriptForKey:@"windowNameOfApp"];
+    NSDictionary<NSString *,id> *errorInfo;
+    NSAppleEventDescriptor *desc = [readWindowsOfApp executeHandlerWithName:@"windowNameOfApp" arguments:@[applicationName] error:&errorInfo];
+    
+    if (errorInfo) {
+      NSLog(@"--------windowNameOfApp error: %@", errorInfo);
+      return @"";
+    }
+    
+    return [desc stringValue];
+}
+
 @end

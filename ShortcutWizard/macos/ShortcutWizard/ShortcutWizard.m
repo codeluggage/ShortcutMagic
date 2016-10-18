@@ -35,6 +35,7 @@
     }
 
     holdSelf.currentApplicationName = newAppName;
+    holdSelf.currentApplicationWindowName = [SWApplescriptManager windowNameOfApp:newAppName];
     [holdSelf updateApplicationIcon:currentAppInfo];
   
     __block NSString *newAppIconPath = holdSelf.currentIconPath;
@@ -126,7 +127,58 @@
 
 - (void)triggerAppSwitch
 {
+//  if (!self.props) {
+//    NSLog(@"Can't update frame without props");
+//    return;
+//  }
+  
+//  NSMutableDictionary *windowPositions = self.props[@"windowPositions"];
+//  if (windowPositions) {
+//    NSMutableDictionary *innerWindowPositions = windowPositions[self.currentApplicationName];
+//    NSString *positionString = nil;
+  
+  __block NSWindow *window = self.window;
+  
+//  [SWApplescriptManager frontmost
+  
+  
     [self prepareProps];
+  
+    self.currentApplicationWindowName = [SWApplescriptManager windowNameOfApp:self.currentApplicationName];
+  
+  NSDictionary *propsWindows = [[self.props objectForKey:@"windowPositions"] objectForKey:self.currentApplicationName];
+  if (!propsWindows) {
+    propsWindows = [[NSDictionary alloc] init];
+  }
+  
+  NSMutableDictionary *newDict = [NSMutableDictionary dictionaryWithDictionary:propsWindows];
+    
+    if (!newDict) {
+      newDict = [[NSMutableDictionary alloc] init];
+    }
+    
+    NSMutableDictionary *currentWindows = [newDict objectForKey:self.currentApplicationWindowName];
+  
+    NSString *windowPosition = NSStringFromRect([window frame]);
+    NSString *position = newDict[@"position"];
+    if (!position) {
+      position = NSStringFromRect([self.window frame]);
+    }
+  
+    if (!currentWindows && windowPosition) {
+      currentWindows[newDict[@"name"]] = @{
+                                           @"position": position,
+                                           @"windowPosition": windowPosition
+                                           };
+    }
+    
+//    self.props[@"windowPositions"] = windowPosition;
+    
+    NSMutableDictionary *windowPositions = self.props[@"windowPositions"];
+//    windowPositions[windows[@"name"]];
+    NSRect savedPos = NSRectFromString([[windowPositions objectForKey:newDict[@"name"]] objectForKey:@"position"]);
+    [self.window setFrame:savedPos display:YES animate:YES];
+  
     // self.rootView.appProperties = self.props; // moved to after the block finishes
 }
 
@@ -161,31 +213,6 @@
     // }
 }
 
--(void)updateWindowPosition
-{
-//  if (!self.props) {
-//    NSLog(@"Can't update frame without props");
-//    return;
-//  }
-  
-//  NSMutableDictionary *windowPositions = self.props[@"windowPositions"];
-//  if (windowPositions) {
-//    NSMutableDictionary *innerWindowPositions = windowPositions[self.currentApplicationName];
-//    NSString *positionString = nil;
-  
-  [SWApplescriptManager readWindowOfApp:self.currentApplicationName withBlock:^(NSDictionary *windows) {
-    
-//    NSString *savedPos = NSStringToRect(currentWindows[@"windowPosition"]);
-    NSRect savedPos = NSRectFromString(windows[@"windowPosition"]);
-    
-      // TODO: Merge here
-//      self.props[@"windowPositions"] = [NSDictionary dictionaryWithDictionary:currentWindows];
-    
-        [self.window setFrame:savedPos display:YES animate:YES];
-//    }
-  }];
-}
-
 -(void)updateProps:(NSDictionary *)newProps
 {
     NSLog(@"Sending new props with shortcut: %@ count: %ld", [newProps objectForKey:@"applicationName"], [[newProps objectForKey:@"shortcuts"] count]);
@@ -200,8 +227,6 @@
     } else {
       self.props = [NSMutableDictionary dictionaryWithDictionary:newProps];
     }
-
-    [self updateWindowPosition];
 
     // Update react side:
     self.rootView.appProperties = self.props;
@@ -261,7 +286,7 @@
 
 - (void)listeningApplicationActivated:(NSNotification *)notification
 {
-    NSLog(@"Inside listeningApplicationActivated! ");
+    NSLog(@"Inside listeningApplicationActivated! %@", notification);
     [self triggerAppSwitch];
 }
 
