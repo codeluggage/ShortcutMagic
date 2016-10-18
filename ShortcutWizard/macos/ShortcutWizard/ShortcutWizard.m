@@ -58,6 +58,7 @@
             @"shortcuts": currentShortcuts
         }];
     } else {
+      // TODO: Load more (windowPositions) than just shortcuts
       NSDictionary *shortcuts = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"shortcuts"];
       if (shortcuts) {
         holdSelf.shortcuts = shortcuts;
@@ -127,64 +128,34 @@
 
 - (void)triggerAppSwitch
 {
-//  if (!self.props) {
-//    NSLog(@"Can't update frame without props");
-//    return;
-//  }
-  
-//  NSMutableDictionary *windowPositions = self.props[@"windowPositions"];
-//  if (windowPositions) {
-//    NSMutableDictionary *innerWindowPositions = windowPositions[self.currentApplicationName];
-//    NSString *positionString = nil;
-  
-  __block NSWindow *window = self.window;
-  
     [self prepareProps];
   
     self.currentApplicationWindowName = [SWApplescriptManager windowNameOfApp:self.currentApplicationName];
   
-  NSDictionary *propsWindows = [[self.props objectForKey:@"windowPositions"] objectForKey:self.currentApplicationWindowName];
-  if (!propsWindows) {
-    propsWindows = [[NSDictionary alloc] init];
-  }
-  
-  NSMutableDictionary *newDict = [NSMutableDictionary dictionaryWithDictionary:propsWindows];
-    
+    NSMutableDictionary *newDict = [NSMutableDictionary dictionaryWithDictionary:[[self.props objectForKey:@"windowPositions"] objectForKey:self.currentApplicationName]];
     if (!newDict) {
-      newDict = [[NSMutableDictionary alloc] init];
+      return;
     }
-    
+  
     NSMutableDictionary *currentWindows = [newDict objectForKey:self.currentApplicationWindowName];
   
-    NSString *windowPosition = NSStringFromRect([window frame]);
-    NSString *position = newDict[@"position"];
-    if (!position) {
-      position = NSStringFromRect([self.window frame]);
+    NSString *windowPosition = currentWindows[@"windowPosition"];
+    if (!windowPosition) {
+      return;
     }
   
-    if (!currentWindows && windowPosition) {
-      currentWindows[newDict[@"name"]] = @{
-                                           @"position": position,
-                                           @"windowPosition": windowPosition
-                                           };
-    }
-    
-//    self.props[@"windowPositions"] = windowPosition;
-    
-    NSMutableDictionary *windowPositions = self.props[@"windowPositions"];
-//    windowPositions[windows[@"name"]];
-    NSRect savedPos = NSRectFromString([[windowPositions objectForKey:newDict[@"name"]] objectForKey:@"position"]);
-    if (!NSIsEmptyRect(savedPos)) {
-      [self.window setFrame:savedPos display:YES animate:YES];
+    NSRect savedPos = NSRectFromString(windowPosition);
+    if (NSIsEmptyRect(savedPos)) {
+      return;
     }
   
-    // self.rootView.appProperties = self.props; // moved to after the block finishes
+    [self.window setFrame:savedPos display:YES animate:YES];
 }
 
 -(void)updateApplicationIcon:(NSRunningApplication *)currentAppInfo
 {
     NSString *iconPath = [NSString stringWithFormat:@"%@.png" , [currentAppInfo localizedName]];
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);         
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
     NSString* originalFile = [paths[0] stringByAppendingPathComponent:iconPath];
     self.currentIconPath = [[paths objectAtIndex:0] stringByAppendingPathComponent:iconPath];
 
@@ -352,42 +323,35 @@
 
 - (void)windowDidMove:(NSNotification *)notification
 {
-  __block NSWindow *window = [notification object];
-  __block ShortcutWizard *holdSelf = self;
-  NSLog(@"************** window did move ****** %@", notification);
-  NSLog(@"STARTING callback to read windows!");
+  NSLog(@"************** window did move ****** ");
   if (!self.currentApplicationName) {
     return;
   }
 
-    self.currentApplicationName = [SWApplescriptManager windowNameOfApp:self.currentApplicationName];
-    NSLog(@"ENDING callback to read windows!");
+  self.currentApplicationWindowName = [SWApplescriptManager windowNameOfApp:self.currentApplicationName];
+  if (!self.currentApplicationWindowName) {
+    return;
+  }
     
-    // 1 - get frontmost window name
-    // 2 - save our own current position with frontmost window name
-    
-    NSMutableDictionary *newDict = [NSMutableDictionary dictionaryWithDictionary:self.props[@"windowPositions"]];
-    NSMutableDictionary *currentWindows = newDict[self.currentApplicationWindowName];
+    NSMutableDictionary *windowPositions = [NSMutableDictionary dictionaryWithDictionary:self.props[@"windowPositions"]];
+    NSMutableDictionary *currentWindows = windowPositions[self.currentApplicationName];
     if (!currentWindows) {
       currentWindows = [[NSMutableDictionary alloc] init];
     }
-    
-    NSString *position = newDict[@"position"];
-    if (!position) {
-      position = NSStringFromRect(NSZeroRect);
-    }
   
-    NSString *windowPosition = newDict[@"windowPosition"];
-    if (!windowPosition) {
-      windowPosition = NSStringFromRect([self.window frame]);
-    }
+  // TODO: Save position of focused application too:
+//    NSString *position = applicationWindows[@"position"];
+//    if (!position) {
+//      position = NSStringFromRect(NSZeroRect);
+//    }
   
-    currentWindows[self.currentApplicationWindowName] = @{
-                                                          @"position": position,
-                                                          @"windowPosition": windowPosition
-                                                          };
-    
-    holdSelf.props[@"windowPositions"] = [NSDictionary dictionaryWithDictionary:currentWindows];
+  currentWindows[self.currentApplicationWindowName] = @{
+//                                                        @"position": position,
+                                                        @"windowPosition":NSStringFromRect([self.window frame])
+                                                        };
+    windowPositions[self.currentApplicationName] = [NSDictionary dictionaryWithDictionary:currentWindows];
+  
+    self.props[@"windowPositions"] = [NSDictionary dictionaryWithDictionary:windowPositions];
 }
 
 
