@@ -613,7 +613,7 @@ static SWApplescriptManager *singletonInstance = nil;
   }];
 }
 
-+ (NSString *)windowNameOfApp:(NSString * __nonnull)applicationName
++ (NSString * __nonnull)windowNameOfApp:(NSString * __nonnull)applicationName
 {
     OSAScript *readWindowsOfApp = [SWApplescriptManager scriptForKey:@"windowNameOfApp"];
     NSDictionary<NSString *,id> *errorInfo;
