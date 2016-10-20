@@ -308,6 +308,8 @@ const ShortcutWizardApp = React.createClass({
             // console.log('>> hit renderrow with shortcut: ' + JSON.stringify(shortcut) + " "  + shortcut);
             // console.log('>> and props: ' + this.props + " " + JSON.stringify(this.props));
 
+            // TODO: Clean up conditional mess
+
             let titleAndMenu = shortcut ? (
                 <Text style={styles.shortcutNameStyle}>[{shortcut.menuName}] - {shortcut.name}</Text>
             ) : undefined;
@@ -326,6 +328,19 @@ const ShortcutWizardApp = React.createClass({
                 </Text>
             ) : undefined;
 
+            let favoriteToggle = shortcut ? (
+                <View>
+                    <Button 
+                        title={"F" + shortcut.favorite}
+                        onClick={() => {
+                            shortcut.favorite = (typeof shortcut.favorite == 'undefined' || shortcut.favorite == 9) ? 1 : shortcut.favorite + 1;
+                            console.log('CLICKED ----------------- ', shortcut.favorite);
+                        }}
+                    />
+                </View>
+            ) : undefined;
+
+
             return (
                 <TouchableHighlight onPress={() => {
                     this._pressData[rowID] = !this._pressData[rowID];
@@ -333,13 +348,19 @@ const ShortcutWizardApp = React.createClass({
                     ShortcutWizard.NativeClick.clickMenu(this.props.applicationName, shortcut);
                 }}>
                     <View style={{
-                        flexDirection: 'column',
-                        paddingTop: 4,
+                        flexDirection: 'row',
                     }}>
-                        <Text style={styles.row}>
-                            {titleAndMenu}
-                        </Text>
-                        {shortcutKeys}
+                        <View style={{
+                            flexDirection: 'column',
+                            paddingTop: 4,
+                        }}>
+                            <Text style={{}}>
+                                {titleAndMenu}
+                            </Text>
+                            {shortcutKeys}
+                        </View>
+
+                        {favoriteToggle}
                     </View>
                 </TouchableHighlight>
             );
