@@ -20,14 +20,16 @@ var ShortcutWizard = {
     NativeClick: NativeModules.SWMenuExecutor,
     UpdateFavorite: NativeModules.SWFavorites 
 };
-
-
-
 // <<<<<<<<<<<<<<<<<<<<<<< Bridge to native
 
 
+// TODO: remove unused styles, reorganise all hardcoded styles here
 const styles = StyleSheet.create({
-    shortcutNameStyle : {
+    toggleShortcutStyle: {
+        fontWeight: '800',
+        color: 'blue'
+    },
+    shortcutNameStyle: {
         textAlign: 'right',
         color: 'blue',
         fontWeight: '400',
@@ -104,6 +106,45 @@ function randomizeShortcuts(shortcutRows) {
 
 
 const ShortcutWizardApp = React.createClass({
+    // TODO's and pseudocode:
+    // =============================================
+
+    // componentDidReceiveProps() {
+        // this.initialize();
+        // console.log(' componentWillReceiveProps: ' + JSON.stringify(nextProps));
+        // console.log('componentWillReceiveProps( nextProps )' + JSON.stringify(nextProps));
+        // this.initializeWithProps(nextProps);
+
+        // this.setState({
+        //     dataSource: this.state.dataSource.cloneWithRows(this._genRows(nextProps)),
+        //     image: this.props.applicationIconPath ? this.props.applicationIconPath : '', // TODO: Replace with default image,
+        // });
+
+        // this.setState({
+        //     dataSource: this.state.dataSource.cloneWithRows( nextProps.data )
+        // });
+    // },
+
+
+    // TODO pseudocode::::
+    // imageDrag: function(nextMousePos) {
+    //     if (dragStarts) {
+    //         self.props.dragMessage = "Set position and size for this specific app";
+    //     }
+
+    //     if (dragEnds) {
+    //         self.props.updatePosition = nextMousePos;
+    //         self.props.dragMessage = undefined;
+    //     }
+
+    //     if (dragMoves) {
+    //         self.props.updatePosition = nextMousePos;
+    //     }
+    // }
+
+
+
+
     getInitialState () {
         var ds = new ListView.DataSource({
             rowHasChanged: (row1, row2) => row1 !== row2
@@ -254,38 +295,12 @@ const ShortcutWizardApp = React.createClass({
         );
     }, 
 
-    // componentDidReceiveProps() {
-        // this.initialize();
-        // console.log(' componentWillReceiveProps: ' + JSON.stringify(nextProps));
-        // console.log('componentWillReceiveProps( nextProps )' + JSON.stringify(nextProps));
-        // this.initializeWithProps(nextProps);
-
-        // this.setState({
-        //     dataSource: this.state.dataSource.cloneWithRows(this._genRows(nextProps)),
-        //     image: this.props.applicationIconPath ? this.props.applicationIconPath : '', // TODO: Replace with default image,
-        // });
-
-        // this.setState({
-        //     dataSource: this.state.dataSource.cloneWithRows( nextProps.data )
-        // });
-    // },
 
 
-    // TODO pseudocode::::
-    // imageDrag: function(nextMousePos) {
-    //     if (dragStarts) {
-    //         self.props.dragMessage = "Set position and size for this specific app";
-    //     }
 
-    //     if (dragEnds) {
-    //         self.props.updatePosition = nextMousePos;
-    //         self.props.dragMessage = undefined;
-    //     }
-
-    //     if (dragMoves) {
-    //         self.props.updatePosition = nextMousePos;
-    //     }
-    // }
+    // =============================================
+    // RENDER
+    // =============================================
 
     _renderLoadingRow: function(rowData: string, sectionID: number, rowID: number, highlightRow: (sectionID: number, rowID: number) => void) {
         // console.log('Hit render row with row data: ' + JSON.stringify(rowData));
@@ -311,10 +326,34 @@ const ShortcutWizardApp = React.createClass({
 
             // TODO: Clean up conditional mess
 
+            // TODO: split these up to avoid errors
+            let favoriteToggle = shortcut ? (
+                <View style={{
+                    paddingTop: 8,
+                    width: 80,
+                    height: 20,
+                    flexDirection: 'row',
+                }}>
+                    <TouchableHighlight onPress={() => {
+                        shortcut.favorite = (typeof shortcut.favorite == 'undefined' || shortcut.favorite == 9) ? 1 : shortcut.favorite + 1;
+                        ShortcutWizard.UpdateFavorite.updateFavorite(shortcut)
+                        console.log('CLICKED "^"----------------- ', shortcut.favorite);
+                    }}>
+                        <Text style={styles.toggleShortcutStyle}> ^ </Text>
+                    </TouchableHighlight>
+                    <TouchableHighlight onPress={() => {
+                        shortcut.favorite = (typeof shortcut.favorite == 'undefined') ? 0 : shortcut.favorite - 1;
+                        ShortcutWizard.UpdateFavorite.updateFavorite(shortcut)
+                        console.log('CLICKED "v" ----------------- ', shortcut.favorite);
+                    }}>
+                        <Text style={styles.toggleShortcutStyle}> v </Text>
+                    </TouchableHighlight>
+                </View>
+            ) : undefined;
+
             let titleAndMenu = shortcut ? (
                 <Text style={styles.shortcutNameStyle}>[{shortcut.menuName}] - {shortcut.name}</Text>
             ) : undefined;
-
 
             let shortcutKeys = shortcut ? (
                 <Text style={{
@@ -326,28 +365,8 @@ const ShortcutWizardApp = React.createClass({
                     {shortcut.mod ? shortcut.mod : undefined}
                     {shortcut.glyph ? shortcut.glyph : undefined}
                     {shortcut.char ? (shortcut.mod ? shortcut.char : modifierStrings["cmd"] + shortcut.char) : undefined}
+                    {favoriteToggle}
                 </Text>
-            ) : undefined;
-
-            let favoriteToggle = shortcut ? (
-                <View>
-                    <Button 
-                        title="^"
-                        onClick={() => {
-                            shortcut.favorite = (typeof shortcut.favorite == 'undefined' || shortcut.favorite == 9) ? 1 : shortcut.favorite + 1;
-                            ShortcutWizard.UpdateFavorite.updateFavorite(shortcut)
-                            console.log('CLICKED "^"----------------- ', shortcut.favorite);
-                        }}
-                    />
-                    <Button 
-                        title="v"
-                        onClick={() => {
-                            shortcut.favorite = (typeof shortcut.favorite == 'undefined') ? 0 : shortcut.favorite - 1;
-                            ShortcutWizard.UpdateFavorite.updateFavorite(shortcut)
-                            console.log('CLICKED "v" ----------------- ', shortcut.favorite);
-                        }}
-                    />
-                </View>
             ) : undefined;
 
 
@@ -370,7 +389,6 @@ const ShortcutWizardApp = React.createClass({
                             {shortcutKeys}
                         </View>
 
-                        {favoriteToggle}
                     </View>
                 </TouchableHighlight>
             );
