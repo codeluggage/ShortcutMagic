@@ -8,6 +8,9 @@
 
 @implementation ShortcutWizard
 
+const static NSString *s_defaultWindow = @"default";
+const static NSString *s_windowPositions = @"windowPositions";
+
 + (NSRect) screenResolution {
   NSRect screenRect = NSZeroRect;
   NSArray *screenArray = [NSScreen screens];
@@ -124,7 +127,7 @@
 {
     NSLog(@"WARNING: OVERWRITING SHORTCUTS AND WINDOWPOSITIONS");
     self.shortcuts = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"shortcuts"];
-    self.windowPositions = [NSMutableDictionary dictionaryWithDictionary:[[NSUserDefaults standardUserDefaults] dictionaryForKey:@"windowPositions"]];
+    self.windowPositions = [NSMutableDictionary dictionaryWithDictionary:[[NSUserDefaults standardUserDefaults] dictionaryForKey:s_windowPositions]];
 }
 
 // TODO: Deconstruct saving for performance/speed
@@ -142,7 +145,7 @@
        [standardUserDefaults setObject:self.currentApplicationWindowName forKey:@"currentApplicationWindowName"];
     }
     if (self.windowPositions) {
-       [standardUserDefaults setObject:self.windowPositions forKey:@"windowPositions"];
+       [standardUserDefaults setObject:self.windowPositions forKey:s_windowPositions];
     }
     
     [standardUserDefaults synchronize];
@@ -155,7 +158,7 @@
 //      
 //    } else {
 //      // TODO: Load more (windowPositions) than just shortcuts
-//      NSDictionary *windowPositions = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"windowPositions"];
+//      NSDictionary *windowPositions = [[NSUserDefaults standardUserDefaults] dictionaryForKey:s_windowPositions];
 //      if ([windowPositions count]) {
 //        self.windowPositions = [NSMutableDictionary dictionaryWithDictionary:windowPositions];
 //      }
@@ -178,7 +181,7 @@
   
     NSDictionary *windowPositions = currentWindows[self.currentApplicationWindowName];
     if (!windowPositions) {
-      windowPositions = [currentWindows objectForKey:@"default"];
+      windowPositions = [currentWindows objectForKey:s_defaultWindow];
     }
   
     NSRect savedPos = NSRectFromString([windowPositions objectForKey:@"windowPosition"]);
@@ -426,7 +429,7 @@
                               @"windowPosition":NSStringFromRect([self.window frame])
                               };
   
-  currentWindows[@"default"] = newWindow; // Always set default so the fallback is the most recent updated window
+  currentWindows[s_defaultWindow] = newWindow; // Always set default so the fallback is the most recent updated window
   if (self.currentApplicationWindowName) {
     currentWindows[self.currentApplicationWindowName] = newWindow;
   }
