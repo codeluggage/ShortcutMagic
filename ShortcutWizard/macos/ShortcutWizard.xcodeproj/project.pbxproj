@@ -19,6 +19,7 @@
 		146834051AC3E58100842450 /* libReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 146834041AC3E56700842450 /* libReact.a */; };
 		832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 832341B51AAA6A8300B99B32 /* libRCTText.a */; };
 		AC0F05041DB5CFCB00FB12FC /* windowNameOfApp.scpt in Resources */ = {isa = PBXBuildFile; fileRef = AC0F05031DB5CFCB00FB12FC /* windowNameOfApp.scpt */; };
+		AC0F051B1DB9806D00FB12FC /* SWFavorites.m in Sources */ = {isa = PBXBuildFile; fileRef = AC0F051A1DB9806C00FB12FC /* SWFavorites.m */; };
 		AC1534591DADA84E00E6696E /* SWMenuExecutor.m in Sources */ = {isa = PBXBuildFile; fileRef = AC1534581DADA84E00E6696E /* SWMenuExecutor.m */; };
 		AC1534691DADB6C900E6696E /* executeMenu.scpt in Resources */ = {isa = PBXBuildFile; fileRef = AC1534681DADB6C900E6696E /* executeMenu.scpt */; };
 		AC1534731DADD70B00E6696E /* SWApplescriptManager.m in Sources */ = {isa = PBXBuildFile; fileRef = AC1534721DADD70B00E6696E /* SWApplescriptManager.m */; };
@@ -110,6 +111,8 @@
 		78C398B01ACF4ADC00677621 /* RCTLinking.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTLinking.xcodeproj; path = "../node_modules/react-native-macos/Libraries/LinkingIOS/RCTLinking.xcodeproj"; sourceTree = "<group>"; };
 		832341B01AAA6A8300B99B32 /* RCTText.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTText.xcodeproj; path = "../node_modules/react-native-macos/Libraries/Text/RCTText.xcodeproj"; sourceTree = "<group>"; };
 		AC0F05031DB5CFCB00FB12FC /* windowNameOfApp.scpt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = windowNameOfApp.scpt; path = ShortcutWizard/windowNameOfApp.scpt; sourceTree = "<group>"; };
+		AC0F051A1DB9806C00FB12FC /* SWFavorites.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SWFavorites.m; path = ShortcutWizard/SWFavorites.m; sourceTree = "<group>"; };
+		AC0F05231DB9808300FB12FC /* SWFavorites.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SWFavorites.h; path = ShortcutWizard/SWFavorites.h; sourceTree = "<group>"; };
 		AC1534571DADA84E00E6696E /* SWMenuExecutor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SWMenuExecutor.h; path = ShortcutWizard/SWMenuExecutor.h; sourceTree = "<group>"; };
 		AC1534581DADA84E00E6696E /* SWMenuExecutor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SWMenuExecutor.m; path = ShortcutWizard/SWMenuExecutor.m; sourceTree = "<group>"; };
 		AC1534681DADB6C900E6696E /* executeMenu.scpt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = executeMenu.scpt; path = ShortcutWizard/executeMenu.scpt; sourceTree = "<group>"; };
@@ -237,6 +240,8 @@
 				AC743BD21DAE813900C83A28 /* SWAccessibility.m */,
 				AC5C10941DB33F88000A51B4 /* SWWindow.h */,
 				AC5C108B1DB33F7A000A51B4 /* SWWindow.m */,
+				AC0F05231DB9808300FB12FC /* SWFavorites.h */,
+				AC0F051A1DB9806C00FB12FC /* SWFavorites.m */,
 			);
 			name = ShortcutWizard;
 			sourceTree = "<group>";
@@ -514,6 +519,7 @@
 				AC4E3D551D9A228E00A7AED7 /* SWCoreDataStackManager.m in Sources */,
 				AC1534731DADD70B00E6696E /* SWApplescriptManager.m in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
+				AC0F051B1DB9806D00FB12FC /* SWFavorites.m in Sources */,
 				AC4E3D571D9A228E00A7AED7 /* SWShortcutViewController.m in Sources */,
 				AC8E9B1C1DAACED8001791AA /* DraggableImageView.m in Sources */,
 				AC743BD31DAE813900C83A28 /* SWAccessibility.m in Sources */,

@@ -17,7 +17,8 @@ import { NativeModules } from 'react-native';
 
 var ShortcutWizard = {
     NativeApplescriptManager: NativeModules.SWApplescriptManager,
-    NativeClick: NativeModules.SWMenuExecutor 
+    NativeClick: NativeModules.SWMenuExecutor,
+    UpdateFavorite: NativeModules.SWFavorites 
 };
 
 
@@ -331,10 +332,19 @@ const ShortcutWizardApp = React.createClass({
             let favoriteToggle = shortcut ? (
                 <View>
                     <Button 
-                        title={"F" + shortcut.favorite}
+                        title="^"
                         onClick={() => {
                             shortcut.favorite = (typeof shortcut.favorite == 'undefined' || shortcut.favorite == 9) ? 1 : shortcut.favorite + 1;
-                            console.log('CLICKED ----------------- ', shortcut.favorite);
+                            ShortcutWizard.UpdateFavorite.updateFavorite(shortcut)
+                            console.log('CLICKED "^"----------------- ', shortcut.favorite);
+                        }}
+                    />
+                    <Button 
+                        title="v"
+                        onClick={() => {
+                            shortcut.favorite = (typeof shortcut.favorite == 'undefined') ? 0 : shortcut.favorite - 1;
+                            ShortcutWizard.UpdateFavorite.updateFavorite(shortcut)
+                            console.log('CLICKED "v" ----------------- ', shortcut.favorite);
                         }}
                     />
                 </View>
