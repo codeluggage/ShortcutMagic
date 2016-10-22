@@ -18,6 +18,9 @@
 + (NSAppleEventDescriptor  * __nullable)readShortcutsWithName:(NSString  * __nullable)name
 	error:(NSDictionary<NSString *, id> * __nullable * __nullable)errorInfo;
 + (void)readMenuItems:(NSString * __nonnull)applicationName withBlock:(void (^ __nonnull) (NSDictionary * __nullable))callback;
++ (void)readWindowOfApp:(NSString * __nonnull)applicationName withBlock:(void (^ __nonnull) (NSDictionary * __nullable))callback;
++ (void)readWindowsOfApp:(NSString * __nonnull)applicationName withBlock:(void (^ __nonnull) (NSDictionary * __nullable))callback;
++ (NSString * __nonnull)windowNameOfApp:(NSString * __nonnull)applicationName;
 
 
 @property(nonatomic, strong) NSDictionary * __nullable scripts;

@@ -174,6 +174,20 @@ static SWApplescriptManager *singletonInstance = nil;
   }];
 }
 
++ (NSDictionary *)explainOrKeepWindow:(NSMutableArray *)set
+{
+    NSLog(@"explainOrKeepWindow before: %@", set);
+  
+  if ([set count] < 5) return nil;
+  
+  __block NSMutableDictionary *newSet = [[NSMutableDictionary alloc] init];
+  
+  newSet[@"name"] = set[0];
+  __block NSRect rect = NSMakeRect([set[1] floatValue], [set[2] floatValue], [set[3] floatValue], [set[4] floatValue]);
+  [newSet setObject:NSStringFromRect(rect) forKey:@"position"];
+  return newSet;
+}
+
 + (NSDictionary *)explainOrKeep:(NSMutableArray *)set
 {
   //  NSLog(@"explainOrKeep before: %@", set);
@@ -420,6 +434,197 @@ static SWApplescriptManager *singletonInstance = nil;
   return newSet;
 }
 
++ (void)readWindowsOfApp:(NSString * __nonnull)applicationName withBlock:(void (^ __nonnull) (NSDictionary * __nullable))callback
+{
+  [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+    OSAScript *readWindowsOfApp = [SWApplescriptManager scriptForKey:@"readWindowsOfApp"];
+    NSDictionary<NSString *,id> *errorInfo;
+    
+    NSAppleEventDescriptor *desc = [readWindowsOfApp executeHandlerWithName:@"readWindowsOfApp" arguments:@[applicationName] error:&errorInfo];
+    
+    if (errorInfo) {
+      NSLog(@"error: %@", errorInfo);
+    }
+    
+    
+    NSMutableDictionary* info = [[NSMutableDictionary alloc] init] ;
+    NSInteger numItems = [desc numberOfItems];
+    NSLog(@"Found number of items: %ld", numItems);
+    for (NSInteger i = 0; i < numItems; i++) {
+      
+      NSInteger numItems = [desc numberOfItems];
+      
+      if (numItems) {
+        NSMutableArray *set = [[NSMutableArray alloc] init];
+        
+        for (NSUInteger j = 0; j <= numItems; j++) {
+          NSAppleEventDescriptor *innerDesc = [desc descriptorAtIndex:j];
+          if (!innerDesc) continue;
+          
+          //          NSLog(@"inner desc: %@", innerDesc);
+          NSString *str = [innerDesc stringValue];
+          if (str) {
+            [set addObject:str];
+            
+            if ([set count] > 1) {
+              NSDictionary *newMerged = [SWApplescriptManager explainOrKeep:set];
+              if ([newMerged count] > 2 && ([newMerged objectForKey:@"char"] || [newMerged objectForKey:@"glyph"])) {
+                [info setObject:newMerged forKey:newMerged[@"name"]];
+                [set removeAllObjects];
+              }
+            }
+            
+            continue;
+          }
+          
+          for (NSUInteger i = 0; i <= [innerDesc numberOfItems]; i++) {
+            NSAppleEventDescriptor *innerDescriptor2 = [innerDesc descriptorAtIndex:i];
+            if (!innerDescriptor2) {
+              continue;
+            }
+            
+            str = [innerDescriptor2 stringValue];
+            
+            if (str) {
+              [set addObject:str];
+            } else {
+              for (NSUInteger x = 0; x <= [innerDescriptor2 numberOfItems]; x++) {
+                NSAppleEventDescriptor *innerDescriptor3 = [innerDescriptor2 descriptorAtIndex:x];
+                if (!innerDescriptor3) continue;
+                
+                str = [innerDescriptor3 stringValue];
+                
+                if (str) {
+                  [set addObject:str];
+                } else {
+                  for (NSUInteger y = 0; y <= [innerDescriptor3 numberOfItems]; y++) {
+                    NSAppleEventDescriptor *innerDescriptor4 = [innerDescriptor3 descriptorAtIndex:y];
+                    if (!innerDescriptor4) continue;
+                    
+                    str = [innerDescriptor4 stringValue];
+                    
+                    if (str) {
+                      [set addObject:str];
+                    } else {
+                      NSLog(@"must go deeper? leve 4 now %@", innerDescriptor4);
+                    }
+                  }
+                }
+              }
+            }
+            
+            NSDictionary *newMerged = [SWApplescriptManager explainOrKeep:set];
+            if ([newMerged count] > 2 && ([newMerged objectForKey:@"char"] || [newMerged objectForKey:@"glyph"])) {
+              [info setObject:newMerged forKey:newMerged[@"name"]];
+              [set removeAllObjects];
+            } else {
+              [set removeAllObjects];
+            }
+          }
+        }
+      }
+    }
+    
+    callback([NSDictionary dictionaryWithDictionary:info]);
+  }];
+}
 
++ (void)readWindowOfApp:(NSString * __nonnull)applicationName withBlock:(void (^ __nonnull) (NSDictionary * __nullable))callback
+{
+  [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+    OSAScript *readWindowsOfApp = [SWApplescriptManager scriptForKey:@"readWindowOfApp"];
+    NSDictionary<NSString *,id> *errorInfo;
+    
+    NSAppleEventDescriptor *desc = [readWindowsOfApp executeHandlerWithName:@"readWindowOfApp" arguments:@[applicationName] error:&errorInfo];
+    
+    if (errorInfo) {
+      NSLog(@"+++++++++readWindowOfApp error: %@", errorInfo);
+    }
+    
+    
+    NSMutableDictionary* info = [[NSMutableDictionary alloc] init] ;
+    NSInteger numItems = [desc numberOfItems];
+    NSLog(@"++++++++++++++readWindowOfApp Found number of items: %ld", numItems);
+    for (NSInteger i = 0; i < numItems; i++) {
+      
+      NSInteger numItems = [desc numberOfItems];
+      
+      if (numItems) {
+        NSMutableArray *set = [[NSMutableArray alloc] init];
+        
+        for (NSUInteger j = 0; j <= numItems; j++) {
+          NSAppleEventDescriptor *innerDesc = [desc descriptorAtIndex:j];
+          if (!innerDesc) continue;
+          
+          //          NSLog(@"inner desc: %@", innerDesc);
+          NSString *str = [innerDesc stringValue];
+          if (str) {
+            [set addObject:str];
+            continue;
+          }
+          
+          for (NSUInteger i = 0; i <= [innerDesc numberOfItems]; i++) {
+            NSAppleEventDescriptor *innerDescriptor2 = [innerDesc descriptorAtIndex:i];
+            if (!innerDescriptor2) {
+              continue;
+            }
+            
+            str = [innerDescriptor2 stringValue];
+            
+            if (str) {
+              [set addObject:str];
+            } else {
+              for (NSUInteger x = 0; x <= [innerDescriptor2 numberOfItems]; x++) {
+                NSAppleEventDescriptor *innerDescriptor3 = [innerDescriptor2 descriptorAtIndex:x];
+                if (!innerDescriptor3) continue;
+                
+                str = [innerDescriptor3 stringValue];
+                
+                if (str) {
+                  [set addObject:str];
+                } else {
+                  for (NSUInteger y = 0; y <= [innerDescriptor3 numberOfItems]; y++) {
+                    NSAppleEventDescriptor *innerDescriptor4 = [innerDescriptor3 descriptorAtIndex:y];
+                    if (!innerDescriptor4) continue;
+                    
+                    str = [innerDescriptor4 stringValue];
+                    
+                    if (str) {
+                      [set addObject:str];
+                    } else {
+                      NSLog(@"must go deeper? leve 4 now %@", innerDescriptor4);
+                    }
+                  }
+                }
+              }
+            }
+            
+            NSDictionary *newMerged = [SWApplescriptManager explainOrKeepWindow:set];
+            if (newMerged) {
+              [info addEntriesFromDictionary:newMerged];
+              // TODO: break out? make this loop simpler
+            }
+          }
+        }
+      }
+    }
+    
+    callback([NSDictionary dictionaryWithDictionary:info]);
+  }];
+}
+
++ (NSString * __nonnull)windowNameOfApp:(NSString * __nonnull)applicationName
+{
+    OSAScript *readWindowsOfApp = [SWApplescriptManager scriptForKey:@"windowNameOfApp"];
+    NSDictionary<NSString *,id> *errorInfo;
+    NSAppleEventDescriptor *desc = [readWindowsOfApp executeHandlerWithName:@"windowNameOfApp" arguments:@[applicationName] error:&errorInfo];
+    
+    if (errorInfo) {
+      NSLog(@"--------windowNameOfApp error: %@", errorInfo);
+      return @"";
+    }
+    
+    return [desc stringValue];
+}
 
 @end

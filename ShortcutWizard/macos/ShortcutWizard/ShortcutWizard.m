@@ -3,6 +3,7 @@
 #import "RCTJavaScriptLoader.h"
 #import "SWApplescriptManager.h"
 #import "SWAccessibility.h"
+#import "SWFavorites.h"
 
 
 @implementation ShortcutWizard
@@ -35,6 +36,7 @@
     }
 
     holdSelf.currentApplicationName = newAppName;
+    holdSelf.currentApplicationWindowName = [SWApplescriptManager windowNameOfApp:newAppName];
     [holdSelf updateApplicationIcon:currentAppInfo];
   
     __block NSString *newAppIconPath = holdSelf.currentIconPath;
@@ -57,6 +59,7 @@
             @"shortcuts": currentShortcuts
         }];
     } else {
+      // TODO: Load more (windowPositions) than just shortcuts
       NSDictionary *shortcuts = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"shortcuts"];
       if (shortcuts) {
         holdSelf.shortcuts = shortcuts;
@@ -112,28 +115,84 @@
     self.shortcuts = [[NSDictionary alloc] initWithObjectsAndKeys:shortcuts, name, nil];
   }
   
-  [self saveShortcuts:self.shortcuts];
+  [self save];
 }
 
-- (void)saveShortcuts:(NSDictionary *)shortcuts
+// TODO: Pull out saving from "prepareProps" to here
+// TODO: Make it idempotent and not overwriting existing values
+- (void)load
+{
+    NSLog(@"WARNING: OVERWRITING SHORTCUTS AND WINDOWPOSITIONS");
+    self.shortcuts = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"shortcuts"];
+    self.windowPositions = [NSMutableDictionary dictionaryWithDictionary:[[NSUserDefaults standardUserDefaults] dictionaryForKey:@"windowPositions"]];
+}
+
+// TODO: Deconstruct saving for performance/speed
+- (void)save
 {
   NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
   if (standardUserDefaults) {
-    [standardUserDefaults setObject:shortcuts forKey:@"shortcuts"];
+    if (self.shortcuts) {
+      [standardUserDefaults setObject:self.shortcuts forKey:@"shortcuts"];
+    }
+    if (self.currentApplicationName) {
+       [standardUserDefaults setObject:self.currentApplicationName forKey:@"currentApplicationName"];
+    }
+    if (self.currentApplicationWindowName) {
+       [standardUserDefaults setObject:self.currentApplicationWindowName forKey:@"currentApplicationWindowName"];
+    }
+    if (self.windowPositions) {
+       [standardUserDefaults setObject:self.windowPositions forKey:@"windowPositions"];
+    }
+    
     [standardUserDefaults synchronize];
   }
 }
 
 - (void)triggerAppSwitch
 {
+//    if (self.windowPositions) {
+//      
+//    } else {
+//      // TODO: Load more (windowPositions) than just shortcuts
+//      NSDictionary *windowPositions = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"windowPositions"];
+//      if ([windowPositions count]) {
+//        self.windowPositions = [NSMutableDictionary dictionaryWithDictionary:windowPositions];
+//      }
+//    }
+  
+  
     [self prepareProps];
-    // self.rootView.appProperties = self.props; // moved to after the block finishes
+  
+    self.currentApplicationWindowName = [SWApplescriptManager windowNameOfApp:self.currentApplicationName];
+  
+    if (!self.windowPositions) {
+//      self.windowPositions = [[NSMutableDictionary alloc] init];
+      return;
+    }
+  
+    NSMutableDictionary *currentWindows = [self.windowPositions objectForKey:self.currentApplicationName];
+  if (!currentWindows) {
+    return;
+  }
+  
+    NSDictionary *windowPositions = currentWindows[self.currentApplicationWindowName];
+    if (!windowPositions) {
+      windowPositions = [currentWindows objectForKey:@"default"];
+    }
+  
+    NSRect savedPos = NSRectFromString([windowPositions objectForKey:@"windowPosition"]);
+    if (NSIsEmptyRect(savedPos)) {
+      return;
+    }
+  
+    [self.window setFrame:savedPos display:YES animate:YES];
 }
 
 -(void)updateApplicationIcon:(NSRunningApplication *)currentAppInfo
 {
     NSString *iconPath = [NSString stringWithFormat:@"%@.png" , [currentAppInfo localizedName]];
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);         
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
     NSString* originalFile = [paths[0] stringByAppendingPathComponent:iconPath];
     self.currentIconPath = [[paths objectAtIndex:0] stringByAppendingPathComponent:iconPath];
 
@@ -161,22 +220,6 @@
     // }
 }
 
--(void)updateWindowPosition
-{
-  if (!self.props) {
-    NSLog(@"Can't update frame without props");
-    return;
-  }
-  
-  NSMutableDictionary *windowPositions = self.props[@"windowPositions"];
-  if (windowPositions) {
-    NSString *positionString = windowPositions[self.currentApplicationName];
-    if (positionString) {
-      [self.window setFrame:NSRectFromString(positionString) display:YES animate:YES];
-    }
-  }
-}
-
 -(void)updateProps:(NSDictionary *)newProps
 {
     NSLog(@"Sending new props with shortcut: %@ count: %ld", [newProps objectForKey:@"applicationName"], [[newProps objectForKey:@"shortcuts"] count]);
@@ -192,16 +235,42 @@
       self.props = [NSMutableDictionary dictionaryWithDictionary:newProps];
     }
 
-    [self updateWindowPosition];
-
     // Update react side:
     self.rootView.appProperties = self.props;
+}
+
+- (void)updateShortcutWithAppName:(NSString *)appName withShortcut:(NSDictionary *)shortcut
+{
+  if ([shortcut count] == 0) {
+    NSLog(@"PROBLEM: updatedFavorite is not expected length");
+    return;
+  }
+  
+  if ([self.shortcuts count] == 0) {
+    NSLog(@"PROBLEM: self.shortcuts are not expected length");
+    return;
+  }
+  
+    NSMutableDictionary *applicationDicts = [NSMutableDictionary dictionaryWithDictionary:self.shortcuts];
+    NSMutableDictionary *shortcuts = [NSMutableDictionary dictionaryWithDictionary:[applicationDicts objectForKey:appName]];
+    [shortcuts setObject:shortcut forKey:shortcut[@"name"]];
+    [applicationDicts setObject:shortcuts forKey:appName];
+    self.shortcuts = [NSDictionary dictionaryWithDictionary:applicationDicts];
+    [self save];
 }
 
 -(id)init
 {
     if(self = [super init]) {
+      // TODO: Quit if the user says no? Explain about potential alternative app version in the app store that has no accessibility needed because of limited functionality?
         [SWAccessibility requestAccess];
+      
+        [self load];
+      
+        __block ShortcutWizard *holdSelf = self;
+        [SWFavorites registerFavoriteSaveBlock:^(NSDictionary * _Nonnull updatedFavorite) {
+          [holdSelf updateShortcutWithAppName:self.currentApplicationName withShortcut:updatedFavorite];
+        }];
       
         NSRect screenRect = [ShortcutWizard screenResolution];
         NSLog(@"Got the screen rect: >>>>>>>>>");
@@ -251,7 +320,7 @@
 
 - (void)listeningApplicationActivated:(NSNotification *)notification
 {
-    NSLog(@"Inside listeningApplicationActivated! ");
+    NSLog(@"Inside listeningApplicationActivated");
     [self triggerAppSwitch];
 }
 
@@ -318,20 +387,52 @@
 
 - (void)windowDidMove:(NSNotification *)notification
 {
-  NSLog(@"************** window did move ****** %@", notification);
-
-  NSMutableDictionary *newDict = [NSMutableDictionary dictionaryWithDictionary:self.props[@"windowPositions"]];
-
-  NSString *windowPosition = NSStringFromRect(NSRectFromCGRect([self.window frame]));
-  newDict[self.currentApplicationName] = windowPosition;
-  
-  self.props[@"windowPositions"] = [NSDictionary dictionaryWithDictionary:newDict];
+  NSLog(@"************** window did move ****** ");
+  [self updateWindowPositions];
 }
 
 
 - (void)windowDidResize:(NSNotification *)notification
 {
-  NSLog(@"************** window did resize ****** %@", notification);
+  NSLog(@"************** window did resize ******");
+  [self updateWindowPositions];
+}
+
+- (void)updateWindowPositions
+{
+  if (![self currentApplicationName]) {
+    return;
+  }
+
+  self.currentApplicationWindowName = [SWApplescriptManager windowNameOfApp:self.currentApplicationName];
+  
+  if (![self windowPositions]) {
+    self.windowPositions = [[NSMutableDictionary alloc] init];
+  }
+  
+  NSMutableDictionary *currentWindows = [NSMutableDictionary dictionaryWithDictionary:[self.windowPositions objectForKey:self.currentApplicationName]];
+    if (!currentWindows) {
+      currentWindows = [[NSMutableDictionary alloc] init];
+    }
+  
+  // TODO: Save position of focused application too:
+//    NSString *position = applicationWindows[@"position"];
+//    if (!position) {
+//      position = NSStringFromRect(NSZeroRect);
+//    }
+  
+  NSDictionary *newWindow = @{
+//                              @"position": position,
+                              @"windowPosition":NSStringFromRect([self.window frame])
+                              };
+  
+  currentWindows[@"default"] = newWindow; // Always set default so the fallback is the most recent updated window
+  if (self.currentApplicationWindowName) {
+    currentWindows[self.currentApplicationWindowName] = newWindow;
+  }
+  
+  self.windowPositions[self.currentApplicationName] = [NSDictionary dictionaryWithDictionary:currentWindows];
+  [self save];
 }
 
 @end
