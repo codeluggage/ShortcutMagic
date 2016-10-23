@@ -1,7 +1,7 @@
 #import <Cocoa/Cocoa.h>
 #import <Foundation/Foundation.h>
 #import "RCTBridge.h"
-#import "RCTRootView.h"
+#import "SWRootView.h"
 #import "SWWindow.h"
 
 @interface ShortcutWizard : NSObject <NSApplicationDelegate, NSWindowDelegate, RCTBridgeDelegate>
@@ -18,6 +18,6 @@
 @property (strong, nonatomic) NSMutableDictionary *props;
 @property (strong, nonatomic) NSDictionary *shortcuts;
 @property (strong, nonatomic) NSMutableDictionary *windowPositions;
-@property (strong, nonatomic) RCTRootView *rootView;
+@property (strong, nonatomic) SWRootView *rootView;
 
 @end

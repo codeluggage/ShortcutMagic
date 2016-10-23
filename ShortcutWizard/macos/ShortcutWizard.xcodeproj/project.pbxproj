@@ -20,6 +20,7 @@
 		832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 832341B51AAA6A8300B99B32 /* libRCTText.a */; };
 		AC0F05041DB5CFCB00FB12FC /* windowNameOfApp.scpt in Resources */ = {isa = PBXBuildFile; fileRef = AC0F05031DB5CFCB00FB12FC /* windowNameOfApp.scpt */; };
 		AC0F051B1DB9806D00FB12FC /* SWFavorites.m in Sources */ = {isa = PBXBuildFile; fileRef = AC0F051A1DB9806C00FB12FC /* SWFavorites.m */; };
+		AC0F05341DBC775B00FB12FC /* SWRootView.m in Sources */ = {isa = PBXBuildFile; fileRef = AC0F05331DBC775B00FB12FC /* SWRootView.m */; };
 		AC1534591DADA84E00E6696E /* SWMenuExecutor.m in Sources */ = {isa = PBXBuildFile; fileRef = AC1534581DADA84E00E6696E /* SWMenuExecutor.m */; };
 		AC1534691DADB6C900E6696E /* executeMenu.scpt in Resources */ = {isa = PBXBuildFile; fileRef = AC1534681DADB6C900E6696E /* executeMenu.scpt */; };
 		AC1534731DADD70B00E6696E /* SWApplescriptManager.m in Sources */ = {isa = PBXBuildFile; fileRef = AC1534721DADD70B00E6696E /* SWApplescriptManager.m */; };
@@ -113,6 +114,8 @@
 		AC0F05031DB5CFCB00FB12FC /* windowNameOfApp.scpt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = windowNameOfApp.scpt; path = ShortcutWizard/windowNameOfApp.scpt; sourceTree = "<group>"; };
 		AC0F051A1DB9806C00FB12FC /* SWFavorites.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SWFavorites.m; path = ShortcutWizard/SWFavorites.m; sourceTree = "<group>"; };
 		AC0F05231DB9808300FB12FC /* SWFavorites.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SWFavorites.h; path = ShortcutWizard/SWFavorites.h; sourceTree = "<group>"; };
+		AC0F052B1DBC772900FB12FC /* SWRootView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SWRootView.h; path = ShortcutWizard/SWRootView.h; sourceTree = "<group>"; };
+		AC0F05331DBC775B00FB12FC /* SWRootView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SWRootView.m; path = ShortcutWizard/SWRootView.m; sourceTree = "<group>"; };
 		AC1534571DADA84E00E6696E /* SWMenuExecutor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SWMenuExecutor.h; path = ShortcutWizard/SWMenuExecutor.h; sourceTree = "<group>"; };
 		AC1534581DADA84E00E6696E /* SWMenuExecutor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SWMenuExecutor.m; path = ShortcutWizard/SWMenuExecutor.m; sourceTree = "<group>"; };
 		AC1534681DADB6C900E6696E /* executeMenu.scpt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = executeMenu.scpt; path = ShortcutWizard/executeMenu.scpt; sourceTree = "<group>"; };
@@ -242,6 +245,8 @@
 				AC5C108B1DB33F7A000A51B4 /* SWWindow.m */,
 				AC0F05231DB9808300FB12FC /* SWFavorites.h */,
 				AC0F051A1DB9806C00FB12FC /* SWFavorites.m */,
+				AC0F052B1DBC772900FB12FC /* SWRootView.h */,
+				AC0F05331DBC775B00FB12FC /* SWRootView.m */,
 			);
 			name = ShortcutWizard;
 			sourceTree = "<group>";
@@ -514,6 +519,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AC0F05341DBC775B00FB12FC /* SWRootView.m in Sources */,
 				AC5C108C1DB33F7A000A51B4 /* SWWindow.m in Sources */,
 				13B07FBC1A68108700A75B9A /* ShortcutWizard.m in Sources */,
 				AC4E3D551D9A228E00A7AED7 /* SWCoreDataStackManager.m in Sources */,

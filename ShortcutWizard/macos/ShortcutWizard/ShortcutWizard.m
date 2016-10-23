@@ -175,21 +175,32 @@ const static NSString *s_windowPositions = @"windowPositions";
     }
   
     NSMutableDictionary *currentWindows = [self.windowPositions objectForKey:self.currentApplicationName];
-  if (!currentWindows) {
-    return;
-  }
+    if (!currentWindows) {
+      return;
+    }
   
     NSDictionary *windowPositions = currentWindows[self.currentApplicationWindowName];
     if (!windowPositions) {
-      windowPositions = [currentWindows objectForKey:s_defaultWindow];
+      windowPositions = currentWindows[s_defaultWindow];
     }
   
-    NSRect savedPos = NSRectFromString([windowPositions objectForKey:@"windowPosition"]);
+    NSRect savedPos = NSRectFromString(windowPositions[@"windowPosition"]);
     if (NSIsEmptyRect(savedPos)) {
       return;
     }
   
     [self.window setFrame:savedPos display:YES animate:YES];
+  
+  
+        NSLog(@"==============================================");
+        NSLog(@"==============================================");
+      
+        NSLog(@"%@ ", [self.window contentView]);
+    NSLog(@"%d ", [[self.window contentView] acceptsFirstMouse:nil]);
+  
+  
+        NSLog(@"==============================================");
+        NSLog(@"==============================================");
 }
 
 -(void)updateApplicationIcon:(NSRunningApplication *)currentAppInfo
@@ -289,12 +300,11 @@ const static NSString *s_windowPositions = @"windowPositions";
             backing:NSBackingStoreBuffered
 //            defer:NO];
             defer:YES];
+        self.window = window;
 
 //      NSLog(@"window size:%i-%i : %i - %i", self.window.frame.size.width, self.window.frame.size.height, self.window.frame.positon.x, self.window.frame.position.y);
         NSLog(@"window size:%f-%f", self.window.frame.size.width, self.window.frame.size.height);
         NSLog(@"window pos:%f-%f", self.window.frame.origin.x, self.window.frame.origin.y);
-
-        NSWindowController *windowController = [[NSWindowController alloc] initWithWindow:window];
 
         [window setTitleVisibility:NSWindowTitleHidden];
         [window setTitlebarAppearsTransparent:YES];
@@ -305,16 +315,16 @@ const static NSString *s_windowPositions = @"windowPositions";
         [window setLevel:NSFloatingWindowLevel];
 //        [window setWorksWhenModal:YES];
 //      window.worksWhenModal = YES;
+        [window setDelegate:self];
+
+        NSWindowController *windowController = [[NSWindowController alloc] initWithWindow:window];
+        self.windowController = windowController;
+      
 
         [windowController setShouldCascadeWindows:NO];
         [windowController setWindowFrameAutosaveName:@"ShortcutWizard"];
-
-
         [windowController showWindow:window];
 
-        self.windowController = windowController;
-        [window setDelegate:self];
-        self.window = window;
         [self setUpApplicationMenu];
     }
 
@@ -351,7 +361,7 @@ const static NSString *s_windowPositions = @"windowPositions";
 
     [self prepareProps];
 
-    self.rootView = [[RCTRootView alloc] initWithBridge:_bridge moduleName:@"ShortcutWizard" initialProperties:self.props];
+    self.rootView = [[SWRootView alloc] initWithBridge:_bridge moduleName:@"ShortcutWizard" initialProperties:self.props];
     [self.window setContentView:self.rootView];
 }
 
