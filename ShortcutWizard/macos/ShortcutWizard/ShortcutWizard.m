@@ -8,8 +8,8 @@
 
 @implementation ShortcutWizard
 
-const static NSString *s_defaultWindow = @"default";
-const static NSString *s_windowPositions = @"windowPositions";
+static NSString *s_defaultWindow = @"default";
+static NSString *s_windowPositions = @"windowPositions";
 
 + (NSRect) screenResolution {
   NSRect screenRect = NSZeroRect;
@@ -35,6 +35,18 @@ const static NSString *s_windowPositions = @"windowPositions";
     __block NSString *newAppName = [currentAppInfo localizedName];
     if ([newAppName isEqualToString:@"ShortcutWizard"]) {
         NSLog(@"Switching to ShortcutWizard - TODO: SHOW UI");
+      
+//      NSPoint globalLocation = [NSEvent mouseLocation];
+//      NSPoint windowLocation = [[self.rootView window] convertScreenToBase:globalLocation];
+//      NSPoint viewLocation = [self.rootView convertPoint:windowLocation fromView:nil];
+//      NSRect bounds = [self.rootView bounds];
+//      if (NSPointInRect(viewLocation, bounds)) {
+////        CGEventErr err = CGPostMouseEvent(viewLocation,FALSE,1,TRUE);
+//        [self.window mouseDown:[[NSEvent alloc] init]];
+//      }
+//      if (NSPointInRect(globalLocation, bounds)) {
+//        [self.window mouseDown:[[NSEvent alloc] init]];
+//      }
         return;
     }
 
@@ -104,6 +116,35 @@ const static NSString *s_windowPositions = @"windowPositions";
                             }];
       }];
     }
+}
+
+- (void)applicationDidUpdate:(NSNotification *)notification {
+  NSLog(@"(((((((((((((((((((((((((((((((((((((((((((((((( did update: %@", notification);
+  // [[NSApp mainWindow] makeKeyWindow];doesn't work. not sure why.
+  [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+  
+      NSEvent *placeholder = [[NSEvent alloc] init];
+  
+          NSView *theView = [[self.window contentView] hitTest:[NSEvent mouseLocation]];
+          NSPoint locationInWindow = [placeholder locationInWindow];
+  
+          unsigned int flags = [placeholder modifierFlags];
+          NSTimeInterval timestamp = [placeholder timestamp];
+          int windowNumber = [self.window windowNumber];
+          NSGraphicsContext *context = [placeholder context];
+  
+          // original event is not a mouse down event so the following values are missing
+          int eventNumber = 0; // [anEvent eventNumber]
+          int clickCount = 0; // [anEvent clickCount]
+          float pressure = 1.0; // [anEvent pressure]
+  
+  NSEvent *newEvent = [NSEvent mouseEventWithType:NSRightMouseDown
+                                         location:locationInWindow modifierFlags:flags timestamp:timestamp
+                                     windowNumber:windowNumber context:context eventNumber:eventNumber
+                                       clickCount:clickCount pressure:pressure];
+  
+  [self.window sendEvent:newEvent];
+  
 }
 
 - (void)mergeAndSaveShortcuts:(NSDictionary *)shortcuts withName:(NSString *)name
@@ -190,17 +231,6 @@ const static NSString *s_windowPositions = @"windowPositions";
     }
   
     [self.window setFrame:savedPos display:YES animate:YES];
-  
-  
-        NSLog(@"==============================================");
-        NSLog(@"==============================================");
-      
-        NSLog(@"%@ ", [self.window contentView]);
-    NSLog(@"%d ", [[self.window contentView] acceptsFirstMouse:nil]);
-  
-  
-        NSLog(@"==============================================");
-        NSLog(@"==============================================");
 }
 
 -(void)updateApplicationIcon:(NSRunningApplication *)currentAppInfo
@@ -400,14 +430,16 @@ const static NSString *s_windowPositions = @"windowPositions";
 
 - (void)windowDidMove:(NSNotification *)notification
 {
-  NSLog(@"************** window did move ****** ");
+  // TODO: optimize performance here
+//  NSLog(@"************** window did move ****** ");
   [self updateWindowPositions];
 }
 
 
 - (void)windowDidResize:(NSNotification *)notification
 {
-  NSLog(@"************** window did resize ******");
+  // TODO: optimize performance here
+//  NSLog(@"************** window did resize ******");
   [self updateWindowPositions];
 }
 

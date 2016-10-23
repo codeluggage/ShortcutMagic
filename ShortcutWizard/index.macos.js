@@ -335,18 +335,18 @@ const ShortcutWizardApp = React.createClass({
                     flexDirection: 'row',
                 }}>
                     <TouchableHighlight onPress={() => {
-                        shortcut.favorite = (typeof shortcut.favorite == 'undefined' || shortcut.favorite == 9) ? 1 : shortcut.favorite + 1;
-                        ShortcutWizard.UpdateFavorite.updateFavorite(shortcut)
-                        console.log('CLICKED "^"----------------- ', shortcut.favorite);
-                    }}>
-                        <Text style={styles.toggleShortcutStyle}> ^ </Text>
-                    </TouchableHighlight>
-                    <TouchableHighlight onPress={() => {
                         shortcut.favorite = (typeof shortcut.favorite == 'undefined') ? 0 : shortcut.favorite - 1;
                         ShortcutWizard.UpdateFavorite.updateFavorite(shortcut)
                         console.log('CLICKED "v" ----------------- ', shortcut.favorite);
                     }}>
                         <Text style={styles.toggleShortcutStyle}> v </Text>
+                    </TouchableHighlight>
+                    <TouchableHighlight onPress={() => {
+                        shortcut.favorite = (typeof shortcut.favorite == 'undefined' || shortcut.favorite == 9) ? 1 : shortcut.favorite + 1;
+                        ShortcutWizard.UpdateFavorite.updateFavorite(shortcut)
+                        console.log('CLICKED "^"----------------- ', shortcut.favorite);
+                    }}>
+                        <Text style={styles.toggleShortcutStyle}> ^ </Text>
                     </TouchableHighlight>
                 </View>
             ) : undefined;

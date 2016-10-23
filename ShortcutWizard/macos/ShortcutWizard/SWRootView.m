@@ -11,9 +11,36 @@
 
 - (BOOL)acceptsFirstMouse:(nullable NSEvent *)event
 {
+//  NSLog(@"@@@@@@@@@@@@@@@@ hit acceptsFirstMouse with event: %@, super: %d", event, [super acceptsFirstMouse:event]);
   return YES;
 }
 
+- (BOOL)acceptsFirstResponder
+{
+//  NSLog(@"@@@@@@@@@@@@@@@@ hit acceptsFirstResponder, super: %d", [super acceptsFirstResponder]);
+  return YES;
+}
+
+- (void)mouseDown:(NSEvent *)event
+{
+//  [super mouseDown:event];
+  
+  NSLog(@"@@@@@@@@@@@@@@@@ hit mouseDown, event: %@", event);
+}
+
+- (void)otherMouseDown:(NSEvent *)event
+{
+//  [super otherMouseDown:event];
+  
+  NSLog(@"@@@@@@@@@@@@@@@@ hit othermouseDown, event: %@", event);
+}
+
+- (void)rightMouseDown:(NSEvent *)event
+{
+//  [super rightMouseDown:event];
+  
+  NSLog(@"@@@@@@@@@@@@@@@@ hit rightmouseDown, event: %@", event);
+}
 
 //
 //
