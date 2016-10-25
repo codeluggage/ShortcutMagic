@@ -1,26 +1,38 @@
 import React from 'react';
-import {
-    AppRegistry,
-    StyleSheet,
-    Text,
-    Image,
-    View,
-    TouchableOpacity,
-    RecyclerViewBackedScrollView,
-    TouchableHighlight,
-    ListView,
-    Button,
-} from 'react-native-macos';
+// import {
+//     AppRegistry,
+//     StyleSheet,
+//     Text,
+//     Image,
+//     View,
+//     TouchableOpacity,
+//     RecyclerViewBackedScrollView,
+//     TouchableHighlight,
+//     ListView,
+//     Button,
+// } from ????;
 
-// ======================= Bridge to native
-import { NativeModules } from 'react-native';
+let AppRegistry = {},
+    StyleSheet = {},
+    Text = {},
+    Image = {},
+    View = {},
+    TouchableOpacity = {},
+    RecyclerViewBackedScrollView = {},
+    TouchableHighlight = {},
+    ListView = {},
+    Button = {};
+
+SWApplescriptManager = require('./SWApplescriptManager.js');
+
+SWMenuExecutor = require('./SWMenuExecutor.js');
+SWFavorites = require('./SWFavorites.js');
 
 var ShortcutWizard = {
-    NativeApplescriptManager: NativeModules.SWApplescriptManager,
-    NativeClick: NativeModules.SWMenuExecutor,
-    UpdateFavorite: NativeModules.SWFavorites 
+    NativeApplescriptManager: SWApplescriptManager,
+    NativeClick: SWMenuExecutor,
+    UpdateFavorite: SWFavorites 
 };
-// <<<<<<<<<<<<<<<<<<<<<<< Bridge to native
 
 
 // TODO: remove unused styles, reorganise all hardcoded styles here
