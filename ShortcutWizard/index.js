@@ -12,6 +12,7 @@ import React from 'react';
 //     Button,
 // } from ????;
 
+// TODO: Replace with electron + react:
 let AppRegistry = {},
     StyleSheet = {},
     Text = {},
@@ -23,16 +24,10 @@ let AppRegistry = {},
     ListView = {},
     Button = {};
 
+// TODO: organize the code in these files before import
 SWApplescriptManager = require('./SWApplescriptManager.js');
-
 SWMenuExecutor = require('./SWMenuExecutor.js');
 SWFavorites = require('./SWFavorites.js');
-
-var ShortcutWizard = {
-    NativeApplescriptManager: SWApplescriptManager,
-    NativeClick: SWMenuExecutor,
-    UpdateFavorite: SWFavorites 
-};
 
 
 // TODO: remove unused styles, reorganise all hardcoded styles here
@@ -45,9 +40,6 @@ const styles = StyleSheet.create({
         textAlign: 'right',
         color: 'blue',
         fontWeight: '400',
-    },
-    textDivider: {
-        paddingBottom: 20
     },
     scrollView: {
         backgroundColor: '#EFEFEF',
@@ -77,12 +69,6 @@ const styles = StyleSheet.create({
         fontSize: 20,
         textAlign: 'center',
         paddingBottom: 10
-    },
-    rowText: {
-        marginLeft: 5,
-        fontSize: 12,
-        textAlign: 'left',
-        color: 'blue'
     },
 });
 
@@ -170,7 +156,6 @@ const ShortcutWizardApp = React.createClass({
     },
     // _genRows: function(props) {
     //     console.log('--- _genRows called, with props: ' + JSON.stringify(props));
-
     // },
     initialize() {
         console.log('>> initialize hit');
@@ -348,14 +333,14 @@ const ShortcutWizardApp = React.createClass({
                 }}>
                     <TouchableHighlight onPress={() => {
                         shortcut.favorite = (typeof shortcut.favorite == 'undefined' || shortcut.favorite == 9) ? 1 : shortcut.favorite + 1;
-                        ShortcutWizard.UpdateFavorite.updateFavorite(shortcut)
+                        SWFavorites.updateFavorite(shortcut)
                         console.log('CLICKED "^"----------------- ', shortcut.favorite);
                     }}>
                         <Text style={styles.toggleShortcutStyle}> ^ </Text>
                     </TouchableHighlight>
                     <TouchableHighlight onPress={() => {
                         shortcut.favorite = (typeof shortcut.favorite == 'undefined') ? 0 : shortcut.favorite - 1;
-                        ShortcutWizard.UpdateFavorite.updateFavorite(shortcut)
+                        SWFavorites.updateFavorite(shortcut)
                         console.log('CLICKED "v" ----------------- ', shortcut.favorite);
                     }}>
                         <Text style={styles.toggleShortcutStyle}> v </Text>
@@ -386,7 +371,7 @@ const ShortcutWizardApp = React.createClass({
                 <TouchableHighlight onPress={() => {
                     this._pressData[rowID] = !this._pressData[rowID];
                     // highlightRow(sectionID, rowID);
-                    ShortcutWizard.NativeClick.clickMenu(this.props.applicationName, shortcut);
+                    SWMenuExecutor.clickMenu(this.props.applicationName, shortcut);
                 }}>
                     <View style={{
                         flexDirection: 'row',
@@ -461,7 +446,7 @@ const ShortcutWizardApp = React.createClass({
                                 title="Reload"
                                 onClick={() => {
                                     console.log('CLICKED with applicationName', this.props.applicationName);
-                                    ShortcutWizard.NativeApplescriptManager.loadShortcutsForApp(this.props.applicationName, (res) => {
+                                    SWApplescriptManager.loadShortcutsForApp(this.props.applicationName, (res) => {
                                         if (res) {
                                             if (res[0]) {
                                                 console.log('error loading shortcuts: ' + res[0]);
