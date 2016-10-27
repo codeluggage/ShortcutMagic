@@ -2,12 +2,13 @@
 // TODO: How to deal with NSAppleEventDescriptor's
 
 
+var $ = require('NodObjC')
 $.framework('Foundation');
 
-SWApplescriptManager = Class.Extend('NSObject');
+SWApplescriptManager = $.NSObject.extend('SWApplescriptManager');
 
 // returns to javascript
-SWApplescriptManager.addMethod('loadShortcutsForApp:callback', 'void', function(appName, callback) {
+SWApplescriptManager.addMethod('loadShortcutsForApp:callback', 'void', function(self, _cmd, appName, callback) {
   // TODO: how to do async in nobjc
   // dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 
@@ -32,7 +33,7 @@ SWApplescriptManager.addMethod('loadShortcutsForApp:callback', 'void', function(
 
 
 
-SWApplescriptManager.addMethod('readShortcutsWithName:error', 'NSAppleEventDescriptor', function(name, errorInfo) {
+SWApplescriptManager.addMethod('readShortcutsWithName:error', 'NSAppleEventDescriptor', function(self, _cmd, name, errorInfo) {
   if (!name || name.isEqualToString("")) {
     // TODO: Set errorInfo
     $.NSLog(@"ERROR - no name given to readShortcutsWithName");
@@ -45,7 +46,7 @@ SWApplescriptManager.addMethod('readShortcutsWithName:error', 'NSAppleEventDescr
 
 
 
-SWApplescriptManager.addMethod('loadAndCompileApplescript', 'OSAScript', function(path) {
+SWApplescriptManager.addMethod('loadAndCompileApplescript', 'OSAScript', function(self, _cmd, path) {
   var source = $.NSString('stringWithContentsOfFile', $.NSBundle('mainBundle')('pathForResource', path, 'ofType', "scpt"),
                                                'encoding', $.NSUTF8StringEncoding, 'error', null);
   var hold = $.OSAScript('alloc')('initWithSource', source);
@@ -63,7 +64,7 @@ SWApplescriptManager.addMethod('loadAndCompileApplescript', 'OSAScript', functio
   return hold;
 });
 
-SWApplescriptManager.addMethod('scriptForKey', 'OSAScript', function(key) {
+SWApplescriptManager.addMethod('scriptForKey', 'OSAScript', function(self, _cmd, key) {
   var instance = SWApplescriptManager('singleton');
   var script = instance.scripts('objectForKey', key);
   if (!script) {
@@ -73,7 +74,7 @@ SWApplescriptManager.addMethod('scriptForKey', 'OSAScript', function(key) {
   return script;
 });
 
-SWApplescriptManager.addMethod('readMenuItems:withBlock', 'void', function(applicationName, callback) {
+SWApplescriptManager.addMethod('readMenuItems:withBlock', 'void', function(self, _cmd, applicationName, callback) {
   $.NSLog("About to call readMenuItems with %@", applicationName);
   
   // TODO: How to create block?
@@ -166,7 +167,7 @@ SWApplescriptManager.addMethod('readMenuItems:withBlock', 'void', function(appli
   });
 });
 
-SWApplescriptManager.addMethod('explainOrKeepWindow', 'NSDictionary', function(set) {
+SWApplescriptManager.addMethod('explainOrKeepWindow', 'NSDictionary', function(self, _cmd, set) {
     $.NSLog("explainOrKeepWindow before: %@", set);
   
     if ([set count] < 5) return nil;
@@ -179,7 +180,7 @@ SWApplescriptManager.addMethod('explainOrKeepWindow', 'NSDictionary', function(s
     return newSet;
 }
 
-SWApplescriptManager.addMethod('explainOrKeep', 'NSDictionary', function(set) {
+SWApplescriptManager.addMethod('explainOrKeep', 'NSDictionary', function(self, _cmd, set) {
   //  NSLog(@"explainOrKeep before: %@", set);
   
   if (set('count') < 2) return nil;
@@ -424,7 +425,7 @@ SWApplescriptManager.addMethod('explainOrKeep', 'NSDictionary', function(set) {
   return newSet;
 });
 
-SWApplescriptManager.addMethod('readWindowOfApp:withBlock', 'void', function(applicationName, callback) {
+SWApplescriptManager.addMethod('readWindowOfApp:withBlock', 'void', function(self, _cmd, applicationName, callback) {
   $.NSOperationQueue('mainQueue')('addOperationWithBlock', function() {
     let readWindowsOfApp = SWApplescriptManager('scriptForKey', "readWindowsOfApp");
     let errorInfo;
@@ -518,7 +519,7 @@ SWApplescriptManager.addMethod('readWindowOfApp:withBlock', 'void', function(app
   });
 });
 
-SWApplescriptManager.addMethod('readWindowOfApp:withBlock', 'void', function(applicationName, callback) {
+SWApplescriptManager.addMethod('readWindowOfApp:withBlock', 'void', function(self, _cmd, applicationName, callback) {
   $.NSOperationQueue('mainQueue')('addOperationWithBlock', function() {
     let readWindowsOfApp = SWApplescriptManager('scriptForKey', "readWindowOfApp");
     let errorInfo;
@@ -601,7 +602,7 @@ SWApplescriptManager.addMethod('readWindowOfApp:withBlock', 'void', function(app
   });
 });
 
-SWApplescriptManager.addMethod('windowNameOfApp', 'NSString', function(applicationName) {
+SWApplescriptManager.addMethod('windowNameOfApp', 'NSString', function(self, _cmd, applicationName) {
     let readWindowsOfApp = SWApplescriptManager('scriptForKey', "windowNameOfApp");
     let errorInfo;
     let desc = readWindowsOfApp('executeHandlerWithName', "windowNameOfApp", 'arguments', [applicationName], 'error', errorInfo);
@@ -614,4 +615,4 @@ SWApplescriptManager.addMethod('windowNameOfApp', 'NSString', function(applicati
     return desc('stringValue');
 });
 
-Class.register(SWApplescriptManager); // todo fix syntax of registering
+SWApplescriptManager.register();

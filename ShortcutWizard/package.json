@@ -2,8 +2,9 @@
   "name": "ShortcutWizard",
   "version": "0.0.1",
   "private": true,
+  "main": "main.js",
   "scripts": {
-    "start": "node node_modules/react-native-macos/local-cli/cli.js start"
+    "start": "electron ."
   },
   "dependencies": {
     "applescript": "^1.0.0",
