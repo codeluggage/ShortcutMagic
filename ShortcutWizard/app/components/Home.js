@@ -10,7 +10,7 @@ export default class Home extends Component {
       <div>
         <div className={styles.container}>
           <h2>Fetch shortcuts</h2>
-          <Link to="/fetchShortcut">Fetch "Google Chrome"</Link>
+          <Link to="/Shortcuts">Fetch "Google Chrome"</Link>
         </div>
       </div>
     );
