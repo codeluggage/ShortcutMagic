@@ -21,20 +21,46 @@ const SortableList = SortableContainer(({items}) => {
 
 export default class Home extends Component {
     state = {
-        items: ['Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5', 'Item 6']
+        initialItems:
+        [
+        "Apples",
+        "Oranges",
+        "Chicken",
+        "Eggs",
+        "Fish",
+        "Duck"
+        ],
+        items: ["first", "items"]
     }
-    onSortEnd = ({oldIndex, newIndex}) => {
+
+      onSortEnd = ({oldIndex, newIndex}) => {
         this.setState({
             items: arrayMove(this.state.items, oldIndex, newIndex)
         });
-    };
-    render() {
+      }
+
+    filterList = (event) => {
+        var updatedList = this.state.initialItems;
+        updatedList = updatedList.filter(function(item){
+            return item.toLowerCase().indexOf(event.target.value.toLowerCase()) !== -1;
+        });
+        this.setState({items: updatedList})
+    }
+
+    componentWillMount = () => {
+        this.setState({items: this.state.initialItems})
+    }
+
+    render = () => {
         return (
-            <SortableList
-              items={this.state.items}
-              onSortEnd={this.onSortEnd}
-              lockAxis='y'
-            />
+            <div className="filter-list">
+                <input type="text" placeholder="Search" onChange={this.filterList}/>
+                <SortableList
+                  items={this.state.items}
+                  onSortEnd={this.onSortEnd}
+                  lockAxis='y'
+                />
+            </div>
         )
     }
 }

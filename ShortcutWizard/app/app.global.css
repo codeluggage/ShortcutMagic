@@ -1,114 +1,39 @@
-
-h2 {
-  margin: 0;
-  font-size: 2.25rem;
-  font-weight: bold;
-  letter-spacing: -.025em;
-  color: #fff;
+* {
+    box-sizing: border-box;
 }
 
-p {
-  font-size: 24px;
+body {
+    padding: 20px;
+    background: #2c3e50;
 }
 
-li {
-  list-style: none;
+.filter-list {
+    margin: auto;
+    width: 50%;
+    background: #3498db;
+    border: 1px solid #3498ff;
+    border-radius: 5px;
 }
 
-a {
-  color: white;
-  opacity: .75;
-  text-decoration: none;
+.filter-list input {
+    width: 100%;
+    display: block;
+    padding: 10px;
+    border-radius: 5px 5px 0 0;
+    border: 0;
+    font-size: 1.5em;
 }
 
-a:hover {
-  opacity: 1;
-  text-decoration: none;
-  cursor: pointer;
+.filter-list input:focus {
+    outline: none;
 }
 
-body, html {
-  width: 100%;
-  padding: 0;
-  margin: 0;
-  background-color: #282828
+.filter-list ul li{
+    color: #fff;
+    padding: 10px 20px;
+    border-top: 1px solid #34ccff;
 }
 
-ul {
-  list-style-type: none;
-  margin: auto;
-  width: 420px;
-  max-width: 100%;
-  padding: 15px;
-  font-size: 18px;
-  color: #999797;
-  border: 1px dotted #999797;
-  margin-top: 2.5%;
-}
-
-
-ul li:last-child {
-  margin-bottom: 0;
-}
-
-.base h3 {
-  color: #999797;
-  text-align: center;
-  display: block;
-  margin-bottom: 10px;
-  padding-bottom: 0;
-}
-.base .track {
-  min-height: 87px;
-  margin: 0;
-  padding: 0;
-}
-.base .track:hover {
-  background-color: #201F1F
-}
-.base .thumb {
-  display: block;
-  float: left;
-  width: 87px;
-  height: 87px;
-  margin-right: 10px;
-  background-size: cover;
-  background-position: center;
-}
-.base .info {
-  display: block;
-  float: left;
-}
-.info a {
-  text-decoration: none;
-}
-.info .title {
-  font-size: 16px;
-  color: #FFFFFF;
-  line-height: 22px;
-  margin-top: 5px;
-  margin-bottom: 3px;
-  display: block;
-}
-.info .artist {
-  font-size: 14px;
-  color: #999797;
-  line-height: 15px;
-  margin-bottom: 5px;
-  display: block;
-}
-h1 {
-font-size: 18px;
-color: #999797;
-line-height: 15px;
-display: block;
-}
-.base-appear {
-  transform: translateY(-10px);
-  opacity: 0.01;
-}
-.base-appear.base-appear-active {
-  opacity: 1;
-  transform: translateY(0);
-  transition: transform 300ms ease-in, opacity 300ms ease-in;
+.filter-list ul li:hover {
+    background: #2980b9;
 }
