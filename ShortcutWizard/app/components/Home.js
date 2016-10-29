@@ -9,8 +9,8 @@ export default class Home extends Component {
     return (
       <div>
         <div className={styles.container}>
-          <h2>Home</h2>
-          <Link to="/counter">to Counter</Link>
+          <h2>Fetch shortcuts</h2>
+          <Link to="/fetchShortcut">Fetch "Google Chrome"</Link>
         </div>
       </div>
     );

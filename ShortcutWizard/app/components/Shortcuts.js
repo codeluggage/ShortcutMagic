@@ -1,19 +1,19 @@
 // @flow
 import React, { Component, PropTypes } from 'react';
 import { Link } from 'react-router';
-import styles from './Counter.css';
+import styles from './Shortcuts.css';
 
-class Counter extends Component {
+class Shortcuts extends Component {
   static propTypes = {
     increment: PropTypes.func.isRequired,
     incrementIfOdd: PropTypes.func.isRequired,
     incrementAsync: PropTypes.func.isRequired,
     decrement: PropTypes.func.isRequired,
-    counter: PropTypes.number.isRequired
+    Shortcuts: PropTypes.number.isRequired
   };
 
   render() {
-    const { increment, incrementIfOdd, incrementAsync, decrement, counter } = this.props;
+    const { increment, incrementIfOdd, incrementAsync, decrement, Shortcuts } = this.props;
     return (
       <div>
         <div className={styles.backButton}>
@@ -21,8 +21,8 @@ class Counter extends Component {
             <i className="fa fa-arrow-left fa-3x" />
           </Link>
         </div>
-        <div className={`counter ${styles.counter}`}>
-          {counter}
+        <div className={`Shortcuts ${styles.Shortcuts}`}>
+          {Shortcuts}
         </div>
         <div className={styles.btnGroup}>
           <button className={styles.btn} onClick={increment}>
@@ -39,4 +39,4 @@ class Counter extends Component {
   }
 }
 
-export default Counter;
+export default Shortcuts;

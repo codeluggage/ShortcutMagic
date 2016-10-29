@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { spy } from 'sinon';
 import React from 'react';
 import { shallow } from 'enzyme';
-import Counter from '../../app/components/Counter';
+import Shortcuts from '../../app/components/Shortcuts';
 
 
 function setup() {
@@ -13,17 +13,17 @@ function setup() {
     incrementAsync: spy(),
     decrement: spy()
   };
-  const component = shallow(<Counter counter={1} {...actions} />);
+  const component = shallow(<Shortcuts Shortcuts={1} {...actions} />);
   return {
     component,
     actions,
     buttons: component.find('button'),
-    p: component.find('.counter')
+    p: component.find('.Shortcuts')
   };
 }
 
 
-describe('Counter component', () => {
+describe('Shortcuts component', () => {
   it('should should display count', () => {
     const { p } = setup();
     expect(p.text()).to.match(/^1$/);

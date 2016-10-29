@@ -1,16 +1,16 @@
 module.exports = {
   // remove the following files as they are mostly
-  // related to the sample counter page and functionality
+  // related to the sample Shortcuts page and functionality
   remove: [
-    { file: 'app/actions/counter.js' },
-    { file: 'app/components/Counter.css' },
-    { file: 'app/components/Counter.js' },
-    { file: 'app/containers/CounterPage.js' },
-    { file: 'app/reducers/counter.js' },
-    { file: 'test/actions/counter.spec.js' },
-    { file: 'test/components/Counter.spec.js' },
-    { file: 'test/containers/CounterPage.spec.js' },
-    { file: 'test/reducers/counter.spec.js' },
+    { file: 'app/actions/Shortcuts.js' },
+    { file: 'app/components/Shortcuts.css' },
+    { file: 'app/components/Shortcuts.js' },
+    { file: 'app/containers/ShortcutsPage.js' },
+    { file: 'app/reducers/Shortcuts.js' },
+    { file: 'test/actions/Shortcuts.spec.js' },
+    { file: 'test/components/Shortcuts.spec.js' },
+    { file: 'test/containers/ShortcutsPage.spec.js' },
+    { file: 'test/reducers/Shortcuts.spec.js' },
     { file: 'CHANGELOG.md' },
     { file: 'erb-logo.png' }
   ],
@@ -20,11 +20,11 @@ module.exports = {
   clean: [
     {
       file: 'app/reducers/index.js',
-      pattern: /counter/
+      pattern: /Shortcuts/
     },
     {
       file: 'app/store/configureStore.development.js',
-      pattern: /counterActions/
+      pattern: /ShortcutsActions/
     },
     {
       file: 'app/app.global.css',
@@ -32,7 +32,7 @@ module.exports = {
     },
     {
       file: 'app/routes.js',
-      pattern: /CounterPage/
+      pattern: /ShortcutsPage/
     },
     {
       file: 'test/e2e.js',

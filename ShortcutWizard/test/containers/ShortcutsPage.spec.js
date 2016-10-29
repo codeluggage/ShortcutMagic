@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import React from 'react';
 import { mount } from 'enzyme';
 import { Provider } from 'react-redux';
-import CounterPage from '../../app/containers/CounterPage';
+import ShortcutsPage from '../../app/containers/ShortcutsPage';
 import configureStore from '../../app/store/configureStore';
 
 
@@ -10,13 +10,13 @@ function setup(initialState) {
   const store = configureStore(initialState);
   const app = mount(
     <Provider store={store}>
-      <CounterPage />
+      <ShortcutsPage />
     </Provider>
   );
   return {
     app,
     buttons: app.find('button'),
-    p: app.find('.counter')
+    p: app.find('.Shortcuts')
   };
 }
 
@@ -47,7 +47,7 @@ describe('containers', () => {
     });
 
     it('should change if odd and if odd button clicked', () => {
-      const { buttons, p } = setup({ counter: 1 });
+      const { buttons, p } = setup({ Shortcuts: 1 });
       buttons.at(2).simulate('click');
       expect(p.text()).to.match(/^2$/);
     });

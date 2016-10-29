@@ -1,24 +1,24 @@
 // @flow
-export const INCREMENT_COUNTER = 'INCREMENT_COUNTER';
-export const DECREMENT_COUNTER = 'DECREMENT_COUNTER';
+export const INCREMENT_Shortcuts = 'INCREMENT_Shortcuts';
+export const DECREMENT_Shortcuts = 'DECREMENT_Shortcuts';
 
 export function increment() {
   return {
-    type: INCREMENT_COUNTER
+    type: INCREMENT_Shortcuts
   };
 }
 
 export function decrement() {
   return {
-    type: DECREMENT_COUNTER
+    type: DECREMENT_Shortcuts
   };
 }
 
 export function incrementIfOdd() {
   return (dispatch: Function, getState: Function) => {
-    const { counter } = getState();
+    const { Shortcuts } = getState();
 
-    if (counter % 2 === 0) {
+    if (Shortcuts % 2 === 0) {
       return;
     }
 
