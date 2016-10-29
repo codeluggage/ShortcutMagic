@@ -1,12 +1,3 @@
-body {
-  position: relative;
-  color: white;
-  height: 100vh;
-  background-color: #232C39;
-  background-image: linear-gradient(45deg, rgba(0, 216, 255, .5) 10%, rgba(0, 1, 127, .7));
-  font-family: Arial, Helvetica, Helvetica Neue, serif;
-  overflow-y: hidden;
-}
 
 h2 {
   margin: 0;
@@ -34,4 +25,90 @@ a:hover {
   opacity: 1;
   text-decoration: none;
   cursor: pointer;
+}
+
+body, html {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  background-color: #282828
+}
+
+ul {
+  list-style-type: none;
+  margin: auto;
+  width: 420px;
+  max-width: 100%;
+  padding: 15px;
+  font-size: 18px;
+  color: #999797;
+  border: 1px dotted #999797;
+  margin-top: 2.5%;
+}
+
+
+ul li:last-child {
+  margin-bottom: 0;
+}
+
+.base h3 {
+  color: #999797;
+  text-align: center;
+  display: block;
+  margin-bottom: 10px;
+  padding-bottom: 0;
+}
+.base .track {
+  min-height: 87px;
+  margin: 0;
+  padding: 0;
+}
+.base .track:hover {
+  background-color: #201F1F
+}
+.base .thumb {
+  display: block;
+  float: left;
+  width: 87px;
+  height: 87px;
+  margin-right: 10px;
+  background-size: cover;
+  background-position: center;
+}
+.base .info {
+  display: block;
+  float: left;
+}
+.info a {
+  text-decoration: none;
+}
+.info .title {
+  font-size: 16px;
+  color: #FFFFFF;
+  line-height: 22px;
+  margin-top: 5px;
+  margin-bottom: 3px;
+  display: block;
+}
+.info .artist {
+  font-size: 14px;
+  color: #999797;
+  line-height: 15px;
+  margin-bottom: 5px;
+  display: block;
+}
+h1 {
+font-size: 18px;
+color: #999797;
+line-height: 15px;
+display: block;
+}
+.base-appear {
+  transform: translateY(-10px);
+  opacity: 0.01;
+}
+.base-appear.base-appear-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: transform 300ms ease-in, opacity 300ms ease-in;
 }
