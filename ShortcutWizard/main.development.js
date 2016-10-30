@@ -4,6 +4,7 @@ import ReadShortcuts from './ReadShortcuts.js';
 let menu;
 let template;
 let mainWindow = null;
+let willQuitApp = false; // TODO: consider a cleaner approach
 
 
 if (process.env.NODE_ENV === 'development') {
@@ -15,6 +16,11 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
+app.on('activate', () => mainWindow.show());
+
+/* 'before-quit' is emitted when Electron receives 
+ * the signal to exit and wants to start closing windows */
+app.on('before-quit', () => willQuitApp = true);
 
 const installExtensions = async () => {
   if (process.env.NODE_ENV === 'development') {
@@ -50,11 +56,12 @@ app.on('ready', async () => {
     width: 1024,
     height: 728,
     frame: false,
-    alwaysOnTop: true
+    alwaysOnTop: true,
+    acceptFirstMouse: true
   });
 
 
-  ReadShortcuts('PomoDoneApp');
+  await ReadShortcuts('PomoDoneApp');
 
   mainWindow.loadURL(`file://${__dirname}/app/app.html`);
 
@@ -65,6 +72,20 @@ app.on('ready', async () => {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
+  });
+
+  mainWindow.on('close', (e) => {
+    console.log('>>>>>>>>> hit mainWindow on close');
+    if (willQuitApp) {
+      console.log('willQuitApp = true, setting mainWindow to null');
+      /* tried to quit the app */
+      mainWindow = null;
+    } else {
+      console.log('willQuitApp = false, hiding mainWindow');
+      /* only tried to close the mainWindow */
+      e.preventDefault();
+      mainWindow.hide();
+    }
   });
 
   if (process.env.NODE_ENV === 'development') {
@@ -179,7 +200,9 @@ app.on('ready', async () => {
       }, {
         label: 'Close',
         accelerator: 'Command+W',
-        selector: 'performClose:'
+        click() {
+          mainWindow.hide();
+        }
       }, {
         type: 'separator'
       }, {

@@ -7,7 +7,7 @@ const SortableItem = SortableElement(({value}) => <li>{value}</li>);
 
 const SortableList = SortableContainer(({items}) => {
     return (
-        <ul>
+        <p>
             {items.map((value, index) => {
                 let keys = Object.keys(value);
                 let displayValue = "";
@@ -22,7 +22,7 @@ const SortableList = SortableContainer(({items}) => {
                   value={displayValue}
                 />);
             })}
-        </ul>
+        </p>
     );
 });
 
@@ -164,7 +164,7 @@ export default class Home extends Component {
 
     render = () => {
         return (
-            <div className="filter-list">
+            <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
                 <input type="text" placeholder="Search" onChange={this.filterList}/>
                 <SortableList
                   items={this.state.items}

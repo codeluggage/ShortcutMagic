@@ -5,11 +5,12 @@
 body {
     padding: 20px;
     background: #2c3e50;
+    -webkit-app-region: drag;
+    list-style-type: none;
 }
 
 .filter-list {
     margin: auto;
-    width: 50%;
     background: #3498db;
     border: 1px solid #3498ff;
     border-radius: 5px;
