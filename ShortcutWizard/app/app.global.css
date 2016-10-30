@@ -16,9 +16,9 @@ body {
   border-radius: 4px;
   font: inherit;
   font-size: 1.2em;
-  padding: .4em 1.2em;
-  color: inherit;
+  margin: 8px;
   background-color: transparent;
+  border-color: hsl(0,0%,88%);
 }
 .simple-button:focus {
   outline: none;

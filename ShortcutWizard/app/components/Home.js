@@ -166,7 +166,7 @@ export default class Home extends Component {
     render = () => {
         return (
             <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
-                <button id="settings-button" className="demo-button" onClick={() => {
+                <button id="settings-button" className="simple-button" onClick={() => {
                     ipcRenderer.send('openSettingsPage', null);
                 }}>Open settings</button>
 
