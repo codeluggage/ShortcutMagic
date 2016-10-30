@@ -8,29 +8,125 @@ const SortableItem = SortableElement(({value}) => <li>{value}</li>);
 const SortableList = SortableContainer(({items}) => {
     return (
         <ul>
-            {items.map((value, index) =>
-                <SortableItem
+            {items.map((value, index) => {
+                let keys = Object.keys(value);
+                let displayValue = "";
+
+                for (var i = 0; i < keys.length; i++) {
+                    displayValue += `${keys[i]}: ${value[keys[i]]} `;
+                }
+
+                return (<SortableItem
                   key={`item-${index}`}
                   index={index}
-                  value={`list item: ${value} ${index}`}
-                />
-            )}
+                  value={displayValue}
+                />);
+            })}
         </ul>
     );
 });
 
 export default class Home extends Component {
     state = {
-        initialItems:
-        [
-        "Apples",
-        "Oranges",
-        "Chicken",
-        "Eggs",
-        "Fish",
-        "Duck"
-        ],
-        items: ["first", "items"]
+        initialItems: [{
+                name: "About PomoDoneApp",
+                menuName: "PomoDoneApp",
+            }, {
+                name: "Check for Updates…",
+                menuName: "PomoDoneApp",
+            }, {
+                name: "Preferences…",
+                menuName: "PomoDoneApp",
+                cmd: ","  
+            }, {
+                name: "Services",
+                menuName: "PomoDoneApp",
+            }, {
+                name: "Hide PomoDoneApp",
+                menuName: "PomoDoneApp",
+                cmd: "H"  
+            }, {
+                name: "Hide Others",
+                menuName: "PomoDoneApp",
+                cmd: "H",
+                mods: 2  
+            }, {
+                name: "Show All",
+                menuName: "PomoDoneApp",
+            }, {
+                name: "Quit",
+                menuName: "PomoDoneApp",
+                cmd: "Q"   
+            }, {
+                name: "Create new task",
+                menuName: "File",
+                cmd: "N"  
+            }, {
+                name: "Sync all",
+                menuName: "File",
+                cmd: "S",
+            }, {
+               name: "Sync active service",
+               menuName: "File",
+               cmd: "R"   
+            }, {
+                name: "Undo",
+                menuName: "Edit",
+                cmd: "Z"
+            }, {
+                name: "Redo",
+                menuName: "Edit" ,
+                cmd: "Z",
+                mods: 1  
+            }, {
+                name: "Cut",
+                menuName: "Edit" ,
+                cmd: "X", 
+            }, {
+                name:  "Copy",
+                menuName: "Edit" ,
+                cmd: "C", 
+            }, {
+                name:  "Paste",
+                menuName: "Edit",
+                cmd: "V",
+            }, {
+                name:  "Select All",
+                menuName: "Edit",
+                cmd: "A",
+            }, {
+                name:  "Start Dictation…",
+                menuName: "Edit",
+                mods: 8, 
+            }, {
+                name:  "Emoji & Symbols",
+                menuName: "Edit",
+                mods: 4, 
+                glyph: "9", 
+            }, {
+                name:  "Minimize",
+                menuName: "Window",
+                cmd:  "M", 
+            }, {
+                name:  "Minimize All",
+                menuName: "Window",
+                cmd:  "M", 
+                mods:  2, 
+            }, {
+                name:  "Bring All to Front",
+                menuName: "Window",
+            }, {
+                name:  "Arrange in Front",
+                menuName: "Window",
+                mods:  10, 
+            }, {
+                name:  "PomoDoneApp",
+                menuName: "Window",
+            }, {
+            name:  "FAQ",
+            menuName: "Help"
+        }],
+        items: []
     }
 
       onSortEnd = ({oldIndex, newIndex}) => {
@@ -41,10 +137,25 @@ export default class Home extends Component {
 
     filterList = (event) => {
         var updatedList = this.state.initialItems;
+        let targetVal = event.target.value;
+
         updatedList = updatedList.filter(function(item){
-            return item.toLowerCase().indexOf(event.target.value.toLowerCase()) !== -1;
+            let innerValues = Object.values(item);
+            for (var i = 0; i < innerValues.length; i++) {
+                let innerVal = innerValues[i];
+
+                if (typeof innerVal === 'string' && innerVal.toLowerCase().indexOf(targetVal.toLowerCase()) !== -1) return true;
+                if (innerVal == event.target.value) return true;
+            }
+
+            let innerKeys = Object.keys(item);
+            for (var i = 0; i < innerKeys.length; i++) {
+                let innerVal = "" + innerKeys[i];
+                if (innerVal.toLowerCase().indexOf(targetVal.toLowerCase()) !== -1) return true;
+            }
         });
-        this.setState({items: updatedList})
+
+        this.setState({items: updatedList});
     }
 
     componentWillMount = () => {
@@ -61,6 +172,6 @@ export default class Home extends Component {
                   lockAxis='y'
                 />
             </div>
-        )
+        );
     }
 }

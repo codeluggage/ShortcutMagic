@@ -16,7 +16,6 @@ class Shortcuts extends Component {
     const { increment, incrementIfOdd, incrementAsync, decrement, Shortcuts } = this.props;
     return (
       <div>
-      helooooooooo4
         <div className={styles.backButton}>
           <Link to="/">
             <i className="fa fa-arrow-left fa-3x" />

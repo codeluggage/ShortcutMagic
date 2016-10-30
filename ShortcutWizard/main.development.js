@@ -1,4 +1,5 @@
 import { app, BrowserWindow, Menu, shell } from 'electron';
+import ReadShortcuts from './ReadShortcuts.js';
 
 let menu;
 let template;
@@ -32,14 +33,28 @@ const installExtensions = async () => {
   }
 };
 
+      // <div>
+        // <Button 
+        //   title="Load shortcuts"
+        //   onClick={() => {
+        //     // ReadShortcuts('PomoDoneApp');
+        //     console.log('todo: load shortcuts here');
+        //   }}/>
+      // </div>
+
 app.on('ready', async () => {
   await installExtensions();
 
   mainWindow = new BrowserWindow({
     show: false,
     width: 1024,
-    height: 728
+    height: 728,
+    frame: false,
+    alwaysOnTop: true
   });
+
+
+  ReadShortcuts('PomoDoneApp');
 
   mainWindow.loadURL(`file://${__dirname}/app/app.html`);
 
