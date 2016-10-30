@@ -1,15 +1,45 @@
-import { app, BrowserWindow, Menu, shell } from 'electron';
+import { app, BrowserWindow, Menu, shell, ipcMain } from 'electron';
 import ReadShortcuts from './ReadShortcuts.js';
 
 let menu;
 let template;
 let mainWindow = null;
+let settingsWindow = null;
 let willQuitApp = false; // TODO: consider a cleaner approach
-
 
 if (process.env.NODE_ENV === 'development') {
   require('electron-debug')(); // eslint-disable-line global-require
 }
+
+
+ipcMain.on('openSettingsPage', (event, args) => {
+  // TODO: Open new window here 
+  // settingsWindow = new BrowserWindow({
+  //   show: false,
+  //   width: 1024,
+  //   height: 728,
+  //   alwaysOnTop: true,
+  //   acceptFirstMouse: true
+  // });
+
+  // await ReadShortcuts('PomoDoneApp');
+
+  // settingsWindow.loadURL(`file://${__dirname}/app/settings.html`);
+
+  // settingsWindow.webContents.on('did-finish-load', () => {
+    // mainWindow.hide();
+  //   settingsWindow.show();
+  //   settingsWindow.focus();
+  // });
+
+  // settingsWindow.on('close', (e) => {
+  //   mainWindow.show();
+  //   settingsWindow = null;
+  // });
+
+  console.log('triggered openSettingsPage');
+});
+
 
 
 app.on('window-all-closed', () => {
@@ -68,10 +98,6 @@ app.on('ready', async () => {
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.show();
     mainWindow.focus();
-  });
-
-  mainWindow.on('closed', () => {
-    mainWindow = null;
   });
 
   mainWindow.on('close', (e) => {

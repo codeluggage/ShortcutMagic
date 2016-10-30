@@ -9,6 +9,26 @@ body {
     list-style-type: none;
 }
 
+.simple-button {
+  align-self: flex-start;
+  margin-right: 1em;
+  border: 2px solid;
+  border-radius: 4px;
+  font: inherit;
+  font-size: 1.2em;
+  padding: .4em 1.2em;
+  color: inherit;
+  background-color: transparent;
+}
+.simple-button:focus {
+  outline: none;
+  background-color: white;
+}
+.simple-button:active {
+  border-color: hsl(0,0%,88%);
+}
+
+
 .filter-list {
     margin: auto;
     background: #3498db;
