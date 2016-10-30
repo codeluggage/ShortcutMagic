@@ -1,5 +1,33 @@
-var NodObjc = require('NodObjC');
-NodObjc.import('OSAKit');
+var $ = require('NodObjC');
+$.import('OSAKit');
+
+function compileAndRunNameFetch() {
+	console.log('========== entered compileAndRunNameFetch');
+	// console.log(bundle);
+	var scriptName = "readAppName";
+	var encoding = $.NSUTF8StringEncoding;
+	var dirName = $(`${__dirname}/${scriptName}.scpt`);
+	var source = $.NSString('stringWithContentsOfFile', dirName, 'encoding', encoding, 'error', null);
+	var hold = $.OSAScript('alloc')('initWithSource', source);
+
+	// TODO: How to make this a useable pointer? http://tootallnate.github.io/$/class.html -> createPointer ? 
+	// NSDictionary<NSString *,id> *errorInfo;
+	var errorInfo = $.alloc($.NSDictionary);
+	var compiled = hold('compileAndReturnError', errorInfo.ref());
+
+	if (!compiled) {
+	    $.NSLog("Compile failed: %@", errorInfo);
+	    return null;
+	}
+
+	var arrayArgs = $.NSMutableArray('alloc')('init');
+	arrayArgs('addObject', $("true"));
+
+	var executed = hold('executeHandlerWithName', $(scriptName), 'arguments', arrayArgs, 'error', errorInfo.ref());
+	console.log('executed getting name! ', executed);
+
+	return executed;
+}
 
 module.exports = function readShortcuts(shortcutName) {
 		// NSToolbarSidebarItem
@@ -12,33 +40,43 @@ module.exports = function readShortcuts(shortcutName) {
 
 
 		// create an NSString of the applescript command that will be run
-		// var command = NodObjc('tell application "System Preferences" activate set current pane to pane id "com.apple.preference.security" reveal anchor "Privacy_Accessibility" of current pane end tell');
+		// var command = $('tell application "System Preferences" activate set current pane to pane id "com.apple.preference.security" reveal anchor "Privacy_Accessibility" of current pane end tell');
+		console.log('========== entered readShortcuts');
 
-		var pool = NodObjc.NSAutoreleasePool('alloc')('init')
-		var dirName = NodObjc(__dirname + '/readMenuItems.scpt');
-		// var bundle = NodObjc.NSBundle('mainBundle')('pathForResource', dirName, 'ofType', NodObjc("scpt"));
-		NodObjc.NSLog(dirName);
-		// NodObjc.NSLog(bundle);
+		var pool = $.NSAutoreleasePool('alloc')('init')
+		var dirName = $(__dirname + '/readMenuItems.scpt');
+		// var bundle = $.NSBundle('mainBundle')('pathForResource', dirName, 'ofType', $("scpt"));
+		$.NSLog(dirName);
+		// $.NSLog(bundle);
 		// console.log(bundle);
-		var encoding = NodObjc.NSUTF8StringEncoding;
-		var source = NodObjc.NSString('stringWithContentsOfFile', dirName, 'encoding', encoding, 'error', null);
-		var hold = NodObjc.OSAScript('alloc')('initWithSource', source);
+		var encoding = $.NSUTF8StringEncoding;
+		var source = $.NSString('stringWithContentsOfFile', dirName, 'encoding', encoding, 'error', null);
+		var hold = $.OSAScript('alloc')('initWithSource', source);
 
-		// TODO: How to make this a useable pointer? http://tootallnate.github.io/NodObjC/class.html -> createPointer ? 
+		// TODO: How to make this a useable pointer? http://tootallnate.github.io/$/class.html -> createPointer ? 
 		// NSDictionary<NSString *,id> *errorInfo;
-		var errorInfo = NodObjc.alloc(NodObjc.NSDictionary);
+		var errorInfo = $.alloc($.NSDictionary);
 		var compiled = hold('compileAndReturnError', errorInfo.ref());
 
 		if (!compiled) {
-		    NodObjc.NSLog("Compile failed: %@", errorInfo);
+		    $.NSLog("Compile failed: %@", errorInfo);
 		    return null;
 		}
 
-		var arrayArgs = NodObjc.NSMutableArray('alloc')('init');
-		arrayArgs('addObject', NodObjc(shortcutName));
+		var arrayArgs = $.NSMutableArray('alloc')('init');
+		var shortcutNameString;
+		if (shortcutName) {
+			shortcutNameString = $(shortcutName);
+		} else {
+			console.log('========== about to call compileAndReturnError');
+			shortcutNameString = compileAndRunNameFetch();
+			console.log('========== got value ', shortcutNameString);
+		}
+
+		arrayArgs('addObject', shortcutNameString);
 		console.log('arrayArgs ', arrayArgs);
-		var executed = hold('executeHandlerWithName', NodObjc("readShortcuts"), 'arguments', arrayArgs, 'error', errorInfo.ref());
-		// NodObjc.NSLog(NodObjc('executed' ));
+		var executed = hold('executeHandlerWithName', $("readShortcuts"), 'arguments', arrayArgs, 'error', errorInfo.ref());
+		// $.NSLog($('executed' ));
 		console.log('executed', executed);
 
 		return executed;

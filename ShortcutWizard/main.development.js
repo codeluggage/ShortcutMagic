@@ -4,6 +4,7 @@ import ReadShortcuts from './ReadShortcuts.js';
 let menu;
 let template;
 let mainWindow = null;
+let backgroundWindow = null;
 let settingsWindow = null;
 let willQuitApp = false; // TODO: consider a cleaner approach
 
@@ -11,46 +12,37 @@ if (process.env.NODE_ENV === 'development') {
   require('electron-debug')(); // eslint-disable-line global-require
 }
 
-
 ipcMain.on('openSettingsPage', (event, args) => {
-  // TODO: Open new window here 
-  // settingsWindow = new BrowserWindow({
-  //   show: false,
-  //   width: 1024,
-  //   height: 728,
-  //   alwaysOnTop: true,
-  //   acceptFirstMouse: true
-  // });
+  settingsWindow = new BrowserWindow({
+    show: true,
+    width: 728,
+    height: 500,
+    acceptFirstMouse: true
+  });
 
-  // await ReadShortcuts('PomoDoneApp');
+  settingsWindow.webContents.on('did-finish-load', () => {
+    mainWindow.hide();
+    settingsWindow.show();
+    settingsWindow.focus();
+  });
 
-  // settingsWindow.loadURL(`file://${__dirname}/app/settings.html`);
+  settingsWindow.on('close', (e) => {
+    settingsWindow.hide();
+    mainWindow.show();
+    mainWindow.focus();
+    settingsWindow = null;
+  });
 
-  // settingsWindow.webContents.on('did-finish-load', () => {
-    // mainWindow.hide();
-  //   settingsWindow.show();
-  //   settingsWindow.focus();
-  // });
-
-  // settingsWindow.on('close', (e) => {
-  //   mainWindow.show();
-  //   settingsWindow = null;
-  // });
-
-  console.log('triggered openSettingsPage');
+  settingsWindow.loadURL(`file://${__dirname}/app/settings.html`);
+  mainWindow.openDevTools();
 });
 
 
-
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+ipcMain.on('reloadShortcuts', (event, args) => {
+  console.log('triggered reloadShortcuts');
+  event.sender.send('shortcutsReloaded', ReadShortcuts());
 });
 
-app.on('activate', () => mainWindow.show());
-
-/* 'before-quit' is emitted when Electron receives 
- * the signal to exit and wants to start closing windows */
-app.on('before-quit', () => willQuitApp = true);
 
 const installExtensions = async () => {
   if (process.env.NODE_ENV === 'development') {
@@ -69,18 +61,34 @@ const installExtensions = async () => {
   }
 };
 
-      // <div>
-        // <Button 
-        //   title="Load shortcuts"
-        //   onClick={() => {
-        //     // ReadShortcuts('PomoDoneApp');
-        //     console.log('todo: load shortcuts here');
-        //   }}/>
-      // </div>
-
 app.on('ready', async () => {
   await installExtensions();
 
+  mainWindow = createMainWindow();
+  backgroundWindow = createBackgroundWindow();
+
+  mainWindow.loadURL(`file://${__dirname}/app/app.html`);
+});
+
+app.on('activate', () => mainWindow.show());
+app.on('before-quit', () => willQuitApp = true);
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
+});
+
+
+
+function createBackgroundWindow() {
+  const win = new BrowserWindow({
+    show: false
+  });
+
+  win.loadURL(`file://${__dirname}/background/index.html`);
+
+  return win;
+}
+
+function createMainWindow() {
   mainWindow = new BrowserWindow({
     show: false,
     width: 1024,
@@ -89,11 +97,6 @@ app.on('ready', async () => {
     alwaysOnTop: true,
     acceptFirstMouse: true
   });
-
-
-  await ReadShortcuts('PomoDoneApp');
-
-  mainWindow.loadURL(`file://${__dirname}/app/app.html`);
 
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.show();
@@ -113,9 +116,9 @@ app.on('ready', async () => {
       mainWindow.hide();
     }
   });
-
+  
   if (process.env.NODE_ENV === 'development') {
-    mainWindow.openDevTools();
+    // mainWindow.openDevTools();
     mainWindow.webContents.on('context-menu', (e, props) => {
       const { x, y } = props;
 
@@ -329,4 +332,6 @@ app.on('ready', async () => {
     menu = Menu.buildFromTemplate(template);
     mainWindow.setMenu(menu);
   }
-});
+
+  return mainWindow;
+}
