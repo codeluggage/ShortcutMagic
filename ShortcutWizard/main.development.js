@@ -13,35 +13,14 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 ipcMain.on('openSettingsPage', (event, args) => {
-  settingsWindow = new BrowserWindow({
-    show: true,
-    width: 728,
-    height: 500,
-    acceptFirstMouse: true
-  });
-
-  settingsWindow.webContents.on('did-finish-load', () => {
-    mainWindow.hide();
-    settingsWindow.show();
-    settingsWindow.focus();
-  });
-
-  settingsWindow.on('close', (e) => {
-    settingsWindow.hide();
-    mainWindow.show();
-    mainWindow.focus();
-    settingsWindow = null;
-  });
-
-  settingsWindow.loadURL(`file://${__dirname}/app/settings.html`);
-  mainWindow.openDevTools();
+  settingsWindow = createSettingsWindow();
 });
 
 
-ipcMain.on('reloadShortcuts', (event, args) => {
-  console.log('triggered reloadShortcuts');
-  event.sender.send('shortcutsReloaded', ReadShortcuts());
-});
+// ipcMain.on('reloadShortcuts', (event, args) => {
+//   console.log('triggered reloadShortcuts');
+//   event.sender.send('shortcutsReloaded', ReadShortcuts());
+// });
 
 
 const installExtensions = async () => {
@@ -66,6 +45,7 @@ app.on('ready', async () => {
 
   mainWindow = createMainWindow();
   backgroundWindow = createBackgroundWindow();
+  console.log('+++++++++++++ backgroundWindow done creating');
 
   mainWindow.loadURL(`file://${__dirname}/app/app.html`);
 });
@@ -76,20 +56,47 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
+function createSettingsWindow() {
+  const newSettingsWindow = new BrowserWindow({
+    show: true,
+    width: 728,
+    height: 500,
+    acceptFirstMouse: true
+  });
+
+  newSettingsWindow.webContents.on('did-finish-load', () => {
+    mainWindow.hide();
+    newSettingsWindow.show();
+    newSettingsWindow.focus();
+  });
+
+  newSettingsWindow.on('close', (e) => {
+    newSettingsWindow.hide();
+    mainWindow.show();
+    mainWindow.focus();
+    settingsWindow = null;
+  });
+
+  newSettingsWindow.loadURL(`file://${__dirname}/app/settings.html`);
+  newSettingsWindow.openDevTools();
+}
 
 
 function createBackgroundWindow() {
-  const win = new BrowserWindow({
-    show: false
+  const newBackgroundWindow = new BrowserWindow({
+    show: false,
+    invisible: true
   });
 
-  win.loadURL(`file://${__dirname}/background/index.html`);
+  console.log('+++++++++++++ created new background window, now loading url');
+  newBackgroundWindow.loadURL(`file://${__dirname}/app/backgroundIndex.html`);
+  console.log('+++++++++++++ url loaded, returning windo');
 
-  return win;
+  return newBackgroundWindow;
 }
 
 function createMainWindow() {
-  mainWindow = new BrowserWindow({
+  const newMainWindow = new BrowserWindow({
     show: false,
     width: 1024,
     height: 728,
@@ -98,36 +105,34 @@ function createMainWindow() {
     acceptFirstMouse: true
   });
 
-  mainWindow.webContents.on('did-finish-load', () => {
-    mainWindow.show();
-    mainWindow.focus();
+  newMainWindow.webContents.on('did-finish-load', () => {
+    newMainWindow.show();
+    newMainWindow.focus();
   });
 
-  mainWindow.on('close', (e) => {
-    console.log('>>>>>>>>> hit mainWindow on close');
+  newMainWindow.on('close', (e) => {
     if (willQuitApp) {
-      console.log('willQuitApp = true, setting mainWindow to null');
+      console.log('willQuitApp = true, setting newMainWindow to null');
       /* tried to quit the app */
       mainWindow = null;
     } else {
-      console.log('willQuitApp = false, hiding mainWindow');
-      /* only tried to close the mainWindow */
+      /* only tried to close the newMainWindow */
       e.preventDefault();
-      mainWindow.hide();
+      newMainWindow.hide();
     }
   });
   
   if (process.env.NODE_ENV === 'development') {
-    // mainWindow.openDevTools();
-    mainWindow.webContents.on('context-menu', (e, props) => {
+    // newMainWindow.openDevTools();
+    newMainWindow.webContents.on('context-menu', (e, props) => {
       const { x, y } = props;
 
       Menu.buildFromTemplate([{
         label: 'Inspect element',
         click() {
-          mainWindow.inspectElement(x, y);
+          newMainWindow.inspectElement(x, y);
         }
-      }]).popup(mainWindow);
+      }]).popup(newMainWindow);
     });
   }
 
@@ -199,25 +204,25 @@ function createMainWindow() {
         label: 'Reload',
         accelerator: 'Command+R',
         click() {
-          mainWindow.webContents.reload();
+          newMainWindow.webContents.reload();
         }
       }, {
         label: 'Toggle Full Screen',
         accelerator: 'Ctrl+Command+F',
         click() {
-          mainWindow.setFullScreen(!mainWindow.isFullScreen());
+          newMainWindow.setFullScreen(!newMainWindow.isFullScreen());
         }
       }, {
         label: 'Toggle Developer Tools',
         accelerator: 'Alt+Command+I',
         click() {
-          mainWindow.toggleDevTools();
+          newMainWindow.toggleDevTools();
         }
       }] : [{
         label: 'Toggle Full Screen',
         accelerator: 'Ctrl+Command+F',
         click() {
-          mainWindow.setFullScreen(!mainWindow.isFullScreen());
+          newMainWindow.setFullScreen(!newMainWindow.isFullScreen());
         }
       }]
     }, {
@@ -230,7 +235,7 @@ function createMainWindow() {
         label: 'Close',
         accelerator: 'Command+W',
         click() {
-          mainWindow.hide();
+          newMainWindow.hide();
         }
       }, {
         type: 'separator'
@@ -275,7 +280,7 @@ function createMainWindow() {
         label: '&Close',
         accelerator: 'Ctrl+W',
         click() {
-          mainWindow.close();
+          newMainWindow.close();
         }
       }]
     }, {
@@ -284,25 +289,25 @@ function createMainWindow() {
         label: '&Reload',
         accelerator: 'Ctrl+R',
         click() {
-          mainWindow.webContents.reload();
+          newMainWindow.webContents.reload();
         }
       }, {
         label: 'Toggle &Full Screen',
         accelerator: 'F11',
         click() {
-          mainWindow.setFullScreen(!mainWindow.isFullScreen());
+          newMainWindow.setFullScreen(!newMainWindow.isFullScreen());
         }
       }, {
         label: 'Toggle &Developer Tools',
         accelerator: 'Alt+Ctrl+I',
         click() {
-          mainWindow.toggleDevTools();
+          newMainWindow.toggleDevTools();
         }
       }] : [{
         label: 'Toggle &Full Screen',
         accelerator: 'F11',
         click() {
-          mainWindow.setFullScreen(!mainWindow.isFullScreen());
+          newMainWindow.setFullScreen(!newMainWindow.isFullScreen());
         }
       }]
     }, {
@@ -330,8 +335,8 @@ function createMainWindow() {
       }]
     }];
     menu = Menu.buildFromTemplate(template);
-    mainWindow.setMenu(menu);
+    newMainWindow.setMenu(menu);
   }
 
-  return mainWindow;
+  return newMainWindow;
 }
