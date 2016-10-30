@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import {SortableContainer, SortableElement, arrayMove} from 'react-sortable-hoc';
 import { ipcRenderer } from 'electron';
 
+
 const SortableItem = SortableElement(({value}) => <li>{value}</li>);
 
 const SortableList = SortableContainer(({items}) => {
@@ -136,31 +137,42 @@ export default class Home extends Component {
         });
       }
 
-    filterList = (event) => {
+    filterListTrigger = (event) => {
+        this.filterList(event.target.value);
+    }
+
+    filterList = (targetValue) => {
         var updatedList = this.state.initialItems;
-        let targetVal = event.target.value;
 
-        updatedList = updatedList.filter(function(item){
-            let innerValues = Object.values(item);
-            for (var i = 0; i < innerValues.length; i++) {
-                let innerVal = innerValues[i];
+        if (targetValue) {
+            updatedList = updatedList.filter(function(item){
+                let innerValues = Object.values(item);
+                for (var i = 0; i < innerValues.length; i++) {
+                    let innerVal = innerValues[i];
 
-                if (typeof innerVal === 'string' && innerVal.toLowerCase().indexOf(targetVal.toLowerCase()) !== -1) return true;
-                if (innerVal == event.target.value) return true;
-            }
+                    if (typeof innerVal === 'string' && innerVal.toLowerCase().indexOf(targetValue.toLowerCase()) !== -1) return true;
+                    if (innerVal == targetValue) return true;
+                }
 
-            let innerKeys = Object.keys(item);
-            for (var i = 0; i < innerKeys.length; i++) {
-                let innerVal = "" + innerKeys[i];
-                if (innerVal.toLowerCase().indexOf(targetVal.toLowerCase()) !== -1) return true;
-            }
-        });
+                let innerKeys = Object.keys(item);
+                for (var i = 0; i < innerKeys.length; i++) {
+                    let innerVal = "" + innerKeys[i];
+                    if (innerVal.toLowerCase().indexOf(targetValue.toLowerCase()) !== -1) return true;
+                }
+            });
+        }
 
         this.setState({items: updatedList});
     }
 
     componentWillMount = () => {
         this.setState({items: this.state.initialItems})
+
+        ipcRenderer.on('shortcutsReloaded', (event, args) => {
+          console.log('callback triggered for shortcutsReloaded');
+          this.initialItems = args;
+          this.setState({items: this.state.initialItems})
+      });
     }
 
     render = () => {
@@ -170,7 +182,11 @@ export default class Home extends Component {
                     ipcRenderer.send('openSettingsPage', null);
                 }}>Open settings</button>
 
-                <input type="text" placeholder="Search" onChange={this.filterList}/>
+                <button id="reload-button" className="simple-button" onClick={() => {
+                    ipcRenderer.send('reloadShortcuts', null);
+                }}>Reload shortcuts</button>
+
+                <input type="text" placeholder="Search" onChange={this.filterListTrigger}/>
                 <SortableList
                   items={this.state.items}
                   onSortEnd={this.onSortEnd}
