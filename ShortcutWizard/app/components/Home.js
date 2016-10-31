@@ -4,7 +4,6 @@ import { Link } from 'react-router';
 import {SortableContainer, SortableElement, arrayMove} from 'react-sortable-hoc';
 import { ipcRenderer } from 'electron';
 
-
 const SortableItem = SortableElement(({value}) => <li>{value}</li>);
 
 const SortableList = SortableContainer(({items}) => {

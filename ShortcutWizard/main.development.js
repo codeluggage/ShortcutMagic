@@ -1,12 +1,16 @@
 import { app, BrowserWindow, Menu, shell, ipcMain } from 'electron';
+import { createProxyForRemote, requireTaskPool  } from 'electron-remote';
 import ReadShortcuts from './ReadShortcuts.js';
+const readShortcutsModule = requireTaskPool(require.resolve('./ReadShortcuts.js'));
+
 
 let menu;
 let template;
 let mainWindow = null;
-let backgroundWindow = null;
+// let backgroundWindow = null;
 let settingsWindow = null;
 let willQuitApp = false; // TODO: consider a cleaner approach
+let remoteWindow = null;
 
 if (process.env.NODE_ENV === 'development') {
   require('electron-debug')(); // eslint-disable-line global-require
@@ -17,10 +21,14 @@ ipcMain.on('openSettingsPage', (event, args) => {
 });
 
 
-// ipcMain.on('reloadShortcuts', (event, args) => {
-//   console.log('triggered reloadShortcuts');
-//   event.sender.send('shortcutsReloaded', ReadShortcuts());
-// });
+ipcMain.on('reloadShortcuts', (event, args) => {
+  console.log('+++++++++++++ about to call remoteWindow.readShortcuts');
+
+  remoteWindow.readShortcuts().then((shortcuts) => {
+    console.log('++++++++++++ DONE!!!!!!! calling event shortcutsReloaded with shortcuts: ', shortcuts);
+    event.sender.send('shortcutsReloaded', shortcuts);
+  })
+});
 
 
 const installExtensions = async () => {
@@ -43,11 +51,22 @@ const installExtensions = async () => {
 app.on('ready', async () => {
   await installExtensions();
 
-  mainWindow = createMainWindow();
-  backgroundWindow = createBackgroundWindow();
-  console.log('+++++++++++++ backgroundWindow done creating');
+  console.log('+++++++ about to create mainWindow: ');
+  createMainWindow();
+  // console.log('+++++++++ created mainWindow, it should not have readShortcuts: ', mainWindow.readShortcuts);
+  // window.readShortcuts = ReadShortcuts;
+  console.log('+++++++++ set readShortcuts on WINDOW, it SHOULD have readShortcuts: ', window.readShortcuts);
+
+  // backgroundWindow = createBackgroundWindow();
 
   mainWindow.loadURL(`file://${__dirname}/app/app.html`);
+
+  console.log('++++++++++++++ done loading url, initializing eval handler: ');
+  initializeEvalHandler();
+  console.log('++++++++++++++ done initializing eval handler, creating remote window:');
+  remoteWindow = createProxyForRemote(window);
+  // TODO TEST DETTE HER med nytt window
+  console.log('+++++++++++++++ done creating remote window, it has shortcuts?', remoteWindow.readShortcuts);
 });
 
 app.on('activate', () => mainWindow.show());
@@ -82,21 +101,21 @@ function createSettingsWindow() {
 }
 
 
-function createBackgroundWindow() {
-  const newBackgroundWindow = new BrowserWindow({
-    show: false,
-    invisible: true
-  });
+// function createBackgroundWindow() {
+//   const newBackgroundWindow = new BrowserWindow({
+//     show: false,
+//     invisible: true
+//   });
 
-  console.log('+++++++++++++ created new background window, now loading url');
-  newBackgroundWindow.loadURL(`file://${__dirname}/app/backgroundIndex.html`);
-  console.log('+++++++++++++ url loaded, returning windo');
+//   console.log('+++++++++++++ created new background window, now loading url');
+//   newBackgroundWindow.loadURL(`file://${__dirname}/app/backgroundIndex.html`);
+//   console.log('+++++++++++++ url loaded, returning windo');
 
-  return newBackgroundWindow;
-}
+//   return newBackgroundWindow;
+// }
 
 function createMainWindow() {
-  const newMainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     show: false,
     width: 1024,
     height: 728,
@@ -105,34 +124,34 @@ function createMainWindow() {
     acceptFirstMouse: true
   });
 
-  newMainWindow.webContents.on('did-finish-load', () => {
-    newMainWindow.show();
-    newMainWindow.focus();
+  mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow.show();
+    mainWindow.focus();
   });
 
-  newMainWindow.on('close', (e) => {
+  mainWindow.on('close', (e) => {
     if (willQuitApp) {
-      console.log('willQuitApp = true, setting newMainWindow to null');
+      console.log('willQuitApp = true, setting mainWindow to null');
       /* tried to quit the app */
       mainWindow = null;
     } else {
-      /* only tried to close the newMainWindow */
+      /* only tried to close the mainWindow */
       e.preventDefault();
-      newMainWindow.hide();
+      mainWindow.hide();
     }
   });
   
   if (process.env.NODE_ENV === 'development') {
-    // newMainWindow.openDevTools();
-    newMainWindow.webContents.on('context-menu', (e, props) => {
+    // mainWindow.openDevTools();
+    mainWindow.webContents.on('context-menu', (e, props) => {
       const { x, y } = props;
 
       Menu.buildFromTemplate([{
         label: 'Inspect element',
         click() {
-          newMainWindow.inspectElement(x, y);
+          mainWindow.inspectElement(x, y);
         }
-      }]).popup(newMainWindow);
+      }]).popup(mainWindow);
     });
   }
 
@@ -204,25 +223,25 @@ function createMainWindow() {
         label: 'Reload',
         accelerator: 'Command+R',
         click() {
-          newMainWindow.webContents.reload();
+          mainWindow.webContents.reload();
         }
       }, {
         label: 'Toggle Full Screen',
         accelerator: 'Ctrl+Command+F',
         click() {
-          newMainWindow.setFullScreen(!newMainWindow.isFullScreen());
+          mainWindow.setFullScreen(!mainWindow.isFullScreen());
         }
       }, {
         label: 'Toggle Developer Tools',
         accelerator: 'Alt+Command+I',
         click() {
-          newMainWindow.toggleDevTools();
+          mainWindow.toggleDevTools();
         }
       }] : [{
         label: 'Toggle Full Screen',
         accelerator: 'Ctrl+Command+F',
         click() {
-          newMainWindow.setFullScreen(!newMainWindow.isFullScreen());
+          mainWindow.setFullScreen(!mainWindow.isFullScreen());
         }
       }]
     }, {
@@ -235,7 +254,7 @@ function createMainWindow() {
         label: 'Close',
         accelerator: 'Command+W',
         click() {
-          newMainWindow.hide();
+          mainWindow.hide();
         }
       }, {
         type: 'separator'
@@ -280,7 +299,7 @@ function createMainWindow() {
         label: '&Close',
         accelerator: 'Ctrl+W',
         click() {
-          newMainWindow.close();
+          mainWindow.close();
         }
       }]
     }, {
@@ -289,25 +308,25 @@ function createMainWindow() {
         label: '&Reload',
         accelerator: 'Ctrl+R',
         click() {
-          newMainWindow.webContents.reload();
+          mainWindow.webContents.reload();
         }
       }, {
         label: 'Toggle &Full Screen',
         accelerator: 'F11',
         click() {
-          newMainWindow.setFullScreen(!newMainWindow.isFullScreen());
+          mainWindow.setFullScreen(!mainWindow.isFullScreen());
         }
       }, {
         label: 'Toggle &Developer Tools',
         accelerator: 'Alt+Ctrl+I',
         click() {
-          newMainWindow.toggleDevTools();
+          mainWindow.toggleDevTools();
         }
       }] : [{
         label: 'Toggle &Full Screen',
         accelerator: 'F11',
         click() {
-          newMainWindow.setFullScreen(!newMainWindow.isFullScreen());
+          mainWindow.setFullScreen(!mainWindow.isFullScreen());
         }
       }]
     }, {
@@ -335,7 +354,7 @@ function createMainWindow() {
       }]
     }];
     menu = Menu.buildFromTemplate(template);
-    newMainWindow.setMenu(menu);
+    mainWindow.setMenu(menu);
   }
 
   return newMainWindow;
