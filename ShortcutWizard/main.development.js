@@ -1,5 +1,11 @@
 import { app, BrowserWindow, Menu, shell, ipcMain } from 'electron';
-import ReadShortcuts from './ReadShortcuts.js';
+import createElectronWorker from './createElectronWorker.js';
+import http from 'http';
+
+var port = process.env.ELECTRON_WORKER_PORT,
+    host = process.env.ELECTRON_WORKER_HOST,
+    workerId = process.env.ELECTRON_WORKER_ID; // worker id useful for logging
+
 
 let menu;
 let template;
@@ -12,35 +18,35 @@ if (process.env.NODE_ENV === 'development') {
   require('electron-debug')(); // eslint-disable-line global-require
 }
 
-ipcMain.on('openSettingsPage', (event, args) => {
-  settingsWindow = new BrowserWindow({
-    show: true,
-    width: 728,
-    height: 500,
-    acceptFirstMouse: true
-  });
+// ipcMain.on('openSettingsPage', (event, args) => {
+//   settingsWindow = new BrowserWindow({
+//     show: true,
+//     width: 728,
+//     height: 500,
+//     acceptFirstMouse: true
+//   });
 
-  settingsWindow.webContents.on('did-finish-load', () => {
-    mainWindow.hide();
-    settingsWindow.show();
-    settingsWindow.focus();
-  });
+//   settingsWindow.webContents.on('did-finish-load', () => {
+//     mainWindow.hide();
+//     settingsWindow.show();
+//     settingsWindow.focus();
+//   });
 
-  settingsWindow.on('close', (e) => {
-    settingsWindow.hide();
-    mainWindow.show();
-    mainWindow.focus();
-    settingsWindow = null;
-  });
+//   settingsWindow.on('close', (e) => {
+//     settingsWindow.hide();
+//     mainWindow.show();
+//     mainWindow.focus();
+//     settingsWindow = null;
+//   });
 
-  settingsWindow.loadURL(`file://${__dirname}/app/settings.html`);
-  mainWindow.openDevTools();
-});
+//   settingsWindow.loadURL(`file://${__dirname}/app/settings.html`);
+//   mainWindow.openDevTools();
+// });
 
 
 ipcMain.on('reloadShortcuts', (event, args) => {
-  console.log('triggered reloadShortcuts');
-  event.sender.send('shortcutsReloaded', ReadShortcuts());
+  console.log('triggered reloadShortcuts, about to create electronworker');
+  createElectronWorker();
 });
 
 
@@ -65,28 +71,48 @@ app.on('ready', async () => {
   await installExtensions();
 
   mainWindow = createMainWindow();
-  backgroundWindow = createBackgroundWindow();
+  // backgroundWindow = createBackgroundWindow();
 
   mainWindow.loadURL(`file://${__dirname}/app/app.html`);
+  mainWindow.show();
+
+    // you can use any webserver library/framework you like (connect, express, hapi, etc)
+  console.log('creating server: ');
+  var server = http.createServer(function(req, res) {
+    console.log('inside createserver call, req res: ', req, res);
+    // You can respond with a status `500` if you want to indicate that something went wrong
+    res.writeHead(200, {'Content-Type': 'application/json'});
+    // data passed to `electronWorkers.execute` will be available in req body
+    req.pipe(res);
+  });
+  console.log(server);
+
+  server.listen(port, host);
+  console.log('server listening');
 });
 
-app.on('activate', () => mainWindow.show());
+app.on('activate', () => {
+  console.log('about to call show', mainWindow);
+  if (mainWindow) mainWindow.show()
+});
+
 app.on('before-quit', () => willQuitApp = true);
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
 
 
-function createBackgroundWindow() {
-  const win = new BrowserWindow({
-    show: false
-  });
+// function createBackgroundWindow() {
+//   const win = new BrowserWindow({
+//     show: false
+//   });
 
-  win.loadURL(`file://${__dirname}/background/index.html`);
+//   win.loadURL(`file://${__dirname}/background/index.html`);
 
-  return win;
-}
+//   return win;
+// }
 
 function createMainWindow() {
   mainWindow = new BrowserWindow({
