@@ -26,41 +26,24 @@ function compileAndRunNameFetch() {
 	var executed = hold('executeHandlerWithName', $(scriptName), 'arguments', arrayArgs, 'error', errorInfo.ref());
 	// console.log('executed getting name! ', executed);
 
-	return executed;
+	return executed('stringValue');
 }
 
-module.exports = function task(shortcutName) {
-	// var shortcutName = "PomoDoneApp";
-	// NSToolbarSidebarItem
-	// NSToolbarItemGroup
-	// NSInspectorBarItem
-	// NSToolbarItemConfigWrapper
-	// NSToolbarItem
-	// NSToolbarItemViewer
-	// NSToolbarToggleSidebarItemIdentifier
-
-
+module.exports = function readShortcuts(shortcutName) {
 	// create an NSString of the applescript command that will be run
 	// var command = $('tell application "System Preferences" activate set current pane to pane id "com.apple.preference.security" reveal anchor "Privacy_Accessibility" of current pane end tell');
-	// console.log('========== entered readShortcuts');
+	// var bundle = $.NSBundle('mainBundle')('pathForResource', dirName, 'ofType', $("scpt"));
 
 	var pool = $.NSAutoreleasePool('alloc')('init')
 	var dirName = $(__dirname + '/readMenuItems.scpt');
-	// var bundle = $.NSBundle('mainBundle')('pathForResource', dirName, 'ofType', $("scpt"));
-	// $.NSLog(dirName);
-	// $.NSLog(bundle);
-	// console.log(bundle);
 	var encoding = $.NSUTF8StringEncoding;
 	var source = $.NSString('stringWithContentsOfFile', dirName, 'encoding', encoding, 'error', null);
 	var hold = $.OSAScript('alloc')('initWithSource', source);
 
-	// TODO: How to make this a useable pointer? http://tootallnate.github.io/$/class.html -> createPointer ? 
-	// NSDictionary<NSString *,id> *errorInfo;
 	var errorInfo = $.alloc($.NSDictionary);
 	var compiled = hold('compileAndReturnError', errorInfo.ref());
 
 	if (!compiled) {
-	    // $.NSLog("Compile failed: %@", errorInfo);
 	    return null;
 	}
 
@@ -69,17 +52,14 @@ module.exports = function task(shortcutName) {
 	if (shortcutName) {
 		shortcutNameString = $(shortcutName);
 	} else {
-		// console.log('========== about to call compileAndReturnError');
 		shortcutNameString = compileAndRunNameFetch();
-		// console.log('========== got value ', shortcutNameString);
 	}
 
 	arrayArgs('addObject', shortcutNameString);
-	// console.log('arrayArgs ', arrayArgs);
 	var executed = hold('executeHandlerWithName', $("readShortcuts"), 'arguments', arrayArgs, 'error', errorInfo.ref());
-	// $.NSLog($('executed' ));
-	// console.log('executed', executed);
+
 	if (executed) {
+		// TODO: Handle this raw data better
 		return "" + executed;
 	} else {
 		return "no executed available"
