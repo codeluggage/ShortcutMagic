@@ -183,7 +183,9 @@ export default class Home extends Component {
                 }}>Open settings</button>
 
                 <button id="reload-button" className="simple-button" onClick={() => {
-                    ipcRenderer.send('reloadShortcuts', null);
+                    console.log('sending reloadShortcuts from ipcRenderer');
+                    var reloadShortcutsForName = null; // TODO: replace with "currentName" 
+                    ipcRenderer.send('reloadShortcuts', (reloadShortcutsForName) ? reloadShortcutsForName : "PomoDoneApp");
                 }}>Reload shortcuts</button>
 
                 <input type="text" placeholder="Search" onChange={this.filterListTrigger}/>

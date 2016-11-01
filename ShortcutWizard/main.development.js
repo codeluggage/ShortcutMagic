@@ -1,11 +1,10 @@
 import { app, BrowserWindow, Menu, shell, ipcMain } from 'electron';
-import ReadShortcuts from './ReadShortcuts.js';
 
 let menu;
 let template;
-let mainWindow = null;
-let backgroundWindow = null;
-let settingsWindow = null;
+let mainWindow;
+let backgroundWindow;
+let settingsWindow;
 let willQuitApp = false; // TODO: consider a cleaner approach
 
 if (process.env.NODE_ENV === 'development') {
@@ -17,10 +16,15 @@ ipcMain.on('openSettingsPage', (event, args) => {
 });
 
 
-// ipcMain.on('reloadShortcuts', (event, args) => {
-//   console.log('triggered reloadShortcuts');
-//   event.sender.send('shortcutsReloaded', ReadShortcuts());
-// });
+ipcMain.on('reloadShortcuts', (event, args) => {
+  console.log('triggered reloadShortcuts');
+  console.log('with backgroundWindow: ', backgroundWindow.webContents);
+  backgroundWindow.webContents.send('parseShortcuts', args)
+});
+
+ipcMain.on('finishedParsingShortcuts', (event, args) => {
+  console.log('finishedParsingShortcuts reached with args: ', args);
+});
 
 
 const installExtensions = async () => {
@@ -83,16 +87,16 @@ function createSettingsWindow() {
 
 
 function createBackgroundWindow() {
-  const newBackgroundWindow = new BrowserWindow({
+  const win = new BrowserWindow({
     show: false,
-    invisible: true
+    webPreferences: {
+      webSecurity: false
+    }
   });
 
-  console.log('+++++++++++++ created new background window, now loading url');
-  newBackgroundWindow.loadURL(`file://${__dirname}/app/backgroundIndex.html`);
-  console.log('+++++++++++++ url loaded, returning windo');
-
-  return newBackgroundWindow;
+  win.loadURL(`file://${__dirname}/app/background/index.html`);
+  console.log('#1 load background-window: ', win);
+  return win;
 }
 
 function createMainWindow() {
