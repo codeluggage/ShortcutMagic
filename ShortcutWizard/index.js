@@ -1,11 +1,14 @@
 'use strict';
 const { app, BrowserWindow, ipcMain } = require('electron');
 
+
+// prevent window being garbage collected
 let mainWindow;
 let backgroundWindow;
 
-
 function onClosed() {
+	// dereference the window
+	// for multiple windows store them in an array
 	mainWindow = null;
 	backgroundWindow = null;
 }
@@ -53,10 +56,12 @@ app.on('ready', () => {
 });
 
 ipcMain.on('background-response', function(event, payload) {
+	console.log('#4 - root index.js, ipc on background-response');
 	mainWindow.webContents.send('background-response', payload)
 });
 
 ipcMain.on('background-start', function(event, payload) {
+	console.log('#2 - root index.js, triggered background-start, with webcontents: ', backgroundWindow.webContents);
 	backgroundWindow.webContents.send('background-start-task', payload)
 });
 

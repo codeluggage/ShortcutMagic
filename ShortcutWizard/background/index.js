@@ -1,11 +1,11 @@
 'use strict';
 const { ipcRenderer } = require('electron');
-const task = require('./readShortcuts.js');
+const ReadShortcuts = require('./ReadShortcuts.js');
 
 window.onload = function () {
 	ipcRenderer.on('background-start-task', (startTime) => {
 		ipcRenderer.send('background-response', {
-			result: task(),
+			result: ReadShortcuts(),
 			startTime: startTime
 		});
 	});

@@ -26,7 +26,7 @@ function compileAndRunNameFetch() {
 	var executed = hold('executeHandlerWithName', $(scriptName), 'arguments', arrayArgs, 'error', errorInfo.ref());
 	// console.log('executed getting name! ', executed);
 
-	return executed('stringValue');
+	return executed;
 }
 
 module.exports = function readShortcuts(shortcutName) {
