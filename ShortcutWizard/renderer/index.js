@@ -3,10 +3,11 @@ const { ipcRenderer } = require('electron');
 
 window.onload = function () {
 	// Loading UI: 
+	const progressBar = document.getElementById('progress-bar');
+	
 	function startProcess() {
 		document.getElementById('status').textContent = 'Started!';
 		setInterval(() => {
-			const progressBar = document.getElementById('progress-bar');
 			const maxValue = parseInt(progressBar.getAttribute('max'), 10);
 			let nextValue = parseInt(progressBar.getAttribute('value'), 10) + 1;
 
