@@ -62,6 +62,6 @@ ipcMain.on('background-response', function(event, payload) {
 
 ipcMain.on('background-start', function(event, payload) {
 	console.log('#2 - root index.js, triggered background-start, with webcontents: ', backgroundWindow.webContents);
-	backgroundWindow.webContents.send('background-start-task', payload)
+	backgroundWindow.webContents.send('background-start', payload)
 });
 

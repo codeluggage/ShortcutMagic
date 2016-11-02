@@ -1,12 +1,13 @@
 'use strict';
 const { ipcRenderer } = require('electron');
-const ReadShortcuts = require('./ReadShortcuts.js');
+const readShortcuts = require('./readShortcuts.js');
+console.log('import readShortcuts: ', readShortcuts);
 
 window.onload = function () {
-	ipcRenderer.on('background-start-task', (startTime) => {
+	ipcRenderer.on('background-start-task', (appName) => {
 		ipcRenderer.send('background-response', {
-			result: ReadShortcuts(),
-			startTime: startTime
+			result: readShortcuts(),
+			appName: appName
 		});
 	});
 };
