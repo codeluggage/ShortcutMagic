@@ -1,22 +1,10 @@
 'use strict';
 const { ipcRenderer } = require('electron');
-const unwrapShortcuts = require('../unwrapShortcuts.js');
-const readShortcuts = require('../background/readShortcuts.js');
 
 window.onload = function () {
 	// Loading UI: 
 	const progressBar = document.getElementById('progress-bar');
-
-
-	console.log('--- starting read');
-	var desc = readShortcuts("PomoDoneApp");
-	console.log('--- starting unwrap');
-	var unwrapped = unwrapShortcuts(desc);
-	console.log('ended unwrap with: ', unwrapped);
-
-
-
-
+	var backgroundStartTime = {};
 	
 	function startProcess() {
 		document.getElementById('status').textContent = 'Started!';
@@ -49,16 +37,17 @@ window.onload = function () {
 	backgroundButton.onclick = function longRunningBackgroundTask() {
 		// We have to cast to a number because crossing the IPC boundary will convert the Date object to an empty object.
 		// Error, Date and native objects won't be able to be passed around via IPC.
-		const backgroundStartTime = +new Date();
+		var appName = "PomoDoneApp"; // todo replace
+		backgroundStartTime[appName] = +new Date();
 
 		startProcess();
-		console.log('renderer/index.js - sending ipc for background-start-task');
-		ipcRenderer.send('background-start', backgroundStartTime);
+		console.log('renderer/index.js - sending ipc for background-start');
+		ipcRenderer.send('background-start', appName);
 	}
 
 	ipcRenderer.on('background-response', (event, payload) => {
-		console.log('renderer/index.js - ipcRenderer.on("background-response", (event, payload) => {');
+		console.log('renderer/index.js - ipcRenderer.on("background-response", (event, payload), vals: ', event, payload);
 
-		finishProcess(payload.result, new Date() - payload.startTime);
+		finishProcess(payload.result);
 	});
 };
