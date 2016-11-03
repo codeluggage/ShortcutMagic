@@ -1,13 +1,8 @@
+'use strict';
 var $ = require('NodObjC')
 $.framework('Foundation');
 
-module.exports = function unwrap(desc) {
-  // var errorInfo = $.alloc($.NSDictionary);
-  
-  // if (errorInfo) {
-  //   $.NSLog("error: %@", errorInfo);
-  // }
-  
+module.exports = function(desc) {
   var info = {}
   var numItems = desc('numberOfItems');
   let set = $.NSMutableArray('alloc')('init');

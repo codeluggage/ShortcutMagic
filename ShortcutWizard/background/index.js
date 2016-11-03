@@ -1,22 +1,15 @@
+'use strict';
 const { ipcRenderer } = require('electron');
-const readShortcuts = require('./readShortcuts');
-const unwrapShortcuts = require('./unwrapShortcuts');
+const readShortcuts = require('../shared/readShortcuts');
 
+console.log('background/index.js - outside window.onload');
 window.onload = function () {
-	console.log('entered background windowonload, with readShortcuts variable: ', readShortcuts);
-
-	ipcRenderer.on('background-start', (appName) => {
-	console.log('entered background ipcrenderer.on');
-
-
-		let shortcuts = readShortcuts(appName);
-		console.log(shortcuts);
-		let unwrapped = unwrapShortcuts(shortcuts);
-		console.log(unwrapped);
-
+	console.log('background/index.js - inside window.onload');
+	ipcRenderer.on('background-start-task', (startTime) => {
+		console.log('#3 - background/index.js - ipcRenderer.send("background-response" with task');
 		ipcRenderer.send('background-response', {
-			result: unwrapped,
-			appName: appName
+			result: readShortcuts(),
+			startTime: startTime
 		});
 	});
 };

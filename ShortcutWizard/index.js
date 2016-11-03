@@ -35,7 +35,6 @@ function createBackgroundWindow() {
 
 	console.log('#1 load window:');
 	win.loadURL(`file://${__dirname}/background/index.html`);
-	console.log(__dirname, win);
 	return win;
 }
 
@@ -62,7 +61,7 @@ ipcMain.on('background-response', function(event, payload) {
 });
 
 ipcMain.on('background-start', function(event, payload) {
-	console.log('#2 - root index.js, triggered background-start, with webcontents: ', backgroundWindow.webContents, payload);
-	backgroundWindow.webContents.send('background-start', payload)
+	console.log('#2 - root index.js, triggered background-start, with webcontents: ', backgroundWindow.webContents);
+	backgroundWindow.webContents.send('background-start-task', payload)
 });
 
