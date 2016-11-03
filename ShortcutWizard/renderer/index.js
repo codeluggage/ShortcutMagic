@@ -1,9 +1,22 @@
 'use strict';
 const { ipcRenderer } = require('electron');
+const unwrapShortcuts = require('../unwrapShortcuts.js');
+const readShortcuts = require('../background/readShortcuts.js');
 
 window.onload = function () {
 	// Loading UI: 
 	const progressBar = document.getElementById('progress-bar');
+
+
+	console.log('--- starting read');
+	var desc = readShortcuts("PomoDoneApp");
+	console.log('--- starting unwrap');
+	var unwrapped = unwrapShortcuts(desc);
+	console.log('ended unwrap with: ', unwrapped);
+
+
+
+
 	
 	function startProcess() {
 		document.getElementById('status').textContent = 'Started!';

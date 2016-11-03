@@ -60,7 +60,8 @@ module.exports = function readShortcuts(shortcutName) {
 
 	if (executed) {
 		// TODO: Handle this raw data better
-		return "" + executed;
+		// return "" + executed;
+		return executed;
 	} else {
 		return "no executed available"
 	}
