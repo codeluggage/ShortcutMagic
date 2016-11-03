@@ -183,7 +183,7 @@ export default class Home extends Component {
                 }}>Open settings</button>
 
                 <button id="reload-button" className="simple-button" onClick={() => {
-                    ipcRenderer.send('reloadShortcuts', null);
+                    ipcRenderer.send('load-shortcuts', null);
                 }}>Reload shortcuts</button>
 
                 <input type="text" placeholder="Search" onChange={this.filterListTrigger}/>

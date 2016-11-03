@@ -16,11 +16,14 @@ ipcMain.on('openSettingsPage', (event, args) => {
   settingsWindow = createSettingsWindow();
 });
 
+ipcMain.on('load-shortcuts-response', (event, args) => {
+  console.log('got response in main thread: ', args);
+});
 
-// ipcMain.on('reloadShortcuts', (event, args) => {
-//   console.log('triggered reloadShortcuts');
-//   event.sender.send('shortcutsReloaded', ReadShortcuts());
-// });
+ipcMain.on('load-shortcuts', (event, args) => {
+  console.log('triggered reloadShortcuts');
+  backgroundWindow.webContents.send('load-shortcuts', args);
+});
 
 
 const installExtensions = async () => {
@@ -89,7 +92,7 @@ function createBackgroundWindow() {
   });
 
   console.log('+++++++++++++ created new background window, now loading url');
-  newBackgroundWindow.loadURL(`file://${__dirname}/app/backgroundIndex.html`);
+  newBackgroundWindow.loadURL(`file://${__dirname}/app/index.html`);
   console.log('+++++++++++++ url loaded, returning windo');
 
   return newBackgroundWindow;
