@@ -21,16 +21,20 @@ ipcMain.on('openSettingsPage', (event, args) => {
 });
 
 ipcMain.on('load-shortcuts-response', function(event, args) {
-    console.log('got response in main thread: ', args);
+    // console.log('got response in main thread: ', args);
     // TODO: Get name at this point
     // storageManager.saveShortcut(args/*, name*/);
+    mainWindow.webContents.send('load-shortcuts-response', args);
 });
 
 ipcMain.on('background-start', function(event, args) {
-    console.log('triggered reloadShortcuts');
+    console.log('TRIGGERED RELOADsHORTCUTS IN MAIN');
     // var existingShortcuts = storageManager.loadShortcut(/*name*/);
     // if (!existingShortcuts) {
-      if (!args) args = "PomoDoneApp";
+      if (!args) { 
+        args = "PomoDoneApp";
+      }
+
         backgroundWindow.webContents.send('background-start-task', args);
         console.log('sent args to webcontents', args, backgroundWindow.webContents);
     // }
@@ -54,6 +58,7 @@ const installExtensions = async () => {
   }
 };
 
+console.log('about to set .on for app: ', app);
 app.on('ready', async () => {
   await installExtensions();
 

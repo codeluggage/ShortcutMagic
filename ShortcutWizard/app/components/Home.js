@@ -1,8 +1,8 @@
 // @flow
+import { ipcRenderer } from 'electron';
 import React, { Component } from 'react';
 import { Link } from 'react-router';
 import {SortableContainer, SortableElement, arrayMove} from 'react-sortable-hoc';
-import { ipcRenderer } from 'electron';
 
 
 const SortableItem = SortableElement(({value}) => <li>{value}</li>);
@@ -175,7 +175,7 @@ export default class Home extends Component {
       });
     }
 
-    render = () => {
+    render() {
         return (
             <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
                 <button id="settings-button" className="simple-button" onClick={() => {

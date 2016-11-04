@@ -1,9 +1,9 @@
 'use strict';
 import { ipcRenderer } from 'electron';
 const task = require('../shared/task');
-console.log('before window onload', task);
+// console.log('before window onload', task);
 
-console.log('background/index.js - outside window.onload');
+// console.log('background/index.js - outside window.onload');
 window.onload = function () {
     console.log('background/index.js - inside window.onload');
     ipcRenderer.on('background-start-task', (appName) => {
@@ -11,7 +11,7 @@ window.onload = function () {
 
         ipcRenderer.send('load-shortcuts-response', {
             result: task(appName),
-            startTime: startTime
+            appName: appName
         });
     });
 };
