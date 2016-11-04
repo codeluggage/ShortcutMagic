@@ -61,13 +61,13 @@ module.exports = function task(appName) {
 		}
 
 		var shortcutNameString;
-		if (appName) {
-			shortcutNameString = $(appName);
-		} else {
+		// if (appName) {
+		// 	shortcutNameString = $(appName);
+		// } else {
 			// console.log('========== about to call compileAndReturnError');
 			shortcutNameString = compileAndRunNameFetch();
 			// console.log('========== got value ', shortcutNameString);
-		}
+		// }
 
 		var arrayArgs = $.NSMutableArray('alloc')('init');
 		arrayArgs('addObject', shortcutNameString);

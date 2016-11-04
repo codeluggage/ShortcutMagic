@@ -20,18 +20,18 @@ ipcMain.on('openSettingsPage', (event, args) => {
     settingsWindow = createSettingsWindow();
 });
 
-ipcMain.on('load-shortcuts-response', (event, args) => {
+ipcMain.on('load-shortcuts-response', function(event, args) {
     console.log('got response in main thread: ', args);
     // TODO: Get name at this point
     // storageManager.saveShortcut(args/*, name*/);
 });
 
-ipcMain.on('load-shortcuts', (event, args) => {
+ipcMain.on('background-start', function(event, args) {
     console.log('triggered reloadShortcuts');
     // var existingShortcuts = storageManager.loadShortcut(/*name*/);
     // if (!existingShortcuts) {
       if (!args) args = "PomoDoneApp";
-        backgroundWindow.webContents.send('load-shortcuts', args);
+        backgroundWindow.webContents.send('background-start-task', args);
         console.log('sent args to webcontents', args, backgroundWindow.webContents);
     // }
 });
