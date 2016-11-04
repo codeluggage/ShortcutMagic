@@ -1,8 +1,8 @@
 import { app, BrowserWindow, Menu, shell, ipcMain } from 'electron';
 // var storageManager = require('app/storageManager');
 
-console.log(require('module').globalPaths);
-console.log(require('electron'));
+// console.log(require('module').globalPaths);
+// console.log(require('electron'));
 
 
 let menu;
@@ -30,7 +30,9 @@ ipcMain.on('load-shortcuts', (event, args) => {
     console.log('triggered reloadShortcuts');
     // var existingShortcuts = storageManager.loadShortcut(/*name*/);
     // if (!existingShortcuts) {
+      if (!args) args = "PomoDoneApp";
         backgroundWindow.webContents.send('load-shortcuts', args);
+        console.log('sent args to webcontents', args, backgroundWindow.webContents);
     // }
 });
 

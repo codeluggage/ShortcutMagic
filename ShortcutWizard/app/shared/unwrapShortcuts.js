@@ -2,7 +2,7 @@
 var $ = require('NodObjC')
 $.framework('Foundation');
 
-module.exports = function(desc) {
+module.exports = function unwrapShortcuts(desc) {
   var info = {}
   var numItems = desc('numberOfItems');
   let set = $.NSMutableArray('alloc')('init');

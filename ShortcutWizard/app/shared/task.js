@@ -1,5 +1,5 @@
 'use strict';
-var unwrapShortcuts = require('./unwrapShortcuts');
+var unwrapShortcuts = require('./unwrapShortcuts.js');
 var $ = require('NodObjC');
 $.import('OSAKit');
 
@@ -30,7 +30,7 @@ function compileAndRunNameFetch() {
 	return executed;
 }
 
-function readShortcuts(appName) {
+module.exports = function task(appName) {
 		// var appName = "PomoDoneApp";
 		// NSToolbarSidebarItem
 		// NSToolbarItemGroup
@@ -74,8 +74,8 @@ function readShortcuts(appName) {
 		return hold('executeHandlerWithName', $("readShortcuts"), 'arguments', arrayArgs, 'error', errorInfo.ref());
 }
 
-module.exports = function(appName) {
-	var shortcuts = readShortcuts(appName);
-	var unwrapped = unwrapShortcuts(shortcuts);
-	return unwrapped;
-};
+// module.exports = function(appName) {
+// 	var shortcuts = readShortcuts(appName);
+// 	var unwrapped = unwrapShortcuts(shortcuts);
+// 	return unwrapped;
+// };
