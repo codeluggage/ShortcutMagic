@@ -25,7 +25,7 @@ window.onload = function () {
 	function finishProcess(result, timeElapsed) {
 		document.getElementById('status').textContent =
 			'Finished with a result of: ' +
-			result +
+			JSON.stringify(result) +
 			' in ' +
 			(timeElapsed / 1000) +
 			' seconds';

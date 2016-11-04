@@ -47,8 +47,7 @@ function readShortcuts(appName) {
 		var pool = $.NSAutoreleasePool('alloc')('init')
 		var dirName = $(__dirname + '/readMenuItems.scpt');
 		// var bundle = $.NSBundle('mainBundle')('pathForResource', dirName, 'ofType', $("scpt"));
-		var encoding = $.NSUTF8StringEncoding;
-		var source = $.NSString('stringWithContentsOfFile', dirName, 'encoding', encoding, 'error', null);
+		var source = $.NSString('stringWithContentsOfFile', dirName, 'encoding', $.NSUTF8StringEncoding, 'error', null);
 		var hold = $.OSAScript('alloc')('initWithSource', source);
 
 		// TODO: How to make this a useable pointer? http://tootallnate.github.io/$/class.html -> createPointer ? 
@@ -61,17 +60,21 @@ function readShortcuts(appName) {
 		}
 
 		var shortcutNameString;
-		if (appName) {
+		if (appName && typeof appName == "string") {
 			shortcutNameString = $(appName);
-		} else {
-			// console.log('========== about to call compileAndReturnError');
+		}
+		if (!shortcutNameString || shortcutNameString('length') == 0) {
 			shortcutNameString = compileAndRunNameFetch();
-			// console.log('========== got value ', shortcutNameString);
 		}
 
 		var arrayArgs = $.NSMutableArray('alloc')('init');
 		arrayArgs('addObject', shortcutNameString);
-		return hold('executeHandlerWithName', $("readShortcuts"), 'arguments', arrayArgs, 'error', errorInfo.ref());
+		var executed = hold('executeHandlerWithName', $("readShortcuts"), 'arguments', arrayArgs, 'error', errorInfo.ref());
+		if (executed) {
+			return executed;
+		} else {
+			return "executing returned nothing, " + shortcutNameString;
+		}
 }
 
 module.exports = function(appName) {

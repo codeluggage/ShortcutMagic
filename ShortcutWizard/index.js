@@ -60,8 +60,11 @@ ipcMain.on('background-response', function(event, payload) {
 	mainWindow.webContents.send('background-response', payload)
 });
 
-ipcMain.on('background-start', function(event, payload) {
-	console.log('#2 - root index.js, triggered background-start, with webcontents: ', backgroundWindow.webContents);
-	backgroundWindow.webContents.send('background-start-task', payload)
+ipcMain.on('background-start', function(event, appName) {
+	if (!appName || typeof appName != "string") {
+		appName = "PomoDoneApp";
+	}
+	console.log('#2 - root index.js, triggered background-start, with appName: ', appName, typeof appName);
+	backgroundWindow.webContents.send('background-start-task', appName)
 });
 
