@@ -1,5 +1,9 @@
 import { app, BrowserWindow, Menu, shell, ipcMain } from 'electron';
-import ReadShortcuts from './ReadShortcuts.js';
+// var storageManager = require('app/storageManager');
+
+console.log(require('module').globalPaths);
+console.log(require('electron'));
+
 
 let menu;
 let template;
@@ -9,20 +13,25 @@ let settingsWindow = null;
 let willQuitApp = false; // TODO: consider a cleaner approach
 
 if (process.env.NODE_ENV === 'development') {
-  require('electron-debug')(); // eslint-disable-line global-require
+    require('electron-debug')(); // eslint-disable-line global-require
 }
 
 ipcMain.on('openSettingsPage', (event, args) => {
-  settingsWindow = createSettingsWindow();
+    settingsWindow = createSettingsWindow();
 });
 
 ipcMain.on('load-shortcuts-response', (event, args) => {
-  console.log('got response in main thread: ', args);
+    console.log('got response in main thread: ', args);
+    // TODO: Get name at this point
+    // storageManager.saveShortcut(args/*, name*/);
 });
 
 ipcMain.on('load-shortcuts', (event, args) => {
-  console.log('triggered reloadShortcuts');
-  backgroundWindow.webContents.send('load-shortcuts', args);
+    console.log('triggered reloadShortcuts');
+    // var existingShortcuts = storageManager.loadShortcut(/*name*/);
+    // if (!existingShortcuts) {
+        backgroundWindow.webContents.send('load-shortcuts', args);
+    // }
 });
 
 
@@ -88,12 +97,14 @@ function createSettingsWindow() {
 function createBackgroundWindow() {
   const newBackgroundWindow = new BrowserWindow({
     show: false,
-    invisible: true
+    webPreferences: {
+     webSecurity: false
+   }
   });
 
   console.log('+++++++++++++ created new background window, now loading url');
-  newBackgroundWindow.loadURL(`file://${__dirname}/app/index.html`);
-  console.log('+++++++++++++ url loaded, returning windo');
+  newBackgroundWindow.loadURL(`file://${__dirname}/app/background/index.html`);
+  console.log('+++++++++++++ url loaded, returning windo', newBackgroundWindow);
 
   return newBackgroundWindow;
 }
