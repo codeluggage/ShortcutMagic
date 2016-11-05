@@ -63,14 +63,7 @@ export default class Home extends Component {
 
         ipcRenderer.on('update-shortcuts', (event, shortcuts) => {
             let result = shortcuts.result;
-            const shortcutsArray = Object.keys(result).map(key => {
-                console.log('looping', key);
-                console.log('looping2', result[key]);
-                return {
-                    name: key,
-                    shortcut: result[key]
-                };
-            });
+            const shortcutsArray = Object.keys(result).map(key => result[key]);
             console.log('ipcrenderer callback, new array: ', shortcutsArray);
 
             this.setState({
