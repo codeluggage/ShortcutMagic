@@ -82,6 +82,12 @@ export default class Home extends Component {
     }
 
     render() {
+        ipcRenderer.on('background-response', (shortcuts) => {
+            this.setState({
+                items: shortcuts
+            })
+        });
+
         return (
             <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
                 <button id="settings-button" className="simple-button" onClick={() => {
