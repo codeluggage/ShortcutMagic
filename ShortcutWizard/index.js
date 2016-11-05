@@ -53,8 +53,8 @@ app.on('ready', () => {
 });
 
 ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
-	console.log('#4 - root index.js, ipc on main-parse-shortcuts-callback');
-	mainWindow.webContents.send('main-parse-shortcuts-callback', payload)
+	console.log('#4 - root index.js, ipc on main-parse-shortcuts-callback: ');
+	mainWindow.webContents.send('update-shortcuts', payload)
 });
 
 ipcMain.on('main-parse-shortcuts', function(event, appName) {

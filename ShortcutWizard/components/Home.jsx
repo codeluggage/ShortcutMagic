@@ -8,14 +8,14 @@ import { ipcRenderer } from 'electron';
 const SortableItem = SortableElement(({value}) => <li>{value}</li>);
 
 const SortableList = SortableContainer(({items}) => {
-    return (
+    return !items ? (<p>No items yet</p>) : (
         <p>
-            {items.map((value, index) => {
+            { items.map((value, index) => {
                 let keys = Object.keys(value);
                 let displayValue = "";
-
                 for (var i = 0; i < keys.length; i++) {
-                    displayValue += `${keys[i]}: ${value[keys[i]]} `;
+                    let key = keys[i];
+                    displayValue += `${key}: ${JSON.stringify(value[key])} `;
                 }
 
                 return (<SortableItem
@@ -47,8 +47,6 @@ export default class Home extends Component {
 
     componentWillMount() {
         console.log('home constructor called');
-
-
         this.setState({
             initialItems: [{
                 name: "Redo",
@@ -63,29 +61,49 @@ export default class Home extends Component {
             }]
         });
 
-        ipcRenderer.on('shortcutsReloaded', (event, args) => {
-          console.log('callback triggered for shortcutsReloaded');
-          this.initialItems = args;
-          this.setState({items: this.state.initialItems})
-      });
+        ipcRenderer.on('update-shortcuts', (event, shortcuts) => {
+            let result = shortcuts.result;
+            const shortcutsArray = Object.keys(result).map(key => {
+                console.log('looping', key);
+                console.log('looping2', result[key]);
+                return {
+                    name: key,
+                    shortcut: result[key]
+                };
+            });
+            console.log('ipcrenderer callback, new array: ', shortcutsArray);
+
+            this.setState({
+                items: shortcutsArray
+            });
+        });
+
+        // Binding functions because local this doesn't work with this babel for some reason
+        this.onSortEnd = this.onSortEnd.bind(this);
+        this.filterListTrigger = this.filterListTrigger.bind(this);
+        this.filterList = this.filterList.bind(this);
     }
 
     onSortEnd({oldIndex, newIndex}) {
+        console.log('onsortend - this', this);
         this.setState({
-            items: arrayMove(this.state.items, oldIndex, newIndex)
+            initialItems: arrayMove(this.state.items, oldIndex, newIndex)
         });
     }
 
     filterListTrigger(event) {
+        console.log('fileterlisttrigger - this', this);
         this.filterList(event.target.value);
     }
 
     filterList(targetValue) {
+        console.log('filterlist - this', this);
         var updatedList = this.state.initialItems;
 
         if (targetValue) {
             updatedList = updatedList.filter(function(item){
                 let innerValues = Object.values(item);
+                
                 for (var i = 0; i < innerValues.length; i++) {
                     let innerVal = innerValues[i];
 
@@ -104,35 +122,8 @@ export default class Home extends Component {
         this.setState({items: updatedList});
     }
 
-    // componentWillMount() {
-    //     this.setState({items: 
-    //         initialItems: [{
-    //             name: "Redo",
-    //             menuName: "Edit" ,
-    //             cmd: "Z",
-    //             mods: 1
-    //         }],
-    //         items: [{
-    //             name: "Cut",
-    //             menuName: "Edit" ,
-    //             cmd: "X"
-    //         }]
-    //     });
-
-    //     ipcRenderer.on('shortcutsReloaded', (event, args) => {
-    //       console.log('callback triggered for shortcutsReloaded');
-    //       this.initialItems = args;
-    //       this.setState({items: this.state.initialItems})
-    //   });
-    // }
-
     render() {
-        ipcRenderer.on('main-parse-shortcuts-callback', (shortcuts) => {
-            this.setState({
-                items: shortcuts
-            })
-        });
-
+        console.log('>>>>>>>>>> RENDER');
         return (
             <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
                 <button id="settings-button" className="simple-button" onClick={() => {
