@@ -31,7 +31,6 @@ function compileAndRunNameFetch() {
 }
 
 function readShortcuts(appName) {
-		// var appName = "PomoDoneApp";
 		// NSToolbarSidebarItem
 		// NSToolbarItemGroup
 		// NSInspectorBarItem
@@ -80,5 +79,8 @@ function readShortcuts(appName) {
 module.exports = function(appName) {
 	var shortcuts = readShortcuts(appName);
 	var unwrapped = unwrapShortcuts(shortcuts);
-	return unwrapped;
+	return {
+		name: appName,
+		shortcuts: unwrapped
+	};
 };

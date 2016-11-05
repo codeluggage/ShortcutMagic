@@ -1,5 +1,10 @@
 'use strict';
 const { app, BrowserWindow, ipcMain } = require('electron');
+var Datastore = require('nedb');
+var db = new Datastore({
+	filename: `${__dirname}/db/shortcuts.db`,
+	autoload: true
+});
 
 
 // prevent window being garbage collected
@@ -53,14 +58,15 @@ app.on('ready', () => {
 });
 
 ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
-	console.log('#4 - root index.js, ipc on main-parse-shortcuts-callback: ');
+	console.log('#3 - root index.js, ipc on main-parse-shortcuts-callback, storing shortcuts ');
+	db.insert(payload, function(err, res) {
+		console.log('finished inserting shortcuts in db: ', res);
+	});
+
 	mainWindow.webContents.send('update-shortcuts', payload)
 });
 
 ipcMain.on('main-parse-shortcuts', function(event, appName) {
-	if (!appName || typeof appName != "string") {
-		appName = "PomoDoneApp";
-	}
 	console.log('#2 - root index.js, triggered main-parse-shortcuts, with appName: ', appName, typeof appName);
 	backgroundWindow.webContents.send('webview-parse-shortcuts', appName)
 });

@@ -48,6 +48,7 @@ export default class Home extends Component {
     componentWillMount() {
         console.log('home constructor called');
         this.setState({
+            name: "ShortcutWizard",
             initialItems: [{
                 name: "Redo",
                 menuName: "Edit" ,
@@ -61,12 +62,14 @@ export default class Home extends Component {
             }]
         });
 
-        ipcRenderer.on('update-shortcuts', (event, shortcuts) => {
-            let result = shortcuts.result;
-            const shortcutsArray = Object.keys(result).map(key => result[key]);
-            console.log('ipcrenderer callback, new array: ', shortcutsArray);
+        ipcRenderer.on('update-shortcuts', (event, newShortcuts) => {
+            let name = newShortcuts.name;
+            let shortcuts = newShortcuts.shortcuts;
+            const shortcutsArray = Object.keys(shortcuts).map(key => shortcuts[key]);
+            console.log('ipcrenderer callback, raw, name, new array: ', newShortcuts, name, shortcutsArray);
 
             this.setState({
+                name: name,
                 items: shortcutsArray
             });
         });
@@ -116,25 +119,29 @@ export default class Home extends Component {
     }
 
     render() {
-        console.log('>>>>>>>>>> RENDER');
+        console.log('render() called');
+        console.log('with name', this.state.name);
+
         return (
-            <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
-                <button id="settings-button" className="simple-button" onClick={() => {
-                    ipcRenderer.send('openSettingsPage', null);
-                }}>Open settings</button>
+            <div>
+                <h1>{this.state.name}</h1>
+                <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
+                    <button id="settings-button" className="simple-button" onClick={() => {
+                        ipcRenderer.send('openSettingsPage', null);
+                    }}>Open settings</button>
 
-                <button id="reload-button" className="simple-button" onClick={() => {
-                    console.log('sending reloadShortcuts from ipcRenderer');
-                    var reloadShortcutsForName = null; // TODO: replace with "currentName" 
-                    ipcRenderer.send('main-parse-shortcuts', (reloadShortcutsForName) ? reloadShortcutsForName : "PomoDoneApp");
-                }}>Reload shortcuts</button>
+                    <button id="reload-button" className="simple-button" onClick={() => {
+                        console.log('sending reloadShortcuts from ipcRenderer');
+                        ipcRenderer.send('main-parse-shortcuts');
+                    }}>Reload shortcuts</button>
 
-                <input type="text" placeholder="Search" onChange={this.filterListTrigger}/>
-                <SortableList
-                  items={this.state.items}
-                  onSortEnd={this.onSortEnd}
-                  lockAxis='y'
-                />
+                    <input type="text" placeholder="Search" onChange={this.filterListTrigger}/>
+                    <SortableList
+                      items={this.state.items}
+                      onSortEnd={this.onSortEnd}
+                      lockAxis='y'
+                    />
+                </div>
             </div>
         );
     }
