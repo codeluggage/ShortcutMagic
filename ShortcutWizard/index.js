@@ -28,9 +28,6 @@ function createMainWindow() {
 function createBackgroundWindow() {
 	const win = new BrowserWindow({
 		show: false,
-		webPreferences: {
-			webSecurity: false
-		}
 	});
 
 	console.log('#1 load window:');
@@ -55,16 +52,16 @@ app.on('ready', () => {
 	backgroundWindow = createBackgroundWindow();
 });
 
-ipcMain.on('background-response', function(event, payload) {
-	console.log('#4 - root index.js, ipc on background-response');
-	mainWindow.webContents.send('background-response', payload)
+ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
+	console.log('#4 - root index.js, ipc on main-parse-shortcuts-callback');
+	mainWindow.webContents.send('main-parse-shortcuts-callback', payload)
 });
 
-ipcMain.on('background-start', function(event, appName) {
+ipcMain.on('main-parse-shortcuts', function(event, appName) {
 	if (!appName || typeof appName != "string") {
 		appName = "PomoDoneApp";
 	}
-	console.log('#2 - root index.js, triggered background-start, with appName: ', appName, typeof appName);
-	backgroundWindow.webContents.send('background-start-task', appName)
+	console.log('#2 - root index.js, triggered main-parse-shortcuts, with appName: ', appName, typeof appName);
+	backgroundWindow.webContents.send('webview-parse-shortcuts', appName)
 });
 

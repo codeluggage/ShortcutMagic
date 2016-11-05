@@ -39,12 +39,12 @@ window.onload = function () {
 		const backgroundStartTime = +new Date();
 
 		startProcess();
-		console.log('renderer/index.js - sending ipc for background-start-task');
-		ipcRenderer.send('background-start', backgroundStartTime);
+		console.log('renderer/index.js - sending ipc for webview-parse-shortcuts');
+		ipcRenderer.send('main-parse-shortcuts', backgroundStartTime);
 	}
 
-	ipcRenderer.on('background-response', (event, payload) => {
-		console.log('renderer/index.js - ipcRenderer.on("background-response", (event, payload) => {');
+	ipcRenderer.on('main-parse-shortcuts-callback', (event, payload) => {
+		console.log('renderer/index.js - ipcRenderer.on("main-parse-shortcuts-callback", (event, payload) => {');
 
 		finishProcess(payload.result, new Date() - payload.startTime);
 	});

@@ -29,12 +29,45 @@ const SortableList = SortableContainer(({items}) => {
 });
 
 export default class Home extends Component {
-    constructor(props) {
-        super(props);
+    // getInitialState() {
+    //     console.log('home getInitialState called');
+    //     return {
+    //         initialItems: [{
+    //             name: "Redo",
+    //             menuName: "Edit" ,
+    //             cmd: "Z",
+    //             mods: 1
+    //         }, {
+    //             name: "Cut",
+    //             menuName: "Edit" ,
+    //             cmd: "X"
+    //         }]
+    //     };
+    // }
 
-        this.state = {
-            initialItems: ["blah blah"]
-        }
+    componentWillMount() {
+        console.log('home constructor called');
+
+
+        this.setState({
+            initialItems: [{
+                name: "Redo",
+                menuName: "Edit" ,
+                cmd: "Z",
+                mods: 1
+            }],
+            items: [{
+                name: "Cut",
+                menuName: "Edit" ,
+                cmd: "X"
+            }]
+        });
+
+        ipcRenderer.on('shortcutsReloaded', (event, args) => {
+          console.log('callback triggered for shortcutsReloaded');
+          this.initialItems = args;
+          this.setState({items: this.state.initialItems})
+      });
     }
 
     onSortEnd({oldIndex, newIndex}) {
@@ -71,18 +104,30 @@ export default class Home extends Component {
         this.setState({items: updatedList});
     }
 
-    componentWillMount() {
-        this.setState({items: this.state.initialItems})
+    // componentWillMount() {
+    //     this.setState({items: 
+    //         initialItems: [{
+    //             name: "Redo",
+    //             menuName: "Edit" ,
+    //             cmd: "Z",
+    //             mods: 1
+    //         }],
+    //         items: [{
+    //             name: "Cut",
+    //             menuName: "Edit" ,
+    //             cmd: "X"
+    //         }]
+    //     });
 
-        ipcRenderer.on('shortcutsReloaded', (event, args) => {
-          console.log('callback triggered for shortcutsReloaded');
-          this.initialItems = args;
-          this.setState({items: this.state.initialItems})
-      });
-    }
+    //     ipcRenderer.on('shortcutsReloaded', (event, args) => {
+    //       console.log('callback triggered for shortcutsReloaded');
+    //       this.initialItems = args;
+    //       this.setState({items: this.state.initialItems})
+    //   });
+    // }
 
     render() {
-        ipcRenderer.on('background-response', (shortcuts) => {
+        ipcRenderer.on('main-parse-shortcuts-callback', (shortcuts) => {
             this.setState({
                 items: shortcuts
             })
@@ -97,7 +142,7 @@ export default class Home extends Component {
                 <button id="reload-button" className="simple-button" onClick={() => {
                     console.log('sending reloadShortcuts from ipcRenderer');
                     var reloadShortcutsForName = null; // TODO: replace with "currentName" 
-                    ipcRenderer.send('background-start', (reloadShortcutsForName) ? reloadShortcutsForName : "PomoDoneApp");
+                    ipcRenderer.send('main-parse-shortcuts', (reloadShortcutsForName) ? reloadShortcutsForName : "PomoDoneApp");
                 }}>Reload shortcuts</button>
 
                 <input type="text" placeholder="Search" onChange={this.filterListTrigger}/>
