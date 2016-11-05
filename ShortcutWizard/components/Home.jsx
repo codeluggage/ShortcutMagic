@@ -1,4 +1,4 @@
-// @flow
+'use babel';
 import React, { Component } from 'react';
 import { Link } from 'react-router';
 import {SortableContainer, SortableElement, arrayMove} from 'react-sortable-hoc';
@@ -63,6 +63,7 @@ export default class Home extends Component {
         });
 
         ipcRenderer.on('update-shortcuts', (event, newShortcuts) => {
+            console.log('entered update-shortcuts in Home', newShortcuts);
             let name = newShortcuts.name;
             let shortcuts = newShortcuts.shortcuts;
             const shortcutsArray = Object.keys(shortcuts).map(key => shortcuts[key]);

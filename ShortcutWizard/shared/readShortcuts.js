@@ -58,16 +58,8 @@ function readShortcuts(appName) {
 		    return null;
 		}
 
-		var shortcutNameString;
-		if (appName && typeof appName == "string") {
-			shortcutNameString = $(appName);
-		}
-		if (!shortcutNameString || shortcutNameString('length') == 0) {
-			shortcutNameString = compileAndRunNameFetch();
-		}
-
 		var arrayArgs = $.NSMutableArray('alloc')('init');
-		arrayArgs('addObject', shortcutNameString);
+		arrayArgs('addObject', appName);
 		var executed = hold('executeHandlerWithName', $("readShortcuts"), 'arguments', arrayArgs, 'error', errorInfo.ref());
 		if (executed) {
 			return executed;
@@ -77,8 +69,21 @@ function readShortcuts(appName) {
 }
 
 module.exports = function(appName) {
-	var shortcuts = readShortcuts(appName);
+	var shortcutNameString;
+	if (appName && typeof appName == "string") {
+		shortcutNameString = $(appName);
+	}
+	if (!shortcutNameString || shortcutNameString('length') == 0) {
+		shortcutNameString = compileAndRunNameFetch();
+		if (shortcutNameString) {
+			shortcutNameString = shortcutNameString('stringValue');
+		}
+		appName = "" + shortcutNameString;
+	}
+
+	var shortcuts = readShortcuts(shortcutNameString);
 	var unwrapped = unwrapShortcuts(shortcuts);
+
 	return {
 		name: appName,
 		shortcuts: unwrapped

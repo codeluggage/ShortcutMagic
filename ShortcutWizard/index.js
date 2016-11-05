@@ -66,8 +66,27 @@ ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
 	mainWindow.webContents.send('update-shortcuts', payload)
 });
 
-ipcMain.on('main-parse-shortcuts', function(event, appName) {
+ipcMain.on('main-parse-shortcuts', function(event, appName, forceReload) {
 	console.log('#2 - root index.js, triggered main-parse-shortcuts, with appName: ', appName, typeof appName);
-	backgroundWindow.webContents.send('webview-parse-shortcuts', appName)
+	if (forceReload) {
+		backgroundWindow.webContents.send('webview-parse-shortcuts', appName);
+	} else {
+		// TODO: This is not going to work until appName is known before this point
+		db.find({
+			name: appName
+		}, function(err, res) {
+			console.log('loaded shortcuts: ', res);
+			if (err) {
+				console.log('errored during db find: ', err);
+				return;
+			}
+
+			if (res != [] && res.length > 0) {
+				mainWindow.webContents.send('update-shortcuts', res);
+			} else {
+				backgroundWindow.webContents.send('webview-parse-shortcuts', appName);
+			}
+		});
+	}
 });
 
