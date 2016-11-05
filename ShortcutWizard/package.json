@@ -1,9 +1,9 @@
 {
-  "name": "electron-es6-react",
-  "version": "0.1.0",
+  "name": "ShortcutWizard",
+  "version": "0.0.1",
   "main": "bootstrapper.js",
-  "license": "MIT",
-  "repository": "b52/electron-es6-react",
+  "license": "Private",
+  "repository": "bitbucket.org:codeluggage/shortcutwizard.git",
   "scripts": {
     "start": "electron ."
   },
