@@ -40,35 +40,10 @@ function createBackgroundWindow() {
 	return win;
 }
 
-app.on('window-all-closed', () => {
-	if (process.platform !== 'darwin') {
-		app.quit();
-	}
-});
+function loadOrReloadShortcuts(appName) {
+	console.log('loadOrReloadShortcuts with appName', appName);
 
-app.on('activate-with-no-open-windows', () => {
-	if (!mainWindow) {
-		mainWindow = createMainWindow();
-	}
-});
-
-app.on('ready', () => {
-	mainWindow = createMainWindow();
-	backgroundWindow = createBackgroundWindow();
-});
-
-ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
-	console.log('#3 - root index.js, ipc on main-parse-shortcuts-callback, storing shortcuts ');
-	db.insert(payload, function(err, res) {
-		console.log('finished inserting shortcuts in db: ', res);
-	});
-
-	mainWindow.webContents.send('update-shortcuts', payload)
-});
-
-ipcMain.on('main-parse-shortcuts', function(event, appName, forceReload) {
-	console.log('#2 - root index.js, triggered main-parse-shortcuts, with appName: ', appName, typeof appName);
-	if (forceReload) {
+	if (!appName) {
 		backgroundWindow.webContents.send('webview-parse-shortcuts', appName);
 	} else {
 		// TODO: This is not going to work until appName is known before this point
@@ -88,5 +63,36 @@ ipcMain.on('main-parse-shortcuts', function(event, appName, forceReload) {
 			}
 		});
 	}
+}
+
+app.on('window-all-closed', () => {
+	if (process.platform !== 'darwin') {
+		app.quit();
+	}
 });
 
+app.on('activate-with-no-open-windows', () => {
+	if (!mainWindow) {
+		mainWindow = createMainWindow();
+	}
+});
+
+app.on('ready', () => {
+	mainWindow = createMainWindow();
+	backgroundWindow = createBackgroundWindow();
+	loadOrReloadShortcuts(); // TODO: Why isn't this updating correctly?
+});
+
+ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
+	console.log('#3 - root index.js, ipc on main-parse-shortcuts-callback, storing shortcuts ');
+	db.insert(payload, function(err, res) {
+		console.log('finished inserting shortcuts in db: ', res);
+	});
+
+	mainWindow.webContents.send('update-shortcuts', payload)
+});
+
+ipcMain.on('main-parse-shortcuts', function(event, appName) {
+	console.log('#2 - root index.js, triggered main-parse-shortcuts, with appName: ', appName, typeof appName);
+	loadOrReloadShortcuts(appName);
+});

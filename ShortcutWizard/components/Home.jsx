@@ -71,6 +71,7 @@ export default class Home extends Component {
 
             this.setState({
                 name: name,
+                initialItems: shortcutsArray,
                 items: shortcutsArray
             });
         });
@@ -99,7 +100,8 @@ export default class Home extends Component {
 
         if (targetValue) {
             updatedList = updatedList.filter(function(item){
-                let innerValues = Object.values(item);
+                console.log('looping in updatedList, ', item);
+                const innerValues = Object.keys(item).map(key => item[key]);
                 
                 for (var i = 0; i < innerValues.length; i++) {
                     let innerVal = innerValues[i];
@@ -108,11 +110,11 @@ export default class Home extends Component {
                     if (innerVal == targetValue) return true;
                 }
 
-                let innerKeys = Object.keys(item);
-                for (var i = 0; i < innerKeys.length; i++) {
-                    let innerVal = "" + innerKeys[i];
-                    if (innerVal.toLowerCase().indexOf(targetValue.toLowerCase()) !== -1) return true;
-                }
+                // let innerKeys = Object.keys(item);
+                // for (var i = 0; i < innerKeys.length; i++) {
+                //     let innerVal = "" + innerKeys[i];
+                //     if (innerVal.toLowerCase().indexOf(targetValue.toLowerCase()) !== -1) return true;
+                // }
             });
         }
 
