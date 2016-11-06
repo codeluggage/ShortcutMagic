@@ -42,6 +42,7 @@ const SortableList = SortableContainer(({items}) => {
                       key={`item-${index}`}
                       index={index}
                       value={displayValue}
+                      container={value["menuName"]}
                     />
                 );
             })}

@@ -83,21 +83,24 @@ app.on('ready', () => {
 });
 
 ipcMain.on('main-app-switched-notification', function(event, appName) {
-	console.log('switched to', appName);
+	console.log('not doing anything..., but app switched to', appName);
 	// TODO: add css spinner when this is running
-	loadOrReloadShortcuts(appName);
+	// loadOrReloadShortcuts(appName);
 });
 
 ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
-	console.log('#3 - root index.js, ipc on main-parse-shortcuts-callback, storing shortcuts ');
-	db.insert(payload, function(err, res) {
-		console.log('finished inserting shortcuts in db: ', res);
-	});
+	// console.log('#3 - root index.js, ipc on main-parse-shortcuts-callback, storing shortcuts ');
+	// db.insert(payload, function(err, res) {
+	// 	console.log('finished inserting shortcuts in db: ', res);
+	// });
 
+	console.log('sending update-shortcuts with payload: ', payload);
 	mainWindow.webContents.send('update-shortcuts', payload)
 });
 
 ipcMain.on('main-parse-shortcuts', function(event, appName) {
 	console.log('#2 - root index.js, triggered main-parse-shortcuts, with appName: ', appName, typeof appName);
-	loadOrReloadShortcuts(appName);
+	// loadOrReloadShortcuts(appName);
+
+				backgroundWindow.webContents.send('webview-parse-shortcuts', appName);
 });
