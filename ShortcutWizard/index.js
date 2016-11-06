@@ -80,7 +80,12 @@ app.on('activate-with-no-open-windows', () => {
 app.on('ready', () => {
 	mainWindow = createMainWindow();
 	backgroundWindow = createBackgroundWindow();
-	loadOrReloadShortcuts(); // TODO: Why isn't this updating correctly?
+});
+
+ipcMain.on('main-app-switched-notification', function(event, appName) {
+	console.log('switched to', appName);
+	// TODO: add css spinner when this is running
+	loadOrReloadShortcuts(appName);
 });
 
 ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {

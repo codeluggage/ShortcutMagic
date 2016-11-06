@@ -1,52 +1,53 @@
 'use strict';
 var $ = require('NodObjC');
-
 $.import('Cocoa');
 $.import('Foundation');
 
 var sharedWorkspace = null; // NSWorkspace('allow', init)
-var listener = $.NSObject.extend('listener');
+var listenerClass = $.NSObject.extend('listener');
+var startedMainLoop = false;
+var savedCallback = null;
+var listenerObj = null;
 
-listener.addMethod('listeningApplicationLaunched:', 'v@:@', function(self, _cmd, notification) {
-    triggerAppSwitch(notification);
-});
 
-listener.addMethod('listeningApplicationActivated:', 'v@:@', function(self, _cmd, notification) {
-    triggerAppSwitch(notification);
-});
-
-listener.register();
-
-function triggerAppSwitch() {
-
-    self.currentApplicationWindowName = [SWApplescriptManager windowNameOfApp:self.currentApplicationName];
-
+function triggerAppSwitch(notification) {
+    console.log('triggerAppSwitch with notification', notification);
+    if (savedCallback) {
+        // TOOD: Cast this better/safer
+        savedCallback("" + sharedWorkspace('frontmostApplication')('localizedName'));
+    } else {
+        console.log('app switch triggered without callback');
+    }
 }
 
+listenerClass.addMethod('listeningApplicationLaunched:', 'v@:@', function(self, _cmd, notification) {
+    triggerAppSwitch(notification);
+});
+
+listenerClass.addMethod('listeningApplicationActivated:', 'v@:@', function(self, _cmd, notification) {
+    triggerAppSwitch(notification);
+});
+
+listenerClass.register();
+listenerObj = listenerClass('alloc')('init');
+
+module.exports = function appSwitchListener(callback) {
+    savedCallback = callback;
+    if (!startedMainLoop) {
+
+        sharedWorkspace = $.NSWorkspace('sharedWorkspace');
+
+        sharedWorkspace('notificationCenter')('addObserver', listenerObj, 'selector', 'listeningApplicationLaunched:',
+             'name', $.NSWorkspaceDidLaunchApplicationNotification, 'object', sharedWorkspace);
+
+        sharedWorkspace('notificationCenter')('addObserver', listenerObj, 'selector', 'listeningApplicationActivated:',
+             'name', $.NSWorkspaceDidActivateApplicationNotification, 'object', sharedWorkspace);
 
 
-var bridge = null;
+        $.NSRunLoop('mainRunLoop')('run');
+        startedMainLoop = true;
+        return true;
+    }
 
-module.export = function createListener() {
-    // TODO: When to run this to be active throughout application lifetime, and not overwrite later? 
-    $.NSRunLoop('mainRunLoop')('run');
-
-    sharedWorkspace = NSWorkspace('sharedWorkspace');
-
-    sharedWorkspace('notificationCenter')('addObserver', listener, 
-
-        // TODO: how to do selector?
-         'selector', @selector(listeningApplicationLaunched:),
-
-         name:$.NSWorkspaceDidLaunchApplicationNotification,
-
-     'object', sharedWorkspace);
-
-    sharedWorkspace('notificationCenter')('addObserver', listener, 
-        // TODO: how to do selector?
-         selector:@selector(listeningApplicationActivated:),
-
-         name: $.NSWorkspaceDidActivateApplicationNotification,
-
-     'object', sharedWorkspace);
+    return false;
 };
