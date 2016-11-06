@@ -2,23 +2,36 @@
 var $ = require('NodObjC');
 
 $.import('Cocoa');
-$.import('Foundatio');
+$.import('Foundation');
 
+var sharedWorkspace = null; // NSWorkspace('allow', init)
+var listener = $.NSObject.extend('listener');
 
-var listener = null; // turn into object of a class that can listen
-var sharedWorkspace = null;
+listener.addMethod('listeningApplicationLaunched:', 'v@:@', function(self, _cmd, notification) {
+    triggerAppSwitch(notification);
+});
 
-// TODO: turn into listeners
-var listeningApplicationLaunched = function() {
+listener.addMethod('listeningApplicationActivated:', 'v@:@', function(self, _cmd, notification) {
+    triggerAppSwitch(notification);
+});
+
+listener.register();
+
+function triggerAppSwitch() {
+
+    self.currentApplicationWindowName = [SWApplescriptManager windowNameOfApp:self.currentApplicationName];
 
 }
-var listeningApplicationActivated = function() {
 
-}
+
 
 var bridge = null;
 
 module.export = function createListener() {
+    // TODO: When to run this to be active throughout application lifetime, and not overwrite later? 
+    $.NSRunLoop('mainRunLoop')('run');
+
+    sharedWorkspace = NSWorkspace('sharedWorkspace');
 
     sharedWorkspace('notificationCenter')('addObserver', listener, 
 
