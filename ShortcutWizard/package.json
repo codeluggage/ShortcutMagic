@@ -1,12 +1,22 @@
 {
   "name": "ShortcutWizard",
+  "author": "Matias Forbord",
   "productName": "ShortcutWizard",
+  "description": "Description of ShortcutWizard",
   "version": "0.0.1",
   "main": "bootstrapper.js",
   "license": "Private",
   "repository": "bitbucket.org:codeluggage/shortcutwizard.git",
   "scripts": {
-    "start": "./node_modules/.bin/electron bootstrapper.js"
+    "start": "./node_modules/.bin/electron bootstrapper.js",
+    "pack": "build --dir",
+    "dist": "build"
+  },
+  "build": {
+    "appId": "com.shortcutwizard",
+    "mac": {
+      "category": "category.utility"
+    }
   },
   "dependencies": {
     "babel-preset-es2015": "^6.3.13",
@@ -18,6 +28,7 @@
     "react-sortable-hoc": "^0.1.1"
   },
   "devDependencies": {
-    "electron": "^1.4.3"
+    "electron": "^1.4.3",
+    "electron-builder": "^7.23.2"
   }
 }
