@@ -51,38 +51,23 @@ const SortableList = SortableContainer(({items}) => {
 });
 
 export default class Home extends Component {
-    // getInitialState() {
-    //     console.log('home getInitialState called');
-    //     return {
-    //         initialItems: [{
-    //             name: "Redo",
-    //             menuName: "Edit" ,
-    //             cmd: "Z",
-    //             mods: 1
-    //         }, {
-    //             name: "Cut",
-    //             menuName: "Edit" ,
-    //             cmd: "X"
-    //         }]
-    //     };
-    // }
-
     componentWillMount() {
         console.log('home constructor called');
-        this.setState({
-            name: "ShortcutWizard",
-            initialItems: [{
-                name: "Redo",
-                menuName: "Edit" ,
-                cmd: "Z",
-                mods: 1
-            }],
-            items: [{
-                name: "Cut",
-                menuName: "Edit" ,
-                cmd: "X"
-            }]
-        });
+        // this.setState({
+        //     name: "ShortcutWizard",
+        //     initialItems: [{
+        //         name: "",
+        //         menuName: "" ,
+        //         cmd: "",
+        //     }],
+        //     items: [{
+        //         name: "",
+        //         menuName: "" ,
+        //         cmd: "",
+        //     }]
+        // });
+
+        ipcRenderer.send('rendering-ready');
 
         ipcRenderer.on('update-shortcuts', (event, newShortcuts) => {
             console.log('entered update-shortcuts in Home', newShortcuts);
@@ -132,12 +117,6 @@ export default class Home extends Component {
                     if (typeof innerVal === 'string' && innerVal.toLowerCase().indexOf(targetValue.toLowerCase()) !== -1) return true;
                     if (innerVal == targetValue) return true;
                 }
-
-                // let innerKeys = Object.keys(item);
-                // for (var i = 0; i < innerKeys.length; i++) {
-                //     let innerVal = "" + innerKeys[i];
-                //     if (innerVal.toLowerCase().indexOf(targetValue.toLowerCase()) !== -1) return true;
-                // }
             });
         }
 
@@ -146,7 +125,9 @@ export default class Home extends Component {
 
     render() {
         console.log('render() called');
-        console.log('with name', this.state.name);
+        if (!this.state) {
+            return ( <h1 style={{color:"white"}}>Loading...</h1> );
+        }
 
         return (
             <div>

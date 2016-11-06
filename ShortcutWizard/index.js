@@ -5,6 +5,8 @@ var db = new Datastore({
 	filename: `${__dirname}/db/shortcuts.db`,
 	autoload: true
 });
+
+// Setting unique value constraint on name
 db.ensureIndex({
 	fieldName: 'name',
 	unique: true
@@ -16,7 +18,6 @@ db.ensureIndex({
 
 app.setName("ShortcutWizard");
 
-// prevent window being garbage collected
 let mainWindow;
 let backgroundTaskRunnerWindow;
 let backgroundListenerWindow;
@@ -28,8 +29,6 @@ function createWindows() {
 }
 
 function onClosed() {
-	// dereference the window
-	// for multiple windows store them in an array
 	mainWindow = null;
 	backgroundTaskRunnerWindow = null;
 	backgroundListenerWindow = null;
@@ -85,16 +84,9 @@ function updateRenderedShortcuts(shortcuts) {
 
 function saveWithoutPeriods(payload) {
 	var stringified = JSON.stringify(payload.shortcuts);
-	// console.log('----------------------------------------->');
-	// console.log('stringified: ', stringified);
 	stringified = stringified.replace(/\./g, 'u002e');
-	// stringified = stringified.replace(/\u2022/g, '');
-	// stringified = stringified.replace(/…/g, '');
-	// console.log('-----------------------------------------');
-	// console.log('after replace: ', stringified);
-	// console.log('<-----------------------------------------');
 	payload.shortcuts = JSON.parse(stringified);
-	console.log('about to insert in db: ', payload.shortcuts);
+	console.log('about to upsert in db: ', payload.shortcuts);
 
 	db.update({
 		name: payload.name
@@ -103,9 +95,9 @@ function saveWithoutPeriods(payload) {
 		upsert: true
 	}, function(err, res) {
 		if (err) {
-			console.log('ERROR: inserting in db got error: ', err);
+			console.log('ERROR: upserting in db got error: ', err);
 		} else {
-			console.log('finished inserting shortcuts in db: ');
+			console.log('finished upserting shortcuts in db: ');
 		}
 	});
 }
@@ -124,14 +116,7 @@ function loadWithPeriods(appName) {
 		if (res != [] && res.length > 0) {
 			var shortcuts = res[0];
 			var stringified = JSON.stringify(shortcuts.shortcuts);
-			// console.log('=========================================>');
-			// console.log('stringified: ', stringified);
 			stringified = stringified.replace(/u002e/g, '.');
-			// stringified = stringified.replace(/\u2022/g, '');
-			// stringified = stringified.replace(/…/g, '');
-			// console.log('=========================================');
-			// console.log('after replace: ', stringified);
-			// console.log('<=========================================');
 			shortcuts.shortcuts = JSON.parse(stringified);
 			console.log('sending shortcuts to be rendered: ', shortcuts);
 			mainWindow.webContents.send('update-shortcuts', shortcuts);
@@ -166,7 +151,7 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 });
 
 ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
-	console.log('#3 - root index.js, ipc on main-parse-shortcuts-callback, inserting shortcuts in db: ');
+	console.log('#3 - root index.js, ipc on main-parse-shortcuts-callback, upserting shortcuts in db: ');
 	updateRenderedShortcuts(payload);
 	saveWithoutPeriods(payload);
 });
@@ -174,4 +159,9 @@ ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
 ipcMain.on('main-parse-shortcuts', function(event, appName) {
 	console.log('#2 - root index.js, triggered main-parse-shortcuts, with appName: ', appName, typeof appName);
 	loadOrReloadShortcuts(appName);
+});
+
+ipcMain.on('rendering-ready', function(event) {
+	// TODO: replace with shortcutwizard
+	updateRenderedShortcuts(loadWithPeriods("Electron"));
 });
