@@ -98,10 +98,6 @@ export default class Home extends Component {
             });
         });
 
-        ipcRenderer.on('page-title-updated', (event, arg1, arg2, arg3) => {
-            console.log('||||||||||||||||||||||||||| hit page-title-updated with ', arg1, arg2, arg3);
-        });
-
 
         // Binding functions because local this doesn't work with this babel for some reason
         this.onSortEnd = this.onSortEnd.bind(this);
