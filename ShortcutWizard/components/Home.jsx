@@ -130,24 +130,26 @@ export default class Home extends Component {
         }
 
         return (
-            <div>
+            <div style={{textAlign: 'center'}}>
                 <h1 style={{color:"white"}}>{this.state.name}</h1>
                 <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
                     <button style={{color:"white"}} id="settings-button" className="simple-button" onClick={() => {
                         ipcRenderer.send('openSettingsPage', null);
-                    }}>Open settings</button>
+                    }}>Settings</button>
 
                     <button style={{color:"white"}} id="reload-button" className="simple-button" onClick={() => {
                         console.log('sending reloadShortcuts from ipcRenderer');
                         ipcRenderer.send('main-parse-shortcuts');
-                    }}>Reload shortcuts</button>
+                    }}>Reload</button>
 
                     <input type="text" placeholder="Search" onChange={this.filterListTrigger}/>
-                    <SortableList
-                      items={this.state.items}
-                      onSortEnd={this.onSortEnd}
-                      lockAxis='y'
-                    />
+                    <div style={{textAlign: 'left'}}>
+                        <SortableList
+                          items={this.state.items}
+                          onSortEnd={this.onSortEnd}
+                          lockAxis='y'
+                        />
+                    </div>
                 </div>
             </div>
         );

@@ -36,13 +36,19 @@ function onClosed() {
 
 function createMainWindow() {
 	const win = new BrowserWindow({
-		width: 800,
-		height: 600,
+		width: 350,
+		height: 800,
 		title: "ShortcutWizard",
+		alwaysOnTop: true,
+		acceptFirstClick: true,
+		transparent: true,
+		frame: false,
+		// backgroundColor: '#2c3e5022'
 	});
 
 	win.loadURL(`file://${__dirname}/index.html`);
 	win.on('closed', onClosed);
+	win.setPosition(1100, 100);
 
 	return win;
 }
