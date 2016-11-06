@@ -1,11 +1,12 @@
 {
   "name": "ShortcutWizard",
+  "productName": "ShortcutWizard",
   "version": "0.0.1",
   "main": "bootstrapper.js",
   "license": "Private",
   "repository": "bitbucket.org:codeluggage/shortcutwizard.git",
   "scripts": {
-    "start": "electron ."
+    "start": "./node_modules/.bin/electron bootstrapper.js"
   },
   "dependencies": {
     "babel-preset-es2015": "^6.3.13",
