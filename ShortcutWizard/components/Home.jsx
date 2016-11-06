@@ -9,22 +9,43 @@ const SortableItem = SortableElement(({value}) => <li>{value}</li>);
 
 const SortableList = SortableContainer(({items}) => {
     return !items ? (<p>No items yet</p>) : (
-        <p>
+        <div style={{color:"white", fontWeight:500}}>
             { items.map((value, index) => {
                 let keys = Object.keys(value);
                 let displayValue = "";
+                let hasGlyph = false;
+                let hasChar = false;
+
                 for (var i = 0; i < keys.length; i++) {
                     let key = keys[i];
-                    displayValue += `${key}: ${JSON.stringify(value[key])} `;
+                    if (key != "menuName" && key != "position" && key != "name") {
+                        displayValue += `${value[key]} `;
+                    }
+                    if (key == "glyph") {
+                        console.log("l: glyph", keys.length, value[key]);
+                        hasGlyph = true;
+                    }
+                    if (key == "char") {
+                        console.log("l: char", keys.length, value[key]);
+                        hasChar = true;
+                    }
                 }
 
-                return (<SortableItem
-                  key={`item-${index}`}
-                  index={index}
-                  value={displayValue}
-                />);
+                if (keys.length == 4 && hasChar && !hasGlyph) {
+                    displayValue = "⌘" + displayValue;
+                }
+
+                displayValue = value["name"] + ": " + displayValue;
+
+                return (
+                    <SortableItem
+                      key={`item-${index}`}
+                      index={index}
+                      value={displayValue}
+                    />
+                );
             })}
-        </p>
+        </div>
     );
 });
 
@@ -127,13 +148,13 @@ export default class Home extends Component {
 
         return (
             <div>
-                <h1>{this.state.name}</h1>
+                <h1 style={{color:"white"}}>{this.state.name}</h1>
                 <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
-                    <button id="settings-button" className="simple-button" onClick={() => {
+                    <button style={{color:"white"}} id="settings-button" className="simple-button" onClick={() => {
                         ipcRenderer.send('openSettingsPage', null);
                     }}>Open settings</button>
 
-                    <button id="reload-button" className="simple-button" onClick={() => {
+                    <button style={{color:"white"}} id="reload-button" className="simple-button" onClick={() => {
                         console.log('sending reloadShortcuts from ipcRenderer');
                         ipcRenderer.send('main-parse-shortcuts');
                     }}>Reload shortcuts</button>
