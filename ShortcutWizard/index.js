@@ -2,7 +2,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 var Datastore = require('nedb');
 var db = new Datastore({
-	filename: `${__dirname}/db/shortcuts.db`,
+	filename: `${__dirname}/shortcuts.db`,
 	autoload: true
 });
 

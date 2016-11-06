@@ -34,6 +34,3 @@ dist
 release
 main.js
 main.js.map
-
-# Database
-db/*.db
