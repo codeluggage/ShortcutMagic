@@ -1,6 +1,5 @@
 // @flow
 import React, { Component, PropTypes } from 'react';
-import { Link } from 'react-router';
 import styles from './Shortcuts.css';
 
 class Shortcuts extends Component {

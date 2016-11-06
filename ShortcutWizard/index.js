@@ -24,6 +24,7 @@ let backgroundListenerWindow;
 
 function createWindows() {
 	mainWindow = createMainWindow();
+	mainWindow.openDevTools();
 	backgroundTaskRunnerWindow = createBackgroundTaskRunnerWindow();
 	backgroundListenerWindow = createBackgroundListenerWindow();
 }

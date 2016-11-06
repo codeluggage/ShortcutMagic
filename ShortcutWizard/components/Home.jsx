@@ -1,6 +1,5 @@
 'use babel';
 import React, { Component } from 'react';
-import { Link } from 'react-router';
 import {SortableContainer, SortableElement, arrayMove} from 'react-sortable-hoc';
 import { ipcRenderer } from 'electron';
 
@@ -70,6 +69,8 @@ export default class Home extends Component {
         ipcRenderer.send('rendering-ready');
 
         ipcRenderer.on('update-shortcuts', (event, newShortcuts) => {
+            if (!newShortcuts) return;
+            
             console.log('entered update-shortcuts in Home', newShortcuts);
             let name = newShortcuts.name;
             let shortcuts = newShortcuts.shortcuts;
