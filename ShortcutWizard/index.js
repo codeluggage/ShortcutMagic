@@ -1,5 +1,6 @@
 'use strict';
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray } = require('electron');
+const path = require('path');
 var Datastore = require('nedb');
 var db = new Datastore({
 	filename: `${__dirname}/db/shortcuts.db`,
@@ -17,10 +18,45 @@ db.ensureIndex({
 });
 
 app.setName("ShortcutWizard");
+app.dock.hide()
 
 let mainWindow;
+const iconPath = path.join(__dirname, 'wizard.png');
+console.log('icon path loaded: ', iconPath);
+let appIcon = null;
 let backgroundTaskRunnerWindow;
 let backgroundListenerWindow;
+
+
+const toggleWindow = () => {
+	console.log('togglewindow with isvisible: ', mainWindow.isVisible());
+  if (mainWindow.isVisible()) {
+    mainWindow.hide()
+  } else {
+    showWindow()
+  }
+}
+
+const getWindowPosition = () => {
+  const windowBounds = mainWindow.getBounds()
+  const trayBounds = appIcon.getBounds()
+
+  // Center window horizontally below the tray icon
+  const x = Math.round(trayBounds.x + (trayBounds.width / 2) - (windowBounds.width / 2))
+
+  // Position window 4 pixels vertically below the tray icon
+  const y = Math.round(trayBounds.y + trayBounds.height + 4)
+
+  return {x: x, y: y}
+}
+
+const showWindow = () => {
+	console.log('show window');
+  const position = getWindowPosition()
+  mainWindow.setPosition(position.x, position.y, false)
+  mainWindow.show()
+  mainWindow.focus()
+}
 
 function createWindows() {
 	mainWindow = createMainWindow();
@@ -35,6 +71,21 @@ function onClosed() {
 }
 
 function createMainWindow() {
+	appIcon = new Tray(iconPath);
+	console.log('created appicon: ', appIcon);
+	appIcon.setToolTip('ShortcutWizard!');
+	appIcon.on('right-click', toggleWindow)
+	appIcon.on('double-click', toggleWindow)
+	appIcon.on('click', function (event) {
+	  toggleWindow()
+
+	  // Show devtools when command clicked
+	  if (mainWindow.isVisible() && process.defaultApp && event.metaKey) {
+	    mainWindow.openDevTools({mode: 'detach'})
+	  }
+	});
+
+
 	const win = new BrowserWindow({
 		width: 350,
 		height: 800,
@@ -170,4 +221,8 @@ ipcMain.on('main-parse-shortcuts', function(event, appName) {
 ipcMain.on('rendering-ready', function(event) {
 	// TODO: replace with shortcutwizard
 	updateRenderedShortcuts(loadWithPeriods("Electron"));
+});
+
+ipcMain.on('show-window', () => {
+  showWindow()
 });
