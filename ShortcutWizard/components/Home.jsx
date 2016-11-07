@@ -94,7 +94,7 @@ export default class Home extends Component {
     onSortEnd({oldIndex, newIndex}) {
         console.log('onsortend - this', this);
         this.setState({
-            initialItems: arrayMove(this.state.items, oldIndex, newIndex)
+            items: arrayMove(this.state.items, oldIndex, newIndex)
         });
     }
 
