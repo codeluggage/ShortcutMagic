@@ -9,7 +9,7 @@ const SortableItem = SortableElement(({value}) => <li>{value}</li>);
 
 const SortableList = SortableContainer(({items}) => {
     return !items ? (<p>No items yet</p>) : (
-        <div style={{color:"white", fontWeight:500}}>
+        <div style={{fontWeight:500, fontSize:18, margin:'15px'}}>
             { items.map((value, index) => {
                 let keys = Object.keys(value);
                 let displayValue = "";
@@ -42,7 +42,6 @@ const SortableList = SortableContainer(({items}) => {
                       key={`item-${index}`}
                       index={index}
                       value={displayValue}
-                      container={value["menuName"]}
                     />
                 );
             })}
@@ -72,6 +71,8 @@ export default class Home extends Component {
         ipcRenderer.on('update-shortcuts', (event, newShortcuts) => {
             console.log('entered update-shortcuts in Home', newShortcuts);
             let name = newShortcuts.name;
+            if (name == "Electron") return;
+
             let shortcuts = newShortcuts.shortcuts;
             const shortcutsArray = Object.keys(shortcuts).map(key => shortcuts[key]);
             console.log('ipcrenderer callback, raw, name, new array: ', newShortcuts, name, shortcutsArray);
@@ -131,18 +132,19 @@ export default class Home extends Component {
 
         return (
             <div style={{textAlign: 'center'}}>
-                <h1 style={{color:"white"}}>{this.state.name}</h1>
-                <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
-                    <button style={{color:"white"}} id="settings-button" className="simple-button" onClick={() => {
-                        ipcRenderer.send('openSettingsPage', null);
-                    }}>Settings</button>
-
-                    <button style={{color:"white"}} id="reload-button" className="simple-button" onClick={() => {
+                    <button style={{color:"white", float:'left'}} id="reload-button" className="simple-button" onClick={() => {
                         console.log('sending reloadShortcuts from ipcRenderer');
                         ipcRenderer.send('main-parse-shortcuts');
-                    }}>Reload</button>
+                    }}><i className="fa fa-1x fa-refresh"></i></button>
 
-                    <input type="text" placeholder="Search" onChange={this.filterListTrigger}/>
+                    <button style={{color:"white", float:'right'}} id="settings-button" className="simple-button" onClick={() => {
+                        ipcRenderer.send('openSettingsPage', null);
+                    }}><i className="fa fa-1x fa-cog"></i></button>
+                <h1 style={{color:"white", marginTop:'5px'}}>{this.state.name}</h1>
+
+                <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
+                    <input style={{fontSize: 14}} type="text" placeholder="Search..." onChange={this.filterListTrigger}/>
+
                     <div style={{textAlign: 'left'}}>
                         <SortableList
                           items={this.state.items}
