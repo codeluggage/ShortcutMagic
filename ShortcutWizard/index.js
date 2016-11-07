@@ -26,6 +26,8 @@ console.log('icon path loaded: ', iconPath);
 let appIcon = null;
 let backgroundTaskRunnerWindow;
 let backgroundListenerWindow;
+let currentAppName;
+let positions = {};
 
 
 const toggleWindow = () => {
@@ -38,24 +40,36 @@ const toggleWindow = () => {
 }
 
 const getWindowPosition = () => {
-  const windowBounds = mainWindow.getBounds()
-  const trayBounds = appIcon.getBounds()
+	const windowBounds = mainWindow.getBounds()
+	const windowSize = mainWindow.getSize()
+	return {bounds: windowBounds, size: windowSize}
+}
 
-  // Center window horizontally below the tray icon
-  const x = Math.round(trayBounds.x + (trayBounds.width / 2) - (windowBounds.width / 2))
+function savePosition(appName) {
+	if (!appName) return;
 
-  // Position window 4 pixels vertically below the tray icon
-  const y = Math.round(trayBounds.y + trayBounds.height + 4)
+	positions[appName] = getWindowPosition;
+}
 
-  return {x: x, y: y}
+function loadPosition(appName) {
+	if (!appName) return;
+
+	var hold = positions[appName];
+	if (!hold) return;
+
+	mainWindow.setBounds(hold.bounds)
+	mainWindow.setSize(hold.size)
 }
 
 const showWindow = () => {
-	console.log('show window');
-  const position = getWindowPosition()
-  mainWindow.setPosition(position.x, position.y, false)
-  mainWindow.show()
-  mainWindow.focus()
+	if (currentAppName && positions[currentAppName]) {
+		const hold = positions[currentAppName];
+		mainWindow.setBounds(hold.bounds.x, hold.bounds.y);
+		mainWindow.setSize(hold.size.x, hold.size.y);
+	}
+
+	mainWindow.show()
+	mainWindow.focus()
 }
 
 function createWindows() {
@@ -204,7 +218,9 @@ app.on('ready', () => {
 ipcMain.on('main-app-switched-notification', function(event, appName) {
 	console.log('app switched to', appName);
 	// TODO: add css spinner when this is running
+	savePosition(currentAppName);
 	loadOrReloadShortcuts(appName);
+	loadPosition(appName);
 });
 
 ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
