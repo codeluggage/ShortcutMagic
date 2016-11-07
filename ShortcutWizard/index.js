@@ -33,16 +33,19 @@ let positions = {};
 const toggleWindow = () => {
 	console.log('togglewindow with isvisible: ', mainWindow.isVisible());
   if (mainWindow.isVisible()) {
-    mainWindow.hide()
+    mainWindow.hide();
   } else {
-    showWindow()
+    showWindow();
   }
 }
 
 const getWindowPosition = () => {
-	const windowBounds = mainWindow.getBounds()
-	const windowSize = mainWindow.getSize()
-	return {bounds: windowBounds, size: windowSize}
+	const windowBounds = mainWindow.getBounds();
+	const windowSize = mainWindow.getSize();
+	return {
+		bounds: windowBounds,
+		size: windowSize
+	};
 }
 
 function savePosition(appName) {
@@ -62,10 +65,12 @@ function loadPosition(appName) {
 }
 
 const showWindow = () => {
-	if (currentAppName && positions[currentAppName]) {
-		const hold = positions[currentAppName];
-		mainWindow.setBounds(hold.bounds.x, hold.bounds.y);
-		mainWindow.setSize(hold.size.x, hold.size.y);
+	if (currentAppName) {
+		var currentPosition = positions[currentAppName];
+		if (currentPosition) {
+			mainWindow.setBounds(currentPosition.bounds.x, currentPosition.bounds.y);
+			mainWindow.setSize(currentPosition.size.x, currentPosition.size.y);
+		}
 	}
 
 	mainWindow.show()
@@ -88,12 +93,12 @@ function createMainWindow() {
 	appIcon = new Tray(iconPath);
 	console.log('created appicon: ', appIcon);
 	appIcon.setToolTip('ShortcutWizard!');
-	appIcon.on('right-click', toggleWindow)
-	appIcon.on('double-click', toggleWindow)
+	appIcon.on('right-click', toggleWindow);
+	appIcon.on('double-click', toggleWindow);
 	appIcon.on('click', function (event) {
-	  toggleWindow()
+	  toggleWindow();
 
-	  // Show devtools when command clicked
+	  // TODO: Limit this to only dev mode
 	  if (mainWindow.isVisible() && process.defaultApp && event.metaKey) {
 	    mainWindow.openDevTools({mode: 'detach'})
 	  }
@@ -108,7 +113,7 @@ function createMainWindow() {
 		acceptFirstClick: true,
 		transparent: true,
 		frame: false,
-		// backgroundColor: '#2c3e5022'
+		backgroundColor: '#262626'
 	});
 
 	win.loadURL(`file://${__dirname}/index.html`);
