@@ -22,11 +22,9 @@ const SortableList = SortableContainer(({items}) => {
                         displayValue += `${value[key]} `;
                     }
                     if (key == "glyph") {
-                        console.log("l: glyph", keys.length, value[key]);
                         hasGlyph = true;
                     }
                     if (key == "char") {
-                        console.log("l: char", keys.length, value[key]);
                         hasChar = true;
                     }
                 }
@@ -102,12 +100,10 @@ export default class Home extends Component {
     }
 
     filterList(targetValue) {
-        console.log('filterlist - this', this);
         var updatedList = this.state.initialItems;
 
         if (targetValue) {
             updatedList = updatedList.filter(function(item){
-                console.log('looping in updatedList, ', item);
                 const innerValues = Object.keys(item).map(key => item[key]);
                 
                 for (var i = 0; i < innerValues.length; i++) {

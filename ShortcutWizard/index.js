@@ -1,4 +1,5 @@
 'use strict';
+const electronVibrancy = require('electron-vibrancy');
 const { app, BrowserWindow, ipcMain, Tray } = require('electron');
 const path = require('path');
 var Datastore = require('nedb');
@@ -18,7 +19,7 @@ db.ensureIndex({
 });
 
 app.setName("ShortcutWizard");
-app.dock.hide()
+app.dock.hide();
 
 let mainWindow;
 const iconPath = path.join(__dirname, 'wizard.png');
@@ -51,7 +52,7 @@ const getWindowPosition = () => {
 function savePosition(appName) {
 	if (!appName) return;
 
-	positions[appName] = getWindowPosition;
+	positions[appName] = getWindowPosition();
 }
 
 function loadPosition(appName) {
@@ -105,7 +106,7 @@ function createMainWindow() {
 	});
 
 
-	const win = new BrowserWindow({
+	var win = new BrowserWindow({
 		width: 350,
 		height: 800,
 		title: "ShortcutWizard",
@@ -113,13 +114,36 @@ function createMainWindow() {
 		acceptFirstClick: true,
 		transparent: true,
 		frame: false,
-		backgroundColor: '#262626'
+		// backgroundColor: '#262626'
 	});
+
+
+// 0 - NSVisualEffectMaterialAppearanceBased 10.10+
+// 1 - NSVisualEffectMaterialLight 10.10+
+// 2 - NSVisualEffectMaterialDark 10.10+
+// 3 - NSVisualEffectMaterialTitlebar 10.10+
+// 4 - NSVisualEffectMaterialSelection 10.11+
+// 5 - NSVisualEffectMaterialMenu 10.11+
+// 6 - NSVisualEffectMaterialPopover 10.11+
+// 7 - NSVisualEffectMaterialSidebar 10.11+
+// 8 - NSVisualEffectMaterialMediumLight 10.11+
+// 9 - NSVisualEffectMaterialUltraDark 10.11+
+
+	// Whole window vibrancy with Material 0 and auto resize
+	win.on('ready-to-show',function() {
+		console.log('loaded window, vibrancy: ', electronVibrancy);
+	    // electronVibrancy.SetVibrancy(true, browserWindowInstance.getNativeWindowHandle());
+		electronVibrancy.SetVibrancy(win, 0);
+	})	;
+
+
+
 
 	win.loadURL(`file://${__dirname}/index.html`);
 	win.on('closed', onClosed);
 	win.setPosition(1100, 100);
 
+	win.setHasShadow(false);
 	return win;
 }
 
@@ -194,7 +218,7 @@ function loadWithPeriods(appName) {
 			var stringified = JSON.stringify(shortcuts.shortcuts);
 			stringified = stringified.replace(/u002e/g, '.');
 			shortcuts.shortcuts = JSON.parse(stringified);
-			console.log('sending shortcuts to be rendered: ', shortcuts);
+			// console.log('sending shortcuts to be rendered: ', shortcuts);
 			mainWindow.webContents.send('update-shortcuts', shortcuts);
 		} else {
 			console.log('sending webview-parse-shortcuts with appName', appName);

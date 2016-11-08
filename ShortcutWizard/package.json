@@ -3,7 +3,8 @@
   "productName": "ShortcutWizard",
   "version": "0.0.1",
   "main": "bootstrapper.js",
-  "license": "Private",
+  "license": "UNLICENSED",
+  "private": true,
   "repository": "bitbucket.org:codeluggage/shortcutwizard.git",
   "scripts": {
     "start": "./node_modules/.bin/electron bootstrapper.js"
@@ -12,6 +13,7 @@
     "babel-preset-es2015": "^6.3.13",
     "babel-preset-react": "^6.3.13",
     "babel-register": "^6.3.13",
+    "electron-vibrancy": "^0.1.3",
     "font-awesome": "^4.7.0",
     "nedb": "^1.8.0",
     "react": "^15.3.2",
