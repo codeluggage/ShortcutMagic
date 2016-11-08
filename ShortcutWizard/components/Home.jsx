@@ -66,8 +66,6 @@ export default class Home extends Component {
         //     }]
         // });
 
-        ipcRenderer.send('rendering-ready');
-
         ipcRenderer.on('update-shortcuts', (event, newShortcuts) => {
             console.log('entered update-shortcuts in Home', newShortcuts);
             let name = newShortcuts.name;
@@ -127,7 +125,20 @@ export default class Home extends Component {
     render() {
         console.log('render() called');
         if (!this.state) {
-            return ( <h1 style={{color:"white"}}>Loading...</h1> );
+            return (
+                <div style={{textAlign: 'center'}}>
+                    <button style={{color:"white", float:'left'}} id="reload-button" className="simple-button" onClick={() => {
+                        console.log('sending reloadShortcuts from ipcRenderer');
+                        ipcRenderer.send('main-parse-shortcuts');
+                    }}><i className="fa fa-1x fa-refresh"></i></button>
+
+                    <button style={{color:"white", float:'right'}} id="settings-button" className="simple-button" onClick={() => {
+                        ipcRenderer.send('openSettingsPage', null);
+                    }}><i className="fa fa-1x fa-cog"></i></button>
+                    <h1 style={{color:"white"}}>ShortcutWizard</h1>
+                    <p style={{color:'white'}}>When you focus another application, this area will show you shortcuts</p>
+                </div>
+            );
         }
 
         return (

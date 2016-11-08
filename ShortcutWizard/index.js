@@ -239,11 +239,6 @@ ipcMain.on('main-parse-shortcuts', function(event, appName) {
 	loadOrReloadShortcuts(appName);
 });
 
-ipcMain.on('rendering-ready', function(event) {
-	// TODO: replace with shortcutwizard
-	updateRenderedShortcuts(loadWithPeriods("Electron"));
-});
-
 ipcMain.on('show-window', () => {
   showWindow()
 });
