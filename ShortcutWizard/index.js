@@ -28,7 +28,6 @@ let appIcon = null;
 let backgroundTaskRunnerWindow;
 let backgroundListenerWindow;
 let currentAppName;
-let positions = {};
 
 
 const toggleWindow = () => {
@@ -40,38 +39,58 @@ const toggleWindow = () => {
   }
 }
 
-const getWindowPosition = () => {
-	const windowBounds = mainWindow.getBounds();
-	const windowSize = mainWindow.getSize();
-	return {
-		bounds: windowBounds,
-		size: windowSize
-	};
-}
-
 function savePosition(appName) {
-	if (!appName) return;
+	if (!appName || !mainWindow) return;
 
-	positions[appName] = getWindowPosition();
+	var bounds = mainWindow.getBounds();
+	console.log('saving bounds: ', );
+	db.update({
+		name: appName
+	}, {
+		$set: {
+			bounds: bounds
+		}
+	},
+	function(err, res) {
+		console.log('finished inserting bounds with err res', err, res);
+	});
 }
 
 function loadPosition(appName) {
-	if (!appName) return;
+	console.log('loading pos');
+	if (!appName || !mainWindow) return;
 
-	var hold = positions[appName];
-	if (!hold) return;
+	db.find({
+		name: appName
+	}, function(err, doc) {
+		if (err) {
+			console.log('error finding in loadPosition: ', err);
+		}
 
-	mainWindow.setBounds(hold.bounds)
-	mainWindow.setSize(hold.size)
+		if (doc != [] && doc.length > 0) {
+			var bounds = doc[0].bounds;
+			console.log('found app bounds when loading: ', bounds);
+			if (!bounds) return;
+
+			console.log('setting bounds');
+			mainWindow.setBounds(bounds);
+		}
+	});
 }
 
 const showWindow = () => {
 	if (currentAppName) {
-		var currentPosition = positions[currentAppName];
-		if (currentPosition) {
-			mainWindow.setBounds(currentPosition.bounds.x, currentPosition.bounds.y);
-			mainWindow.setSize(currentPosition.size.x, currentPosition.size.y);
-		}
+		db.find({
+			name: currentAppName
+		}, function(err, doc) {
+			if (err) {
+				console.log('error finding in loadPosition: ', err);
+			}
+
+			if (doc != [] && doc.length > 0) {
+				mainWindow.setBounds(doc[0].bounds);
+			}
+		});
 	}
 
 	mainWindow.show()
@@ -191,7 +210,13 @@ function saveWithoutPeriods(payload) {
 	db.update({
 		name: payload.name
 	},
-	payload, {
+	{
+		$set: {
+			name: payload.name,
+			shortcuts: payload.shortcuts,
+			bounds: mainWindow.getBounds()
+		}
+	}, {
 		upsert: true
 	}, function(err, res) {
 		if (err) {
@@ -245,11 +270,15 @@ app.on('ready', () => {
 });
 
 ipcMain.on('main-app-switched-notification', function(event, appName) {
-	console.log('app switched to', appName);
+	console.log('app switch. app name was', currentAppName, "appname is now: ", appName);
 	// TODO: add css spinner when this is running
-	savePosition(currentAppName);
+	if (currentAppName) {
+		savePosition(currentAppName);
+	}
+
 	loadOrReloadShortcuts(appName);
 	loadPosition(appName);
+	currentAppName = appName;
 });
 
 ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
