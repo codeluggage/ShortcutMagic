@@ -270,7 +270,12 @@ app.on('ready', () => {
 });
 
 ipcMain.on('main-app-switched-notification', function(event, appName) {
-	console.log('app switch. app name was', currentAppName, "appname is now: ", appName);
+	console.log('app switch. app name was', currentAppName, "appname will change to: ", appName);
+	if (appName == "Electron") {
+		console.log('cannot switch to ourselves');
+		return;
+	}
+
 	// TODO: add css spinner when this is running
 	if (currentAppName) {
 		savePosition(currentAppName);

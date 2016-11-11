@@ -3,7 +3,7 @@ const { ipcRenderer } = require('electron');
 const appSwitchListener = require('../shared/appSwitchListener');
 
 window.onload = function () {
-	appSwitchListener(function(notification) {
-		ipcRenderer.send('main-app-switched-notification', notification);
+	appSwitchListener(function(appName) {
+		ipcRenderer.send('main-app-switched-notification', appName);
 	});
 };
