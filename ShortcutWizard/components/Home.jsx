@@ -88,10 +88,12 @@ export default class Home extends Component {
     }
 
     onSortEnd({oldIndex, newIndex}) {
-        console.log('onsortend - this', this);
+        console.log('onsortend, updating order of shortcuts');
         this.setState({
             items: arrayMove(this.state.items, oldIndex, newIndex)
         });
+
+        ipcRenderer.send('update-shortcut-order', this.state.name, this.state.items);
     }
 
     filterListTrigger(event) {

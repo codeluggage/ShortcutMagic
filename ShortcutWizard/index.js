@@ -222,7 +222,7 @@ function saveWithoutPeriods(payload) {
 		if (err) {
 			console.log('ERROR: upserting in db got error: ', err);
 		} else {
-			console.log('finished upserting shortcuts in db: ');
+			console.log('finished upserting shortcuts in db');
 		}
 	});
 }
@@ -299,4 +299,21 @@ ipcMain.on('main-parse-shortcuts', function(event, appName) {
 
 ipcMain.on('show-window', () => {
   showWindow()
+});
+
+ipcMain.on('update-shortcut-order', function(event, appName, shortcuts) {
+	console.log('entered update-shortcut-order', appName, shortcuts);
+	db.update({
+		name: appName
+	}, {
+		$set: {
+			shortcuts: shortcuts
+		}
+	}, function(err, doc) {
+		if (err) {
+			console.log('failed to upsert shortcuts in "update-shortcut-order"', err);
+		} else {
+			console.log('succeeded in updating order of shortcuts');
+		}
+	});
 });
