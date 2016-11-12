@@ -33,6 +33,10 @@ body {
   border-color: #000000
 }
 
+input {
+  font-family:FontAwesome;
+}
+
 /*.simple-button-left simple-button {
 
 }
@@ -52,7 +56,7 @@ body {
     width: 100%;
     display: block;
     padding: 10px;
-    border-radius: 5px 5px 0 0;
+    border-radius: 5px;
     border: 0;
     font-size: 1.5em;
     border: 1px solid #afafaf;

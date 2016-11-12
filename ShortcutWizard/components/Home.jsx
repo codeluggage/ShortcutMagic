@@ -138,21 +138,34 @@ export default class Home extends Component {
                 </div>
             );
         }
+/*
+                sort-up
+                sort-down
+                star-o
+                star
+                chevron-up
+                chevron-down
+                check-square
+                check-square-o
+                square
+                question-circle
 
+*/
         return (
             <div style={{textAlign: 'center'}}>
                     <button style={{color:"white", float:'left'}} id="reload-button" className="simple-button" onClick={() => {
                         console.log('sending reloadShortcuts from ipcRenderer');
                         ipcRenderer.send('main-parse-shortcuts');
-                    }}><i className="fa fa-1x fa-refresh"></i></button>
+                    }}><i className="fa fa-1x fa-rotate-right"></i></button>
 
                     <button style={{color:"white", float:'right'}} id="settings-button" className="simple-button" onClick={() => {
                         ipcRenderer.send('openSettingsPage', null);
                     }}><i className="fa fa-1x fa-cog"></i></button>
                 <h1 style={{color:"white", marginTop:'5px'}}>{this.state.name}</h1>
 
+
                 <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
-                    <input style={{fontSize: 14}} type="text" placeholder="Search..." onChange={this.filterListTrigger}/>
+                    <input style={{fontSize: 18}} type="text" placeholder="&#xF002;" onChange={this.filterListTrigger}/>
 
                     <div style={{textAlign: 'left'}}>
                         <SortableList
