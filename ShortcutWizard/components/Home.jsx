@@ -1,6 +1,5 @@
 'use babel';
 import React, { Component } from 'react';
-import { Link } from 'react-router';
 import {SortableContainer, SortableElement, arrayMove} from 'react-sortable-hoc';
 import { ipcRenderer } from 'electron';
 
@@ -131,7 +130,7 @@ export default class Home extends Component {
                     }}><i className="fa fa-1x fa-refresh"></i></button>
 
                     <button style={{color:"white", float:'right'}} id="settings-button" className="simple-button" onClick={() => {
-                        ipcRenderer.send('openSettingsPage', null);
+                        ipcRenderer.send('open-settings', null);
                     }}><i className="fa fa-1x fa-cog"></i></button>
                     <h1 style={{color:"white"}}>ShortcutWizard</h1>
                     <p style={{color:'white'}}>When you focus another application, this area will show you shortcuts</p>
@@ -159,7 +158,7 @@ export default class Home extends Component {
                     }}><i className="fa fa-1x fa-rotate-right"></i></button>
 
                     <button style={{color:"white", float:'right'}} id="settings-button" className="simple-button" onClick={() => {
-                        ipcRenderer.send('openSettingsPage', null);
+                        ipcRenderer.send('open-settings', null);
                     }}><i className="fa fa-1x fa-cog"></i></button>
                 <h1 style={{color:"white", marginTop:'5px'}}>{this.state.name}</h1>
 

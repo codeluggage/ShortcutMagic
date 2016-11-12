@@ -21,14 +21,34 @@ db.ensureIndex({
 app.setName("ShortcutWizard");
 app.dock.hide();
 
-let mainWindow;
 const iconPath = path.join(__dirname, 'wizard.png');
 console.log('icon path loaded: ', iconPath);
 let appIcon = null;
+let mainWindow;
 let backgroundTaskRunnerWindow;
 let backgroundListenerWindow;
+let settingsWindow;
 let currentAppName;
 
+
+
+const showAndAlignSettings = () => {
+	// pseudocode: move window to left or right side depending on main window position
+	// if (mainWindow.bounds().x < app.getScreenSize() / 2) {
+	// 	// window is towards the left, put settings to the right:
+	// 	settingsWindow.setBounds(mainWindowBounds.x - mainWindowBounds.width,
+	// 		mainWindowBounds.y, 400, mainWindowBounds.height);
+	// } else {
+	// 	// window is towards the right, put settings to the left:
+	// 	settingsWindow.setBounds(mainWindowBounds.x,
+	// 		mainWindowBounds.y, 400, mainWindowBounds.height);
+	// }
+
+	console.log('showing settings window: ');
+	settingsWindow.show();
+	settingsWindow.focus();
+	console.log(settingsWindow);
+};
 
 const toggleWindow = () => {
 	console.log('togglewindow with isvisible: ', mainWindow.isVisible());
@@ -101,6 +121,7 @@ function createWindows() {
 	mainWindow = createMainWindow();
 	backgroundTaskRunnerWindow = createBackgroundTaskRunnerWindow();
 	backgroundListenerWindow = createBackgroundListenerWindow();
+	settingsWindow = createSettingsWindow();
 }
 
 function onClosed() {
@@ -137,16 +158,16 @@ function createMainWindow() {
 	});
 
 
-// 0 - NSVisualEffectMaterialAppearanceBased 10.10+
-// 1 - NSVisualEffectMaterialLight 10.10+
-// 2 - NSVisualEffectMaterialDark 10.10+
-// 3 - NSVisualEffectMaterialTitlebar 10.10+
-// 4 - NSVisualEffectMaterialSelection 10.11+
-// 5 - NSVisualEffectMaterialMenu 10.11+
-// 6 - NSVisualEffectMaterialPopover 10.11+
-// 7 - NSVisualEffectMaterialSidebar 10.11+
-// 8 - NSVisualEffectMaterialMediumLight 10.11+
-// 9 - NSVisualEffectMaterialUltraDark 10.11+
+	// 0 - NSVisualEffectMaterialAppearanceBased 10.10+
+	// 1 - NSVisualEffectMaterialLight 10.10+
+	// 2 - NSVisualEffectMaterialDark 10.10+
+	// 3 - NSVisualEffectMaterialTitlebar 10.10+
+	// 4 - NSVisualEffectMaterialSelection 10.11+
+	// 5 - NSVisualEffectMaterialMenu 10.11+
+	// 6 - NSVisualEffectMaterialPopover 10.11+
+	// 7 - NSVisualEffectMaterialSidebar 10.11+
+	// 8 - NSVisualEffectMaterialMediumLight 10.11+
+	// 9 - NSVisualEffectMaterialUltraDark 10.11+
 
 	// Whole window vibrancy with Material 0 and auto resize
 	win.on('ready-to-show',function() {
@@ -154,9 +175,6 @@ function createMainWindow() {
 	    // electronVibrancy.SetVibrancy(true, browserWindowInstance.getNativeWindowHandle());
 		electronVibrancy.SetVibrancy(win, 0);
 	})	;
-
-
-
 
 	win.loadURL(`file://${__dirname}/index.html`);
 	win.on('closed', onClosed);
@@ -183,6 +201,19 @@ function createBackgroundListenerWindow() {
 
 	console.log('loaded listener window');
 	win.loadURL(`file://${__dirname}/background/listener.html`);
+	return win;
+}
+
+function createSettingsWindow() {
+	const win = new BrowserWindow({
+		show: false,
+		title: "ShortcutWizard Settings",
+		alwaysOnTop: true,
+		acceptFirstClick: true,
+		frame: false,
+	});
+
+	win.loadURL(`file://${__dirname}/settings/index.html`);
 	return win;
 }
 
@@ -316,4 +347,9 @@ ipcMain.on('update-shortcut-order', function(event, appName, shortcuts) {
 			console.log('succeeded in updating order of shortcuts');
 		}
 	});
+});
+
+ipcMain.on('open-settings', function(event) {
+	console.log('entered open-settings');
+	showAndAlignSettings();
 });
