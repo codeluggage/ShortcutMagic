@@ -23,7 +23,7 @@ app.dock.hide();
 
 const iconPath = path.join(__dirname, 'wizard.png');
 console.log('icon path loaded: ', iconPath);
-let appIcon = null;
+let trayObject;
 let mainWindow;
 let backgroundTaskRunnerWindow;
 let backgroundListenerWindow;
@@ -32,7 +32,7 @@ let currentAppName;
 
 
 
-const showAndAlignSettings = () => {
+const toggleSettings = () => {
 	// pseudocode: move window to left or right side depending on main window position
 	// if (mainWindow.bounds().x < app.getScreenSize() / 2) {
 	// 	// window is towards the left, put settings to the right:
@@ -44,10 +44,12 @@ const showAndAlignSettings = () => {
 	// 		mainWindowBounds.y, 400, mainWindowBounds.height);
 	// }
 
-	console.log('showing settings window: ');
-	settingsWindow.show();
-	settingsWindow.focus();
-	console.log(settingsWindow);
+	if (settingsWindow.isVisible()) {
+		settingsWindow.hide();
+	} else {
+		settingsWindow.show();
+		settingsWindow.focus();
+	}
 };
 
 const toggleWindow = () => {
@@ -125,18 +127,23 @@ function createWindows() {
 }
 
 function onClosed() {
+	// TODO: Clean up each ipcRenderer individually before nulling object
+	trayObject.destroy();
+	ipcMain.removeAllListeners();
+	trayObject = null;
 	mainWindow = null;
 	backgroundTaskRunnerWindow = null;
 	backgroundListenerWindow = null;
+	settingsWindow = null;
 }
 
 function createMainWindow() {
-	appIcon = new Tray(iconPath);
-	console.log('created appicon: ', appIcon);
-	appIcon.setToolTip('ShortcutWizard!');
-	appIcon.on('right-click', toggleWindow);
-	appIcon.on('double-click', toggleWindow);
-	appIcon.on('click', function (event) {
+	trayObject = new Tray(iconPath);
+	console.log('created trayObject: ', trayObject);
+	trayObject.setToolTip('ShortcutWizard!');
+	trayObject.on('right-click', toggleWindow);
+	trayObject.on('double-click', toggleWindow);
+	trayObject.on('click', function (event) {
 	  toggleWindow();
 
 	  // TODO: Limit this to only dev mode
@@ -283,10 +290,9 @@ function loadWithPeriods(appName) {
 	});
 }
 
-app.on('window-all-closed', () => {
-	if (process.platform !== 'darwin') {
-		app.quit();
-	}
+app.on('window-all-closed', function() {
+	onClosed();
+	app.quit();
 });
 
 app.on('activate-with-no-open-windows', () => {
@@ -329,7 +335,7 @@ ipcMain.on('main-parse-shortcuts', function(event, appName) {
 });
 
 ipcMain.on('show-window', () => {
-  showWindow()
+  showWindow();
 });
 
 ipcMain.on('update-shortcut-order', function(event, appName, shortcuts) {
@@ -351,5 +357,5 @@ ipcMain.on('update-shortcut-order', function(event, appName, shortcuts) {
 
 ipcMain.on('open-settings', function(event) {
 	console.log('entered open-settings');
-	showAndAlignSettings();
+	toggleSettings();
 });

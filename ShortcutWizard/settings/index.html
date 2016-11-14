@@ -1,13 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>ShortcutWizard Settings</title>
-    <script>
-    	require('./index');
-    </script>
-</head>
-<body>
-    <div id="settings-root"></div>
-</body>
+<html>
+	<head>
+	    <script>
+	      require('babel-register'); // install babel hooks in the renderer process
+	    	require('./index');
+	    </script>
+	</head>
+	<body>
+	    <div id="settings-root"></div>
+	</body>
 </html>
