@@ -15,3 +15,7 @@ export default class Settings extends Component {
 		);
     }
 }
+
+window.onload = function(){
+	ReactDOM.render(<Settings />, document.getElementById("settings-root"));
+};

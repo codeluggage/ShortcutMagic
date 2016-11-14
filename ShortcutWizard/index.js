@@ -44,6 +44,10 @@ const toggleSettings = () => {
 	// 		mainWindowBounds.y, 400, mainWindowBounds.height);
 	// }
 
+	if (!settingsWindow) {
+		settingsWindow = createSettingsWindow();
+	}
+
 	if (settingsWindow.isVisible()) {
 		settingsWindow.hide();
 	} else {
@@ -212,7 +216,7 @@ function createBackgroundListenerWindow() {
 }
 
 function createSettingsWindow() {
-	const win = new BrowserWindow({
+	settingsWindow = new BrowserWindow({
 		show: false,
 		title: "ShortcutWizard Settings",
 		alwaysOnTop: true,
@@ -220,8 +224,9 @@ function createSettingsWindow() {
 		frame: false,
 	});
 
-	win.loadURL(`file://${__dirname}/settings/index.html`);
-	return win;
+	settingsWindow.loadURL(`file://${__dirname}/settings/index.html`);
+	settingsWindow.on('closed', () => { settingsWindow = null; });
+	return settingsWindow;
 }
 
 function loadOrReloadShortcuts(appName) {
