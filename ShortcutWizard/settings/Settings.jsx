@@ -6,13 +6,38 @@ import ReactDOM from 'react-dom';
 
 export default class Settings extends Component {
     componentWillMount() {
-        console.log('settings constructor called');
+    	ipcRenderer.send('get-preferences');
+
+    	ipcRenderer.on('default-preferences', (event, settings) => {
+	        this.setState({
+	        	alpha: settings.alpha,
+	        	alwaysOnTop: settings.alwaysOnTop,
+	        	hidePerApp: settings.hidePerApp,
+	        });
+    	});
     }
 
     render() {
-    	return (
-    		<h1>hello from settings!</h1>
-		);
+    	if (this.state) {
+    		return (
+    			<ul>
+		        	<li>{this.state.alpha}</li>
+		        	<li>{this.state.alwaysOnTop}</li>
+		        	<li>{this.state.hidePerApp}</li>
+    			</ul>
+			);
+	  //   	return (
+	  //   		<h1>hello from settings!</h1>
+	  //   		<ul>
+	  //   			{this.state.map(key, obj) {
+	  //   				console.log('mapping over state in settings: ', key, obj);
+	  //   				return (<li>{key}: {obj}</li>);
+	  //   			}}
+	  //   		</ul>
+			// );
+	    } else {
+	    	return (<h1>hello from settings!</h1>);
+	    }
     }
 }
 

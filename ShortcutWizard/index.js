@@ -364,3 +364,11 @@ ipcMain.on('open-settings', function(event) {
 	console.log('entered open-settings');
 	toggleSettings();
 });
+
+ipcMain.on('get-preferences', function(event, callback) {
+	settingsWindow.webContents.send('default-preferences', {
+		alpha: 0.5,
+		alwaysOnTop: mainWindow.alwaysOnTop,
+		hidePerApp: false,
+	});
+});
