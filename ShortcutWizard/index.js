@@ -1,28 +1,39 @@
 'use strict';
+// Imports
 const electronVibrancy = require('electron-vibrancy');
 const { app, BrowserWindow, ipcMain, Tray } = require('electron');
 const path = require('path');
 var Datastore = require('nedb');
+
+
+// Defaults
 var db = new Datastore({
 	filename: `${__dirname}/db/shortcuts.db`,
 	autoload: true
 });
 
-// Setting unique value constraint on name
+
 db.ensureIndex({
 	fieldName: 'name',
-	unique: true
+	unique: true // Setting unique value constraint on name
 }, function (err) {
 	if (err) {
 		console.log('ERROR: db.ensureIndex failed to set unique constraint', err);
 	}
 });
 
+var defaultSettings = {
+	acceptFirstClick: true,
+	frame: false,
+	hidePerApp: true,
+	boundsPerApp: true,
+};
+const iconPath = path.join(__dirname, 'wizard.png');
+
 app.setName("ShortcutWizard");
 app.dock.hide();
 
-const iconPath = path.join(__dirname, 'wizard.png');
-console.log('icon path loaded: ', iconPath);
+// Global (for now) objects: 
 let trayObject;
 let mainWindow;
 let backgroundTaskRunnerWindow;
@@ -31,7 +42,7 @@ let settingsWindow;
 let currentAppName;
 
 
-
+// Functions
 const toggleSettings = () => {
 	// pseudocode: move window to left or right side depending on main window position
 	// if (mainWindow.bounds().x < app.getScreenSize() / 2) {
@@ -295,6 +306,8 @@ function loadWithPeriods(appName) {
 	});
 }
 
+
+// Events
 app.on('window-all-closed', function() {
 	onClosed();
 	app.quit();
@@ -365,10 +378,14 @@ ipcMain.on('open-settings', function(event) {
 	toggleSettings();
 });
 
-ipcMain.on('get-preferences', function(event, callback) {
+ipcMain.on('get-settings', function(event, callback) {
 	settingsWindow.webContents.send('default-preferences', {
 		alpha: 0.5,
-		alwaysOnTop: mainWindow.alwaysOnTop,
-		hidePerApp: false,
+		alwaysOnTop: mainWindow.isAlwaysOnTop(),
+		acceptFirstClick: defaultSettings.acceptFirstClick,
+		frame: defaultSettings.frame,
+		hidePerApp: defaultSettings.hidePerApp,
+		boundsPerApp: defaultSettings.boundsPerApp,
 	});
 });
+

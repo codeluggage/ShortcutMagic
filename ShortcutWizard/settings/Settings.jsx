@@ -2,29 +2,44 @@
 import React, { Component } from 'react';
 import { ipcRenderer } from 'electron';
 import ReactDOM from 'react-dom';
+import { PhotoshopPicker } from 'react-color';
 
 
 export default class Settings extends Component {
     componentWillMount() {
-    	ipcRenderer.send('get-preferences');
+    	ipcRenderer.send('get-settings');
 
     	ipcRenderer.on('default-preferences', (event, settings) => {
 	        this.setState({
 	        	alpha: settings.alpha,
 	        	alwaysOnTop: settings.alwaysOnTop,
 	        	hidePerApp: settings.hidePerApp,
+	        	background: '#fff'
 	        });
     	});
+
+        this.handleChangeComplete = this.handleChangeComplete.bind(this);
+    }
+
+    handleChangeComplete(color) {
+    	this.setState({ background: color.hex });
     }
 
     render() {
     	if (this.state) {
     		return (
-    			<ul>
-		        	<li>{this.state.alpha}</li>
-		        	<li>{this.state.alwaysOnTop}</li>
-		        	<li>{this.state.hidePerApp}</li>
-    			</ul>
+    			<div>
+	    			<ul>
+			        	<li>Transparency: {this.state.alpha}</li>
+			        	<li>Float on top: {this.state.alwaysOnTop}</li>
+			        	<li>Hide individually per app: {this.state.hidePerApp}</li>
+			        	<li>Size and position individually per app: {this.state.boundsPerApp}</li>
+	    			</ul>
+	    			<PhotoshopPicker 
+	    				color={this.state.background}
+		    			onChangeComplete={this.handleChangeComplete}
+	    			/>
+	    		</div>
 			);
 	  //   	return (
 	  //   		<h1>hello from settings!</h1>
