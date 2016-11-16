@@ -30,10 +30,10 @@ export default class Settings extends Component {
     		return (
     			<div>
 	    			<ul>
-			        	<li>Transparency: {this.state.alpha}</li>
-			        	<li>Float on top: {this.state.alwaysOnTop}</li>
-			        	<li>Hide individually per app: {this.state.hidePerApp}</li>
-			        	<li>Size and position individually per app: {this.state.boundsPerApp}</li>
+			        	<li>Transparency: {(this.state.alpha) ? "true" : "false"}</li>
+			        	<li>Float on top: {(this.state.alwaysOnTop) ? "true" : "false"}</li>
+			        	<li>Hide individually per app: {(this.state.hidePerApp) ? "true" : "false"}</li>
+			        	<li>Size and position individually per app: {(this.state.boundsPerApp) ? "true" : "false"}</li>
 	    			</ul>
 	    			<PhotoshopPicker 
 	    				color={this.state.background}

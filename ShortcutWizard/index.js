@@ -7,11 +7,39 @@ var Datastore = require('nedb');
 
 
 // Defaults
+var defaultSettings = {
+	alpha: 0.5,
+	acceptFirstClick: true,
+	frame: false,
+	hidePerApp: true,
+	boundsPerApp: true,
+	initialBounds: {x: 1100, y: 100, width: 350, height: 800}
+};
+
+var settings = new Datastore({
+	filename: `${__dirname}/db/settings.db`,
+	autoload: true
+});
+
+settings.find({
+	name: "defaults"
+}, function(err, doc) {
+	if (err) {
+		console.log('Tried to find default settings, got error: ', err);
+		return;
+	}
+
+	if (!doc || (doc == [] || doc.length == 0)) {
+		settings.insert(defaultSettings);
+	} else {
+		defaultSettings = doc[0];
+	}
+});
+
 var db = new Datastore({
 	filename: `${__dirname}/db/shortcuts.db`,
 	autoload: true
 });
-
 
 db.ensureIndex({
 	fieldName: 'name',
@@ -22,12 +50,6 @@ db.ensureIndex({
 	}
 });
 
-var defaultSettings = {
-	acceptFirstClick: true,
-	frame: false,
-	hidePerApp: true,
-	boundsPerApp: true,
-};
 const iconPath = path.join(__dirname, 'wizard.png');
 
 app.setName("ShortcutWizard");
@@ -87,8 +109,9 @@ function savePosition(appName) {
 		$set: {
 			bounds: bounds
 		}
-	},
-	function(err, res) {
+	}, {
+		upsert: true
+	}, function(err, res) {
 		console.log('finished inserting bounds with err res', err, res);
 	});
 }
@@ -104,7 +127,7 @@ function loadPosition(appName) {
 			console.log('error finding in loadPosition: ', err);
 		}
 
-		if (doc != [] && doc.length > 0) {
+		if (doc && doc != [] && doc.length > 0) {
 			var bounds = doc[0].bounds;
 			console.log('found app bounds when loading: ', bounds);
 			if (!bounds) return;
@@ -135,6 +158,7 @@ const showWindow = () => {
 }
 
 function createWindows() {
+	trayObject = createTray();
 	mainWindow = createMainWindow();
 	backgroundTaskRunnerWindow = createBackgroundTaskRunnerWindow();
 	backgroundListenerWindow = createBackgroundListenerWindow();
@@ -152,13 +176,13 @@ function onClosed() {
 	settingsWindow = null;
 }
 
-function createMainWindow() {
-	trayObject = new Tray(iconPath);
-	console.log('created trayObject: ', trayObject);
-	trayObject.setToolTip('ShortcutWizard!');
-	trayObject.on('right-click', toggleWindow);
-	trayObject.on('double-click', toggleWindow);
-	trayObject.on('click', function (event) {
+function createTray() {
+	var newTray = new Tray(iconPath);
+	console.log('created newTray: ', newTray);
+	newTray.setToolTip('ShortcutWizard!');
+	newTray.on('right-click', toggleWindow);
+	newTray.on('double-click', toggleWindow);
+	newTray.on('click', function (event) {
 	  toggleWindow();
 
 	  // TODO: Limit this to only dev mode
@@ -167,15 +191,16 @@ function createMainWindow() {
 	  }
 	});
 
+	return newTray;
+}
 
+function createMainWindow() {
 	var win = new BrowserWindow({
-		width: 350,
-		height: 800,
 		title: "ShortcutWizard",
-		alwaysOnTop: true,
-		acceptFirstClick: true,
-		transparent: true,
-		frame: false,
+		alwaysOnTop: defaultSettings.alwaysOnTop,
+		acceptFirstClick: defaultSettings.acceptFirstClick,
+		transparent: (defaultSettings.alpha != 0),
+		frame: defaultSettings.frame,
 		// backgroundColor: '#262626'
 	});
 
@@ -200,9 +225,9 @@ function createMainWindow() {
 
 	win.loadURL(`file://${__dirname}/index.html`);
 	win.on('closed', onClosed);
-	win.setPosition(1100, 100);
-
+	win.setBounds();
 	win.setHasShadow(false);
+
 	return win;
 }
 
