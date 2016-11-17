@@ -101,18 +101,26 @@ const toggleWindow = () => {
 function savePosition(appName) {
 	if (!appName || !mainWindow) return;
 
-	var bounds = mainWindow.getBounds();
-	console.log('saving bounds: ', );
-	db.update({
+	db.find({
 		name: appName
-	}, {
-		$set: {
-			bounds: bounds
+	}, function(err, doc) {
+		if (err) {
+			console.log('error finding in savePosition: ', err);
+			return;
 		}
-	}, {
-		upsert: true
-	}, function(err, res) {
-		console.log('finished inserting bounds with err res', err, res);
+
+		var newBounds = mainWindow.getBounds();
+		if (doc && doc != [] && doc.length > 0 && doc[0].bounds != newBounds) {
+			db.update({
+				name: appName
+			}, {
+				$set: {
+					bounds: newBounds
+				}
+			}, function(err, res) {
+				console.log('finished inserting bounds with err res', err, res);
+			});
+		}
 	});
 }
 
@@ -139,19 +147,19 @@ function loadPosition(appName) {
 }
 
 const showWindow = () => {
-	if (currentAppName) {
-		db.find({
-			name: currentAppName
-		}, function(err, doc) {
-			if (err) {
-				console.log('error finding in loadPosition: ', err);
-			}
+	// if (currentAppName) {
+	// 	db.find({
+	// 		name: currentAppName
+	// 	}, function(err, doc) {
+	// 		if (err) {
+	// 			console.log('error finding in loadPosition: ', err);
+	// 		}
 
-			if (doc != [] && doc.length > 0) {
-				mainWindow.setBounds(doc[0].bounds);
-			}
-		});
-	}
+	// 		if (doc != [] && doc.length > 0) {
+	// 			mainWindow.setBounds(doc[0].bounds);
+	// 		}
+	// 	});
+	// }
 
 	mainWindow.show()
 	mainWindow.focus()
@@ -356,11 +364,11 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 		return;
 	}
 
-	// TODO: add css spinner when this is running
 	if (currentAppName) {
 		savePosition(currentAppName);
 	}
 
+	// TODO: add css spinner when this is running
 	loadOrReloadShortcuts(appName);
 	loadPosition(appName);
 	currentAppName = appName;
