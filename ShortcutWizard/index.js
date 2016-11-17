@@ -225,7 +225,7 @@ function createMainWindow() {
 
 	win.loadURL(`file://${__dirname}/index.html`);
 	win.on('closed', onClosed);
-	win.setBounds();
+	win.setBounds(defaultSettings.initialBounds);
 	win.setHasShadow(false);
 
 	return win;
