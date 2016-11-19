@@ -62,6 +62,7 @@ let backgroundTaskRunnerWindow;
 let backgroundListenerWindow;
 let settingsWindow;
 let currentAppName;
+let loadedShortcuts = [];
 
 
 // Functions
@@ -120,28 +121,6 @@ function savePosition(appName) {
 			}, function(err, res) {
 				console.log('finished inserting bounds with err res', err, res);
 			});
-		}
-	});
-}
-
-function loadPosition(appName) {
-	console.log('loading pos');
-	if (!appName || !mainWindow) return;
-
-	db.find({
-		name: appName
-	}, function(err, doc) {
-		if (err) {
-			console.log('error finding in loadPosition: ', err);
-		}
-
-		if (doc && doc != [] && doc.length > 0) {
-			var bounds = doc[0].bounds;
-			console.log('found app bounds when loading: ', bounds);
-			if (!bounds) return;
-
-			console.log('setting bounds');
-			mainWindow.setBounds(bounds);
 		}
 	});
 }
@@ -273,15 +252,42 @@ function createSettingsWindow() {
 	return settingsWindow;
 }
 
-function loadOrReloadShortcuts(appName) {
-	console.log('loadOrReloadShortcuts with appName', appName);
+function loadForApp(appName) {
+	// if (!appName || !mainWindow) return;
+
+	// db.find({
+	// 	name: appName
+	// }, function(err, doc) {
+	// 	if (err) {
+	// 		console.log('error finding in loadPosition: ', err);
+	// 	}
+
+	// 	if (doc && doc != [] && doc.length > 0) {
+	// 		var bounds = doc[0].bounds;
+	// 		console.log('found app bounds when loading: ', bounds);
+	// 		if (!bounds) return;
+
+	// 		console.log('setting bounds');
+	// 		mainWindow.setBounds(bounds);
+	// 	}
+	// });
+
+	console.log('loadForApp with appName', appName);
 
 	if (!appName) {
 		console.log('sending webview-parse-shortcuts with appName');
 		backgroundTaskRunnerWindow.webContents.send('webview-parse-shortcuts'); // Send without name to reload current
+		return;
 	} else {
-		loadWithPeriods(appName);
+		var holdShortcuts = loadedShortcuts[appName];
+		if (holdShortcuts) {
+			mainWindow.setBounds(holdShortcuts.bounds);
+			mainWindow.webContents.send('update-shortcuts', holdShortcuts);
+			return;
+		}
 	}
+
+	loadWithPeriods(appName);
 }
 
 function updateRenderedShortcuts(shortcuts) {
@@ -289,6 +295,8 @@ function updateRenderedShortcuts(shortcuts) {
 }
 
 function saveWithoutPeriods(payload) {
+	loadedShortcuts[payload.name] = payload;
+
 	var stringified = JSON.stringify(payload.shortcuts);
 	stringified = stringified.replace(/\./g, 'u002e');
 	payload.shortcuts = JSON.parse(stringified);
@@ -296,8 +304,7 @@ function saveWithoutPeriods(payload) {
 
 	db.update({
 		name: payload.name
-	},
-	{
+	}, {
 		$set: {
 			name: payload.name,
 			shortcuts: payload.shortcuts,
@@ -315,6 +322,14 @@ function saveWithoutPeriods(payload) {
 }
 
 function loadWithPeriods(appName) {
+	console.log('entering loadWithPeriods for appname ', appName, loadedShortcuts);
+	var holdShortcuts = loadedShortcuts[appName];
+	if (holdShortcuts) {
+		console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> found and loaded in-memory shortcuts');
+		mainWindow.webContents.send('update-shortcut', holdShortcuts);
+		return;
+	}
+
 	// TODO: This is not going to work until appName is known before this point
 	db.find({
 		name: appName
@@ -326,12 +341,15 @@ function loadWithPeriods(appName) {
 		}
 
 		if (res != [] && res.length > 0) {
-			var shortcuts = res[0];
-			var stringified = JSON.stringify(shortcuts.shortcuts);
+			var newShortcuts = res[0];
+			var stringified = JSON.stringify(newShortcuts.shortcuts);
 			stringified = stringified.replace(/u002e/g, '.');
-			shortcuts.shortcuts = JSON.parse(stringified);
+			newShortcuts.shortcuts = JSON.parse(stringified);
+			console.log('setting loadedShortuts', newShortcuts);
+			loadedShortcuts[newShortcuts.appName] = newShortcuts;
+			console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> inserted from loadWithPeriods to loadedShortcuts');
 			// console.log('sending shortcuts to be rendered: ', shortcuts);
-			mainWindow.webContents.send('update-shortcuts', shortcuts);
+			mainWindow.webContents.send('update-shortcuts', newShortcuts);
 		} else {
 			console.log('sending webview-parse-shortcuts with appName', appName);
 			backgroundTaskRunnerWindow.webContents.send('webview-parse-shortcuts', appName);
@@ -354,7 +372,7 @@ app.on('activate-with-no-open-windows', () => {
 
 app.on('ready', () => {
 	createWindows();
-	loadOrReloadShortcuts();
+	loadForApp();
 });
 
 ipcMain.on('main-app-switched-notification', function(event, appName) {
@@ -369,8 +387,7 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 	}
 
 	// TODO: add css spinner when this is running
-	loadOrReloadShortcuts(appName);
-	loadPosition(appName);
+	loadForApp(appName);
 	currentAppName = appName;
 });
 
@@ -382,7 +399,7 @@ ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
 
 ipcMain.on('main-parse-shortcuts', function(event, appName) {
 	console.log('#2 - root index.js, triggered main-parse-shortcuts, with appName: ', appName, typeof appName);
-	loadOrReloadShortcuts(appName);
+	loadForApp(appName);
 });
 
 ipcMain.on('show-window', () => {
