@@ -79,6 +79,13 @@ export default class Home extends Component {
             });
         });
 
+        ipcRenderer.on('set-background', (event, background) => {
+            console.log('enetered set-background in Home', background);
+            this.setState({
+                background: background
+            });
+        });
+
 
         // Binding functions because local this doesn't work with this babel for some reason
         this.onSortEnd = this.onSortEnd.bind(this);
@@ -151,7 +158,7 @@ export default class Home extends Component {
 
 */
         return (
-            <div style={{textAlign: 'center'}}>
+            <div style={{textAlign: 'center', backgroundColor: this.state.background ? this.state.background : '#000000'}}>
                     <button style={{color:"white", float:'left'}} id="reload-button" className="simple-button" onClick={() => {
                         console.log('sending reloadShortcuts from ipcRenderer');
                         ipcRenderer.send('main-parse-shortcuts');

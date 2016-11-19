@@ -188,6 +188,7 @@ function createMainWindow() {
 		acceptFirstClick: defaultSettings.acceptFirstClick,
 		transparent: (defaultSettings.alpha != 0),
 		frame: defaultSettings.frame,
+		alpha: 0.5,
 		// backgroundColor: '#262626'
 	});
 
@@ -430,7 +431,7 @@ ipcMain.on('open-settings', function(event) {
 
 ipcMain.on('get-settings', function(event, callback) {
 	settingsWindow.webContents.send('default-preferences', {
-		alpha: 0.5,
+		alpha: defaultSettings.alpha,
 		alwaysOnTop: mainWindow.isAlwaysOnTop(),
 		acceptFirstClick: defaultSettings.acceptFirstClick,
 		frame: defaultSettings.frame,
@@ -439,3 +440,8 @@ ipcMain.on('get-settings', function(event, callback) {
 	});
 });
 
+
+ipcMain.on('set-background', function(event, background) {
+	console.log('in ipcMain set-background, with background: ', background);
+	mainWindow.webContents.send('set-background', background);
+});

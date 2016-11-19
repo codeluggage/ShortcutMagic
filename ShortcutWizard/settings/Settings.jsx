@@ -24,6 +24,7 @@ export default class Settings extends Component {
     handleChangeComplete(color) {
     	console.log('hit handleChangeComplete with color ', color);
     	this.setState({ background: color.hex });
+    	ipcRenderer.send('set-background', color.hex);
     }
 
     render() {
