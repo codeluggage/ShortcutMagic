@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import { ipcRenderer } from 'electron';
 import ReactDOM from 'react-dom';
-import { PhotoshopPicker } from 'react-color';
+import { SketchPicker } from 'react-color';
 
 
 export default class Settings extends Component {
@@ -14,7 +14,7 @@ export default class Settings extends Component {
 	        	alpha: settings.alpha,
 	        	alwaysOnTop: settings.alwaysOnTop,
 	        	hidePerApp: settings.hidePerApp,
-	        	background: '#fff'
+	        	background: settings.background
 	        });
     	});
 
@@ -23,9 +23,17 @@ export default class Settings extends Component {
 
     handleChangeComplete(color) {
     	console.log('hit handleChangeComplete with color ', color);
-    	this.setState({ background: color.hex });
-    	ipcRenderer.send('set-background', color.hex);
+    	var colorString = `rgba(${ color.rgb.r }, ${ color.rgb.g }, ${ color.rgb.b }, ${ color.rgb.a })`;
+    	this.setState({ background: colorString });
+    	window.document.documentElement.style.color = colorString;
+    	ipcRenderer.send('update-app-setting', {
+    		background: colorString
+    	});
     }
+
+    // TODO: implement "ok" button
+    // TODO: implement a save button
+    // TODO: implement a cancel button
 
     render() {
     	if (this.state) {
@@ -64,7 +72,7 @@ export default class Settings extends Component {
 			        	</li>
 			        	<li>
 			        		Choose color: 
-			    			<PhotoshopPicker 
+			    			<SketchPicker 
 			    				color={this.state.background}
 				    			onChangeComplete={this.handleChangeComplete}
 			    			/>

@@ -8,12 +8,14 @@ var Datastore = require('nedb');
 
 // Defaults
 var defaultSettings = {
+	name: "defaults",
 	alpha: 0.5,
 	acceptFirstClick: true,
 	frame: false,
 	hidePerApp: true,
 	boundsPerApp: true,
-	initialBounds: {x: 1100, y: 100, width: 350, height: 800}
+	initialBounds: {x: 1100, y: 100, width: 350, height: 800},
+	background: '#adadad'
 };
 
 var settings = new Datastore({
@@ -30,7 +32,11 @@ settings.find({
 	}
 
 	if (!doc || (doc == [] || doc.length == 0)) {
-		settings.insert(defaultSettings);
+		settings.insert(defaultSettings, function(err, doc) {
+			if (err) {
+				console.log('ERROR: inserting default settings into settings db failed with err', err);
+			}
+		});
 	} else {
 		defaultSettings = doc[0];
 	}
@@ -437,11 +443,33 @@ ipcMain.on('get-settings', function(event, callback) {
 		frame: defaultSettings.frame,
 		hidePerApp: defaultSettings.hidePerApp,
 		boundsPerApp: defaultSettings.boundsPerApp,
+		background: defaultSettings.background
 	});
 });
 
 
-ipcMain.on('set-background', function(event, background) {
-	console.log('in ipcMain set-background, with background: ', background);
-	mainWindow.webContents.send('set-background', background);
+ipcMain.on('update-global-setting', function(event, settingName, newSetting) {
+	console.log('update-global-setting NOT IMPLEMENTED');
+});
+
+ipcMain.on('update-app-setting', function(event, newSetting) {
+	var settingName = Object.keys(newSetting)[0];
+	if (settingName == "background") {
+		mainWindow.webContents.send('set-background', newSetting[settingName]);
+	} else {
+		mainWindow = null;
+		mainWindow = createMainWindow();
+	}
+
+	settings.update({
+		name: currentAppName
+	}, {
+		$set: newSetting
+	}, {
+		upsert: true
+	}, function(err, doc) {
+		if (err) {
+			console.log('failed to upsert settings in "update-app-setting"', err);
+		}
+	});
 });

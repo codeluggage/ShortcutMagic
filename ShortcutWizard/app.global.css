@@ -2,13 +2,38 @@
     box-sizing: border-box;
 }
 
-/*body {
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.app {
+  /* Disable text selection, or your app will feel like a web page */
+  -webkit-user-select: none;
+  -webkit-app-region: drag;
+
+  /* Cover the whole window */
+  height: 100%;
+
+  /* Make sure this matches the native window background color that you pass to
+   * electron.BrowserWindow({...}), otherwise your app startup will look janky. */
+  background: rgb(40, 40, 40);
+  
+  /* Smoother startup */
+  animation: fadein 0.5s;
+}
+
+body {
     padding: 5px;
-    background-color: rgba(050,050,050,0.4);
+    /*background-color: rgba(050,050,050,0.4);*/
     -webkit-app-region: drag;
     list-style-type: none;
 }
-*/
+
 .simple-button {
   align-self: flex-start;
   margin-right: 1em;
