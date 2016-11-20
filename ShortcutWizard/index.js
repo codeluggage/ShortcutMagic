@@ -434,15 +434,24 @@ ipcMain.on('open-settings', function(event) {
 	toggleSettings();
 });
 
-ipcMain.on('get-settings', function(event, callback) {
-	settingsWindow.webContents.send('default-preferences', {
-		alpha: defaultSettings.alpha,
-		alwaysOnTop: mainWindow.isAlwaysOnTop(),
-		acceptFirstClick: defaultSettings.acceptFirstClick,
-		frame: defaultSettings.frame,
-		hidePerApp: defaultSettings.hidePerApp,
-		boundsPerApp: defaultSettings.boundsPerApp,
-		background: defaultSettings.background
+ipcMain.on('get-settings', function(event) {
+	settings.find({
+		name: currentAppName
+	}, function(err, doc) {
+		if (err) {
+			console.log('Error loading settings', err);
+			settingsWindow.webContents.send('default-preferences', {
+				alpha: defaultSettings.alpha,
+				alwaysOnTop: mainWindow.isAlwaysOnTop(),
+				acceptFirstClick: defaultSettings.acceptFirstClick,
+				frame: defaultSettings.frame,
+				hidePerApp: defaultSettings.hidePerApp,
+				boundsPerApp: defaultSettings.boundsPerApp,
+				background: defaultSettings.background
+			});
+		} else if (doc && doc != [] && doc.length > 0) {
+			settingsWindow.webContents.send('default-preferences', doc[0]);
+		}
 	});
 });
 
