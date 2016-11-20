@@ -9,7 +9,6 @@ var Datastore = require('nedb');
 // Defaults
 var defaultSettings = {
 	name: "defaults",
-	alpha: 0.5,
 	acceptFirstClick: true,
 	frame: false,
 	hidePerApp: true,
@@ -187,15 +186,15 @@ function createTray() {
 	return newTray;
 }
 
-function createMainWindow() {
+function createMainWindow(useSettings) {
+	if (!useSettings) useSettings = defaultSettings;
+
 	var win = new BrowserWindow({
 		title: "ShortcutWizard",
-		alwaysOnTop: defaultSettings.alwaysOnTop,
-		acceptFirstClick: defaultSettings.acceptFirstClick,
-		transparent: (defaultSettings.alpha != 0),
-		frame: defaultSettings.frame,
-		alpha: 0.5,
-		// backgroundColor: '#262626'
+		alwaysOnTop: useSettings.alwaysOnTop,
+		acceptFirstClick: useSettings.acceptFirstClick,
+		frame: useSettings.frame,
+		backgroundColor: useSettings.background
 	});
 
 
@@ -453,14 +452,6 @@ ipcMain.on('update-global-setting', function(event, settingName, newSetting) {
 });
 
 ipcMain.on('update-app-setting', function(event, newSetting) {
-	var settingName = Object.keys(newSetting)[0];
-	if (settingName == "background") {
-		mainWindow.webContents.send('set-background', newSetting[settingName]);
-	} else {
-		mainWindow = null;
-		mainWindow = createMainWindow();
-	}
-
 	settings.update({
 		name: currentAppName
 	}, {
@@ -470,6 +461,15 @@ ipcMain.on('update-app-setting', function(event, newSetting) {
 	}, function(err, doc) {
 		if (err) {
 			console.log('failed to upsert settings in "update-app-setting"', err);
+			return;
+		}
+
+		var settingName = Object.keys(newSetting)[0];
+		if (settingName == "background") {
+			mainWindow.webContents.send('set-background', newSetting[settingName]);
+		} else {
+			// TODO: handle destruction better, or find a way to update settings on the running window
+			mainWindow = createMainWindow(doc[0]);
 		}
 	});
 });
