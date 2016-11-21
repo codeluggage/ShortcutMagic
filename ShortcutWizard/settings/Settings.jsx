@@ -10,18 +10,18 @@ function makeColorString(color) {
 
 export default class Settings extends Component {
     componentWillMount() {
-    	ipcRenderer.send('get-settings');
+        this.handleChangeComplete = this.handleChangeComplete.bind(this);
 
     	ipcRenderer.on('default-preferences', (event, settings) => {
-	        this.setState({
-	        	alpha: settings.alpha,
-	        	alwaysOnTop: settings.alwaysOnTop,
-	        	hidePerApp: settings.hidePerApp,
-	        	background: settings.background
-	        });
+	        this.setState(settings);
     	});
 
-        this.handleChangeComplete = this.handleChangeComplete.bind(this);
+    	ipcRenderer.send('get-settings');
+    }
+
+    // TODO: is this the way to implement destructor to stop listening?
+    componentDidUnmount() {
+    	ipcRenderer.removeListener('default-preferences');
     }
 
     handleChangeComplete(color) {
@@ -29,62 +29,76 @@ export default class Settings extends Component {
     	var colorString = makeColorString(color);
     	this.setState({ background: colorString });
     	window.document.documentElement.style.color = colorString;
-    	ipcRenderer.send('update-app-setting', {
+    	ipcRenderer.send('temporarily-update-app-setting', {
     		background: colorString
     	});
     }
-
-    // TODO: implement "ok" button
-    // TODO: implement a save button
-    // TODO: implement a cancel button
 
     render() {
     	if (this.state) {
     		console.log('about to render settings with state: ', this.state);
     		return (
     			<div style={{backgroundColor: this.state.background}}>
-			        	<li>
-		                    <button className="simple-button" onClick={() => {
-		                    	var alwaysOnTop = !this.state.alwaysOnTop;
-		                    	this.setState({alwaysOnTop: alwaysOnTop});
-		                    	ipcRenderer.send('update-app-setting', {
-		                    		alwaysOnTop: alwaysOnTop
-		                    	});
-		                    }}>
-			                    Float on top: {(this.state.alwaysOnTop) ? "true" : "false"}
-		                    </button>
-			        	</li>
+                    <button style={{color:"white", float:'left'}} className="simple-button" onClick={() => {
+                    	console.log('NOT IMPLEMENTED show settings for all apps');
+                    }}>Settings for all apps</button>
 
-			        	<li>
-		                    <button className="simple-button" onClick={() => {
-		                    	var hidePerApp = !this.state.hidePerApp;
-		                    	this.setState({hidePerApp: hidePerApp});
-		                    	ipcRenderer.send('update-app-setting', {
-		                    		hidePerApp: hidePerApp
-		                    	});
-		                    }}>
-					        	Hide individually per app: {(this.state.hidePerApp) ? "true" : "false"}
-		                    </button>
-			        	</li>
+                    <button style={{color:"white", float:'right'}} className="simple-button" onClick={() => {
+                    	console.log('NOT IMPLEMENTED show settings for current app');
+                    }}>Settings for {this.state.local.name}</button>
 
-			        	<li>
-		                    <button className="simple-button" onClick={() => {
-		                    	var boundsPerApp = !this.state.boundsPerApp;
-		                    	this.setState({boundsPerApp: boundsPerApp});
-		                    	ipcRenderer.send('update-app-setting', {
-		                    		boundsPerApp: boundsPerApp
-		                    	});
-		                    }}>
-					        	Size and position individually per app: {(this.state.boundsPerApp) ? "true" : "false"}
-		                    </button>
-			        	</li>
-			        	<li>
-			        		Choose color: 
-			    			<SketchPicker 
-			    				color={this.state.background}
-				    			onChangeComplete={this.handleChangeComplete}
-			    			/>
-			    		</li>
+		        	<li>
+	                    <button className="simple-button" onClick={() => {
+	                    	var alwaysOnTop = !this.state.alwaysOnTop;
+	                    	this.setState({alwaysOnTop: alwaysOnTop});
+	                    	ipcRenderer.send('temporarily-update-app-setting', {
+	                    		alwaysOnTop: alwaysOnTop
+	                    	});
+	                    }}>
+		                    Float on top: {(this.state.alwaysOnTop) ? "true" : "false"}
+	                    </button>
+		        	</li>
+
+		        	<li>
+	                    <button className="simple-button" onClick={() => {
+	                    	var hidePerApp = !this.state.hidePerApp;
+	                    	this.setState({hidePerApp: hidePerApp});
+	                    	ipcRenderer.send('temporarily-update-app-setting', {
+	                    		hidePerApp: hidePerApp
+	                    	});
+	                    }}>
+				        	Hide individually per app: {(this.state.hidePerApp) ? "true" : "false"}
+	                    </button>
+		        	</li>
+
+		        	<li>
+	                    <button className="simple-button" onClick={() => {
+	                    	var boundsPerApp = !this.state.boundsPerApp;
+	                    	this.setState({boundsPerApp: boundsPerApp});
+	                    	ipcRenderer.send('temporarily-update-app-setting', {
+	                    		boundsPerApp: boundsPerApp
+	                    	});
+	                    }}>
+				        	Size and position individually per app: {(this.state.boundsPerApp) ? "true" : "false"}
+	                    </button>
+		        	</li>
+
+		        	<li>
+		        		Choose color: 
+		    			<SketchPicker 
+		    				color={this.state.background}
+			    			onChangeComplete={this.handleChangeComplete}
+		    			/>
+		    		</li>
+
+                    <button style={{color:"white", float:'left'}} className="simple-button" onClick={() => {
+                    	console.log('sending state as settings to "save-settings"', this.state);
+                        ipcRenderer.send('save-settings', this.state);
+                    }}>Save</button>
+                    <button style={{color:"white", float:'right'}} className="simple-button" onClick={() => {
+                    	console.log('cancelling settings window');
+                    	ipcRenderer.send('undo-settings');
+                    }}>Cancel</button>
 	    		</div>
 			);
 	  //   	return (
