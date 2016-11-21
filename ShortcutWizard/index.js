@@ -4,6 +4,7 @@ const electronVibrancy = require('electron-vibrancy');
 const { app, BrowserWindow, ipcMain, Tray } = require('electron');
 const path = require('path');
 var Datastore = require('nedb');
+var GLOBAL_SETTINGS = "__GLOBALSETTINGS__";
 
 
 // Defaults
@@ -515,12 +516,14 @@ ipcMain.on('open-settings', function(event) {
 });
 
 ipcMain.on('get-settings', function(event) {
+	// TODO: use GLOBAL_SETTINGS to get global settings too
 	settings.find({
 		name: currentAppName
 	}, function(err, doc) {
 		if (err) {
 			console.log('Error loading settings', err);
 			settingsWindow.webContents.send('default-preferences', {
+				name: currentAppName,
 				alpha: defaultSettings.alpha,
 				alwaysOnTop: mainWindow.isAlwaysOnTop(),
 				acceptFirstClick: defaultSettings.acceptFirstClick,
@@ -540,11 +543,39 @@ ipcMain.on('update-global-setting', function(event, settingName, newSetting) {
 	console.log('update-global-setting NOT IMPLEMENTED');
 });
 
-ipcMain.on('update-app-setting', function(event, newSetting) {
+
+ipcMain.on('temporarily-update-app-setting', function(event, newSetting) {
+	// TODO: don't save settings here, just apply them
+});
+
+// Updates and saves the settings
+ipcMain.on('save-settings', function(event, newSettings) {
+	console.log('inside save-settings with newSettings', newSettings);
+	settings.update({
+		name: GLOBAL_SETTINGS
+	}, {
+		$set: newSetting.global
+	}, {
+		upsert: true
+	}, function(err, doc) {
+		if (err) {
+			console.log('failed to upsert settings in "update-app-setting"', err);
+			return;
+		}
+
+		var settingName = Object.keys(newSetting)[0];
+		if (settingName == "background") {
+			mainWindow.webContents.send('set-background', newSetting[settingName]);
+		} else {
+			// TODO: handle destruction better, or find a way to update settings on the running window
+			mainWindow = createMainWindow(doc[0]);
+		}
+	});
+
 	settings.update({
 		name: currentAppName
 	}, {
-		$set: newSetting
+		$set: newSetting.local
 	}, {
 		upsert: true
 	}, function(err, doc) {
@@ -563,6 +594,7 @@ ipcMain.on('update-app-setting', function(event, newSetting) {
 	});
 });
 
+
 ipcMain.on('change-window-mode', function(event, newMode) {
 	if (newMode) {
 		// This type of input is easy to send and annoying to unwind on the receiving end -
@@ -578,4 +610,8 @@ ipcMain.on('change-window-mode', function(event, newMode) {
 		// Toggle over to next mode
 		applyWindowMode();
 	}
+});
+
+ipcMain.on('undo-settings', function(event) {
+	// TODO: revert to settings before settings window was opened
 });
