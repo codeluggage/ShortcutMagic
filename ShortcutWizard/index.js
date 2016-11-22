@@ -6,18 +6,20 @@ const path = require('path');
 var Datastore = require('nedb');
 var GLOBAL_SETTINGS = "__GLOBALSETTINGS__";
 
-
-// Defaults
-var defaultSettings = {
-	name: "defaults",
-	acceptFirstClick: true,
-	frame: false,
-	hidePerApp: true,
-	boundsPerApp: true,
-	initialBounds: {x: 1100, y: 100, width: 350, height: 800},
-	background: '#adadad'
+// Cached values held in memory: 
+var localSettings = {};
+var globalSettings = {
+	global: {
+		acceptFirstClick: true,
+		frame: false,
+		hidePerApp: true,
+		boundsPerApp: true,
+		initialBounds: {x: 1100, y: 100, width: 350, height: 800},
+		background: '#adadad'
+	}
 };
 
+// Defaults
 var settings = new Datastore({
 	filename: `${__dirname}/db/settings.db`,
 	autoload: true
@@ -32,14 +34,18 @@ settings.find({
 	}
 
 	if (!doc || (doc == [] || doc.length == 0)) {
-		settings.insert(defaultSettings, function(err, doc) {
+		settings.insert({
+			"defaults": globalSettings
+		}, function(err, doc) {
 			if (err) {
 				console.log('ERROR: inserting default settings into settings db failed with err', err);
 			}
 		});
 	} else {
-		defaultSettings = doc[0];
+		globalSettings = doc[0];
 	}
+
+	globalSettings = globalSettings.global;
 });
 
 var db = new Datastore({
@@ -72,6 +78,13 @@ let loadedShortcuts = [];
 
 
 // Functions
+const destroySettings = () => {
+	if (settingsWindow) {
+		undoSettings();
+		settingsWindow = null;
+	}
+};
+
 const toggleSettings = () => {
 	// pseudocode: move window to left or right side depending on main window position
 	// if (mainWindow.bounds().x < app.getScreenSize() / 2) {
@@ -84,16 +97,33 @@ const toggleSettings = () => {
 	// 		mainWindowBounds.y, 400, mainWindowBounds.height);
 	// }
 
-	if (!settingsWindow) {
-		settingsWindow = createSettingsWindow();
+	if (settingsWindow) {
+		destroySettings();
 	}
 
-	if (settingsWindow.isVisible()) {
-		settingsWindow.hide();
-	} else {
-		settingsWindow.show();
-		settingsWindow.focus();
-	}
+	settingsWindow = createSettingsWindow();
+};
+
+const undoSettings = () => {
+	settings.find({
+		name: currentAppName
+	}, function(err, doc) {
+		var setDefaultSettings = globalSettings;
+		setDefaultSettings["name"] = currentAppName;
+
+		if (err) {
+			// TODO: streamline default settings
+			settingsWindow.webContents.send('default-preferences', setDefaultSettings);
+		} else if (doc && doc != [] && doc.length > 0) {
+			settingsWindow.webContents.send('default-preferences', doc[0]);
+		} else {
+			// TODO: streamline default settings
+			settingsWindow.webContents.send('default-preferences', {
+				global: setDefaultSettings,
+				local: setDefaultSettings
+			});
+		}
+	});
 };
 
 const toggleWindow = () => {
@@ -155,7 +185,6 @@ function createWindows() {
 	mainWindow = createMainWindow();
 	backgroundTaskRunnerWindow = createBackgroundTaskRunnerWindow();
 	backgroundListenerWindow = createBackgroundListenerWindow();
-	settingsWindow = createSettingsWindow();
 }
 
 function onClosed() {
@@ -166,7 +195,7 @@ function onClosed() {
 	mainWindow = null;
 	backgroundTaskRunnerWindow = null;
 	backgroundListenerWindow = null;
-	settingsWindow = null;
+	destroySettings();
 }
 
 function createTray() {
@@ -188,7 +217,7 @@ function createTray() {
 }
 
 function createMainWindow(useSettings) {
-	if (!useSettings) useSettings = defaultSettings;
+	if (!useSettings) useSettings = globalSettings;
 
 	var win = new BrowserWindow({
 		title: "ShortcutWizard",
@@ -219,7 +248,7 @@ function createMainWindow(useSettings) {
 
 	win.loadURL(`file://${__dirname}/index.html`);
 	win.on('closed', onClosed);
-	win.setBounds(defaultSettings.initialBounds);
+	win.setBounds(globalSettings.initialBounds);
 	win.setHasShadow(false);
 
 	return win;
@@ -247,7 +276,7 @@ function createBackgroundListenerWindow() {
 
 function createSettingsWindow() {
 	settingsWindow = new BrowserWindow({
-		show: false,
+		show: true,
 		title: "ShortcutWizard Settings",
 		alwaysOnTop: true,
 		acceptFirstClick: true,
@@ -255,7 +284,7 @@ function createSettingsWindow() {
 	});
 
 	settingsWindow.loadURL(`file://${__dirname}/settings/index.html`);
-	settingsWindow.on('closed', () => { settingsWindow = null; });
+	settingsWindow.on('closed', destroySettings);
 	return settingsWindow;
 }
 
@@ -437,23 +466,42 @@ ipcMain.on('open-settings', function(event) {
 
 ipcMain.on('get-settings', function(event) {
 	// TODO: use GLOBAL_SETTINGS to get global settings too
+	console.log('entered get-settings');
 	settings.find({
 		name: currentAppName
 	}, function(err, doc) {
 		if (err) {
 			console.log('Error loading settings', err);
+			// TODO: streamline default settings
 			settingsWindow.webContents.send('default-preferences', {
 				name: currentAppName,
-				alpha: defaultSettings.alpha,
 				alwaysOnTop: mainWindow.isAlwaysOnTop(),
-				acceptFirstClick: defaultSettings.acceptFirstClick,
-				frame: defaultSettings.frame,
-				hidePerApp: defaultSettings.hidePerApp,
-				boundsPerApp: defaultSettings.boundsPerApp,
-				background: defaultSettings.background
+				acceptFirstClick: globalSettings.acceptFirstClick,
+				frame: globalSettings.frame,
+				hidePerApp: globalSettings.hidePerApp,
+				boundsPerApp: globalSettings.boundsPerApp,
+				background: globalSettings.background
 			});
 		} else if (doc && doc != [] && doc.length > 0) {
+			console.log('succeeded in loading settings');
 			settingsWindow.webContents.send('default-preferences', doc[0]);
+		} else {
+			console.log('couldnt find settings for app, falling back to default');
+			// TODO: streamline default settings
+			var sendDefault = {
+				name: currentAppName,
+				alwaysOnTop: mainWindow.isAlwaysOnTop(),
+				acceptFirstClick: globalSettings.acceptFirstClick,
+				frame: globalSettings.frame,
+				hidePerApp: globalSettings.hidePerApp,
+				boundsPerApp: globalSettings.boundsPerApp,
+				background: globalSettings.background
+			};
+
+			settingsWindow.webContents.send('default-preferences', {
+				global: sendDefault,
+				local: sendDefault
+			});
 		}
 	});
 });
@@ -465,32 +513,12 @@ ipcMain.on('update-global-setting', function(event, settingName, newSetting) {
 
 
 ipcMain.on('temporarily-update-app-setting', function(event, newSetting) {
-	// TODO: don't save settings here, just apply them
+	// TODO: don't save settings here, just pass them on to the shortcut window
 });
 
 // Updates and saves the settings
 ipcMain.on('save-settings', function(event, newSettings) {
 	console.log('inside save-settings with newSettings', newSettings);
-	settings.update({
-		name: GLOBAL_SETTINGS
-	}, {
-		$set: newSetting.global
-	}, {
-		upsert: true
-	}, function(err, doc) {
-		if (err) {
-			console.log('failed to upsert settings in "update-app-setting"', err);
-			return;
-		}
-
-		var settingName = Object.keys(newSetting)[0];
-		if (settingName == "background") {
-			mainWindow.webContents.send('set-background', newSetting[settingName]);
-		} else {
-			// TODO: handle destruction better, or find a way to update settings on the running window
-			mainWindow = createMainWindow(doc[0]);
-		}
-	});
 
 	settings.update({
 		name: currentAppName
@@ -512,8 +540,27 @@ ipcMain.on('save-settings', function(event, newSettings) {
 			mainWindow = createMainWindow(doc[0]);
 		}
 	});
+
+	settings.update({
+		name: GLOBAL_SETTINGS
+	}, {
+		$set: newSetting.global
+	}, {
+		upsert: true
+	}, function(err, doc) {
+		if (err) {
+			console.log('failed to upsert settings in "update-app-setting" for global settings', err);
+			return;
+		}
+	});
+
+	// Update in memory cache of settings
+	// TODO: Review all settings.update calls to ensure none are missing this cache
+	globalSettings = newSettings.global;
+	localSettings[newSettings.local.name] = newSettings;
 });
 
+// revert to settings before settings window was opened
 ipcMain.on('undo-settings', function(event) {
-	// TODO: revert to settings before settings window was opened
+	undoSettings();
 });
