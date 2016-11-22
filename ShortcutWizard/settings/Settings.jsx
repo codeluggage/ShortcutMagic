@@ -20,7 +20,7 @@ export default class Settings extends Component {
     }
 
     // TODO: is this the way to implement destructor to stop listening?
-    componentDidUnmount() {
+    componentWillUnmount() {
     	ipcRenderer.removeListener('default-preferences');
     }
 
@@ -94,10 +94,12 @@ export default class Settings extends Component {
                     <button style={{color:"white", float:'left'}} className="simple-button" onClick={() => {
                     	console.log('sending state as settings to "save-settings"', this.state);
                         ipcRenderer.send('save-settings', this.state);
+                        // TODO: close window
                     }}>Save</button>
                     <button style={{color:"white", float:'right'}} className="simple-button" onClick={() => {
                     	console.log('cancelling settings window');
                     	ipcRenderer.send('undo-settings');
+                        // TODO: close window
                     }}>Cancel</button>
 	    		</div>
 			);
