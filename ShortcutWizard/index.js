@@ -17,6 +17,27 @@ var defaultSettings = {
 	background: '#adadad'
 };
 
+// TODO: Save to settings db
+var allFalseWindowMode = {
+	minimized: false,
+	stealth: false,
+	full: false
+};
+
+var defaultWindowMode = {
+
+	minimized: false,
+	stealth: false,
+	full: false
+
+};
+
+var windowMode = {
+	minimized: false,
+	stealth: false,
+	full: true
+};
+
 var settings = new Datastore({
 	filename: `${__dirname}/db/settings.db`,
 	autoload: true
@@ -71,6 +92,56 @@ let loadedShortcuts = [];
 
 
 // Functions
+
+// Toggle to next mode if newWindowMode is not defined
+const applyWindowMode = (newWindowMode) => {
+	console.log('|||||||||||||||||||||||| applyWindowMode');
+	var minimizeWindow = () => {
+		mainWindow.hide();
+	};
+
+	var stealthWindow = () => {
+		// TODO: load from stealth settings or use default
+		mainWindow.show();
+		var newBounds = mainWindow.getBounds();
+		newBounds.heigth = 64;
+		mainWindow.setBounds(newBounds);
+		mainWindow.webContents.send('stealth-mode');
+	};
+
+	var fullWindow = () => {
+		// TODO: load from full settings or use default
+		mainWindow.show();
+		mainWindow.webContents.send('full-mode');
+		mainWindow.setBounds(defaultSettings.initialBounds);
+	};
+
+	if (newWindowMode) {
+		if (newWindowMode.minimized) {
+			minimizeWindow();
+		} else if (newWindowMode.stealth) {
+			stealthWindow();
+		} else if (newWindowMode.full) {
+			fullWindow();
+		}
+	} else {
+		// Toggle through modes, smaller and smaller
+		if (windowMode.minimized) {
+			windowMode.minimized = false;
+			windowMode.full = true;
+			fullWindow();
+		} else if (windowMode.stealth) {
+			windowMode.stealth = false;
+			windowMode.minimized = true;
+			minimizeWindow();
+		} else if (windowMode.full) {
+			windowMode.full = false;
+			windowMode.stealth = true;
+			stealthWindow();
+		}
+	}
+};
+
 const toggleSettings = () => {
 	// pseudocode: move window to left or right side depending on main window position
 	// if (mainWindow.bounds().x < app.getScreenSize() / 2) {
@@ -172,10 +243,10 @@ function createTray() {
 	var newTray = new Tray(iconPath);
 	console.log('created newTray: ', newTray);
 	newTray.setToolTip('ShortcutWizard!');
-	newTray.on('right-click', toggleWindow);
-	newTray.on('double-click', toggleWindow);
+	newTray.on('right-click', applyWindowMode);
+	newTray.on('double-click', applyWindowMode);
 	newTray.on('click', function (event) {
-	  toggleWindow();
+	  applyWindowMode();
 
 	  // TODO: Limit this to only dev mode
 	  if (mainWindow.isVisible() && process.defaultApp && event.metaKey) {
@@ -214,12 +285,15 @@ function createMainWindow(useSettings) {
 		console.log('loaded window, vibrancy: ', electronVibrancy);
 	    // electronVibrancy.SetVibrancy(true, browserWindowInstance.getNativeWindowHandle());
 		electronVibrancy.SetVibrancy(win, 0);
-	})	;
+	});
 
 	win.loadURL(`file://${__dirname}/index.html`);
 	win.on('closed', onClosed);
 	win.setBounds(defaultSettings.initialBounds);
 	win.setHasShadow(false);
+	applyWindowMode({
+		fullMode: true
+	});
 
 	return win;
 }
@@ -481,4 +555,18 @@ ipcMain.on('update-app-setting', function(event, newSetting) {
 			mainWindow = createMainWindow(doc[0]);
 		}
 	});
+});
+
+ipcMain.on('change-window-mode', function(event, newMode) {
+	if (newMode) {
+		var newModeKey = Object.keys(newMode)[0];
+		var newModeVal = Object.values(newMode)[0];
+		if  (windowMode[newModeKey] != newModeVal) {
+			windowMode = allFalseWindowMode;
+			windowMode[newModeKey] = newModeVal;
+			applyWindowMode(windowMode);
+		}
+	} else {
+		applyWindowMode();
+	}
 });
