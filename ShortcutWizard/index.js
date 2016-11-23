@@ -10,6 +10,7 @@ var Datastore = require('nedb');
 var defaultSettings = {
 	name: "defaults",
 	acceptFirstClick: true,
+	alwaysOnTop: true,
 	frame: false,
 	hidePerApp: true,
 	boundsPerApp: true,
@@ -102,10 +103,16 @@ const applyWindowMode = (newWindowMode) => {
 
 	var stealthWindow = () => {
 		// TODO: load from stealth settings or use default
+
+
+		// TODO: Fix weird bug where window won't resize
 		mainWindow.show();
 		var newBounds = mainWindow.getBounds();
+		console.log('}}}}}}}}}}}}}}} entered stealthWindow with bounds', newBounds);
 		newBounds.heigth = 64;
+		console.log('bounds after change', newBounds);
 		mainWindow.setBounds(newBounds);
+		console.log('{{{{{{{{{{{{ bounds of window after change', mainWindow.getBounds());
 		mainWindow.webContents.send('stealth-mode');
 	};
 
@@ -226,6 +233,7 @@ function createWindows() {
 	backgroundTaskRunnerWindow = createBackgroundTaskRunnerWindow();
 	backgroundListenerWindow = createBackgroundListenerWindow();
 	settingsWindow = createSettingsWindow();
+	applyWindowMode(windowMode);
 }
 
 function onClosed() {
@@ -291,9 +299,6 @@ function createMainWindow(useSettings) {
 	win.on('closed', onClosed);
 	win.setBounds(defaultSettings.initialBounds);
 	win.setHasShadow(false);
-	applyWindowMode({
-		fullMode: true
-	});
 
 	return win;
 }
@@ -467,6 +472,7 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 	}
 
 	// TODO: add css spinner when this is running
+	// TODO: load in background render thread
 	loadForApp(appName);
 	currentAppName = appName;
 });
@@ -559,6 +565,8 @@ ipcMain.on('update-app-setting', function(event, newSetting) {
 
 ipcMain.on('change-window-mode', function(event, newMode) {
 	if (newMode) {
+		// This type of input is easy to send and annoying to unwind on the receiving end -
+		// would it be better to simply have a string state instead?
 		var newModeKey = Object.keys(newMode)[0];
 		var newModeVal = Object.values(newMode)[0];
 		if  (windowMode[newModeKey] != newModeVal) {
@@ -567,6 +575,7 @@ ipcMain.on('change-window-mode', function(event, newMode) {
 			applyWindowMode(windowMode);
 		}
 	} else {
+		// Toggle over to next mode
 		applyWindowMode();
 	}
 });
