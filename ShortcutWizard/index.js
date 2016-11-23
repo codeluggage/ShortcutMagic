@@ -10,11 +10,33 @@ var Datastore = require('nedb');
 var defaultSettings = {
 	name: "defaults",
 	acceptFirstClick: true,
+	alwaysOnTop: true,
 	frame: false,
 	hidePerApp: true,
 	boundsPerApp: true,
 	initialBounds: {x: 1100, y: 100, width: 350, height: 800},
 	background: '#adadad'
+};
+
+// TODO: Save to settings db
+var allFalseWindowMode = {
+	minimized: false,
+	stealth: false,
+	full: false
+};
+
+var defaultWindowMode = {
+
+	minimized: false,
+	stealth: false,
+	full: false
+
+};
+
+var windowMode = {
+	minimized: false,
+	stealth: false,
+	full: true
 };
 
 var settings = new Datastore({
@@ -71,6 +93,62 @@ let loadedShortcuts = [];
 
 
 // Functions
+
+// Toggle to next mode if newWindowMode is not defined
+const applyWindowMode = (newWindowMode) => {
+	console.log('|||||||||||||||||||||||| applyWindowMode');
+	var minimizeWindow = () => {
+		mainWindow.hide();
+	};
+
+	var stealthWindow = () => {
+		// TODO: load from stealth settings or use default
+
+
+		// TODO: Fix weird bug where window won't resize
+		mainWindow.show();
+		var newBounds = mainWindow.getBounds();
+		console.log('}}}}}}}}}}}}}}} entered stealthWindow with bounds', newBounds);
+		newBounds.heigth = 64;
+		console.log('bounds after change', newBounds);
+		mainWindow.setBounds(newBounds);
+		console.log('{{{{{{{{{{{{ bounds of window after change', mainWindow.getBounds());
+		mainWindow.webContents.send('stealth-mode');
+	};
+
+	var fullWindow = () => {
+		// TODO: load from full settings or use default
+		mainWindow.show();
+		mainWindow.webContents.send('full-mode');
+		mainWindow.setBounds(defaultSettings.initialBounds);
+	};
+
+	if (newWindowMode) {
+		if (newWindowMode.minimized) {
+			minimizeWindow();
+		} else if (newWindowMode.stealth) {
+			stealthWindow();
+		} else if (newWindowMode.full) {
+			fullWindow();
+		}
+	} else {
+		// Toggle through modes, smaller and smaller
+		if (windowMode.minimized) {
+			windowMode.minimized = false;
+			windowMode.full = true;
+			fullWindow();
+		} else if (windowMode.stealth) {
+			windowMode.stealth = false;
+			windowMode.minimized = true;
+			minimizeWindow();
+		} else if (windowMode.full) {
+			windowMode.full = false;
+			windowMode.stealth = true;
+			stealthWindow();
+		}
+	}
+};
+
 const toggleSettings = () => {
 	// pseudocode: move window to left or right side depending on main window position
 	// if (mainWindow.bounds().x < app.getScreenSize() / 2) {
@@ -155,6 +233,7 @@ function createWindows() {
 	backgroundTaskRunnerWindow = createBackgroundTaskRunnerWindow();
 	backgroundListenerWindow = createBackgroundListenerWindow();
 	settingsWindow = createSettingsWindow();
+	applyWindowMode(windowMode);
 }
 
 function onClosed() {
@@ -172,10 +251,10 @@ function createTray() {
 	var newTray = new Tray(iconPath);
 	console.log('created newTray: ', newTray);
 	newTray.setToolTip('ShortcutWizard!');
-	newTray.on('right-click', toggleWindow);
-	newTray.on('double-click', toggleWindow);
+	newTray.on('right-click', applyWindowMode);
+	newTray.on('double-click', applyWindowMode);
 	newTray.on('click', function (event) {
-	  toggleWindow();
+	  applyWindowMode();
 
 	  // TODO: Limit this to only dev mode
 	  if (mainWindow.isVisible() && process.defaultApp && event.metaKey) {
@@ -214,7 +293,7 @@ function createMainWindow(useSettings) {
 		console.log('loaded window, vibrancy: ', electronVibrancy);
 	    // electronVibrancy.SetVibrancy(true, browserWindowInstance.getNativeWindowHandle());
 		electronVibrancy.SetVibrancy(win, 0);
-	})	;
+	});
 
 	win.loadURL(`file://${__dirname}/index.html`);
 	win.on('closed', onClosed);
@@ -393,6 +472,7 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 	}
 
 	// TODO: add css spinner when this is running
+	// TODO: load in background render thread
 	loadForApp(appName);
 	currentAppName = appName;
 });
@@ -481,4 +561,21 @@ ipcMain.on('update-app-setting', function(event, newSetting) {
 			mainWindow = createMainWindow(doc[0]);
 		}
 	});
+});
+
+ipcMain.on('change-window-mode', function(event, newMode) {
+	if (newMode) {
+		// This type of input is easy to send and annoying to unwind on the receiving end -
+		// would it be better to simply have a string state instead?
+		var newModeKey = Object.keys(newMode)[0];
+		var newModeVal = Object.values(newMode)[0];
+		if  (windowMode[newModeKey] != newModeVal) {
+			windowMode = allFalseWindowMode;
+			windowMode[newModeKey] = newModeVal;
+			applyWindowMode(windowMode);
+		}
+	} else {
+		// Toggle over to next mode
+		applyWindowMode();
+	}
 });
