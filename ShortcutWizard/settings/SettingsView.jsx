@@ -8,17 +8,17 @@ function makeColorString(color) {
 	return `rgba(${ color.rgb.r }, ${ color.rgb.g }, ${ color.rgb.b }, ${ color.rgb.a })`;
 }
 
-export default class Settings extends Component {
+export default class SettingsView extends Component {
     componentWillMount() {
         this.handleChangeComplete = this.handleChangeComplete.bind(this);
 
-        // TODO: Make this async properly so the window will always have proper settings
-    	var updateSettings = (event, settings) => {
-	        this.setState(settings);
+    	var applySettingsToState = (event, newSettings) => {
+	        this.setState(newSettings);
     	};
 
-        ipcRenderer.sendAsync('get-default-settings', updateSettings);
-    	ipcRenderer.on('get-settings', updateSettings);
+        // TODO: Make this async properly so the window will always have proper settings
+        ipcRenderer.sendAsync('get-default-settings', applySettingsToState);
+    	ipcRenderer.on('get-settings', applySettingsToState);
     }
 
     handleChangeComplete(color) {
@@ -31,10 +31,10 @@ export default class Settings extends Component {
     	});
     }
 
-  'ctrl-shift-tab': 'unset!'
     render() {
     	if (this.state) {
     		console.log('about to render settings with state: ', this.state);
+			// TODO: move these into a tab view, one for the current app and one for global
     		return (
     			<div style={{backgroundColor: this.state.background}}>
                     <button style={{color:"white", float:'left'}} className="simple-button" onClick={() => {
@@ -48,7 +48,9 @@ export default class Settings extends Component {
 		        	<li>
 	                    <button className="simple-button" onClick={() => {
 	                    	var alwaysOnTop = !this.state.alwaysOnTop;
-	                    	this.setState({alwaysOnTop: alwaysOnTop});
+	                    	this.setState({
+								alwaysOnTop: alwaysOnTop
+							});
 	                    	ipcRenderer.send('temporarily-update-app-setting', {
 	                    		alwaysOnTop: alwaysOnTop
 	                    	});
@@ -60,12 +62,14 @@ export default class Settings extends Component {
 		        	<li>
 	                    <button className="simple-button" onClick={() => {
 	                    	var hidePerApp = !this.state.hidePerApp;
-	                    	this.setState({hidePerApp: hidePerApp});
+	                    	this.setState({
+								hidePerApp: hidePerApp
+							});
 	                    	ipcRenderer.send('temporarily-update-app-setting', {
 	                    		hidePerApp: hidePerApp
 	                    	});
 	                    }}>
-				        	Hide individually per app: {(this.state.hidePerApp) ? "true" : "false"}
+				        	Hide individually per app: {(this.state.hidePerApp) ? "On" : "Off"}
 	                    </button>
 		        	</li>
 
@@ -77,7 +81,7 @@ export default class Settings extends Component {
 	                    		boundsPerApp: boundsPerApp
 	                    	});
 	                    }}>
-				        	Size and position individually per app: {(this.state.boundsPerApp) ? "true" : "false"}
+				        	Size and position individually per app: {(this.state.boundsPerApp) ? "On" : "Off"}
 	                    </button>
 		        	</li>
 
@@ -117,5 +121,5 @@ export default class Settings extends Component {
 }
 
 window.onload = function(){
-	ReactDOM.render(<Settings />, document.getElementById("settings-root"));
+	ReactDOM.render(<SettingsView />, document.getElementById("settings-root"));
 };

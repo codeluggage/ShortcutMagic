@@ -4,6 +4,11 @@ const electronVibrancy = require('electron-vibrancy');
 const { app, BrowserWindow, ipcMain, Tray } = require('electron');
 const path = require('path');
 const Datastore = require('nedb');
+const settings from './settings/settings';
+console.log('imported settings: ', settings, JSON.stringify(settings));
+settings.create();
+console.log('after creating, settings now has window: ', settings.settingsWindow);
+
 
 // TODO: Save to settings db
 var allFalseWindowMode = {
@@ -224,7 +229,7 @@ function createTray() {
 }
 
 function createMainWindow(useSettings) {
-	if (!useSettings) useSettings = electron.remote.settings('mainWindowSettings');
+	if (!useSettings) useSettings = settings.get('mainWindowSettings');
 
 	var win = new BrowserWindow(useSettings);
 
@@ -371,7 +376,7 @@ function loadWithPeriods(appName) {
 			stringified = stringified.replace(/u002e/g, '.');
 			newShortcuts.shortcuts = JSON.parse(stringified);
 
-			// Cache shortcuts in memory to 
+			// Cache shortcuts in memory to
 			loadedShortcuts[newShortcuts.appName] = newShortcuts;
 			mainWindow.webContents.send('update-shortcuts', newShortcuts);
 		} else {
@@ -463,4 +468,15 @@ ipcMain.on('change-window-mode', function(event, newMode) {
 		// Toggle over to next mode
 		applyWindowMode();
 	}
+});
+
+ipcMain.on('main-parse-shortcuts', function(event, ) {
+
+});
+
+ipcMain.on('change-window-mode', function(event, ) {
+});
+
+ipcMain.on('open-settings', function(event) {
+	ipcMain.send('open-settings');
 });

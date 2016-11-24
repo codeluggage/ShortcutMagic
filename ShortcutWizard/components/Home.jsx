@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import { Tabs, Tab } from 'react-tab-view'
 import {SortableContainer, SortableElement, arrayMove} from 'react-sortable-hoc';
 import { ipcRenderer } from 'electron';
+import settings from '../settings/settings';
 
 function createListItem(value, index) {
     let keys = Object.keys(value);
@@ -149,7 +150,7 @@ export default class Home extends Component {
         if (targetValue) {
             updatedList = updatedList.filter(function(item){
                 const innerValues = Object.keys(item).map(key => item[key]);
-                
+
                 for (var i = 0; i < innerValues.length; i++) {
                     let innerVal = innerValues[i];
 
@@ -219,11 +220,11 @@ export default class Home extends Component {
                     }}><i className="fa fa-1x fa-rotate-right"></i></button>
 
                     <button style={{color:"white"}} id="toggle-window-mode-button" className="simple-button" onClick={() => {
-                        ipcRenderer.send('change-window-mode');
-                    }}><i className="fa fa-1x fa-compress"></i></button>
+                        ipcrenderer.send('change-window-mode');
+                    }}><i classname="fa fa-1x fa-compress"></i></button>
 
-                    <button style={{color:"white", float:'right'}} id="settings-button" className="simple-button" onClick={() => {
-                        ipcRenderer.send('open-settings', null);
+                    <button style={{color:"white", float:'right'}} id="settings-button" classname="simple-button" onclick={() => {
+                        ipcrenderer.send('open-settings');
                     }}><i className="fa fa-1x fa-cog"></i></button>
 
                     <h1 style={{color:"white", marginTop:'5px'}}>{this.state.name}</h1>
@@ -258,7 +259,7 @@ export default class Home extends Component {
                         }}><i className="fa fa-1x fa-compress"></i></button>
 
                         <button style={{color:"white", float:'right'}} id="settings-button" className="simple-button" onClick={() => {
-                            ipcRenderer.send('open-settings', null);
+                            ipcRenderer.send('open-settings');
                         }}><i className="fa fa-1x fa-cog"></i></button>
                     <h1 style={{color:"white", marginTop:'5px'}}>{this.state.name}</h1>
 
