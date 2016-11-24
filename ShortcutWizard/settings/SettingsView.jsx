@@ -12,16 +12,13 @@ export default class Settings extends Component {
     componentWillMount() {
         this.handleChangeComplete = this.handleChangeComplete.bind(this);
 
-    	ipcRenderer.on('default-preferences', (event, settings) => {
+        // TODO: Make this async properly so the window will always have proper settings
+    	var updateSettings = (event, settings) => {
 	        this.setState(settings);
-    	});
+    	};
 
-    	ipcRenderer.send('get-settings');
-    }
-
-    // TODO: is this the way to implement destructor to stop listening?
-    componentWillUnmount() {
-    	ipcRenderer.removeListener('default-preferences');
+        ipcRenderer.sendAsync('get-default-settings', updateSettings);
+    	ipcRenderer.on('get-settings', updateSettings);
     }
 
     handleChangeComplete(color) {
@@ -45,7 +42,7 @@ export default class Settings extends Component {
 
                     <button style={{color:"white", float:'right'}} className="simple-button" onClick={() => {
                     	console.log('NOT IMPLEMENTED show settings for current app');
-                    }}>Settings for {this.state.local.name}</button>
+                    }}>Settings for {this.state.name}</button>
 
 		        	<li>
 	                    <button className="simple-button" onClick={() => {

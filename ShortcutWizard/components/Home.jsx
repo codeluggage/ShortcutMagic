@@ -1,5 +1,6 @@
 'use babel';
 import React, { Component } from 'react';
+import { Tabs, Tab } from 'react-tab-view'
 import {SortableContainer, SortableElement, arrayMove} from 'react-sortable-hoc';
 import { ipcRenderer } from 'electron';
 
@@ -166,6 +167,20 @@ export default class Home extends Component {
         if (!this.state || !this.state.items) {
             console.log('rendering without state');
             return (
+                <div>
+                    <Tabs headers={headers}>
+                        <Tab>
+                            <div><p>This is the first tab</p></div>
+                            <div><p>with some content</p></div>
+                        </Tab>
+                        <Tab>
+                            <p>This is the second tabs content</p>
+                        </Tab>
+                    </Tabs>
+                </div>
+            );
+        }
+/*
                 <div style={{textAlign: 'center'}}>
                     <button style={{color:"white", float:'left'}} id="reload-button" className="simple-button" onClick={() => {
                         console.log('sending reloadShortcuts from ipcRenderer');
@@ -182,9 +197,6 @@ export default class Home extends Component {
                     <h1 style={{color:"white"}}>ShortcutWizard</h1>
                     <p style={{color:'white'}}>When you focus another application, this area will show you shortcuts</p>
                 </div>
-            );
-        }
-/*
                 sort-up
                 sort-down
                 star-o

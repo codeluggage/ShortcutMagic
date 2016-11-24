@@ -4,7 +4,6 @@ const electronVibrancy = require('electron-vibrancy');
 const { app, BrowserWindow, ipcMain, Tray } = require('electron');
 const path = require('path');
 var Datastore = require('nedb');
-var GLOBAL_SETTINGS = "__GLOBALSETTINGS__";
 
 // TODO: Save to settings db
 var allFalseWindowMode = {
@@ -26,49 +25,6 @@ var windowMode = {
 	stealth: false,
 	full: true
 };
-
-// Cached values held in memory: 
-var localSettings = {};
-var globalSettings = {
-	global: {
-		acceptFirstClick: true,
-		alwaysOnTop: true,
-		frame: false,
-		hidePerApp: true,
-		boundsPerApp: true,
-		initialBounds: {x: 1100, y: 100, width: 350, height: 800},
-		background: '#adadad'
-	}
-};
-
-// Defaults
-var settings = new Datastore({
-	filename: `${__dirname}/db/settings.db`,
-	autoload: true
-});
-
-settings.find({
-	name: "defaults"
-}, function(err, doc) {
-	if (err) {
-		console.log('Tried to find default settings, got error: ', err);
-		return;
-	}
-
-	if (!doc || (doc == [] || doc.length == 0)) {
-		settings.insert({
-			"defaults": globalSettings
-		}, function(err, doc) {
-			if (err) {
-				console.log('ERROR: inserting default settings into settings db failed with err', err);
-			}
-		});
-	} else {
-		globalSettings = doc[0];
-	}
-
-	globalSettings = globalSettings.global;
-});
 
 var db = new Datastore({
 	filename: `${__dirname}/db/shortcuts.db`,
@@ -94,8 +50,6 @@ let trayObject;
 let mainWindow;
 let backgroundTaskRunnerWindow;
 let backgroundListenerWindow;
-let settingsWindow;
-let currentAppName;
 let loadedShortcuts = [];
 
 
@@ -109,25 +63,49 @@ const applyWindowMode = (newWindowMode) => {
 	};
 
 	var stealthWindow = () => {
-		// TODO: load from stealth settings or use default
-
-
 		// TODO: Fix weird bug where window won't resize
 		mainWindow.show();
-		var newBounds = mainWindow.getBounds();
-		console.log(' entered stealthWindow with bounds', newBounds);
-		newBounds.heigth = 64;
-		console.log('bounds after change', newBounds);
-		mainWindow.setBounds(newBounds);
-		console.log('bounds of window after change', mainWindow.getBounds());
 		mainWindow.webContents.send('stealth-mode');
+
+		if (!loadedShortcuts[currentAppName]) {
+			db.find({
+				name: currentAppName
+			}, function(err, res) {
+				console.log('loaded shortcuts: ');
+				if (err) {
+					console.log('errored during db find: ', err);
+					return;
+				}
+
+				mainWindow.setBounds(res.bounds);
+			});
+		} else {
+			mainWindow.setBounds(loadedShortcuts[currentAppName].stealthBounds);
+		}
 	};
 
 	var fullWindow = () => {
 		// TODO: load from full settings or use default
 		mainWindow.show();
 		mainWindow.webContents.send('full-mode');
-		mainWindow.setBounds(defaultSettings.initialBounds);
+
+		if (!loadedShortcuts[currentAppName]) {
+			db.find({
+				name: currentAppName
+			}, function(err, res) {
+				console.log('loaded shortcuts: ');
+				if (err) {
+					console.log('errored during db find: ', err);
+					return;
+				}
+
+				mainWindow.setBounds(res.bounds);
+			});
+		} else {
+			mainWindow.setBounds(loadedShortcuts[currentAppName].fullBounds);
+		}
+
+		mainWindow.setBounds(electron.remote.settings('full-bounds'));
 	};
 
 	if (newWindowMode) {
@@ -154,54 +132,6 @@ const applyWindowMode = (newWindowMode) => {
 			stealthWindow();
 		}
 	}
-};
-
-const destroySettings = () => {
-	if (settingsWindow) {
-		undoSettings();
-		settingsWindow = null;
-	}
-};
-
-const toggleSettings = () => {
-	// pseudocode: move window to left or right side depending on main window position
-	// if (mainWindow.bounds().x < app.getScreenSize() / 2) {
-	// 	// window is towards the left, put settings to the right:
-	// 	settingsWindow.setBounds(mainWindowBounds.x - mainWindowBounds.width,
-	// 		mainWindowBounds.y, 400, mainWindowBounds.height);
-	// } else {
-	// 	// window is towards the right, put settings to the left:
-	// 	settingsWindow.setBounds(mainWindowBounds.x,
-	// 		mainWindowBounds.y, 400, mainWindowBounds.height);
-	// }
-
-	if (settingsWindow) {
-		destroySettings();
-	}
-
-	settingsWindow = createSettingsWindow();
-};
-
-const undoSettings = () => {
-	settings.find({
-		name: currentAppName
-	}, function(err, doc) {
-		var setDefaultSettings = globalSettings;
-		setDefaultSettings["name"] = currentAppName;
-
-		if (err) {
-			// TODO: streamline default settings
-			settingsWindow.webContents.send('default-preferences', setDefaultSettings);
-		} else if (doc && doc != [] && doc.length > 0) {
-			settingsWindow.webContents.send('default-preferences', doc[0]);
-		} else {
-			// TODO: streamline default settings
-			settingsWindow.webContents.send('default-preferences', {
-				global: setDefaultSettings,
-				local: setDefaultSettings
-			});
-		}
-	});
 };
 
 const toggleWindow = () => {
@@ -274,7 +204,6 @@ function onClosed() {
 	mainWindow = null;
 	backgroundTaskRunnerWindow = null;
 	backgroundListenerWindow = null;
-	destroySettings();
 }
 
 function createTray() {
@@ -296,17 +225,13 @@ function createTray() {
 }
 
 function createMainWindow(useSettings) {
-	if (!useSettings) useSettings = globalSettings;
+	if (!useSettings) useSettings = electron.remote.settings('mainWindowSettings');
 
-	var win = new BrowserWindow({
-		title: "ShortcutWizard",
-		alwaysOnTop: useSettings.alwaysOnTop,
-		acceptFirstClick: useSettings.acceptFirstClick,
-		frame: useSettings.frame,
-		backgroundColor: useSettings.background
-	});
+	var win = new BrowserWindow(useSettings);
+	// win.setBounds(defaultSettings[GLOBAL_SETTINGS].initialBounds); // should not be needed 
 
 
+	// TODO: make experimental settings:
 	// 0 - NSVisualEffectMaterialAppearanceBased 10.10+
 	// 1 - NSVisualEffectMaterialLight 10.10+
 	// 2 - NSVisualEffectMaterialDark 10.10+
@@ -327,7 +252,6 @@ function createMainWindow(useSettings) {
 
 	win.loadURL(`file://${__dirname}/index.html`);
 	win.on('closed', onClosed);
-	win.setBounds(globalSettings.initialBounds);
 	win.setHasShadow(false);
 
 	return win;
@@ -351,20 +275,6 @@ function createBackgroundListenerWindow() {
 	console.log('loaded listener window');
 	win.loadURL(`file://${__dirname}/background/listener.html`);
 	return win;
-}
-
-function createSettingsWindow() {
-	settingsWindow = new BrowserWindow({
-		show: true,
-		title: "ShortcutWizard Settings",
-		alwaysOnTop: true,
-		acceptFirstClick: true,
-		frame: false,
-	});
-
-	settingsWindow.loadURL(`file://${__dirname}/settings/index.html`);
-	settingsWindow.on('closed', destroySettings);
-	return settingsWindow;
 }
 
 function loadForApp(appName) {
@@ -539,107 +449,6 @@ ipcMain.on('update-shortcut-order', function(event, appName, shortcuts) {
 	});
 });
 
-ipcMain.on('open-settings', function(event) {
-	console.log('entered open-settings');
-	toggleSettings();
-});
-
-ipcMain.on('get-settings', function(event) {
-	// TODO: use GLOBAL_SETTINGS to get global settings too
-	console.log('entered get-settings');
-	settings.find({
-		name: currentAppName
-	}, function(err, doc) {
-		if (err) {
-			console.log('Error loading settings', err);
-			// TODO: streamline default settings
-			settingsWindow.webContents.send('default-preferences', {
-				name: currentAppName,
-				alwaysOnTop: mainWindow.isAlwaysOnTop(),
-				acceptFirstClick: globalSettings.acceptFirstClick,
-				frame: globalSettings.frame,
-				hidePerApp: globalSettings.hidePerApp,
-				boundsPerApp: globalSettings.boundsPerApp,
-				background: globalSettings.background
-			});
-		} else if (doc && doc != [] && doc.length > 0) {
-			console.log('succeeded in loading settings');
-			settingsWindow.webContents.send('default-preferences', doc[0]);
-		} else {
-			console.log('couldnt find settings for app, falling back to default');
-			// TODO: streamline default settings
-			var sendDefault = {
-				name: currentAppName,
-				alwaysOnTop: mainWindow.isAlwaysOnTop(),
-				acceptFirstClick: globalSettings.acceptFirstClick,
-				frame: globalSettings.frame,
-				hidePerApp: globalSettings.hidePerApp,
-				boundsPerApp: globalSettings.boundsPerApp,
-				background: globalSettings.background
-			};
-
-			settingsWindow.webContents.send('default-preferences', {
-				global: sendDefault,
-				local: sendDefault
-			});
-		}
-	});
-});
-
-
-ipcMain.on('update-global-setting', function(event, settingName, newSetting) {
-	console.log('update-global-setting NOT IMPLEMENTED');
-});
-
-
-ipcMain.on('temporarily-update-app-setting', function(event, newSetting) {
-	// TODO: don't save settings here, just pass them on to the shortcut window
-});
-
-// Updates and saves the settings
-ipcMain.on('save-settings', function(event, newSettings) {
-	console.log('inside save-settings with newSettings', newSettings);
-
-	settings.update({
-		name: currentAppName
-	}, {
-		$set: newSetting.local
-	}, {
-		upsert: true
-	}, function(err, doc) {
-		if (err) {
-			console.log('failed to upsert settings in "update-app-setting"', err);
-			return;
-		}
-
-		var settingName = Object.keys(newSetting)[0];
-		if (settingName == "background") {
-			mainWindow.webContents.send('set-background', newSetting[settingName]);
-		} else {
-			// TODO: handle destruction better, or find a way to update settings on the running window
-			mainWindow = createMainWindow(doc[0]);
-		}
-	});
-
-	settings.update({
-		name: GLOBAL_SETTINGS
-	}, {
-		$set: newSetting.global
-	}, {
-		upsert: true
-	}, function(err, doc) {
-		if (err) {
-			console.log('failed to upsert settings in "update-app-setting" for global settings', err);
-			return;
-		}
-	});
-
-	// Update in memory cache of settings
-	// TODO: Review all settings.update calls to ensure none are missing this cache
-	globalSettings = newSettings.global;
-	localSettings[newSettings.local.name] = newSettings;
-});
-
 ipcMain.on('change-window-mode', function(event, newMode) {
 	if (newMode) {
 		// This type of input is easy to send and annoying to unwind on the receiving end -
@@ -655,10 +464,4 @@ ipcMain.on('change-window-mode', function(event, newMode) {
 		// Toggle over to next mode
 		applyWindowMode();
 	}
-});
-
-
-// revert to settings before settings window was opened
-ipcMain.on('undo-settings', function(event) {
-	undoSettings();
 });

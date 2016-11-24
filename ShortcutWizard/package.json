@@ -20,7 +20,8 @@
     "react": "^15.3.2",
     "react-color": "^2.4.3",
     "react-dom": "^15.3.2",
-    "react-sortable-hoc": "^0.1.1"
+    "react-sortable-hoc": "^0.1.1",
+    "react-tab-view": "^1.0.5"
   },
   "devDependencies": {
     "devtron": "^1.4.0",
