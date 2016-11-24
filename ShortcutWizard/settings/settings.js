@@ -3,7 +3,7 @@ var Datastore = require('nedb');
 import { ipcRenderer } from 'electron';, BrowserWindow, ipcMain, Tray } = require('electron');
 
 
-// TODO: 
+// TODO:
 // - put all settings code here
 // - respond to settingsview logic
 // - send heavy tasks to settingsWorker - or will this be settingsWorker in itself?
@@ -16,7 +16,7 @@ var settingsInProgress = {};
 var lastSavedSettings = {};
 
 
-// Cached values held in memory: 
+// Cached values held in memory:
 var localSettings = {};
 var defaultSettings = {};
 defaultSettings[GLOBAL_SETTINGS] = {

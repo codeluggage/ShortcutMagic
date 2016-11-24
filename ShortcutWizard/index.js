@@ -3,7 +3,7 @@
 const electronVibrancy = require('electron-vibrancy');
 const { app, BrowserWindow, ipcMain, Tray } = require('electron');
 const path = require('path');
-var Datastore = require('nedb');
+const Datastore = require('nedb');
 
 // TODO: Save to settings db
 var allFalseWindowMode = {
@@ -13,11 +13,9 @@ var allFalseWindowMode = {
 };
 
 var defaultWindowMode = {
-
 	minimized: false,
 	stealth: false,
 	full: false
-
 };
 
 var windowMode = {
@@ -45,7 +43,7 @@ const iconPath = path.join(__dirname, 'wizard.png');
 app.setName("ShortcutWizard");
 app.dock.hide();
 
-// Global (for now) objects: 
+// Global (for now) objects:
 let trayObject;
 let mainWindow;
 let backgroundTaskRunnerWindow;
@@ -89,7 +87,10 @@ const applyWindowMode = (newWindowMode) => {
 		mainWindow.show();
 		mainWindow.webContents.send('full-mode');
 
-		if (!loadedShortcuts[currentAppName]) {
+		var cachedAppSettings = loadedShortcuts[currentAppName];
+		if (cachedAppSettings) {
+			mainWindow.setBounds(loadedShortcuts[currentAppName].fullBounds);
+		} else {
 			db.find({
 				name: currentAppName
 			}, function(err, res) {
@@ -99,13 +100,11 @@ const applyWindowMode = (newWindowMode) => {
 					return;
 				}
 
-				mainWindow.setBounds(res.bounds);
+				if (res != [] && res.length > 0) {
+					mainWindow.setBounds(res.bounds);
+				}
 			});
-		} else {
-			mainWindow.setBounds(loadedShortcuts[currentAppName].fullBounds);
 		}
-
-		mainWindow.setBounds(electron.remote.settings('full-bounds'));
 	};
 
 	if (newWindowMode) {
@@ -135,7 +134,7 @@ const applyWindowMode = (newWindowMode) => {
 };
 
 const toggleWindow = () => {
-	console.log('togglewindow with isvisible: ', mainWindow.isVisible());
+	console.log('togglewindow with isVisible: ', mainWindow.isVisible());
   if (mainWindow.isVisible()) {
     mainWindow.hide();
   } else {
@@ -228,8 +227,6 @@ function createMainWindow(useSettings) {
 	if (!useSettings) useSettings = electron.remote.settings('mainWindowSettings');
 
 	var win = new BrowserWindow(useSettings);
-	// win.setBounds(defaultSettings[GLOBAL_SETTINGS].initialBounds); // should not be needed 
-
 
 	// TODO: make experimental settings:
 	// 0 - NSVisualEffectMaterialAppearanceBased 10.10+
@@ -367,13 +364,15 @@ function loadWithPeriods(appName) {
 
 		if (res != [] && res.length > 0) {
 			var newShortcuts = res[0];
+
+			// We replace the period with a character code so the db understands it as a single string
+			// instead of sub-selecting items in the json:
 			var stringified = JSON.stringify(newShortcuts.shortcuts);
 			stringified = stringified.replace(/u002e/g, '.');
 			newShortcuts.shortcuts = JSON.parse(stringified);
-			console.log('setting loadedShortuts', newShortcuts);
+
+			// Cache shortcuts in memory to 
 			loadedShortcuts[newShortcuts.appName] = newShortcuts;
-			console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> inserted from loadWithPeriods to loadedShortcuts');
-			// console.log('sending shortcuts to be rendered: ', shortcuts);
 			mainWindow.webContents.send('update-shortcuts', newShortcuts);
 		} else {
 			console.log('sending webview-parse-shortcuts with appName', appName);

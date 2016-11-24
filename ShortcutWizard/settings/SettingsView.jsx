@@ -31,6 +31,7 @@ export default class Settings extends Component {
     	});
     }
 
+  'ctrl-shift-tab': 'unset!'
     render() {
     	if (this.state) {
     		console.log('about to render settings with state: ', this.state);
@@ -81,8 +82,8 @@ export default class Settings extends Component {
 		        	</li>
 
 		        	<li>
-		        		Choose color: 
-		    			<SketchPicker 
+		        		Choose color:
+		    			<SketchPicker
 		    				color={this.state.background}
 			    			onChangeComplete={this.handleChangeComplete}
 		    			/>
