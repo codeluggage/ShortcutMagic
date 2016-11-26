@@ -4,21 +4,37 @@ import { ipcRenderer } from 'electron';
 import ReactDOM from 'react-dom';
 import { SketchPicker } from 'react-color';
 
+import { Settings } from './settings';
+// console.log("first settings: ", Settings);
+var settings = new Settings();
+// const Settings = require('./settings/settings');
+// console.log('imported settings: ', settings, JSON.stringify(settings) );
+// console.log('>>> ', Settings());
+// for (val in settings) {
+// 	console.log(val);
+// }
+settings.create();
+console.log('after creating, settings now has window: ', settings);
+
+
+ipcRenderer.send('main-window-settings', settings.get("mainWindow"));
+
+
 function makeColorString(color) {
 	return `rgba(${ color.rgb.r }, ${ color.rgb.g }, ${ color.rgb.b }, ${ color.rgb.a })`;
 }
 
 export default class SettingsView extends Component {
     componentWillMount() {
+
+		console.log("inside SettingsView componentWillMount");
         this.handleChangeComplete = this.handleChangeComplete.bind(this);
 
     	var applySettingsToState = (event, newSettings) => {
 	        this.setState(newSettings);
     	};
 
-        // TODO: Make this async properly so the window will always have proper settings
-        ipcRenderer.sendAsync('get-default-settings', applySettingsToState);
-    	ipcRenderer.on('get-settings', applySettingsToState);
+
     }
 
     handleChangeComplete(color) {

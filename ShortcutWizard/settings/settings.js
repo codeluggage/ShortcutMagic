@@ -1,8 +1,7 @@
 'use babel';
 const path = require('path');
 var Datastore = require('nedb');
-import { BrowserWindow, ipcRenderer, remote } from 'electron';
-
+import { ipcRenderer, remote } from 'electron';
 
 // TODO:
 // - put all settings code here
@@ -10,7 +9,6 @@ import { BrowserWindow, ipcRenderer, remote } from 'electron';
 // - send heavy tasks to settingsWorker - or will this be settingsWorker in itself?
 
 var GLOBAL_SETTINGS = "__GLOBALSETTINGS__"; // Is there ever a risk that an app has this name and will overwrite..?
-var settingsWindow;
 var settingsInProgress = {};
 var lastSavedSettings = {};
 var cachedSettings = {};
@@ -63,28 +61,30 @@ settings.find({
 // 	backgroundColor: useSettings.background
 // }
 
-export default class Settings {
-	function create() {
+export class Settings {
+	create() {
 		// TODO: check against already initialized
 		console.log("inside Settings class 'create' function");
 		this.registerListeners();
-		this.settingsWindow = this.createSettingsWindow();
-		this.windowId = ipcRenderer.sendAsync('register-window', 'settings');
 	}
 
-	function get(setting) {
+	get(setting) {
 		// TODO: look up settings in cache first, then in db, send db call to worker thread
+		console.log("entered GET on SETTINGS class, with setting: ", setting);
 
+		if (setting == "mainWindow") {
+			return defaultSettings[GLOBAL_SETTINGS];
+		}
 	}
 
-	function destroySettings() {
+	destroySettings() {
 		if (settingsWindow) {
 			undoSettings();
 			settingsWindow = null;
 		}
 	}
 
-	function toggleSettings() {
+	toggleSettings() {
 		// pseudocode: move window to left or right side depending on main window position
 		// if (mainWindow.bounds().x < app.getScreenSize() / 2) {
 		// 	// window is towards the left, put settings to the right:
@@ -103,7 +103,8 @@ export default class Settings {
 		settingsWindow = createSettingsWindow();
 	}
 
-	function undoSettings() {
+	undoSettings() {
+		currentAppName = (currentAppName) ? currentAppName : "Electron";
 		settings.find({
 			name: currentAppName
 		}, function(err, doc) {
@@ -124,23 +125,27 @@ export default class Settings {
 	// in window? unnecessary?
 	// destroySettings();
 
-	function createSettingsWindow() {
-		var newSettingsWindow = new BrowserWindow({
-			show: true,
-			title: "ShortcutWizard Settings",
-			alwaysOnTop: true,
-			acceptFirstClick: true,
-			frame: false,
-		});
+	registerListeners() {
+		// TODO: move the state updates into the SettingsView
+        // ipcRenderer.on('get-default-settings', applySettingsToState);
+    	// ipcRenderer.on('get-settings', applySettingsToState);
 
-		var settingsPath = `file://${__dirname}/index.html`;
-		console.log('settings path trying to load index: ', settingsPath);
-		newSettingsWindow.loadURL(settingsPath);
-		newSettingsWindow.on('closed', destroySettings);
-		return newSettingsWindow;
-	}
+		// ipcRenderer.on('main-window-settings', (event, cb) => {
+		// 	console.log("inside main-window-settings::::::::::::::::: ", cb);
+		// 	holdSettings = this.get("mainWindow");
+		// 	console.log("got holdSettings, calling cb function", holdSettings);
+		// 	cb(holdSettings);
+		// });
 
-	function registerListeners() {
+		// ipcRenderer.on('update-window-ids', (event, newIds) => {
+		// 	this.windowIds = newIds;
+		// 	var shortcutsId = this.windowIds["shortcuts"];
+		//
+		// 	if (shortcutsId) {
+		// 		this.shortcutsWindow = remote.BrowserWindow.fromId(shortcutsId);
+		// 	}
+		// });
+
 		ipcRenderer.on('open-settings', (event) => {
 			console.log('entered open-settings');
 			this.toggleSettings();
@@ -149,6 +154,9 @@ export default class Settings {
 		ipcRenderer.on('get-settings', (event) => {
 			// TODO: use GLOBAL_SETTINGS to get global settings too
 			console.log('entered get-settings');
+
+			currentAppName = (currentAppName) ? currentAppName : "Electron";
+
 			settings.find({
 				name: currentAppName
 			}, function(err, doc) {
@@ -184,11 +192,15 @@ export default class Settings {
 		});
 
 
-		ipcRenderer.on('temporarily-update-app-setting', function(event, newSettings) {
+		ipcRenderer.on('temporarily-update-app-setting', (event, newSettings) => {
 			// TODO: don't save settings here, just pass them on to the shortcut window
+			if (this.shortcutsWindow) {
+				// TODO: test this shortcutsWindow reference properly
+				this.shortcutsWindow.webContents.send('update-app-setting', newSettings);
+			}
 		});
 
-		ipcRenderer.on('save-global-settings', function(event, newSettings) {
+		ipcRenderer.on('save-global-settings', (event, newSettings) => {
 			settings.update({
 				name: GLOBAL_SETTINGS
 			}, {
@@ -206,7 +218,7 @@ export default class Settings {
 		});
 
 		// Updates and saves the settings
-		ipcRenderer.on('save-settings', function(event, newSettings) {
+		ipcRenderer.on('save-settings', (event, newSettings) => {
 			console.log('inside save-settings with newSettings', newSettings);
 			var newSettingName = newSettings.name;
 			settings.update({
@@ -240,4 +252,4 @@ export default class Settings {
 			this.undoSettings();
 		});
 	}
-}
+};

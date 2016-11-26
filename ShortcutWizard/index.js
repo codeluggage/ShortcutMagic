@@ -4,10 +4,19 @@ const electronVibrancy = require('electron-vibrancy');
 const { app, BrowserWindow, ipcMain, Tray } = require('electron');
 const path = require('path');
 const Datastore = require('nedb');
-const settings from './settings/settings';
-console.log('imported settings: ', settings, JSON.stringify(settings));
-settings.create();
-console.log('after creating, settings now has window: ', settings.settingsWindow);
+
+// import { Settings } from './settings/settings';
+// console.log("first settings: ", Settings);
+// var settings = new Settings();
+// // const Settings = require('./settings/settings');
+// console.log('imported settings: ', settings, JSON.stringify(settings) );
+// // console.log('>>> ', Settings());
+// // for (val in settings) {
+// // 	console.log(val);
+// // }
+// settings.create();
+// console.log('after creating, settings now has window: ', settings.settingsWindow);
+
 
 
 // TODO: Save to settings db
@@ -50,10 +59,13 @@ app.dock.hide();
 
 // Global (for now) objects:
 let trayObject;
+let settingsWindow;
 let mainWindow;
 let backgroundTaskRunnerWindow;
 let backgroundListenerWindow;
 let loadedShortcuts = [];
+let currentAppName = "Electron";
+console.log("temporariliy setting currentAppName to Electron at main startup");
 
 
 // Functions
@@ -192,12 +204,49 @@ const showWindow = () => {
 	mainWindow.focus()
 }
 
+function createSettingsWindow() {
+	settingsWindow = new BrowserWindow({
+		show: true,
+		title: "ShortcutWizard Settings",
+		alwaysOnTop: true,
+		acceptFirstClick: true,
+		frame: false,
+	});
+
+	var settingsPath = `file://${__dirname}/settings/index.html`;
+	console.log('settings path trying to load index: ', settingsPath);
+	settingsWindow.loadURL(settingsPath);
+	console.log("after loading url");
+}
+
+
 function createWindows() {
-	trayObject = createTray();
-	mainWindow = createMainWindow();
-	backgroundTaskRunnerWindow = createBackgroundTaskRunnerWindow();
-	backgroundListenerWindow = createBackgroundListenerWindow();
-	applyWindowMode(windowMode);
+	createTray();
+	console.log("finished creating tray, creating main window");
+	createMainWindow();
+	// Create settings window before main window in order to read settings
+	// for the creation of the main window
+	console.log("finished creating main, creating settings window");
+	createSettingsWindow();
+	console.log("finished creating main, creating taskrunner window");
+	createBackgroundTaskRunnerWindow();
+	console.log("finished creating taskrunner, creating listener window");
+	createBackgroundListenerWindow();
+
+	// TODO: make sure windows are existing OK first:
+	// applyWindowMode(windowMode);
+
+	// All windows are created, collect all their window id's and let each of them
+	// know what is available to send messages to:
+	// var windowIds = {
+	// 	settings: settingsWindow.winId,
+	// 	main: mainWindow.winId,
+	// 	backgroundTaskRunner: backgroundTaskRunnerWindow.winId,
+	// 	backgroundListener: backgroundListenerWindow.winId
+	// };
+	// console.log("windows id after all windows created: ", windowIds);
+	//
+	// ipcMain.send('update-window-ids', windowIds);
 }
 
 function onClosed() {
@@ -211,72 +260,70 @@ function onClosed() {
 }
 
 function createTray() {
-	var newTray = new Tray(iconPath);
-	console.log('created newTray: ', newTray);
-	newTray.setToolTip('ShortcutWizard!');
-	newTray.on('right-click', applyWindowMode);
-	newTray.on('double-click', applyWindowMode);
-	newTray.on('click', function (event) {
-	  applyWindowMode();
+	trayObject = new Tray(iconPath);
+	console.log('created trayObject: ', trayObject);
+	trayObject.setToolTip('ShortcutWizard!');
+	trayObject.on('right-click', applyWindowMode);
+	trayObject.on('double-click', applyWindowMode);
+	trayObject.on('click', function (event) {
+		applyWindowMode();
 
-	  // TODO: Limit this to only dev mode
-	  if (mainWindow.isVisible() && process.defaultApp && event.metaKey) {
-	    mainWindow.openDevTools({mode: 'detach'})
-	  }
+		if (mainWindow.isVisible() && process.defaultApp && event.metaKey) {
+			mainWindow.openDevTools({
+				mode: 'detach'
+			});
+		}
 	});
 
-	return newTray;
+	return trayObject;
 }
 
-function createMainWindow(useSettings) {
-	if (!useSettings) useSettings = settings.get('mainWindowSettings');
+function createMainWindow() {
+	ipcMain.on('main-window-settings', (event, mainSettings) => {
+		mainWindow = new BrowserWindow(mainSettings);
+		console.log("---------------------- inside send, with new settings:", mainSettings);
 
-	var win = new BrowserWindow(useSettings);
+		// TODO: make experimental settings:
+		// 0 - NSVisualEffectMaterialAppearanceBased 10.10+
+		// 1 - NSVisualEffectMaterialLight 10.10+
+		// 2 - NSVisualEffectMaterialDark 10.10+
+		// 3 - NSVisualEffectMaterialTitlebar 10.10+
+		// 4 - NSVisualEffectMaterialSelection 10.11+
+		// 5 - NSVisualEffectMaterialMenu 10.11+
+		// 6 - NSVisualEffectMaterialPopover 10.11+
+		// 7 - NSVisualEffectMaterialSidebar 10.11+
+		// 8 - NSVisualEffectMaterialMediumLight 10.11+
+		// 9 - NSVisualEffectMaterialUltraDark 10.11+
 
-	// TODO: make experimental settings:
-	// 0 - NSVisualEffectMaterialAppearanceBased 10.10+
-	// 1 - NSVisualEffectMaterialLight 10.10+
-	// 2 - NSVisualEffectMaterialDark 10.10+
-	// 3 - NSVisualEffectMaterialTitlebar 10.10+
-	// 4 - NSVisualEffectMaterialSelection 10.11+
-	// 5 - NSVisualEffectMaterialMenu 10.11+
-	// 6 - NSVisualEffectMaterialPopover 10.11+
-	// 7 - NSVisualEffectMaterialSidebar 10.11+
-	// 8 - NSVisualEffectMaterialMediumLight 10.11+
-	// 9 - NSVisualEffectMaterialUltraDark 10.11+
+		// Whole window vibrancy with Material 0 and auto resize
+		mainWindow.on('ready-to-show', () => {
+			console.log('loaded window, vibrancy: ', electronVibrancy);
+		    // electronVibrancy.SetVibrancy(true, browserWindowInstance.getNativeWindowHandle());
+			electronVibrancy.SetVibrancy(mainWindow, 0);
+		});
 
-	// Whole window vibrancy with Material 0 and auto resize
-	win.on('ready-to-show',function() {
-		console.log('loaded window, vibrancy: ', electronVibrancy);
-	    // electronVibrancy.SetVibrancy(true, browserWindowInstance.getNativeWindowHandle());
-		electronVibrancy.SetVibrancy(win, 0);
+		mainWindow.loadURL(`file://${__dirname}/index.html`);
+		mainWindow.on('closed', onClosed);
+		mainWindow.setHasShadow(false);
 	});
-
-	win.loadURL(`file://${__dirname}/index.html`);
-	win.on('closed', onClosed);
-	win.setHasShadow(false);
-
-	return win;
 }
 
 function createBackgroundTaskRunnerWindow() {
-	const win = new BrowserWindow({
+	backgroundTaskRunnerWindow = new BrowserWindow({
 		show: false,
 	});
 
 	console.log('#1 load window:');
-	win.loadURL(`file://${__dirname}/background/index.html`);
-	return win;
+	backgroundTaskRunnerWindow.loadURL(`file://${__dirname}/background/index.html`);
 }
 
 function createBackgroundListenerWindow() {
-	const win = new BrowserWindow({
+	backgroundListenerWindow = new BrowserWindow({
 		show: false,
 	});
 
 	console.log('loaded listener window');
-	win.loadURL(`file://${__dirname}/background/listener.html`);
-	return win;
+	backgroundListenerWindow.loadURL(`file://${__dirname}/background/listener.html`);
 }
 
 function loadForApp(appName) {
@@ -349,7 +396,7 @@ function saveWithoutPeriods(payload) {
 }
 
 function loadWithPeriods(appName) {
-	console.log('entering loadWithPeriods for appname ', appName, loadedShortcuts);
+	console.log('entering loadWithPeriods for appname ', appName, loadedShortcuts.length);
 	var holdShortcuts = loadedShortcuts[appName];
 	if (holdShortcuts) {
 		console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> found and loaded in-memory shortcuts');
@@ -378,7 +425,11 @@ function loadWithPeriods(appName) {
 
 			// Cache shortcuts in memory to
 			loadedShortcuts[newShortcuts.appName] = newShortcuts;
-			mainWindow.webContents.send('update-shortcuts', newShortcuts);
+			if (mainWindow) {
+				mainWindow.webContents.send('update-shortcuts', newShortcuts);
+			} else {
+				console.log("CANT FIND MAIN WINDOW WHEN LOADING SHORTCUTS");
+			}
 		} else {
 			console.log('sending webview-parse-shortcuts with appName', appName);
 			backgroundTaskRunnerWindow.webContents.send('webview-parse-shortcuts', appName);
