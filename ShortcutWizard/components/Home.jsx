@@ -1,6 +1,5 @@
 'use babel';
 import React, { Component } from 'react';
-import { Link } from 'react-router';
 import {SortableContainer, SortableElement, arrayMove} from 'react-sortable-hoc';
 import { ipcRenderer } from 'electron';
 

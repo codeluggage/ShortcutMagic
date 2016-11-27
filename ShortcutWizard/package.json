@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "devtron": "^1.4.0",
-    "electron": "^1.4.3"
+    "electron": "^1.4.3",
+    "electron-rebuild": "^1.4.0"
   }
 }
