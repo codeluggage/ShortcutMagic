@@ -15,8 +15,7 @@ var settings = new Settings();
 // }
 settings.create();
 console.log('after creating, settings now has window: ', settings);
-
-
+// TODO: Handle main window initialisation better by using sync messages?
 ipcRenderer.send('main-window-settings', settings.get("mainWindow"));
 
 
@@ -26,16 +25,26 @@ function makeColorString(color) {
 
 export default class SettingsView extends Component {
     componentWillMount() {
-
 		console.log("inside SettingsView componentWillMount");
         this.handleChangeComplete = this.handleChangeComplete.bind(this);
 
     	var applySettingsToState = (event, newSettings) => {
 	        this.setState(newSettings);
     	};
-
-
     }
+
+	// toggleSettings() {
+		// pseudocode: move window to left or right side depending on main window position
+		// if (mainWindow.bounds().x < app.getScreenSize() / 2) {
+		// 	// window is towards the left, put settings to the right:
+		// 	settingsWindow.setBounds(mainWindowBounds.x - mainWindowBounds.width,
+		// 		mainWindowBounds.y, 400, mainWindowBounds.height);
+		// } else {
+		// 	// window is towards the right, put settings to the left:
+		// 	settingsWindow.setBounds(mainWindowBounds.x,
+		// 		mainWindowBounds.y, 400, mainWindowBounds.height);
+		// }
+	// }
 
     handleChangeComplete(color) {
     	console.log('hit handleChangeComplete with color ', color);
@@ -108,6 +117,12 @@ export default class SettingsView extends Component {
 			    			onChangeComplete={this.handleChangeComplete}
 		    			/>
 		    		</li>
+
+                    <button style={{color:"white", float:'left'}} id="reload-button" className="simple-button" onClick={() => {
+                        console.log('sending reloadShortcuts from ipcRenderer');
+                        ipcRenderer.send('main-parse-shortcuts');
+                    }}><i className="fa fa-1x fa-refresh"></i></button>
+
 
                     <button style={{color:"white", float:'left'}} className="simple-button" onClick={() => {
                     	console.log('sending state as settings to "save-settings"', this.state);

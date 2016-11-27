@@ -85,6 +85,14 @@ export default class Home extends Component {
         this.onSortEnd = this.onSortEnd.bind(this);
         this.filterListTrigger = this.filterListTrigger.bind(this);
         this.filterList = this.filterList.bind(this);
+        this.toggleSettings = this.toggleSettings.bind(this);
+    }
+
+    toggleSettings() {
+                        // 1 - get all window ids
+                        // 2 - get remote browserwindow static, call getWindow with id
+                        // 3 - send open/show to the webContents of the window
+                        ipcRenderer.send('openSettingsPage', null);
     }
 
     onSortEnd({oldIndex, newIndex}) {
@@ -125,14 +133,10 @@ export default class Home extends Component {
         if (!this.state) {
             return (
                 <div style={{textAlign: 'center'}}>
-                    <button style={{color:"white", float:'left'}} id="reload-button" className="simple-button" onClick={() => {
-                        console.log('sending reloadShortcuts from ipcRenderer');
-                        ipcRenderer.send('main-parse-shortcuts');
-                    }}><i className="fa fa-1x fa-refresh"></i></button>
+                    <button style={{color:"white", float:'right'}} id="settings-button" className="simple-button" onClick={this.toggleSettings}>
+                        <i className="fa fa-1x fa-cog"></i>
+                    </button>
 
-                    <button style={{color:"white", float:'right'}} id="settings-button" className="simple-button" onClick={() => {
-                        ipcRenderer.send('openSettingsPage', null);
-                    }}><i className="fa fa-1x fa-cog"></i></button>
                     <h1 style={{color:"white"}}>ShortcutWizard</h1>
                     <p style={{color:'white'}}>When you focus another application, this area will show you shortcuts</p>
                 </div>

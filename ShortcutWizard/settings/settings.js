@@ -14,24 +14,35 @@ var lastSavedSettings = {};
 var cachedSettings = {};
 var defaultSettings = {};
 defaultSettings[GLOBAL_SETTINGS] = {
+	name: GLOBAL_SETTINGS,
 	acceptFirstClick: true,
 	alwaysOnTop: true,
 	frame: false,
 	hidePerApp: true,
 	boundsPerApp: true,
-	initialBounds: {x: 1100, y: 100, width: 350, height: 800},
-	background: '#adadad'
+	x: 1100, y: 100, width: 350, height: 800,
+	backgroundColor: '#adadad'
 };
 
 // Defaults
 var settings = new Datastore({
-	filename: `${__dirname}/db/settings.db`,
+	filename: `${__dirname}/../db/settings.db`,
 	autoload: true
 });
 
+settings.ensureIndex({
+	fieldName: 'name',
+	unique: true // Setting unique value constraint on name
+}, function (err) {
+	if (err) {
+		console.log('ERROR: settings.ensureIndex failed to set unique constraint', err);
+	}
+});
+
+
 // TODO: send to worker?
 settings.find({
-	name: "defaults"
+	name: GLOBAL_SETTINGS
 }, function(err, doc) {
 	if (err) {
 		console.log('Tried to find default settings, got error: ', err);
@@ -39,9 +50,7 @@ settings.find({
 	}
 
 	if (!doc || (doc == [] || doc.length == 0)) {
-		settings.insert({
-			"defaults": defaultSettings
-		}, function(err, doc) {
+		settings.insert(defaultSettings[GLOBAL_SETTINGS], function(err, doc) {
 			if (err) {
 				console.log('ERROR: inserting default settings into settings db failed with err', err);
 			}
@@ -77,39 +86,17 @@ export class Settings {
 		}
 	}
 
-	destroySettings() {
-		if (settingsWindow) {
-			undoSettings();
-			settingsWindow = null;
-		}
-	}
-
-	toggleSettings() {
-		// pseudocode: move window to left or right side depending on main window position
-		// if (mainWindow.bounds().x < app.getScreenSize() / 2) {
-		// 	// window is towards the left, put settings to the right:
-		// 	settingsWindow.setBounds(mainWindowBounds.x - mainWindowBounds.width,
-		// 		mainWindowBounds.y, 400, mainWindowBounds.height);
-		// } else {
-		// 	// window is towards the right, put settings to the left:
-		// 	settingsWindow.setBounds(mainWindowBounds.x,
-		// 		mainWindowBounds.y, 400, mainWindowBounds.height);
-		// }
-
-		if (settingsWindow) {
-			destroySettings();
+	undoSettings(appName) {
+		if (!appName) {
+			console.log("cannot undo settings without appname");
+			return;
 		}
 
-		settingsWindow = createSettingsWindow();
-	}
-
-	undoSettings() {
-		currentAppName = (currentAppName) ? currentAppName : "Electron";
 		settings.find({
-			name: currentAppName
+			name: appName
 		}, function(err, doc) {
 			var setDefaultSettings = defaultSettings;
-			setDefaultSettings["name"] = currentAppName;
+			setDefaultSettings["name"] = appName;
 
 			if (err) {
 				// TODO: streamline default settings
@@ -154,8 +141,11 @@ export class Settings {
 		ipcRenderer.on('get-settings', (event) => {
 			// TODO: use GLOBAL_SETTINGS to get global settings too
 			console.log('entered get-settings');
-
-			currentAppName = (currentAppName) ? currentAppName : "Electron";
+			var currentAppName = ipcRenderer.sendSync('get-app-name-sync');
+			if (!currentAppName) {
+				console.log("cant perform get-settings without app name");
+				return;
+			}
 
 			settings.find({
 				name: currentAppName

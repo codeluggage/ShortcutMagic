@@ -1,7 +1,7 @@
 'use strict';
 // Imports
 const electronVibrancy = require('electron-vibrancy');
-const { app, BrowserWindow, ipcMain, Tray } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, systemPreferences } = require('electron');
 const path = require('path');
 const Datastore = require('nedb');
 
@@ -52,8 +52,6 @@ db.ensureIndex({
 	}
 });
 
-const iconPath = path.join(__dirname, 'wizard.png');
-
 app.setName("ShortcutWizard");
 app.dock.hide();
 
@@ -92,7 +90,9 @@ const applyWindowMode = (newWindowMode) => {
 					return;
 				}
 
-				mainWindow.setBounds(res.bounds);
+				if (res != [] && res.length > 0) {
+					mainWindow.setBounds(res[0].bounds);
+				}
 			});
 		} else {
 			mainWindow.setBounds(loadedShortcuts[currentAppName].stealthBounds);
@@ -118,7 +118,7 @@ const applyWindowMode = (newWindowMode) => {
 				}
 
 				if (res != [] && res.length > 0) {
-					mainWindow.setBounds(res.bounds);
+					mainWindow.setBounds(res[0].bounds);
 				}
 			});
 		}
@@ -206,7 +206,7 @@ const showWindow = () => {
 
 function createSettingsWindow() {
 	settingsWindow = new BrowserWindow({
-		show: true,
+		show: false,
 		title: "ShortcutWizard Settings",
 		alwaysOnTop: true,
 		acceptFirstClick: true,
@@ -224,8 +224,8 @@ function createWindows() {
 	createTray();
 	console.log("finished creating tray, creating main window");
 	createMainWindow();
-	// Create settings window before main window in order to read settings
-	// for the creation of the main window
+	// Create settings window after main window in order to read settings
+	// for the callback that creates the main window
 	console.log("finished creating main, creating settings window");
 	createSettingsWindow();
 	console.log("finished creating main, creating taskrunner window");
@@ -260,7 +260,10 @@ function onClosed() {
 }
 
 function createTray() {
+	// TODO: read if menu is dark or not, load white/black hat icon as response:
+	const iconPath = path.join(__dirname, systemPreferences.isDarkMode() ? 'wizard-white.png' : 'wizard.png');
 	trayObject = new Tray(iconPath);
+
 	console.log('created trayObject: ', trayObject);
 	trayObject.setToolTip('ShortcutWizard!');
 	trayObject.on('right-click', applyWindowMode);
@@ -455,6 +458,10 @@ app.on('ready', () => {
 	loadForApp();
 });
 
+ipcMain.on('get-app-name-sync', function(event) {
+	event.returnValue = currentAppName;
+});
+
 ipcMain.on('main-app-switched-notification', function(event, appName) {
 	console.log('app switch. app name was', currentAppName, "appname will change to: ", appName);
 	if (appName == "Electron") {
@@ -488,7 +495,7 @@ ipcMain.on('show-window', () => {
 });
 
 ipcMain.on('update-shortcut-order', function(event, appName, shortcuts) {
-	console.log('entered update-shortcut-order', appName, shortcuts);
+	console.log('entered update-shortcut-order', appName);
 	db.update({
 		name: appName
 	}, {
