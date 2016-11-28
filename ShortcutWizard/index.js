@@ -179,7 +179,7 @@ function savePosition(appName) {
 					bounds: newBounds
 				}
 			}, function(err, res) {
-				console.log('finished inserting bounds with err res', err, res);
+				console.log('finished updating bounds with err res', err, res);
 			});
 		}
 	});
@@ -222,19 +222,14 @@ function createSettingsWindow() {
 
 function createWindows() {
 	createTray();
-	console.log("finished creating tray, creating main window");
-	createMainWindow();
-	// Create settings window after main window in order to read settings
-	// for the callback that creates the main window
-	console.log("finished creating main, creating settings window");
-	createSettingsWindow();
-	console.log("finished creating main, creating taskrunner window");
-	createBackgroundTaskRunnerWindow();
-	console.log("finished creating taskrunner, creating listener window");
-	createBackgroundListenerWindow();
 
-	// TODO: make sure windows are existing OK first:
-	// applyWindowMode(windowMode);
+	createBackgroundTaskRunnerWindow();
+	createBackgroundListenerWindow();
+	createMainWindow();
+
+	// Create settings window last because it kicks off mainWindow
+	createSettingsWindow();
+
 
 	// All windows are created, collect all their window id's and let each of them
 	// know what is available to send messages to:
@@ -308,6 +303,8 @@ function createMainWindow() {
 		mainWindow.loadURL(`file://${__dirname}/index.html`);
 		mainWindow.on('closed', onClosed);
 		mainWindow.setHasShadow(false);
+
+		applyWindowMode(windowMode);
 	});
 }
 
@@ -349,7 +346,7 @@ function loadForApp(appName) {
 	// 	}
 	// });
 
-	console.log('loadForApp with appName', appName);
+	// console.log('loadForApp with appName', appName);
 
 	if (!appName) {
 		console.log('sending webview-parse-shortcuts with appName');
@@ -358,6 +355,7 @@ function loadForApp(appName) {
 	} else {
 		var holdShortcuts = loadedShortcuts[appName];
 		if (holdShortcuts) {
+			console.log('setting bounds in loadforapp: ', appName, holdShortcuts.bounds);
 			mainWindow.setBounds(holdShortcuts.bounds);
 			mainWindow.webContents.send('update-shortcuts', holdShortcuts);
 			return;
@@ -399,11 +397,12 @@ function saveWithoutPeriods(payload) {
 }
 
 function loadWithPeriods(appName) {
-	console.log('entering loadWithPeriods for appname ', appName, loadedShortcuts.length);
+	console.log('entering loadWithPeriods for appname: ', appName);
 	var holdShortcuts = loadedShortcuts[appName];
 	if (holdShortcuts) {
 		console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> found and loaded in-memory shortcuts');
 		mainWindow.webContents.send('update-shortcut', holdShortcuts);
+		mainWindow.setBounds(holdShortcuts.bounds);
 		return;
 	}
 
@@ -411,7 +410,7 @@ function loadWithPeriods(appName) {
 	db.find({
 		name: appName
 	}, function(err, res) {
-		console.log('loaded shortcuts: ');
+		console.log('loaded shortcuts, err? ', err);
 		if (err) {
 			console.log('errored during db find: ', err);
 			return;
@@ -419,6 +418,7 @@ function loadWithPeriods(appName) {
 
 		if (res != [] && res.length > 0) {
 			var newShortcuts = res[0];
+			console.log("found res with name and bounds", newShortcuts.name, newShortcuts.bounds);
 
 			// We replace the period with a character code so the db understands it as a single string
 			// instead of sub-selecting items in the json:
@@ -426,10 +426,11 @@ function loadWithPeriods(appName) {
 			stringified = stringified.replace(/u002e/g, '.');
 			newShortcuts.shortcuts = JSON.parse(stringified);
 
-			// Cache shortcuts in memory to
+			// Cache shortcuts in memory too
 			loadedShortcuts[newShortcuts.appName] = newShortcuts;
 			if (mainWindow) {
 				mainWindow.webContents.send('update-shortcuts', newShortcuts);
+				mainWindow.setBounds(newShortcuts.bounds);
 			} else {
 				console.log("CANT FIND MAIN WINDOW WHEN LOADING SHORTCUTS");
 			}
@@ -463,19 +464,28 @@ ipcMain.on('get-app-name-sync', function(event) {
 });
 
 ipcMain.on('main-app-switched-notification', function(event, appName) {
-	console.log('app switch. app name was', currentAppName, "appname will change to: ", appName);
 	if (appName == "Electron") {
 		console.log('cannot switch to ourselves');
 		return;
 	}
 
+	if (appName == currentAppName) {
+		console.log("cannot switch to same app again");
+		return;
+	}
+
+	console.log('app switch. app name was', currentAppName, "appname will change to: ", appName);
+
 	if (currentAppName) {
 		savePosition(currentAppName);
 	}
+	console.log('finished updating pos of app: ', currentAppName);
+	console.log("before loadForApp, bounds was: ", mainWindow.getBounds());
 
 	// TODO: add css spinner when this is running
 	// TODO: load in background render thread
 	loadForApp(appName);
+	console.log("finished loading pos for app: ", mainWindow.getBounds(), appName);
 	currentAppName = appName;
 });
 

@@ -47,7 +47,6 @@ const SortableList = SortableContainer(({items}) => {
 
 export default class Home extends Component {
     componentWillMount() {
-
         ipcRenderer.on('update-shortcuts', (event, newShortcuts) => {
             console.log('entered update-shortcuts in Home');
             let name = newShortcuts.name;
@@ -88,10 +87,15 @@ export default class Home extends Component {
     }
 
     toggleSettings() {
-                        // 1 - get all window ids
-                        // 2 - get remote browserwindow static, call getWindow with id
-                        // 3 - send open/show to the webContents of the window
-                        ipcRenderer.send('openSettingsPage', null);
+        // 1 - get all window ids
+        // 2 - get remote browserwindow static, call getWindow with id
+        // 3 - send open/show to the webContents of the window
+        console.log("toggling settings: ", remote.BrowserWindow.getAllWindows());
+        for (val in remote.BrowserWindow.getAllWindows()) {
+            console.log(val);
+        }
+
+        remote.BrowserWindow.getWindowWithId().webContents.send('openSettingsPage', null);
     }
 
     onSortEnd({oldIndex, newIndex}) {
