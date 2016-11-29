@@ -229,19 +229,6 @@ function createWindows() {
 
 	// Create settings window last because it kicks off mainWindow
 	createSettingsWindow();
-
-
-	// All windows are created, collect all their window id's and let each of them
-	// know what is available to send messages to:
-	// var windowIds = {
-	// 	settings: settingsWindow.winId,
-	// 	main: mainWindow.winId,
-	// 	backgroundTaskRunner: backgroundTaskRunnerWindow.winId,
-	// 	backgroundListener: backgroundListenerWindow.winId
-	// };
-	// console.log("windows id after all windows created: ", windowIds);
-	//
-	// ipcMain.send('update-window-ids', windowIds);
 }
 
 function onClosed() {
@@ -305,6 +292,24 @@ function createMainWindow() {
 		mainWindow.setHasShadow(false);
 
 		applyWindowMode(windowMode);
+
+		// All windows are created, collect all their window id's and let each of them
+		// know what is available to send messages to:
+		var windowIds = {
+			settingsWindow: settingsWindow.id,
+			mainWindow: mainWindow.id,
+			backgroundTaskRunnerWindow: backgroundTaskRunnerWindow.id,
+			backgroundListenerWindow: backgroundListenerWindow.id
+		};
+
+		console.log("windows id after all windows created: ", windowIds);
+
+		setTimeout(function() {
+			settingsWindow.webContents.send('update-window-ids', windowIds);
+			mainWindow.webContents.send('update-window-ids', windowIds);
+			backgroundTaskRunnerWindow.webContents.send('update-window-ids', windowIds);
+			backgroundListenerWindow.webContents.send('update-window-ids', windowIds);
+		}, 500);
 	});
 }
 

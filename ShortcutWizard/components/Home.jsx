@@ -1,7 +1,7 @@
 'use babel';
 import React, { Component } from 'react';
 import {SortableContainer, SortableElement, arrayMove} from 'react-sortable-hoc';
-import { ipcRenderer } from 'electron';
+import Electron, { ipcRenderer, remote } from 'electron';
 
 const SortableItem = SortableElement(({value}) => <li>{value}</li>);
 
@@ -45,6 +45,8 @@ const SortableList = SortableContainer(({items}) => {
     );
 });
 
+var holdRemote = remote;
+
 export default class Home extends Component {
     componentWillMount() {
         ipcRenderer.on('update-shortcuts', (event, newShortcuts) => {
@@ -54,13 +56,18 @@ export default class Home extends Component {
 
             let shortcuts = newShortcuts.shortcuts;
             const shortcutsArray = Object.keys(shortcuts).map(key => shortcuts[key]);
-            console.log('ipcrenderer callback, raw, name, new array: ', newShortcuts, name, shortcutsArray);
+            console.log('ipcRenderer callback, raw, name, new array: ', newShortcuts, name, shortcutsArray);
 
             this.setState({
                 name: name,
                 initialItems: shortcutsArray,
                 items: shortcutsArray
             });
+        });
+
+        ipcRenderer.on('update-window-ids', (event, windowIds) => {
+            console.log("inside update-window-ids with ids ", windowIds);
+            this.windowIds = windowIds;
         });
 
         console.log('home constructor called');
@@ -78,7 +85,6 @@ export default class Home extends Component {
         //     }]
         // });
 
-
         // Binding functions because local this doesn't work with this babel for some reason
         this.onSortEnd = this.onSortEnd.bind(this);
         this.filterListTrigger = this.filterListTrigger.bind(this);
@@ -87,15 +93,22 @@ export default class Home extends Component {
     }
 
     toggleSettings() {
-        // 1 - get all window ids
-        // 2 - get remote browserwindow static, call getWindow with id
-        // 3 - send open/show to the webContents of the window
-        console.log("toggling settings: ", remote.BrowserWindow.getAllWindows());
-        for (val in remote.BrowserWindow.getAllWindows()) {
-            console.log(val);
+        if (!this.windowIds) {
+            console.log("cant toggle settings without settings window id");
+            return;
         }
 
-        remote.BrowserWindow.getWindowWithId().webContents.send('openSettingsPage', null);
+        var windows = holdRemote.BrowserWindow.getAllWindows();
+        for (var i = 0; i < windows.length; i++) {
+            let settingsWindow = windows[i];
+            if (settingsWindow && settingsWindow.id == this.windowIds["settingsWindow"]) {
+                if (settingsWindow.isVisible()) {
+                    settingsWindow.hide();
+                } else {
+                    settingsWindow.show();
+                }
+            }
+        }
     }
 
     onSortEnd({oldIndex, newIndex}) {
@@ -136,7 +149,15 @@ export default class Home extends Component {
         if (!this.state) {
             return (
                 <div style={{textAlign: 'center'}}>
-                    <button style={{color:"white", float:'right'}} id="settings-button" className="simple-button" onClick={this.toggleSettings}>
+                    <button style={{color:"white", float:'left'}} id="reload-button" className="simple-button" onClick={() => {
+                        console.log('sending reloadShortcuts from ipcRenderer');
+                        ipcRenderer.send('main-parse-shortcuts');
+                    }}><i className="fa fa-1x fa-rotate-right"></i></button>
+
+                    <button style={{color:"white", float:'right'}} id="settings-button" className="simple-button" onClick={() => {
+                        console.log("clicked settings");
+                        this.toggleSettings();
+                    }}>
                         <i className="fa fa-1x fa-cog"></i>
                     </button>
 
@@ -166,8 +187,11 @@ export default class Home extends Component {
                     }}><i className="fa fa-1x fa-rotate-right"></i></button>
 
                     <button style={{color:"white", float:'right'}} id="settings-button" className="simple-button" onClick={() => {
-                        ipcRenderer.send('openSettingsPage', null);
-                    }}><i className="fa fa-1x fa-cog"></i></button>
+                        console.log("clicked settings");
+                        this.toggleSettings();
+                    }}>
+                        <i className="fa fa-1x fa-cog"></i>
+                    </button>
                 <h1 style={{color:"white", marginTop:'5px'}}>{this.state.name}</h1>
 
 
