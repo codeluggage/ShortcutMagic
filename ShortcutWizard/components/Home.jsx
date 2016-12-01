@@ -66,7 +66,7 @@ export default class Home extends Component {
         });
 
         ipcRenderer.on('update-window-ids', (event, windowIds) => {
-            console.log("inside update-window-ids with ids ", windowIds);
+            console.log("inside Home update-window-ids with ids ", windowIds);
             this.windowIds = windowIds;
         });
 
@@ -98,6 +98,7 @@ export default class Home extends Component {
             return;
         }
 
+        // TODO: refer directly to the browser window by id instead of grabbing all windows
         var windows = holdRemote.BrowserWindow.getAllWindows();
         for (var i = 0; i < windows.length; i++) {
             let settingsWindow = windows[i];

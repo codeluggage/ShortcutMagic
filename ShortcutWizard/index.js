@@ -304,6 +304,7 @@ function createMainWindow() {
 
 		console.log("windows id after all windows created: ", windowIds);
 
+		// TODO: Improve this to be a trigger from the last window being created (main window?)
 		setTimeout(function() {
 			settingsWindow.webContents.send('update-window-ids', windowIds);
 			mainWindow.webContents.send('update-window-ids', windowIds);

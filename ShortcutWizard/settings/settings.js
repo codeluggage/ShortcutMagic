@@ -133,9 +133,22 @@ export class Settings {
 		// 	}
 		// });
 
-		ipcRenderer.on('open-settings', (event) => {
-			console.log('entered open-settings');
-			this.toggleSettings();
+		ipcRenderer.on('update-window-ids', (event, windowIds) => {
+			console.log("inside settings.js update-window-ids");
+			this.windowIds = windowIds;
+			// TODO: Listen to 'show' event and move browser window
+
+				// pseudocode: move window to left or right side depending on main window position
+				// if (mainWindow.bounds().x < app.getScreenSize() / 2) {
+				// 	// window is towards the left, put settings to the right:
+				// 	settingsWindow.setBounds(mainWindowBounds.x - mainWindowBounds.width,
+				// 		mainWindowBounds.y, 400, mainWindowBounds.height);
+				// } else {
+				// 	// window is towards the right, put settings to the left:
+				// 	settingsWindow.setBounds(mainWindowBounds.x,
+				// 		mainWindowBounds.y, 400, mainWindowBounds.height);
+				// }
+
 		});
 
 		ipcRenderer.on('get-settings', (event) => {

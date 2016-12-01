@@ -1,6 +1,6 @@
 'use babel';
 import React, { Component } from 'react';
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, remote } from 'electron';
 import ReactDOM from 'react-dom';
 import { SketchPicker } from 'react-color';
 
@@ -13,66 +13,101 @@ var settings = new Settings();
 // for (val in settings) {
 // 	console.log(val);
 // }
-settings.create();
-console.log('after creating, settings now has window: ', settings);
-// TODO: Handle main window initialisation better by using sync messages?
-ipcRenderer.send('main-window-settings', settings.get("mainWindow"));
-
-
 function makeColorString(color) {
 	return `rgba(${ color.rgb.r }, ${ color.rgb.g }, ${ color.rgb.b }, ${ color.rgb.a })`;
 }
 
+var holdRemote = remote;
+
 export default class SettingsView extends Component {
     componentWillMount() {
-		console.log("inside SettingsView componentWillMount");
+		settings.create(this);
+
+		// TODO: Handle main window initialisation better by using sync messages?
+		var mainWindowSettings = settings.get("mainWindow");
+		ipcRenderer.send('main-window-settings', mainWindowSettings);
+
+		// ipcRenderer.on('open-settings', (event) => {
+		// 	console.log('entered open-settings');
+		// 	this.toggleSettings();
+		// });
+
+		// TODO: tweak this to fit global and local settings
+    	// var applySettingsToState = (event, newSettings) => {
+	    //     this.setState(newSettings);
+    	// };
+
+		// TODO: Set this when window is about to show too
+		this.setState({
+			originalAppSettings: mainWindowSettings,
+			originalGlobalSettings: mainWindowSettings,
+			settings: mainWindowSettings
+		});
+
         this.handleChangeComplete = this.handleChangeComplete.bind(this);
-
-    	var applySettingsToState = (event, newSettings) => {
-	        this.setState(newSettings);
-    	};
     }
-
-	// toggleSettings() {
-		// pseudocode: move window to left or right side depending on main window position
-		// if (mainWindow.bounds().x < app.getScreenSize() / 2) {
-		// 	// window is towards the left, put settings to the right:
-		// 	settingsWindow.setBounds(mainWindowBounds.x - mainWindowBounds.width,
-		// 		mainWindowBounds.y, 400, mainWindowBounds.height);
-		// } else {
-		// 	// window is towards the right, put settings to the left:
-		// 	settingsWindow.setBounds(mainWindowBounds.x,
-		// 		mainWindowBounds.y, 400, mainWindowBounds.height);
-		// }
-	// }
 
     handleChangeComplete(color) {
     	console.log('hit handleChangeComplete with color ', color);
     	var colorString = makeColorString(color);
-    	this.setState({ background: colorString });
+		var holdSettings = this.state.settings;
+		holdSettings.background = colorString;
+    	this.setState({
+			settings: holdSettings
+		});
     	window.document.documentElement.style.color = colorString;
-    	ipcRenderer.send('temporarily-update-app-setting', {
-    		background: colorString
-    	});
+
+        if (!settings.windowIds) {
+            console.log("cant toggle settings without settings window id");
+            return;
+        }
+
+        var windows = holdRemote.BrowserWindow.getAllWindows();
+        for (var i = 0; i < windows.length; i++) {
+            let settingsWindow = windows[i];
+            if (settingsWindow && settingsWindow.id == settings.windowIds["settingsWindow"]) {
+                settingsWindow.webContents.send('temporarily-update-app-setting', {
+					background: colorString
+				});
+            }
+        }
     }
+
+	toggleTargetSettings() {
+		// TODO: add confirmation dialog to not throw away settings as it is toggled?
+    	console.log('NOT IMPLEMENTED show settings for current app');
+		if (this.state.targetSettings == "global") {
+			this.state.settings = this.state.originalAppSettings;
+			this.state.targetSettings = this.state.settings.name;
+		} else {
+			this.state.targetSettings = "global";
+			this.state.settings = this.state.originalGlobalSettings;
+		}
+	}
 
     render() {
     	if (this.state) {
     		console.log('about to render settings with state: ', this.state);
 			// TODO: move these into a tab view, one for the current app and one for global
     		return (
-    			<div style={{backgroundColor: this.state.background}}>
-                    <button style={{color:"white", float:'left'}} className="simple-button" onClick={() => {
-                    	console.log('NOT IMPLEMENTED show settings for all apps');
-                    }}>Settings for all apps</button>
+    			<div style={{backgroundColor: this.state.settings.background}}>
+                    <button style={{
+						float:'left',
+						backgroundColor: (this.state.targetSettings == 'global') ? 'blue' : 'white'
+					}} className="simple-button" onClick={() => {
+						this.toggleTargetSettings();
+                    }}>Global settings</button>
 
-                    <button style={{color:"white", float:'right'}} className="simple-button" onClick={() => {
-                    	console.log('NOT IMPLEMENTED show settings for current app');
-                    }}>Settings for {this.state.name}</button>
+                    <button style={{
+						float:'right',
+						backgroundColor: (this.state.targetSettings == 'global') ? 'white' : 'blue'
+					}} className="simple-button" onClick={() => {
+						this.toggleTargetSettings();
+                    }}>Specific settings for {this.state.settings.name}</button>
 
 		        	<li>
 	                    <button className="simple-button" onClick={() => {
-	                    	var alwaysOnTop = !this.state.alwaysOnTop;
+	                    	var alwaysOnTop = !this.state.settings.alwaysOnTop;
 	                    	this.setState({
 								alwaysOnTop: alwaysOnTop
 							});
@@ -80,40 +115,44 @@ export default class SettingsView extends Component {
 	                    		alwaysOnTop: alwaysOnTop
 	                    	});
 	                    }}>
-		                    Float on top: {(this.state.alwaysOnTop) ? "true" : "false"}
+		                    Float on top: {(this.state.settings.alwaysOnTop) ? "true" : "false"}
 	                    </button>
 		        	</li>
 
 		        	<li>
 	                    <button className="simple-button" onClick={() => {
-	                    	var hidePerApp = !this.state.hidePerApp;
+							var holdSettings = this.state.settings;
+	                    	holdSettings.hidePerApp = !holdSettings.hidePerApp;
 	                    	this.setState({
-								hidePerApp: hidePerApp
+								settings: holdSettings
 							});
 	                    	ipcRenderer.send('temporarily-update-app-setting', {
-	                    		hidePerApp: hidePerApp
+	                    		hidePerApp: holdSettings.hidePerApp
 	                    	});
 	                    }}>
-				        	Hide individually per app: {(this.state.hidePerApp) ? "On" : "Off"}
+				        	Hide individually per app: {(this.state.settings.hidePerApp) ? "On" : "Off"}
 	                    </button>
 		        	</li>
 
 		        	<li>
 	                    <button className="simple-button" onClick={() => {
-	                    	var boundsPerApp = !this.state.boundsPerApp;
-	                    	this.setState({boundsPerApp: boundsPerApp});
+							var holdSettings = this.state.settings;
+	                    	holdSettings.boundsPerApp = !holdSettings.boundsPerApp;
+	                    	this.setState({
+								settings: holdSettings
+							});
 	                    	ipcRenderer.send('temporarily-update-app-setting', {
-	                    		boundsPerApp: boundsPerApp
+	                    		boundsPerApp: holdSettings.boundsPerApp
 	                    	});
 	                    }}>
-				        	Size and position individually per app: {(this.state.boundsPerApp) ? "On" : "Off"}
+				        	Size and position individually per app: {(this.state.settings.boundsPerApp) ? "On" : "Off"}
 	                    </button>
 		        	</li>
 
 		        	<li>
 		        		Choose color:
 		    			<SketchPicker
-		    				color={this.state.background}
+		    				color={this.state.settings.background}
 			    			onChangeComplete={this.handleChangeComplete}
 		    			/>
 		    		</li>
@@ -125,8 +164,9 @@ export default class SettingsView extends Component {
 
 
                     <button style={{color:"white", float:'left'}} className="simple-button" onClick={() => {
-                    	console.log('sending state as settings to "save-settings"', this.state);
-                        ipcRenderer.send('save-settings', this.state);
+                    	console.log('sending state as settings to "save-settings"', this.state.settings);
+						// TODO: save to settings.js instead of index.js
+                        ipcRenderer.send('save-settings', this.state.settings);
                         // TODO: close window
                     }}>Save</button>
                     <button style={{color:"white", float:'right'}} className="simple-button" onClick={() => {
@@ -146,6 +186,7 @@ export default class SettingsView extends Component {
 	  //   		</ul>
 			// );
 	    } else {
+			// TODO: Add a refresh button in case something goes wrong and it needs to load again
 	    	return (<h1>Settings loading...</h1>);
 	    }
     }
