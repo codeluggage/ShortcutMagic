@@ -86,6 +86,22 @@ export class Settings {
 		}
 	}
 
+	set(newSettings) {
+		settings.update({
+			name: newSettings.name
+		}, {
+			$set: newSettings
+		}, {
+			upsert: true
+		}, function(err, doc) {
+			if (err) {
+				console.log("Error upserting in settings.js set", err);
+			} else {
+				console.log("Succeeded in saving settings to db: ", newSettings);
+			}
+		});
+	}
+
 	undoSettings(appName) {
 		if (!appName) {
 			console.log("cannot undo settings without appname");

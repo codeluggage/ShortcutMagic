@@ -32,12 +32,35 @@ export default class SettingsView extends Component {
 		// 	this.toggleSettings();
 		// });
 
+
+		// TODO: Should this be in settings.js together with other listeners, and
+		// then trigger a setState from there to here?
+		// TODO: Ideally show a "do you want to save your changes?" dialog if there were
+		// changes done to the app settings (not for global)
+		ipcRenderer.on('app-changed', (event, newName) => {
+			if (this.targetSettings == "global") {
+				var holdSettings = this.state.originalGlobalSettings;
+				holdSettings.name = newName;
+				this.setState({
+					originalGlobalSettings: holdSettings
+				});
+			} else {
+				// TODO: Also load in the original settings for this app name
+				var currentSettings = this.state.settings;
+				currentSettings.name = newName;
+				this.setState({
+					settings: currentSettings
+				});
+			}
+		});
+
 		// TODO: tweak this to fit global and local settings
     	// var applySettingsToState = (event, newSettings) => {
 	    //     this.setState(newSettings);
     	// };
 
 		// TODO: Set this when window is about to show too
+
 		this.setState({
 			originalAppSettings: mainWindowSettings,
 			originalGlobalSettings: mainWindowSettings,
@@ -45,7 +68,31 @@ export default class SettingsView extends Component {
 		});
 
         this.handleChangeComplete = this.handleChangeComplete.bind(this);
+		this.saveCurrentSettings = this.saveCurrentSettings.bind(this);
     }
+
+	// TODO: Also close/hide the window from here?
+	saveCurrentSettings() {
+		if (this.targetSettings == "global") {
+			settings.set({
+				globalSettings: this.state.settings
+			});
+		} else {
+			settings.set({
+				appSettings: this.state.settings
+			});
+		}
+
+        var windows = holdRemote.BrowserWindow.getAllWindows();
+        for (var i = 0; i < windows.length; i++) {
+            let holdWindow = windows[i];
+			console.log("holdWindow : ", holdWindow.id);
+
+            if (holdWindow && holdWindow.id == settings.windowIds["settingsWindow"]) {
+                holdWindow.webContents.hide();
+            }
+        }
+	}
 
     handleChangeComplete(color) {
     	console.log('hit handleChangeComplete with color ', color);

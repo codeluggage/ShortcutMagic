@@ -360,6 +360,7 @@ function loadForApp(appName) {
 		return;
 	} else {
 		var holdShortcuts = loadedShortcuts[appName];
+		// Choose the cached shortcuts if possible
 		if (holdShortcuts) {
 			console.log('setting bounds in loadforapp: ', appName, holdShortcuts.bounds);
 			mainWindow.setBounds(holdShortcuts.bounds);
@@ -493,6 +494,9 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 	loadForApp(appName);
 	console.log("finished loading pos for app: ", mainWindow.getBounds(), appName);
 	currentAppName = appName;
+
+	// TODO: Do the message sending in a cleaner way
+	settingsWindow.webContents.send('app-changed', currentAppName);
 });
 
 ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
