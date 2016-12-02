@@ -55,7 +55,7 @@ export default class SettingsView extends Component {
     	this.setState({
 			settings: holdSettings
 		});
-    	window.document.documentElement.style.color = colorString;
+    	window.document.documentElement.style.backgroundColor = colorString;
 
         if (!settings.windowIds) {
             console.log("cant toggle settings without settings window id");
@@ -64,11 +64,15 @@ export default class SettingsView extends Component {
 
         var windows = holdRemote.BrowserWindow.getAllWindows();
         for (var i = 0; i < windows.length; i++) {
-            let settingsWindow = windows[i];
-            if (settingsWindow && settingsWindow.id == settings.windowIds["settingsWindow"]) {
-                settingsWindow.webContents.send('temporarily-update-app-setting', {
-					background: colorString
+            let holdWindow = windows[i];
+			console.log("holdWindow : ", holdWindow.id);
+
+
+            if (holdWindow && holdWindow.id == settings.windowIds["mainWindow"]) {
+                holdWindow.webContents.send('temporarily-update-app-setting', {
+					backgroundColor: colorString
 				});
+				// holdWindow.setBackgroundColor(colorString);
             }
         }
     }
@@ -107,10 +111,12 @@ export default class SettingsView extends Component {
 
 		        	<li>
 	                    <button className="simple-button" onClick={() => {
-	                    	var alwaysOnTop = !this.state.settings.alwaysOnTop;
+							var holdSettings = this.state.settings;
+	                    	holdSettings.alwaysOnTop = !holdSettings.alwaysOnTop;
 	                    	this.setState({
-								alwaysOnTop: alwaysOnTop
+								settings: holdSettings
 							});
+
 	                    	ipcRenderer.send('temporarily-update-app-setting', {
 	                    		alwaysOnTop: alwaysOnTop
 	                    	});

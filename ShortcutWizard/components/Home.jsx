@@ -49,6 +49,14 @@ var holdRemote = remote;
 
 export default class Home extends Component {
     componentWillMount() {
+        ipcRenderer.on('temporarily-update-app-setting', (event, newSetting) => {
+            if (Object.keys(newSetting)[0] == "backgroundColor") {
+                window.document.documentElement.style.backgroundColor = newSetting["backgroundColor"];
+            }
+
+            this.setState(newSetting);
+        });
+
         ipcRenderer.on('update-shortcuts', (event, newShortcuts) => {
             console.log('entered update-shortcuts in Home');
             let name = newShortcuts.name;
@@ -181,7 +189,7 @@ export default class Home extends Component {
 
 */
         return (
-            <div style={{textAlign: 'center'}}>
+            <div style={{ textAlign: 'center' }}>
                     <button style={{color:"white", float:'left'}} id="reload-button" className="simple-button" onClick={() => {
                         console.log('sending reloadShortcuts from ipcRenderer');
                         ipcRenderer.send('main-parse-shortcuts');

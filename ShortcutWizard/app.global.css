@@ -21,7 +21,7 @@
 
   /* Make sure this matches the native window background color that you pass to
    * electron.BrowserWindow({...}), otherwise your app startup will look janky. */
-  background: rgb(40, 40, 40);
+  /*background: rgb(40, 40, 40);*/
 
   /* Smoother startup */
   animation: fadein 0.5s;
@@ -100,12 +100,13 @@ input {
     /*background: #222980b9;*/
     /*background: #FFFFFF;*/
     border: 1px solid #afafaf;
-    background: #000000;
+    /*background: #000000;*/
 }
 
 
 /* react-tab-view */
-.react-tabs {
+
+/*.react-tabs {
   margin: 0;
   padding: 1em;
   font-size: 150%;
@@ -159,4 +160,4 @@ input {
 .react-tabs a:hover {
   color: #fff;
   background-color: #b7b7b7;
-}
+}*/

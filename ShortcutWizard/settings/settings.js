@@ -21,7 +21,7 @@ defaultSettings[GLOBAL_SETTINGS] = {
 	hidePerApp: true,
 	boundsPerApp: true,
 	x: 1100, y: 100, width: 350, height: 800,
-	backgroundColor: '#adadad'
+	// backgroundColor: '#adadad'
 };
 
 // Defaults
