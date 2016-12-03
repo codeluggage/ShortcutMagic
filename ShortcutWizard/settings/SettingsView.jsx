@@ -23,43 +23,6 @@ export default class SettingsView extends Component {
     componentWillMount() {
 		settings.create(this);
 
-		// TODO: Handle main window initialisation better by using sync messages?
-		settings.get(false, (res) => {
-			ipcRenderer.send('main-window-settings', res);
-			this.setState({
-				originalAppSettings: res,
-				originalGlobalSettings: res,
-				settings: res
-			});
-		});
-
-		// ipcRenderer.on('open-settings', (event) => {
-		// 	console.log('entered open-settings');
-		// 	this.toggleSettings();
-		// });
-
-
-		// TODO: Should this be in settings.js together with other listeners, and
-		// then trigger a setState from there to here?
-		// TODO: Ideally show a "do you want to save your changes?" dialog if there were
-		// changes done to the app settings (not for global)
-		ipcRenderer.on('app-changed', (event, newName) => {
-			if (this.targetSettings == "global") {
-				var holdSettings = this.state.originalGlobalSettings;
-				holdSettings.name = newName;
-				this.setState({
-					originalGlobalSettings: holdSettings
-				});
-			} else {
-				// TODO: Also load in the original settings for this app name
-				var currentSettings = this.state.settings;
-				currentSettings.name = newName;
-				this.setState({
-					settings: currentSettings
-				});
-			}
-		});
-
 		// TODO: tweak this to fit global and local settings
     	// var applySettingsToState = (event, newSettings) => {
 	    //     this.setState(newSettings);
@@ -124,7 +87,6 @@ export default class SettingsView extends Component {
 
 	toggleTargetSettings() {
 		// TODO: add confirmation dialog to not throw away settings as it is toggled?
-    	console.log('NOT IMPLEMENTED show settings for current app');
 		if (this.state.targetSettings == "global") {
 			this.state.settings = this.state.originalAppSettings;
 			this.state.targetSettings = this.state.settings.name;

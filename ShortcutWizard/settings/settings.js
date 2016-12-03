@@ -20,6 +20,7 @@ defaultSettings[GLOBAL_SETTINGS] = {
 	frame: false,
 	hidePerApp: true,
 	boundsPerApp: true,
+	show: false,
 	x: 1100, y: 100, width: 350, height: 800,
 	// backgroundColor: '#adadad'
 };
@@ -71,10 +72,37 @@ settingsDb.find({
 // }
 
 export class Settings {
-	create() {
+	create(settingsWindow) {
+		this.settingsWindow = settingsWindow;
 		// TODO: check against already initialized
 		console.log("inside Settings class 'create' function");
 		this.registerListeners();
+
+		// When the settings are done loading, give it to the main window:
+		var appName = ipcRenderer.sendSync('get-app-name-sync');
+		console.log("getting get-app-name-sync with app name:", appName);
+		settingsDb.find({
+			name: appName
+		}, (err, res) => {
+
+
+			var newSettings;
+			if (!err && res && res.length && res[0]) {
+				newSettings = res[0];
+			} else {
+				newSettings = defaultSettings;
+			}
+
+			console.log("in settingsDb trying to find name", err, res);
+			console.log("final settings for main window: ", newSettings);
+
+			ipcRenderer.send('main-window-settings', newSettings);
+			this.settingsWindow.setState({
+				originalAppSettings: newSettings,
+				originalGlobalSettings: defaultSettings,
+				settings: newSettings
+			});
+		});
 	}
 
 	// Return a full set of settings for an app
@@ -149,6 +177,38 @@ export class Settings {
 	// destroySettings();
 
 	registerListeners() {
+		// TODO: Handle main window initialisation better by using sync messages?
+
+		// ipcRenderer.on('open-settings', (event) => {
+		// 	console.log('entered open-settings');
+		// 	this.toggleSettings();
+		// });
+
+
+		// TODO: Should this be in settings.js together with other listeners, and
+		// then trigger a setState from there to here?
+		// TODO: Ideally show a "do you want to save your changes?" dialog if there were
+		// changes done to the app settings (not for global)
+		ipcRenderer.on('app-changed', (event, newName) => {
+			if (this.targetSettings == "global") {
+				var holdSettings = this.state.originalGlobalSettings;
+				holdSettings.name = newName;
+				this.setState({
+					originalGlobalSettings: holdSettings
+				});
+			} else {
+				// TODO: Also load in the original settings for this app name
+				var currentSettings = this.state.settings;
+				currentSettings.name = newName;
+				this.setState({
+					settings: currentSettings
+				});
+			}
+		});
+
+
+
+
 		// TODO: move the state updates into the SettingsView
         // ipcRenderer.on('get-default-settings', applySettingsToState);
     	// ipcRenderer.on('get-settings', applySettingsToState);
