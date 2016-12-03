@@ -233,7 +233,7 @@ function createWindows() {
 
 function onClosed() {
 	// TODO: Clean up each ipcRenderer individually before nulling object
-	trayObject.destroy();
+	// trayObject.destroy(); // TODO: Fix needing to kill process after quitting - maybe it stays in memory? 
 	ipcMain.removeAllListeners();
 	trayObject = null;
 	mainWindow = null;
