@@ -25,12 +25,12 @@ defaultSettings[GLOBAL_SETTINGS] = {
 };
 
 // Defaults
-var settings = new Datastore({
+var settingsDb = new Datastore({
 	filename: `${__dirname}/../db/settings.db`,
 	autoload: true
 });
 
-settings.ensureIndex({
+settingsDb.ensureIndex({
 	fieldName: 'name',
 	unique: true // Setting unique value constraint on name
 }, function (err) {
@@ -41,7 +41,7 @@ settings.ensureIndex({
 
 
 // TODO: send to worker?
-settings.find({
+settingsDb.find({
 	name: GLOBAL_SETTINGS
 }, function(err, doc) {
 	if (err) {
@@ -50,7 +50,7 @@ settings.find({
 	}
 
 	if (!doc || (doc == [] || doc.length == 0)) {
-		settings.insert(defaultSettings[GLOBAL_SETTINGS], function(err, doc) {
+		settingsDb.insert(defaultSettings[GLOBAL_SETTINGS], function(err, doc) {
 			if (err) {
 				console.log('ERROR: inserting default settings into settings db failed with err', err);
 			}
@@ -77,17 +77,37 @@ export class Settings {
 		this.registerListeners();
 	}
 
-	get(setting) {
-		// TODO: look up settings in cache first, then in db, send db call to worker thread
-		console.log("entered GET on SETTINGS class, with setting: ", setting);
+	// Return a full set of settings for an app
+	get(appName, cb) {
+		if (!appName || appName == "") {
+			cb(defaultSettings);
+		}
 
-		if (setting == "mainWindow") {
-			return defaultSettings[GLOBAL_SETTINGS];
+		var val = cachedSettings[appName];
+		if (!val) {
+			// TODO: farm out to worker? make return value a callback instead?
+			settingsDb.find({
+				name: appName
+			}, function(err, res) {
+				if (err) {
+					console.log("Hit error trying to load setting in settings.get");
+					return;
+				}
+
+				if (res && res.length > 0 && res[0]) {
+					cb(res[0]);
+				} else {
+					cb(defaultSettings);
+				}
+			});
+		} else {
+			cb(val);
 		}
 	}
 
+	// Save a full set of settings for an app - uses $set and can be partial as long as name exists
 	set(newSettings) {
-		settings.update({
+		settingsDb.update({
 			name: newSettings.name
 		}, {
 			$set: newSettings
@@ -108,7 +128,7 @@ export class Settings {
 			return;
 		}
 
-		settings.find({
+		settingsDb.find({
 			name: appName
 		}, function(err, doc) {
 			var setDefaultSettings = defaultSettings;
@@ -168,46 +188,47 @@ export class Settings {
 		});
 
 		ipcRenderer.on('get-settings', (event) => {
-			// TODO: use GLOBAL_SETTINGS to get global settings too
-			console.log('entered get-settings');
-			var currentAppName = ipcRenderer.sendSync('get-app-name-sync');
-			if (!currentAppName) {
-				console.log("cant perform get-settings without app name");
-				return;
-			}
-
-			settings.find({
-				name: currentAppName
-			}, function(err, doc) {
-				if (err) {
-					console.log('Error loading settings', err);
-					// TODO: streamline default settings
-					settingsWindow.webContents.send('default-settings', {
-						name: currentAppName,
-						alwaysOnTop: mainWindow.isAlwaysOnTop(),
-						acceptFirstClick: defaultSettings[GLOBAL_SETTINGS].acceptFirstClick,
-						frame: defaultSettings[GLOBAL_SETTINGS].frame,
-						hidePerApp: defaultSettings[GLOBAL_SETTINGS].hidePerApp,
-						boundsPerApp: defaultSettings[GLOBAL_SETTINGS].boundsPerApp,
-						background: defaultSettings[GLOBAL_SETTINGS].background
-					});
-				} else if (doc && doc != [] && doc.length > 0) {
-					console.log('succeeded in loading settings');
-					settingsWindow.webContents.send('default-settings', doc[0]);
-				} else {
-					console.log('couldnt find settings for app, falling back to default');
-					// TODO: streamline default settings
-					settingsWindow.webContents.send('default-settings', {
-						name: currentAppName,
-						alwaysOnTop: mainWindow.isAlwaysOnTop(),
-						acceptFirstClick: defaultSettings[GLOBAL_SETTINGS].acceptFirstClick,
-						frame: defaultSettings[GLOBAL_SETTINGS].frame,
-						hidePerApp: defaultSettings[GLOBAL_SETTINGS].hidePerApp,
-						boundsPerApp: defaultSettings[GLOBAL_SETTINGS].boundsPerApp,
-						background: defaultSettings[GLOBAL_SETTINGS].background
-					});
-				}
-			});
+			console.log("get-settings NOT IMPLEMENTED! -------------------");
+			// // TODO: use GLOBAL_SETTINGS to get global settings too
+			// console.log('entered get-settings');
+			// var currentAppName = ipcRenderer.sendSync('get-app-name-sync');
+			// if (!currentAppName) {
+			// 	console.log("cant perform get-settings without app name");
+			// 	return;
+			// }
+			//
+			// settingsDb.find({
+			// 	name: currentAppName
+			// }, function(err, doc) {
+			// 	if (err) {
+			// 		console.log('Error loading settings', err);
+			// 		// TODO: streamline default settings
+			// 		settingsWindow.webContents.send('default-settings', {
+			// 			name: currentAppName,
+			// 			alwaysOnTop: mainWindow.isAlwaysOnTop(),
+			// 			acceptFirstClick: defaultSettings[GLOBAL_SETTINGS].acceptFirstClick,
+			// 			frame: defaultSettings[GLOBAL_SETTINGS].frame,
+			// 			hidePerApp: defaultSettings[GLOBAL_SETTINGS].hidePerApp,
+			// 			boundsPerApp: defaultSettings[GLOBAL_SETTINGS].boundsPerApp,
+			// 			background: defaultSettings[GLOBAL_SETTINGS].background
+			// 		});
+			// 	} else if (doc && doc != [] && doc.length > 0) {
+			// 		console.log('succeeded in loading settings');
+			// 		settingsWindow.webContents.send('default-settings', doc[0]);
+			// 	} else {
+			// 		console.log('couldnt find settings for app, falling back to default');
+			// 		// TODO: streamline default settings
+			// 		settingsWindow.webContents.send('default-settings', {
+			// 			name: currentAppName,
+			// 			alwaysOnTop: mainWindow.isAlwaysOnTop(),
+			// 			acceptFirstClick: defaultSettings[GLOBAL_SETTINGS].acceptFirstClick,
+			// 			frame: defaultSettings[GLOBAL_SETTINGS].frame,
+			// 			hidePerApp: defaultSettings[GLOBAL_SETTINGS].hidePerApp,
+			// 			boundsPerApp: defaultSettings[GLOBAL_SETTINGS].boundsPerApp,
+			// 			background: defaultSettings[GLOBAL_SETTINGS].background
+			// 		});
+			// 	}
+			// });
 		});
 
 
@@ -220,7 +241,7 @@ export class Settings {
 		});
 
 		ipcRenderer.on('save-global-settings', (event, newSettings) => {
-			settings.update({
+			settingsDb.update({
 				name: GLOBAL_SETTINGS
 			}, {
 				$set: newSettings
@@ -240,7 +261,7 @@ export class Settings {
 		ipcRenderer.on('save-settings', (event, newSettings) => {
 			console.log('inside save-settings with newSettings', newSettings);
 			var newSettingName = newSettings.name;
-			settings.update({
+			settingsDb.update({
 				name: newSettings[newSettingName]
 			}, {
 				$set: newSettings

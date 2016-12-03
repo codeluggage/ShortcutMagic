@@ -24,8 +24,14 @@ export default class SettingsView extends Component {
 		settings.create(this);
 
 		// TODO: Handle main window initialisation better by using sync messages?
-		var mainWindowSettings = settings.get("mainWindow");
-		ipcRenderer.send('main-window-settings', mainWindowSettings);
+		settings.get(false, (res) => {
+			ipcRenderer.send('main-window-settings', res);
+			this.setState({
+				originalAppSettings: res,
+				originalGlobalSettings: res,
+				settings: res
+			});
+		});
 
 		// ipcRenderer.on('open-settings', (event) => {
 		// 	console.log('entered open-settings');
@@ -58,14 +64,6 @@ export default class SettingsView extends Component {
     	// var applySettingsToState = (event, newSettings) => {
 	    //     this.setState(newSettings);
     	// };
-
-		// TODO: Set this when window is about to show too
-
-		this.setState({
-			originalAppSettings: mainWindowSettings,
-			originalGlobalSettings: mainWindowSettings,
-			settings: mainWindowSettings
-		});
 
         this.handleChangeComplete = this.handleChangeComplete.bind(this);
 		this.saveCurrentSettings = this.saveCurrentSettings.bind(this);
