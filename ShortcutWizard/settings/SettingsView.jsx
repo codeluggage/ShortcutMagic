@@ -34,15 +34,7 @@ export default class SettingsView extends Component {
 
 	// TODO: Also close/hide the window from here?
 	saveCurrentSettings() {
-		if (this.targetSettings == "global") {
-			settings.set({
-				globalSettings: this.state.settings
-			});
-		} else {
-			settings.set({
-				appSettings: this.state.settings
-			});
-		}
+		settings.set(this.state.settings);
 
         var windows = holdRemote.BrowserWindow.getAllWindows();
         for (var i = 0; i < windows.length; i++) {
@@ -50,7 +42,7 @@ export default class SettingsView extends Component {
 			console.log("holdWindow : ", holdWindow.id);
 
             if (holdWindow && holdWindow.id == settings.windowIds["settingsWindow"]) {
-                holdWindow.webContents.hide();
+                holdWindow.hide();
             }
         }
 	}
@@ -106,14 +98,14 @@ export default class SettingsView extends Component {
 						float:'left',
 						backgroundColor: (this.state.targetSettings == 'global') ? 'blue' : 'white'
 					}} className="simple-button" onClick={() => {
-						this.toggleTargetSettings();
+						settings.enableGlobalSettings();
                     }}>Global settings</button>
 
                     <button style={{
 						float:'right',
 						backgroundColor: (this.state.targetSettings == 'global') ? 'white' : 'blue'
 					}} className="simple-button" onClick={() => {
-						this.toggleTargetSettings();
+						settings.enableSpecificSettings();
                     }}>Specific settings for {this.state.settings.name}</button>
 
 		        	<li>
@@ -178,9 +170,7 @@ export default class SettingsView extends Component {
 
                     <button style={{color:"white", float:'left'}} className="simple-button" onClick={() => {
                     	console.log('sending state as settings to "save-settings"', this.state.settings);
-						// TODO: save to settings.js instead of index.js
-                        ipcRenderer.send('save-settings', this.state.settings);
-                        // TODO: close window
+						this.saveCurrentSettings();
                     }}>Save</button>
                     <button style={{color:"white", float:'right'}} className="simple-button" onClick={() => {
                     	console.log('cancelling settings window');

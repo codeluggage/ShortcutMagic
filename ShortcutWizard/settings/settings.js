@@ -84,8 +84,6 @@ export class Settings {
 		settingsDb.find({
 			name: appName
 		}, (err, res) => {
-
-
 			var newSettings;
 			if (!err && res && res.length && res[0]) {
 				newSettings = res[0];
@@ -105,36 +103,67 @@ export class Settings {
 		});
 	}
 
+	enableSpecificSettings() {
+		var appName = ipcRenderer.sendSync('get-app-name-sync');
+		console.log("getting get-app-name-sync with app name:", appName);
+
+		this.get(appName, (newSettings) => {
+			var original = this.settingsWindow.settings;
+			// Only care if we are coming from the specific settings we didn't already have:
+			if (!original || original.name != appName) {
+				this.settingsWindow.setState({
+					originalGlobalSettings: original,
+					settings: newSettings
+				});
+			}
+		});
+	}
+	enableGlobalSettings() {
+		this.get(false, (newSettings) => {
+			var original = this.settingsWindow.settings;
+			// Only care if we are coming from the global settings:
+			if (!original || original.name != GLOBAL_SETTINGS) {
+				this.settingsWindow.setState({
+					originalAppSettings: original,
+					settings: newSettings
+				});
+			}
+		});
+	}
+
 	// Return a full set of settings for an app
 	get(appName, cb) {
 		if (!appName || appName == "") {
 			cb(defaultSettings);
+			return;
 		}
 
 		var val = cachedSettings[appName];
-		if (!val) {
-			// TODO: farm out to worker? make return value a callback instead?
-			settingsDb.find({
-				name: appName
-			}, function(err, res) {
-				if (err) {
-					console.log("Hit error trying to load setting in settings.get");
-					return;
-				}
-
-				if (res && res.length > 0 && res[0]) {
-					cb(res[0]);
-				} else {
-					cb(defaultSettings);
-				}
-			});
-		} else {
+		if (val) {
 			cb(val);
+			return
 		}
+		// TODO: farm out to worker? make return value a callback instead?
+		settingsDb.find({
+			name: appName
+		}, function(err, res) {
+			if (err) {
+				console.log("Hit error trying to load setting in settings.get");
+				return;
+			}
+
+			if (res && res.length > 0 && res[0]) {
+				cb(res[0]);
+			} else {
+				cb(defaultSettings);
+			}
+		});
 	}
 
 	// Save a full set of settings for an app - uses $set and can be partial as long as name exists
 	set(newSettings) {
+		delete newSettings._id;
+		cachedSettings[newSettings.name] = newSettings;
 		settingsDb.update({
 			name: newSettings.name
 		}, {
@@ -143,7 +172,7 @@ export class Settings {
 			upsert: true
 		}, function(err, doc) {
 			if (err) {
-				console.log("Error upserting in settings.js set", err);
+				console.log("Error upserting in settings.js set", err, newSettings);
 			} else {
 				console.log("Succeeded in saving settings to db: ", newSettings);
 			}
@@ -190,20 +219,27 @@ export class Settings {
 		// TODO: Ideally show a "do you want to save your changes?" dialog if there were
 		// changes done to the app settings (not for global)
 		ipcRenderer.on('app-changed', (event, newName) => {
-			if (this.targetSettings == "global") {
-				var holdSettings = this.state.originalGlobalSettings;
-				holdSettings.name = newName;
-				this.setState({
-					originalGlobalSettings: holdSettings
+			this.get(newName, (newSettings) => {
+				this.settingsWindow.setState({
+					originalAppSettings: newSettings,
+					settings: newSettings
 				});
-			} else {
-				// TODO: Also load in the original settings for this app name
-				var currentSettings = this.state.settings;
-				currentSettings.name = newName;
-				this.setState({
-					settings: currentSettings
-				});
-			}
+			})
+
+			// if (this.targetSettings == "global") {
+			// 	var holdSettings = this.settingsWindow.state.originalGlobalSettings;
+			// 	holdSettings.name = newName;
+			// 	this.settingsWindow.setState({
+			// 		originalGlobalSettings: holdSettings
+			// 	});
+			// } else {
+			// 	// TODO: Also load in the original settings for this app name
+			// 	var currentSettings = this.settingsWindow.state.settings;
+			// 	currentSettings.name = newName;
+			// 	this.settingsWindow.setState({
+			// 		settings: currentSettings
+			// 	});
+			// }
 		});
 
 
