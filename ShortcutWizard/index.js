@@ -229,6 +229,20 @@ function createWindows() {
 	createSettingsWindow();
 	createWelcomeWindow();
 
+	var windowIds = {
+		settingsWindow: settingsWindow.id,
+		backgroundTaskRunnerWindow: backgroundTaskRunnerWindow.id,
+		backgroundListenerWindow: backgroundListenerWindow.id,
+		welcomeWindow: welcomeWindow.id
+	};
+
+	settingsWindow.webContents.send('update-window-ids', windowIds);
+	backgroundTaskRunnerWindow.webContents.send('update-window-ids', windowIds);
+	backgroundListenerWindow.webContents.send('update-window-ids', windowIds);
+
+	console.log("sending update-window-ids to welcomeWindow", windowIds, welcomeWindow);
+	welcomeWindow.webContents.send('update-window-ids', windowIds);
+
 	settingsWindow.webContents.send('first-app-opened', "Electron");
 }
 
@@ -241,6 +255,7 @@ function onClosed() {
 	settingsWindow = null; // TODO: double check that the settings window isn't destroyed elsewhere
 	backgroundTaskRunnerWindow = null;
 	backgroundListenerWindow = null;
+	welcomeWindow = null;
 }
 
 function createTray() {
@@ -275,6 +290,13 @@ function createTray() {
 		if (backgroundListenerWindow) {
 			backgroundListenerWindow.show();
 			backgroundListenerWindow.openDevTools();
+		} else {
+			console.log("cant find backgroundListenerWindow to show");
+		}
+
+		if (welcomeWindow) {
+			welcomeWindow.show();
+			welcomeWindow.openDevTools();
 		} else {
 			console.log("cant find backgroundListenerWindow to show");
 		}
@@ -314,8 +336,8 @@ function createBackgroundListenerWindow() {
 
 function createWelcomeWindow() {
 	welcomeWindow = new BrowserWindow({
-		backgroundColor: 'light-green',
-		show: true
+		show: true,
+		title: "welcomeWindow"
 	});
 
 	welcomeWindow.loadURL(`file://${__dirname}/welcome/index.html`);
@@ -601,5 +623,6 @@ ipcMain.on('create-shortcut-window', (event, mainSettings) => {
 		mainWindow.webContents.send('update-window-ids', windowIds);
 		backgroundTaskRunnerWindow.webContents.send('update-window-ids', windowIds);
 		backgroundListenerWindow.webContents.send('update-window-ids', windowIds);
+		welcomeWindow.webContents.send('update-window-ids', windowIds);
 	}, 500);
 });

@@ -7,20 +7,18 @@ var holdRemote = remote;
 
 export default class WelcomeView extends Component {
     componentWillMount() {
-        this.setState({
-            accessGranted: false
-        });
+        // this.setState({
+        //     accessGranted: false
+        // });
 
         window.document.documentElement.style.backgroundColor = '#3a9ad9';
 
 
-		ipcRenderer.on('update-window-ids', (event, windowIds) => {
-			console.log("inside WelcomeView.js update-window-ids");
-			this.setState({
-                windowIds: windowIds
-            });
-        });
-
+		// ipcRenderer.on('update-window-ids', (event, newWindowIds) => {
+		// 	console.log("inside WelcomeView.js update-window-ids");
+        //     this.windowIds = newWindowIds;
+        // });
+        // 
         ipcRenderer.on('set-background-color', (event, backgroundColor) => {
         	window.document.documentElement.style.backgroundColor = backgroundColor;
         });
@@ -48,16 +46,12 @@ export default class WelcomeView extends Component {
                     console.log("todo: request access with some simple script, call to ipcMain");
                 }}>Click here to allow that access.</a></h5>
                 <button onClick={() => {
-                    if (!this.state) {
-                        console.log("cant do anything in click handler without state");
-                        return;
-                    }
 
                     // enabled={this.state.accessGranted}
 			        var windows = holdRemote.BrowserWindow.getAllWindows();
 			        for (var i = 0; i < windows.length; i++) {
 			            let holdWindow = windows[i];
-			            if (holdWindow && holdWindow.id == this.state.windowIds["welcomeWindow"]) {
+			            if (holdWindow && holdWindow.getTitle() == "welcomeWindow") {
 							holdWindow.hide();
 			            }
 			        }

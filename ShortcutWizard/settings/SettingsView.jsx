@@ -32,6 +32,8 @@ export default class SettingsView extends Component {
         this.handleChangeComplete = this.handleChangeComplete.bind(this);
 		this.saveCurrentSettings = this.saveCurrentSettings.bind(this);
 		this.cancelCurrentSettings = this.cancelCurrentSettings.bind(this);
+		this.enableGlobalSettings = this.enableGlobalSettings.bind(this);
+		this.enableLocalSettings = this.enableLocalSettings.bind(this);
     }
 
 	saveCurrentSettings() {
@@ -56,6 +58,11 @@ export default class SettingsView extends Component {
 			});
 
 	    	window.document.documentElement.style.backgroundColor = newSettings.backgroundColor;
+
+			if (!settings.windowIds) {
+				console.log("cant find windowids in cancelCurrentSettings");
+				return;
+			}
 
 	        var windows = holdRemote.BrowserWindow.getAllWindows();
 	        for (var i = 0; i < windows.length; i++) {
@@ -235,7 +242,7 @@ export default class SettingsView extends Component {
 				        var windows = holdRemote.BrowserWindow.getAllWindows();
 				        for (var i = 0; i < windows.length; i++) {
 				            let holdWindow = windows[i];
-				            if (holdWindow && holdWindow.id == settings.windowIds["mainWindow"]) {
+				            if (holdWindow && holdWindow.id == settings.windowIds["settingsWindow"]) {
 								holdWindow.hide();
 				            }
 				        }
