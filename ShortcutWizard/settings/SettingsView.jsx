@@ -6,6 +6,7 @@ import { SketchPicker } from 'react-color';
 
 import { Settings } from './settings';
 // console.log("first settings: ", Settings);
+var GLOBAL_SETTINGS = "all programs";
 var settings = new Settings();
 // const Settings = require('./settings/settings');
 // console.log('imported settings: ', settings, JSON.stringify(settings) );
@@ -30,9 +31,9 @@ export default class SettingsView extends Component {
 
         this.handleChangeComplete = this.handleChangeComplete.bind(this);
 		this.saveCurrentSettings = this.saveCurrentSettings.bind(this);
+		this.cancelCurrentSettings = this.cancelCurrentSettings.bind(this);
     }
 
-	// TODO: Also close/hide the window from here?
 	saveCurrentSettings() {
 		settings.set(this.state.settings);
 
@@ -45,6 +46,33 @@ export default class SettingsView extends Component {
                 holdWindow.hide();
             }
         }
+	}
+
+	cancelCurrentSettings() {
+		settings.get(this.state.settings.name, (newSettings) => {
+			// TODO: apply to main window and then close this settings window
+			this.setState({
+				settings: newSettings
+			});
+
+	    	window.document.documentElement.style.backgroundColor = newSettings.backgroundColor;
+
+	        var windows = holdRemote.BrowserWindow.getAllWindows();
+	        for (var i = 0; i < windows.length; i++) {
+	            let holdWindow = windows[i];
+				console.log("holdWindow : ", holdWindow.id);
+
+	            if (holdWindow) {
+					if (holdWindow.id == settings.windowIds["settingsWindow"]) {
+		                holdWindow.hide();
+					} else if (holdWindow.id == settings.windowIds["mainWindow"]) {
+						holdWindow.webContents.send('temporarily-update-app-setting', {
+							backgroundColor: newSettings.backgroundColor
+						});
+					}
+	            }
+	        }
+		});
 	}
 
     handleChangeComplete(color) {
@@ -77,36 +105,50 @@ export default class SettingsView extends Component {
         }
     }
 
-	toggleTargetSettings() {
-		// TODO: add confirmation dialog to not throw away settings as it is toggled?
-		if (this.state.targetSettings == "global") {
-			this.state.settings = this.state.originalAppSettings;
-			this.state.targetSettings = this.state.settings.name;
-		} else {
-			this.state.targetSettings = "global";
-			this.state.settings = this.state.originalGlobalSettings;
+	enableLocalSettings() {
+		var original = this.state.settings;
+		// Only care if we are coming from the specific settings we didn't already have:
+		if (original.name == GLOBAL_SETTINGS) {
+			this.setState({
+				originalGlobalSettings: original,
+				settings: this.originalAppSettings
+			});
+		}
+	}
+
+	enableGlobalSettings() {
+		var original = this.state.settings;
+		// Only care if we are coming from the global settings:
+		if (original.name != GLOBAL_SETTINGS) {
+			this.setState({
+				originalAppSettings: original,
+				settings: this.originalGlobalSettings
+			});
 		}
 	}
 
     render() {
     	if (this.state) {
-    		console.log('about to render settings with state: ', this.state);
+    		console.log('about to render settings with state and names: ', this.state,
+				this.state.settings.name, this.state.originalAppSettings.name, this.state.originalGlobalSettings.name);
 			// TODO: move these into a tab view, one for the current app and one for global
     		return (
     			<div style={{backgroundColor: this.state.settings.background}}>
+					<h1>Settings for {this.settings.name}</h1>
+
                     <button style={{
 						float:'left',
-						backgroundColor: (this.state.targetSettings == 'global') ? 'blue' : 'white'
-					}} className="simple-button" onClick={() => {
-						settings.enableGlobalSettings();
+						backgroundColor: (this.state.settings.name == GLOBAL_SETTINGS) ? 'blue' : 'white'
+					}} className="react-tabs" onClick={() => {
+						this.enableGlobalSettings();
                     }}>Global settings</button>
 
                     <button style={{
 						float:'right',
-						backgroundColor: (this.state.targetSettings == 'global') ? 'white' : 'blue'
-					}} className="simple-button" onClick={() => {
-						settings.enableSpecificSettings();
-                    }}>Specific settings for {this.state.settings.name}</button>
+						backgroundColor: (this.state.settings.name != GLOBAL_SETTINGS) ? 'blue' : 'white'
+					}} className="react-tabs" onClick={() => {
+						this.enableLocalSettings();
+                    }}>Settings for {this.state.originalAppSettings.name}</button>
 
 		        	<li>
 	                    <button className="simple-button" onClick={() => {
@@ -169,13 +211,10 @@ export default class SettingsView extends Component {
 
 
                     <button style={{color:"white", float:'left'}} className="simple-button" onClick={() => {
-                    	console.log('sending state as settings to "save-settings"', this.state.settings);
 						this.saveCurrentSettings();
                     }}>Save</button>
                     <button style={{color:"white", float:'right'}} className="simple-button" onClick={() => {
-                    	console.log('cancelling settings window');
-                    	ipcRenderer.send('undo-settings');
-                        // TODO: close window
+						this.cancelCurrentSettings();
                     }}>Cancel</button>
 	    		</div>
 			);
@@ -189,8 +228,20 @@ export default class SettingsView extends Component {
 	  //   		</ul>
 			// );
 	    } else {
-			// TODO: Add a refresh button in case something goes wrong and it needs to load again
-	    	return (<h1>Settings loading...</h1>);
+	    	return (
+				<div>
+					<h1>ShortcutWizard can't show the settings for some reason...</h1>
+					<button onClick={() => {
+				        var windows = holdRemote.BrowserWindow.getAllWindows();
+				        for (var i = 0; i < windows.length; i++) {
+				            let holdWindow = windows[i];
+				            if (holdWindow && holdWindow.id == settings.windowIds["mainWindow"]) {
+								holdWindow.hide();
+				            }
+				        }
+					}}>Close settings</button>
+				</div>
+			);
 	    }
     }
 }

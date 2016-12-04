@@ -106,7 +106,7 @@ input {
 
 /* react-tab-view */
 
-/*.react-tabs {
+.react-tabs {
   margin: 0;
   padding: 1em;
   font-size: 150%;
@@ -160,4 +160,4 @@ input {
 .react-tabs a:hover {
   color: #fff;
   background-color: #b7b7b7;
-}*/
+}

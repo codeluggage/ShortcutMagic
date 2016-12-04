@@ -221,22 +221,20 @@ function createSettingsWindow() {
 
 
 function createWindows() {
+	// The actual shortcut window is only created when the app switches
 	createTray();
-
 	createBackgroundTaskRunnerWindow();
 	createBackgroundListenerWindow();
-	createMainWindow();
-
-	// Create settings window last because it kicks off mainWindow
 	createSettingsWindow();
 }
 
 function onClosed() {
 	// TODO: Clean up each ipcRenderer individually before nulling object
-	// trayObject.destroy(); // TODO: Fix needing to kill process after quitting - maybe it stays in memory? 
+	// trayObject.destroy(); // TODO: Fix needing to kill process after quitting - maybe it stays in memory?
 	ipcMain.removeAllListeners();
 	trayObject = null;
 	mainWindow = null;
+	settingsWindow = null; // TODO: double check that the settings window isn't destroyed elsewhere
 	backgroundTaskRunnerWindow = null;
 	backgroundListenerWindow = null;
 }
@@ -248,9 +246,38 @@ function createTray() {
 
 	console.log('created trayObject: ', trayObject);
 	trayObject.setToolTip('ShortcutWizard!');
-	trayObject.on('right-click', applyWindowMode);
+	trayObject.on('right-click', (event) => {
+		if (mainWindow) {
+			mainWindow.show();
+			mainWindow.openDevTools();
+		} else {
+			console.log("cant find mainwindow to show");
+		}
+
+		if (settingsWindow) {
+			settingsWindow.show();
+			settingsWindow.openDevTools();
+		} else {
+			console.log("cant find settingswindow to show");
+		}
+
+		if (backgroundTaskRunnerWindow) {
+			backgroundTaskRunnerWindow.show();
+			backgroundTaskRunnerWindow.openDevTools();
+		} else {
+			console.log("cant find backgroundTaskRunnerWindow to show");
+		}
+
+		if (backgroundListenerWindow) {
+			backgroundListenerWindow.show();
+			backgroundListenerWindow.openDevTools();
+		} else {
+			console.log("cant find backgroundListenerWindow to show");
+		}
+	});
+
 	trayObject.on('double-click', applyWindowMode);
-	trayObject.on('click', function (event) {
+	trayObject.on('click', (event) => {
 		applyWindowMode();
 
 		if (mainWindow.isVisible() && process.defaultApp && event.metaKey) {
@@ -261,57 +288,6 @@ function createTray() {
 	});
 
 	return trayObject;
-}
-
-function createMainWindow() {
-	ipcMain.on('main-window-settings', (event, mainSettings) => {
-		mainWindow = new BrowserWindow(mainSettings);
-		console.log("---------------------- inside send, with new settings:", mainSettings);
-
-		// TODO: make experimental settings:
-		// 0 - NSVisualEffectMaterialAppearanceBased 10.10+
-		// 1 - NSVisualEffectMaterialLight 10.10+
-		// 2 - NSVisualEffectMaterialDark 10.10+
-		// 3 - NSVisualEffectMaterialTitlebar 10.10+
-		// 4 - NSVisualEffectMaterialSelection 10.11+
-		// 5 - NSVisualEffectMaterialMenu 10.11+
-		// 6 - NSVisualEffectMaterialPopover 10.11+
-		// 7 - NSVisualEffectMaterialSidebar 10.11+
-		// 8 - NSVisualEffectMaterialMediumLight 10.11+
-		// 9 - NSVisualEffectMaterialUltraDark 10.11+
-
-		// Whole window vibrancy with Material 0 and auto resize
-		mainWindow.on('ready-to-show', () => {
-			console.log('loaded window, vibrancy: ', electronVibrancy);
-		    // electronVibrancy.SetVibrancy(true, browserWindowInstance.getNativeWindowHandle());
-			electronVibrancy.SetVibrancy(mainWindow, 0);
-		});
-
-		mainWindow.loadURL(`file://${__dirname}/index.html`);
-		mainWindow.on('closed', onClosed);
-		mainWindow.setHasShadow(false);
-
-		applyWindowMode(windowMode);
-
-		// All windows are created, collect all their window id's and let each of them
-		// know what is available to send messages to:
-		var windowIds = {
-			settingsWindow: settingsWindow.id,
-			mainWindow: mainWindow.id,
-			backgroundTaskRunnerWindow: backgroundTaskRunnerWindow.id,
-			backgroundListenerWindow: backgroundListenerWindow.id
-		};
-
-		console.log("windows id after all windows created: ", windowIds);
-
-		// TODO: Improve this to be a trigger from the last window being created (main window?)
-		setTimeout(function() {
-			settingsWindow.webContents.send('update-window-ids', windowIds);
-			mainWindow.webContents.send('update-window-ids', windowIds);
-			backgroundTaskRunnerWindow.webContents.send('update-window-ids', windowIds);
-			backgroundListenerWindow.webContents.send('update-window-ids', windowIds);
-		}, 500);
-	});
 }
 
 function createBackgroundTaskRunnerWindow() {
@@ -496,7 +472,12 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 	currentAppName = appName;
 
 	// TODO: Do the message sending in a cleaner way
-	settingsWindow.webContents.send('app-changed', currentAppName);
+
+	if (!mainWindow) {
+		settingsWindow.webContents.send('first-app-opened', currentAppName);
+	} else {
+		settingsWindow.webContents.send('app-changed', currentAppName);
+	}
 });
 
 ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
@@ -557,4 +538,53 @@ ipcMain.on('change-window-mode', function(event, ) {
 
 ipcMain.on('open-settings', function(event) {
 	ipcMain.send('open-settings');
+});
+
+ipcMain.on('create-shortcut-window', (event, mainSettings) => {
+	mainWindow = new BrowserWindow(mainSettings);
+	console.log("---------------------- inside send, with new settings:", mainSettings);
+
+	// TODO: make experimental settings:
+	// 0 - NSVisualEffectMaterialAppearanceBased 10.10+
+	// 1 - NSVisualEffectMaterialLight 10.10+
+	// 2 - NSVisualEffectMaterialDark 10.10+
+	// 3 - NSVisualEffectMaterialTitlebar 10.10+
+	// 4 - NSVisualEffectMaterialSelection 10.11+
+	// 5 - NSVisualEffectMaterialMenu 10.11+
+	// 6 - NSVisualEffectMaterialPopover 10.11+
+	// 7 - NSVisualEffectMaterialSidebar 10.11+
+	// 8 - NSVisualEffectMaterialMediumLight 10.11+
+	// 9 - NSVisualEffectMaterialUltraDark 10.11+
+
+	// Whole window vibrancy with Material 0 and auto resize
+	mainWindow.on('ready-to-show', () => {
+		console.log('loaded window, vibrancy: ', electronVibrancy);
+	    // electronVibrancy.SetVibrancy(true, browserWindowInstance.getNativeWindowHandle());
+		electronVibrancy.SetVibrancy(mainWindow, 0);
+	});
+
+	mainWindow.loadURL(`file://${__dirname}/index.html`);
+	mainWindow.on('closed', onClosed);
+	mainWindow.setHasShadow(false);
+
+	applyWindowMode(windowMode);
+
+	// All windows are created, collect all their window id's and let each of them
+	// know what is available to send messages to:
+	var windowIds = {
+		settingsWindow: settingsWindow.id,
+		mainWindow: mainWindow.id,
+		backgroundTaskRunnerWindow: backgroundTaskRunnerWindow.id,
+		backgroundListenerWindow: backgroundListenerWindow.id
+	};
+
+	console.log("windows id after all windows created: ", windowIds);
+
+	// TODO: Improve this to be a trigger from the last window being created (main window?)
+	setTimeout(function() {
+		settingsWindow.webContents.send('update-window-ids', windowIds);
+		mainWindow.webContents.send('update-window-ids', windowIds);
+		backgroundTaskRunnerWindow.webContents.send('update-window-ids', windowIds);
+		backgroundListenerWindow.webContents.send('update-window-ids', windowIds);
+	}, 500);
 });

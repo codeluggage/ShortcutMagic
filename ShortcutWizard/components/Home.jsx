@@ -111,11 +111,7 @@ export default class Home extends Component {
         for (var i = 0; i < windows.length; i++) {
             let settingsWindow = windows[i];
             if (settingsWindow && settingsWindow.id == this.windowIds["settingsWindow"]) {
-                if (settingsWindow.isVisible()) {
-                    settingsWindow.hide();
-                } else {
-                    settingsWindow.show();
-                }
+                settingsWindow.show();
             }
         }
     }

@@ -8,21 +8,21 @@ import { ipcRenderer, remote } from 'electron';
 // - respond to settingsview logic
 // - send heavy tasks to settingsWorker - or will this be settingsWorker in itself?
 
-var GLOBAL_SETTINGS = "__GLOBALSETTINGS__"; // Is there ever a risk that an app has this name and will overwrite..?
+// Is there ever a risk that an app has on eof these names and will overwrite..?
+var GLOBAL_SETTINGS = "all programs";
 var settingsInProgress = {};
 var lastSavedSettings = {};
 var cachedSettings = {};
 var defaultSettings = {};
-defaultSettings[GLOBAL_SETTINGS] = {
+// TODO: Split startup settings from saved settings?
+defaultSettings = {
 	name: GLOBAL_SETTINGS,
 	acceptFirstClick: true,
 	alwaysOnTop: true,
 	frame: false,
-	hidePerApp: true,
-	boundsPerApp: true,
-	show: false,
+	show: true,
 	x: 1100, y: 100, width: 350, height: 800,
-	// backgroundColor: '#adadad'
+	backgroundColor: '#adadad'
 };
 
 // Defaults
@@ -51,7 +51,7 @@ settingsDb.find({
 	}
 
 	if (!doc || (doc == [] || doc.length == 0)) {
-		settingsDb.insert(defaultSettings[GLOBAL_SETTINGS], function(err, doc) {
+		settingsDb.insert(defaultSettings, function(err, doc) {
 			if (err) {
 				console.log('ERROR: inserting default settings into settings db failed with err', err);
 			}
@@ -74,61 +74,7 @@ settingsDb.find({
 export class Settings {
 	create(settingsWindow) {
 		this.settingsWindow = settingsWindow;
-		// TODO: check against already initialized
-		console.log("inside Settings class 'create' function");
 		this.registerListeners();
-
-		// When the settings are done loading, give it to the main window:
-		var appName = ipcRenderer.sendSync('get-app-name-sync');
-		console.log("getting get-app-name-sync with app name:", appName);
-		settingsDb.find({
-			name: appName
-		}, (err, res) => {
-			var newSettings;
-			if (!err && res && res.length && res[0]) {
-				newSettings = res[0];
-			} else {
-				newSettings = defaultSettings;
-			}
-
-			console.log("in settingsDb trying to find name", err, res);
-			console.log("final settings for main window: ", newSettings);
-
-			ipcRenderer.send('main-window-settings', newSettings);
-			this.settingsWindow.setState({
-				originalAppSettings: newSettings,
-				originalGlobalSettings: defaultSettings,
-				settings: newSettings
-			});
-		});
-	}
-
-	enableSpecificSettings() {
-		var appName = ipcRenderer.sendSync('get-app-name-sync');
-		console.log("getting get-app-name-sync with app name:", appName);
-
-		this.get(appName, (newSettings) => {
-			var original = this.settingsWindow.settings;
-			// Only care if we are coming from the specific settings we didn't already have:
-			if (!original || original.name != appName) {
-				this.settingsWindow.setState({
-					originalGlobalSettings: original,
-					settings: newSettings
-				});
-			}
-		});
-	}
-	enableGlobalSettings() {
-		this.get(false, (newSettings) => {
-			var original = this.settingsWindow.settings;
-			// Only care if we are coming from the global settings:
-			if (!original || original.name != GLOBAL_SETTINGS) {
-				this.settingsWindow.setState({
-					originalAppSettings: original,
-					settings: newSettings
-				});
-			}
-		});
 	}
 
 	// Return a full set of settings for an app
@@ -141,7 +87,7 @@ export class Settings {
 		var val = cachedSettings[appName];
 		if (val) {
 			cb(val);
-			return
+			return;
 		}
 		// TODO: farm out to worker? make return value a callback instead?
 		settingsDb.find({
@@ -153,6 +99,7 @@ export class Settings {
 			}
 
 			if (res && res.length > 0 && res[0]) {
+				cachedSettings[appName] = res[0]
 				cb(res[0]);
 			} else {
 				cb(defaultSettings);
@@ -206,13 +153,16 @@ export class Settings {
 	// destroySettings();
 
 	registerListeners() {
-		// TODO: Handle main window initialisation better by using sync messages?
+		ipcRenderer.on('first-app-opened', (event, newName) {
+			this.get(newName, (newSettings) => {
+				ipcRenderer.send('create-shortcut-window', newSettings);
 
-		// ipcRenderer.on('open-settings', (event) => {
-		// 	console.log('entered open-settings');
-		// 	this.toggleSettings();
-		// });
-
+				this.settingsWindow.setState({
+					originalAppSettings: newSettings,
+					settings: newSettings
+				});
+			});
+		});
 
 		// TODO: Should this be in settings.js together with other listeners, and
 		// then trigger a setState from there to here?
@@ -224,22 +174,7 @@ export class Settings {
 					originalAppSettings: newSettings,
 					settings: newSettings
 				});
-			})
-
-			// if (this.targetSettings == "global") {
-			// 	var holdSettings = this.settingsWindow.state.originalGlobalSettings;
-			// 	holdSettings.name = newName;
-			// 	this.settingsWindow.setState({
-			// 		originalGlobalSettings: holdSettings
-			// 	});
-			// } else {
-			// 	// TODO: Also load in the original settings for this app name
-			// 	var currentSettings = this.settingsWindow.state.settings;
-			// 	currentSettings.name = newName;
-			// 	this.settingsWindow.setState({
-			// 		settings: currentSettings
-			// 	});
-			// }
+			});
 		});
 
 
@@ -249,8 +184,8 @@ export class Settings {
         // ipcRenderer.on('get-default-settings', applySettingsToState);
     	// ipcRenderer.on('get-settings', applySettingsToState);
 
-		// ipcRenderer.on('main-window-settings', (event, cb) => {
-		// 	console.log("inside main-window-settings::::::::::::::::: ", cb);
+		// ipcRenderer.on('create-shortcut-window', (event, cb) => {
+		// 	console.log("inside create-shortcut-window::::::::::::::::: ", cb);
 		// 	holdSettings = this.get("mainWindow");
 		// 	console.log("got holdSettings, calling cb function", holdSettings);
 		// 	cb(holdSettings);
@@ -283,109 +218,12 @@ export class Settings {
 
 		});
 
-		ipcRenderer.on('get-settings', (event) => {
-			console.log("get-settings NOT IMPLEMENTED! -------------------");
-			// // TODO: use GLOBAL_SETTINGS to get global settings too
-			// console.log('entered get-settings');
-			// var currentAppName = ipcRenderer.sendSync('get-app-name-sync');
-			// if (!currentAppName) {
-			// 	console.log("cant perform get-settings without app name");
-			// 	return;
-			// }
-			//
-			// settingsDb.find({
-			// 	name: currentAppName
-			// }, function(err, doc) {
-			// 	if (err) {
-			// 		console.log('Error loading settings', err);
-			// 		// TODO: streamline default settings
-			// 		settingsWindow.webContents.send('default-settings', {
-			// 			name: currentAppName,
-			// 			alwaysOnTop: mainWindow.isAlwaysOnTop(),
-			// 			acceptFirstClick: defaultSettings[GLOBAL_SETTINGS].acceptFirstClick,
-			// 			frame: defaultSettings[GLOBAL_SETTINGS].frame,
-			// 			hidePerApp: defaultSettings[GLOBAL_SETTINGS].hidePerApp,
-			// 			boundsPerApp: defaultSettings[GLOBAL_SETTINGS].boundsPerApp,
-			// 			background: defaultSettings[GLOBAL_SETTINGS].background
-			// 		});
-			// 	} else if (doc && doc != [] && doc.length > 0) {
-			// 		console.log('succeeded in loading settings');
-			// 		settingsWindow.webContents.send('default-settings', doc[0]);
-			// 	} else {
-			// 		console.log('couldnt find settings for app, falling back to default');
-			// 		// TODO: streamline default settings
-			// 		settingsWindow.webContents.send('default-settings', {
-			// 			name: currentAppName,
-			// 			alwaysOnTop: mainWindow.isAlwaysOnTop(),
-			// 			acceptFirstClick: defaultSettings[GLOBAL_SETTINGS].acceptFirstClick,
-			// 			frame: defaultSettings[GLOBAL_SETTINGS].frame,
-			// 			hidePerApp: defaultSettings[GLOBAL_SETTINGS].hidePerApp,
-			// 			boundsPerApp: defaultSettings[GLOBAL_SETTINGS].boundsPerApp,
-			// 			background: defaultSettings[GLOBAL_SETTINGS].background
-			// 		});
-			// 	}
-			// });
-		});
-
-
 		ipcRenderer.on('temporarily-update-app-setting', (event, newSettings) => {
 			// TODO: don't save settings here, just pass them on to the shortcut window
 			if (this.shortcutsWindow) {
 				// TODO: test this shortcutsWindow reference properly
 				this.shortcutsWindow.webContents.send('update-app-setting', newSettings);
 			}
-		});
-
-		ipcRenderer.on('save-global-settings', (event, newSettings) => {
-			settingsDb.update({
-				name: GLOBAL_SETTINGS
-			}, {
-				$set: newSettings
-			}, {
-				upsert: true
-			}, function(err, doc) {
-				if (err) {
-					console.log('failed to upsert settings in "update-app-setting" for global settings', err);
-					return;
-				}
-			});
-
-			cachedSettings[GLOBAL_SETTINGS] = newSettings;
-		});
-
-		// Updates and saves the settings
-		ipcRenderer.on('save-settings', (event, newSettings) => {
-			console.log('inside save-settings with newSettings', newSettings);
-			var newSettingName = newSettings.name;
-			settingsDb.update({
-				name: newSettings[newSettingName]
-			}, {
-				$set: newSettings
-			}, {
-				upsert: true
-			}, function(err, doc) {
-				if (err) {
-					console.log('failed to upsert settings in "update-app-setting"', err);
-					return;
-				}
-
-				if (newSettingName == "background") {
-					mainWindow.webContents.send('set-background', newSettings[newSettingName]);
-				} else {
-					// TODO: handle destruction better, or find a way to update settings on the running window
-					console.log('TODO: Send re-create message to main window because settings have updated')
-					// mainWindow = createMainWindow(doc[0]);
-				}
-			});
-
-			// Update in memory cache of settings
-			// TODO: Review all settings.update calls to ensure none are missing this cache
-			cachedSettings[newSettings.name] = newSettings;
-		});
-
-		// revert to settings before settings window was opened
-		ipcRenderer.on('undo-settings', (event) => {
-			this.undoSettings();
 		});
 	}
 };
