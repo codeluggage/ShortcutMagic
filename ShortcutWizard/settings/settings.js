@@ -153,7 +153,7 @@ export class Settings {
 	// destroySettings();
 
 	registerListeners() {
-		ipcRenderer.on('first-app-opened', (event, newName) {
+		ipcRenderer.on('first-app-opened', (event, newName) => {
 			this.get(newName, (newSettings) => {
 				ipcRenderer.send('create-shortcut-window', newSettings);
 
@@ -218,12 +218,12 @@ export class Settings {
 
 		});
 
-		ipcRenderer.on('temporarily-update-app-setting', (event, newSettings) => {
-			// TODO: don't save settings here, just pass them on to the shortcut window
-			if (this.shortcutsWindow) {
-				// TODO: test this shortcutsWindow reference properly
-				this.shortcutsWindow.webContents.send('update-app-setting', newSettings);
-			}
-		});
+		// ipcRenderer.on('temporarily-update-app-setting', (event, newSettings) => {
+		// 	// TODO: don't save settings here, just pass them on to the shortcut window
+		// 	if (this.shortcutsWindow) {
+		// 		// TODO: test this shortcutsWindow reference properly
+		// 		this.shortcutsWindow.webContents.send('update-app-setting', newSettings);
+		// 	}
+		// });
 	}
 };

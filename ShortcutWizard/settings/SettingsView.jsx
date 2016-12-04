@@ -66,9 +66,7 @@ export default class SettingsView extends Component {
 					if (holdWindow.id == settings.windowIds["settingsWindow"]) {
 		                holdWindow.hide();
 					} else if (holdWindow.id == settings.windowIds["mainWindow"]) {
-						holdWindow.webContents.send('temporarily-update-app-setting', {
-							backgroundColor: newSettings.backgroundColor
-						});
+						holdWindow.webContents.send('set-background-color', newSettings.backgroundColor);
 					}
 	            }
 	        }
@@ -132,6 +130,8 @@ export default class SettingsView extends Component {
     		console.log('about to render settings with state and names: ', this.state,
 				this.state.settings.name, this.state.originalAppSettings.name, this.state.originalGlobalSettings.name);
 			// TODO: move these into a tab view, one for the current app and one for global
+
+			// TODO: mark changed settings with a star * to indicate that they have changed
     		return (
     			<div style={{backgroundColor: this.state.settings.background}}>
 					<h1>Settings for {this.settings.name}</h1>

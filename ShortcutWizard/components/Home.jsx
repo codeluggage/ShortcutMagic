@@ -5,7 +5,7 @@ import Electron, { ipcRenderer, remote } from 'electron';
 
 const SortableItem = SortableElement(({value}) => <li>{value}</li>);
 
-const SortableList = SortableContainer(({items}) => {
+const SortableList = SortableContainer(({items, itemStyle}) => {
     return !items ? (<p>No items yet</p>) : (
         <div style={{fontWeight:500, fontSize:18, margin:'15px'}}>
             { items.map((value, index) => {
@@ -34,11 +34,13 @@ const SortableList = SortableContainer(({items}) => {
                 displayValue = value["name"] + ": " + displayValue;
 
                 return (
-                    <SortableItem
-                      key={`item-${index}`}
-                      index={index}
-                      value={displayValue}
-                    />
+                    <div style={itemStyle}>
+                        <SortableItem
+                          key={`item-${index}`}
+                          index={index}
+                          value={displayValue}
+                        />
+                    </div>
                 );
             })}
         </div>
@@ -49,12 +51,23 @@ var holdRemote = remote;
 
 export default class Home extends Component {
     componentWillMount() {
-        ipcRenderer.on('temporarily-update-app-setting', (event, newSetting) => {
-            if (Object.keys(newSetting)[0] == "backgroundColor") {
-                window.document.documentElement.style.backgroundColor = newSetting["backgroundColor"];
-            }
+        // ipcRenderer.on('temporarily-update-app-setting', (event, newSetting) => {
+        //     if (Object.keys(newSetting)[0] == "backgroundColor") {
+        //         window.document.documentElement.style.backgroundColor = newSetting["backgroundColor"];
+        //     }
+        //
+        //     this.setState(newSetting);
+        // });
 
-            this.setState(newSetting);
+        ipcRenderer.on('set-background-color', (backgroundColor) => {
+            window.document.documentElement.style.backgroundColor = backgroundColor;
+        });
+
+        // TODO: Make this:
+        ipcRenderer.on('set-item-color', (itemColor) => {
+            this.setState({
+                itemColor: itemColor
+            });
         });
 
         ipcRenderer.on('update-shortcuts', (event, newShortcuts) => {
@@ -206,6 +219,7 @@ export default class Home extends Component {
                     <div style={{textAlign: 'left'}}>
                         <SortableList
                           items={this.state.items}
+                          itemStyle={{backgroundColor: (this.state.itemColor) ? this.state.itemColor : '#FFFFFF'}}
                           onSortEnd={this.onSortEnd}
                           lockAxis='y'
                         />

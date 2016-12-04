@@ -61,6 +61,7 @@ let settingsWindow;
 let mainWindow;
 let backgroundTaskRunnerWindow;
 let backgroundListenerWindow;
+let welcomeWindow;
 let loadedShortcuts = [];
 let currentAppName = "Electron";
 console.log("temporariliy setting currentAppName to Electron at main startup");
@@ -226,6 +227,9 @@ function createWindows() {
 	createBackgroundTaskRunnerWindow();
 	createBackgroundListenerWindow();
 	createSettingsWindow();
+	createWelcomeWindow();
+
+	settingsWindow.webContents.send('first-app-opened', "Electron");
 }
 
 function onClosed() {
@@ -306,6 +310,15 @@ function createBackgroundListenerWindow() {
 
 	console.log('loaded listener window');
 	backgroundListenerWindow.loadURL(`file://${__dirname}/background/listener.html`);
+}
+
+function createWelcomeWindow() {
+	welcomeWindow = new BrowserWindow({
+		backgroundColor: 'light-green',
+		show: true
+	});
+
+	welcomeWindow.loadURL(`file://${__dirname}/welcome/index.html`);
 }
 
 function loadForApp(appName) {
@@ -457,7 +470,14 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 		return;
 	}
 
+	if (!mainWindow) {
+		console.log("cannot switch app without main window");
+		return;
+	}
+
+	// TODO: Do the message sending in a cleaner way
 	console.log('app switch. app name was', currentAppName, "appname will change to: ", appName);
+
 
 	if (currentAppName) {
 		savePosition(currentAppName);
@@ -471,13 +491,7 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 	console.log("finished loading pos for app: ", mainWindow.getBounds(), appName);
 	currentAppName = appName;
 
-	// TODO: Do the message sending in a cleaner way
-
-	if (!mainWindow) {
-		settingsWindow.webContents.send('first-app-opened', currentAppName);
-	} else {
-		settingsWindow.webContents.send('app-changed', currentAppName);
-	}
+	settingsWindow.webContents.send('app-changed', currentAppName);
 });
 
 ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
@@ -575,7 +589,8 @@ ipcMain.on('create-shortcut-window', (event, mainSettings) => {
 		settingsWindow: settingsWindow.id,
 		mainWindow: mainWindow.id,
 		backgroundTaskRunnerWindow: backgroundTaskRunnerWindow.id,
-		backgroundListenerWindow: backgroundListenerWindow.id
+		backgroundListenerWindow: backgroundListenerWindow.id,
+		welcomeWindow: welcomeWindow.id
 	};
 
 	console.log("windows id after all windows created: ", windowIds);
