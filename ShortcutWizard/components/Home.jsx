@@ -86,11 +86,6 @@ export default class Home extends Component {
             });
         });
 
-        ipcRenderer.on('update-window-ids', (event, windowIds) => {
-            console.log("inside Home update-window-ids with ids ", windowIds);
-            this.windowIds = windowIds;
-        });
-
         console.log('home constructor called');
         // this.setState({
         //     name: "ShortcutWizard",
@@ -114,16 +109,11 @@ export default class Home extends Component {
     }
 
     toggleSettings() {
-        if (!this.windowIds) {
-            console.log("cant toggle settings without settings window id");
-            return;
-        }
-
         // TODO: refer directly to the browser window by id instead of grabbing all windows
         var windows = holdRemote.BrowserWindow.getAllWindows();
         for (var i = 0; i < windows.length; i++) {
             let settingsWindow = windows[i];
-            if (settingsWindow && settingsWindow.id == this.windowIds["settingsWindow"]) {
+            if (settingsWindow && settingsWindow.getTitle() == "settingsWindow") {
                 settingsWindow.show();
             }
         }

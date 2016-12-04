@@ -14,11 +14,6 @@ export default class WelcomeView extends Component {
         window.document.documentElement.style.backgroundColor = '#3a9ad9';
 
 
-		// ipcRenderer.on('update-window-ids', (event, newWindowIds) => {
-		// 	console.log("inside WelcomeView.js update-window-ids");
-        //     this.windowIds = newWindowIds;
-        // });
-        // 
         ipcRenderer.on('set-background-color', (event, backgroundColor) => {
         	window.document.documentElement.style.backgroundColor = backgroundColor;
         });

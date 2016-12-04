@@ -42,9 +42,7 @@ export default class SettingsView extends Component {
         var windows = holdRemote.BrowserWindow.getAllWindows();
         for (var i = 0; i < windows.length; i++) {
             let holdWindow = windows[i];
-			console.log("holdWindow : ", holdWindow.id);
-
-            if (holdWindow && holdWindow.id == settings.windowIds["settingsWindow"]) {
+            if (holdWindow && holdWindow.getTitle() == "settingsWindow") {
                 holdWindow.hide();
             }
         }
@@ -67,12 +65,11 @@ export default class SettingsView extends Component {
 	        var windows = holdRemote.BrowserWindow.getAllWindows();
 	        for (var i = 0; i < windows.length; i++) {
 	            let holdWindow = windows[i];
-				console.log("holdWindow : ", holdWindow.id);
-
 	            if (holdWindow) {
-					if (holdWindow.id == settings.windowIds["settingsWindow"]) {
+					var windowTitle = holdWindow.getTitle();
+					if (windowTitle == "settingsWindow") {
 		                holdWindow.hide();
-					} else if (holdWindow.id == settings.windowIds["mainWindow"]) {
+					} else if (windowTitle == "mainWindow") {
 						holdWindow.webContents.send('set-background-color', newSettings.backgroundColor);
 					}
 	            }
@@ -98,10 +95,7 @@ export default class SettingsView extends Component {
         var windows = holdRemote.BrowserWindow.getAllWindows();
         for (var i = 0; i < windows.length; i++) {
             let holdWindow = windows[i];
-			console.log("holdWindow : ", holdWindow.id);
-
-
-            if (holdWindow && holdWindow.id == settings.windowIds["mainWindow"]) {
+            if (holdWindow && holdWindow.getTitle() == "mainWindow") {
                 holdWindow.webContents.send('temporarily-update-app-setting', {
 					backgroundColor: colorString
 				});
@@ -141,7 +135,7 @@ export default class SettingsView extends Component {
 			// TODO: mark changed settings with a star * to indicate that they have changed
     		return (
     			<div style={{backgroundColor: this.state.settings.background}}>
-					<h1>Settings for {this.settings.name}</h1>
+					<h1>Settings for {this.state.settings.name}</h1>
 
                     <button style={{
 						float:'left',
@@ -242,7 +236,7 @@ export default class SettingsView extends Component {
 				        var windows = holdRemote.BrowserWindow.getAllWindows();
 				        for (var i = 0; i < windows.length; i++) {
 				            let holdWindow = windows[i];
-				            if (holdWindow && holdWindow.id == settings.windowIds["settingsWindow"]) {
+				            if (holdWindow && holdWindow.getTitle() == "settingsWindow") {
 								holdWindow.hide();
 				            }
 				        }

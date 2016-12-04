@@ -208,10 +208,10 @@ const showWindow = () => {
 function createSettingsWindow() {
 	settingsWindow = new BrowserWindow({
 		show: false,
-		title: "ShortcutWizard Settings",
+		title: "settingsWindow",
 		alwaysOnTop: true,
 		acceptFirstClick: true,
-		frame: false,
+		frame: false
 	});
 
 	var settingsPath = `file://${__dirname}/settings/index.html`;
@@ -220,6 +220,46 @@ function createSettingsWindow() {
 	console.log("after loading url");
 }
 
+function createMainWindow() {
+	mainWindow = new BrowserWindow({
+		name: "Electron",
+		acceptFirstClick: true,
+		alwaysOnTop: true,
+		frame: false,
+		show: false,
+		x: 1100, y: 100, width: 350, height: 800,
+		backgroundColor: '#adadad',
+		title: "mainWindow"
+	});
+
+	// TODO: make experimental settings:
+	// 0 - NSVisualEffectMaterialAppearanceBased 10.10+
+	// 1 - NSVisualEffectMaterialLight 10.10+
+	// 2 - NSVisualEffectMaterialDark 10.10+
+	// 3 - NSVisualEffectMaterialTitlebar 10.10+
+	// 4 - NSVisualEffectMaterialSelection 10.11+
+	// 5 - NSVisualEffectMaterialMenu 10.11+
+	// 6 - NSVisualEffectMaterialPopover 10.11+
+	// 7 - NSVisualEffectMaterialSidebar 10.11+
+	// 8 - NSVisualEffectMaterialMediumLight 10.11+
+	// 9 - NSVisualEffectMaterialUltraDark 10.11+
+
+	// Whole window vibrancy with Material 0 and auto resize
+	mainWindow.on('ready-to-show', () => {
+		console.log('loaded window, vibrancy: ', electronVibrancy);
+	    // electronVibrancy.SetVibrancy(true, browserWindowInstance.getNativeWindowHandle());
+		electronVibrancy.SetVibrancy(mainWindow, 0);
+	});
+
+	mainWindow.loadURL(`file://${__dirname}/index.html`);
+	mainWindow.on('closed', onClosed);
+	mainWindow.setHasShadow(false);
+
+	applyWindowMode(windowMode);
+
+	// All windows are created, collect all their window id's and let each of them
+	// know what is available to send messages to:
+}
 
 function createWindows() {
 	// The actual shortcut window is only created when the app switches
@@ -228,22 +268,7 @@ function createWindows() {
 	createBackgroundListenerWindow();
 	createSettingsWindow();
 	createWelcomeWindow();
-
-	var windowIds = {
-		settingsWindow: settingsWindow.id,
-		backgroundTaskRunnerWindow: backgroundTaskRunnerWindow.id,
-		backgroundListenerWindow: backgroundListenerWindow.id,
-		welcomeWindow: welcomeWindow.id
-	};
-
-	settingsWindow.webContents.send('update-window-ids', windowIds);
-	backgroundTaskRunnerWindow.webContents.send('update-window-ids', windowIds);
-	backgroundListenerWindow.webContents.send('update-window-ids', windowIds);
-
-	console.log("sending update-window-ids to welcomeWindow", windowIds, welcomeWindow);
-	welcomeWindow.webContents.send('update-window-ids', windowIds);
-
-	settingsWindow.webContents.send('first-app-opened', "Electron");
+	createMainWindow();
 }
 
 function onClosed() {
@@ -319,6 +344,7 @@ function createTray() {
 function createBackgroundTaskRunnerWindow() {
 	backgroundTaskRunnerWindow = new BrowserWindow({
 		show: false,
+		title: "backgroundTaskRunnerWindow"
 	});
 
 	console.log('#1 load window:');
@@ -328,6 +354,7 @@ function createBackgroundTaskRunnerWindow() {
 function createBackgroundListenerWindow() {
 	backgroundListenerWindow = new BrowserWindow({
 		show: false,
+		title: "backgroundListenerWindow"
 	});
 
 	console.log('loaded listener window');
@@ -513,6 +540,7 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 	console.log("finished loading pos for app: ", mainWindow.getBounds(), appName);
 	currentAppName = appName;
 
+	console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>> APP-CHANGED: ", currentAppName);
 	settingsWindow.webContents.send('app-changed', currentAppName);
 });
 
@@ -574,55 +602,4 @@ ipcMain.on('change-window-mode', function(event, ) {
 
 ipcMain.on('open-settings', function(event) {
 	ipcMain.send('open-settings');
-});
-
-ipcMain.on('create-shortcut-window', (event, mainSettings) => {
-	mainWindow = new BrowserWindow(mainSettings);
-	console.log("---------------------- inside send, with new settings:", mainSettings);
-
-	// TODO: make experimental settings:
-	// 0 - NSVisualEffectMaterialAppearanceBased 10.10+
-	// 1 - NSVisualEffectMaterialLight 10.10+
-	// 2 - NSVisualEffectMaterialDark 10.10+
-	// 3 - NSVisualEffectMaterialTitlebar 10.10+
-	// 4 - NSVisualEffectMaterialSelection 10.11+
-	// 5 - NSVisualEffectMaterialMenu 10.11+
-	// 6 - NSVisualEffectMaterialPopover 10.11+
-	// 7 - NSVisualEffectMaterialSidebar 10.11+
-	// 8 - NSVisualEffectMaterialMediumLight 10.11+
-	// 9 - NSVisualEffectMaterialUltraDark 10.11+
-
-	// Whole window vibrancy with Material 0 and auto resize
-	mainWindow.on('ready-to-show', () => {
-		console.log('loaded window, vibrancy: ', electronVibrancy);
-	    // electronVibrancy.SetVibrancy(true, browserWindowInstance.getNativeWindowHandle());
-		electronVibrancy.SetVibrancy(mainWindow, 0);
-	});
-
-	mainWindow.loadURL(`file://${__dirname}/index.html`);
-	mainWindow.on('closed', onClosed);
-	mainWindow.setHasShadow(false);
-
-	applyWindowMode(windowMode);
-
-	// All windows are created, collect all their window id's and let each of them
-	// know what is available to send messages to:
-	var windowIds = {
-		settingsWindow: settingsWindow.id,
-		mainWindow: mainWindow.id,
-		backgroundTaskRunnerWindow: backgroundTaskRunnerWindow.id,
-		backgroundListenerWindow: backgroundListenerWindow.id,
-		welcomeWindow: welcomeWindow.id
-	};
-
-	console.log("windows id after all windows created: ", windowIds);
-
-	// TODO: Improve this to be a trigger from the last window being created (main window?)
-	setTimeout(function() {
-		settingsWindow.webContents.send('update-window-ids', windowIds);
-		mainWindow.webContents.send('update-window-ids', windowIds);
-		backgroundTaskRunnerWindow.webContents.send('update-window-ids', windowIds);
-		backgroundListenerWindow.webContents.send('update-window-ids', windowIds);
-		welcomeWindow.webContents.send('update-window-ids', windowIds);
-	}, 500);
 });

@@ -22,7 +22,8 @@ defaultSettings = {
 	frame: false,
 	show: true,
 	x: 1100, y: 100, width: 350, height: 800,
-	backgroundColor: '#adadad'
+	backgroundColor: '#adadad',
+	title: "mainWindow"
 };
 
 // Defaults
@@ -40,6 +41,7 @@ settingsDb.ensureIndex({
 	}
 });
 
+var holdRemote = remote;
 
 // TODO: send to worker?
 settingsDb.find({
@@ -74,6 +76,16 @@ settingsDb.find({
 export class Settings {
 	create(settingsWindow) {
 		this.settingsWindow = settingsWindow;
+
+		// When settings are created the SettingsView needs to be initialized
+		this.get(false, (newSettings) => {
+			this.settingsWindow.setState({
+				originalGlobalSettings: newSettings,
+				originalAppSettings: newSettings,
+				settings: newSettings
+			});
+		});
+
 		this.registerListeners();
 	}
 
@@ -146,37 +158,57 @@ export class Settings {
 			}
 
 			// TODO: streamline default settings
-			settingsWindow.webContents.send('default-settings', setDefaultSettings);
+			var windows = holdRemote.BrowserWindow.getAllWindows();
+			for (var i = 0; i < windows.length; i++) {
+				let settingsWindow = windows[i];
+				if (settingsWindow && settingsWindow.getTitle() == "settingsWindow") {
+					settingsWindow.webContents.send('default-settings', setDefaultSettings);
+					settingsWindow.show();
+				}
+			}
 		});
 	}
 	// in window? unnecessary?
 	// destroySettings();
 
 	registerListeners() {
-		ipcRenderer.on('first-app-opened', (event, newName) => {
-			this.get(newName, (newSettings) => {
-				ipcRenderer.send('create-shortcut-window', newSettings);
-
-				this.settingsWindow.setState({
-					originalAppSettings: newSettings,
-					settings: newSettings
-				});
-			});
-		});
-
 		// TODO: Should this be in settings.js together with other listeners, and
 		// then trigger a setState from there to here?
 		// TODO: Ideally show a "do you want to save your changes?" dialog if there were
 		// changes done to the app settings (not for global)
 		ipcRenderer.on('app-changed', (event, newName) => {
 			this.get(newName, (newSettings) => {
+				var windows = holdRemote.BrowserWindow.getAllWindows();
+				for (var i = 0; i < windows.length; i++) {
+					let holdWindow = windows[i];
+					if (holdWindow && holdWindow.getTitle() == "mainWindow") {
+
+						if (newSettings["backgroundColor"]) {
+
+							holdWindow.setBackgroundColor(newSettings["backgroundColor"]);
+
+						}
+
+					}
+				}
+
 				this.settingsWindow.setState({
+					originalGlobalSettings: newSettings,
 					originalAppSettings: newSettings,
 					settings: newSettings
 				});
 			});
 		});
 
+		// pseudocode: move window to left or right side depending on main window position
+		// if (mainWindow.bounds().x < app.getScreenSize() / 2) {
+		// 	// window is towards the left, put settings to the right:
+		// 	settingsWindow.setBounds(mainWindowBounds.x - mainWindowBounds.width,
+		// 		mainWindowBounds.y, 400, mainWindowBounds.height);
+		// } else {
+		// 	// window is towards the right, put settings to the left:
+		// 	settingsWindow.setBounds(mainWindowBounds.x,
+		// 		mainWindowBounds.y, 400, mainWindowBounds.height);
 
 
 
@@ -190,33 +222,6 @@ export class Settings {
 		// 	console.log("got holdSettings, calling cb function", holdSettings);
 		// 	cb(holdSettings);
 		// });
-
-		// ipcRenderer.on('update-window-ids', (event, newIds) => {
-		// 	this.windowIds = newIds;
-		// 	var shortcutsId = this.windowIds["shortcuts"];
-		//
-		// 	if (shortcutsId) {
-		// 		this.shortcutsWindow = remote.BrowserWindow.fromId(shortcutsId);
-		// 	}
-		// });
-
-		ipcRenderer.on('update-window-ids', (event, windowIds) => {
-			console.log("inside settings.js update-window-ids");
-			this.windowIds = windowIds;
-			// TODO: Listen to 'show' event and move browser window
-
-				// pseudocode: move window to left or right side depending on main window position
-				// if (mainWindow.bounds().x < app.getScreenSize() / 2) {
-				// 	// window is towards the left, put settings to the right:
-				// 	settingsWindow.setBounds(mainWindowBounds.x - mainWindowBounds.width,
-				// 		mainWindowBounds.y, 400, mainWindowBounds.height);
-				// } else {
-				// 	// window is towards the right, put settings to the left:
-				// 	settingsWindow.setBounds(mainWindowBounds.x,
-				// 		mainWindowBounds.y, 400, mainWindowBounds.height);
-				// }
-
-		});
 
 		// ipcRenderer.on('temporarily-update-app-setting', (event, newSettings) => {
 		// 	// TODO: don't save settings here, just pass them on to the shortcut window
