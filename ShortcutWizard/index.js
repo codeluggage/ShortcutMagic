@@ -540,7 +540,6 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 	console.log("finished loading pos for app: ", mainWindow.getBounds(), appName);
 	currentAppName = appName;
 
-	console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>> APP-CHANGED: ", currentAppName);
 	settingsWindow.webContents.send('app-changed', currentAppName);
 });
 

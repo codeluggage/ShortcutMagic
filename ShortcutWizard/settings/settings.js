@@ -80,8 +80,13 @@ export class Settings {
 		// When settings are created the SettingsView needs to be initialized
 		this.get(false, (newSettings) => {
 			this.settingsWindow.setState({
+				originalGlobalSettings: newSettings
+			});
+		});
+
+		this.get(ipcRenderer.sendSync('get-app-name-sync'), (newSettings) => {
+			this.settingsWindow.setState({
 				originalGlobalSettings: newSettings,
-				originalAppSettings: newSettings,
 				settings: newSettings
 			});
 		});
@@ -182,13 +187,7 @@ export class Settings {
 				for (var i = 0; i < windows.length; i++) {
 					let holdWindow = windows[i];
 					if (holdWindow && holdWindow.getTitle() == "mainWindow") {
-
-						if (newSettings["backgroundColor"]) {
-
-							holdWindow.setBackgroundColor(newSettings["backgroundColor"]);
-
-						}
-
+						holdWindow.webContents.send('set-background-color', newSettings["backgroundColor"]);
 					}
 				}
 

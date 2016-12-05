@@ -127,9 +127,8 @@ export default class SettingsView extends Component {
 	}
 
     render() {
-    	if (this.state) {
-    		console.log('about to render settings with state and names: ', this.state,
-				this.state.settings.name, this.state.originalAppSettings.name, this.state.originalGlobalSettings.name);
+    	if (this.state && this.state.settings) {
+    		console.log('about to render settings with state and names: ', this.state);
 			// TODO: move these into a tab view, one for the current app and one for global
 
 			// TODO: mark changed settings with a star * to indicate that they have changed
@@ -142,14 +141,14 @@ export default class SettingsView extends Component {
 						backgroundColor: (this.state.settings.name == GLOBAL_SETTINGS) ? 'blue' : 'white'
 					}} className="react-tabs" onClick={() => {
 						this.enableGlobalSettings();
-                    }}>Global settings</button>
+                    }}>Settings for all programs</button>
 
                     <button style={{
 						float:'right',
 						backgroundColor: (this.state.settings.name != GLOBAL_SETTINGS) ? 'blue' : 'white'
 					}} className="react-tabs" onClick={() => {
 						this.enableLocalSettings();
-                    }}>Settings for {this.state.originalAppSettings.name}</button>
+                    }}>Settings for this program only</button>
 
 		        	<li>
 	                    <button className="simple-button" onClick={() => {
