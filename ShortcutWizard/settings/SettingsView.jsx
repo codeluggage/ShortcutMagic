@@ -32,44 +32,35 @@ export default class SettingsView extends Component {
         this.handleChangeComplete = this.handleChangeComplete.bind(this);
 		this.saveCurrentSettings = this.saveCurrentSettings.bind(this);
 		this.cancelCurrentSettings = this.cancelCurrentSettings.bind(this);
-		this.enableGlobalSettings = this.enableGlobalSettings.bind(this);
-		this.enableLocalSettings = this.enableLocalSettings.bind(this);
+		// this.enableGlobalSettings = this.enableGlobalSettings.bind(this);
+		// this.enableLocalSettings = this.enableLocalSettings.bind(this);
     }
 
 	saveCurrentSettings() {
 		settings.set(this.state.settings);
 
-        var windows = holdRemote.BrowserWindow.getAllWindows();
-        for (var i = 0; i < windows.length; i++) {
-            let holdWindow = windows[i];
-            if (holdWindow && holdWindow.getTitle() == "settingsWindow") {
-                holdWindow.hide();
-            }
-        }
+		// Send message to main window? it should always be loaded by the settings anyway..
+        holdRemote.BrowserWindow.getFocusedWindow().hide();
 	}
 
 	cancelCurrentSettings() {
-		settings.get(this.state.settings.name, (newSettings) => {
+		settings.get(this.state.settings.name, (newSettings, globalSettings) => {
 			// TODO: apply to main window and then close this settings window
 			this.setState({
+				originalGlobalSettings: globalSettings,
+				originalAppSettings: newSettings,
 				settings: newSettings
 			});
 
 	    	window.document.documentElement.style.backgroundColor = newSettings.backgroundColor;
 
-			if (!settings.windowIds) {
-				console.log("cant find windowids in cancelCurrentSettings");
-				return;
-			}
+			holdRemote.BrowserWindow.getFocusedWindow().hide();
 
 	        var windows = holdRemote.BrowserWindow.getAllWindows();
 	        for (var i = 0; i < windows.length; i++) {
 	            let holdWindow = windows[i];
 	            if (holdWindow) {
-					var windowTitle = holdWindow.getTitle();
-					if (windowTitle == "settingsWindow") {
-		                holdWindow.hide();
-					} else if (windowTitle == "mainWindow") {
+					if (holdWindow.getTitle() == "mainWindow") {
 						holdWindow.webContents.send('set-background-color', newSettings.backgroundColor);
 					}
 	            }
@@ -87,68 +78,49 @@ export default class SettingsView extends Component {
 		});
     	window.document.documentElement.style.backgroundColor = colorString;
 
-        if (!settings.windowIds) {
-            console.log("cant toggle settings without settings window id");
-            return;
-        }
-
         var windows = holdRemote.BrowserWindow.getAllWindows();
         for (var i = 0; i < windows.length; i++) {
             let holdWindow = windows[i];
             if (holdWindow && holdWindow.getTitle() == "mainWindow") {
-                holdWindow.webContents.send('temporarily-update-app-setting', {
-					backgroundColor: colorString
-				});
-				// holdWindow.setBackgroundColor(colorString);
+				holdWindow.webContents.send('set-background-color', colorString);
             }
         }
     }
 
-	enableLocalSettings() {
-		var original = this.state.settings;
-		// Only care if we are coming from the specific settings we didn't already have:
-		if (original.name == GLOBAL_SETTINGS) {
-			this.setState({
-				originalGlobalSettings: original,
-				settings: this.originalAppSettings
-			});
-		}
-	}
-
-	enableGlobalSettings() {
-		var original = this.state.settings;
-		// Only care if we are coming from the global settings:
-		if (original.name != GLOBAL_SETTINGS) {
-			this.setState({
-				originalAppSettings: original,
-				settings: this.originalGlobalSettings
-			});
-		}
-	}
+	// enableLocalSettings() {
+	// 	var original = this.state.settings;
+	// 	// Only care if we are coming from the specific settings we didn't already have:
+	// 	if (original.name == GLOBAL_SETTINGS) {
+	// 		this.setState({
+	// 			originalGlobalSettings: original,
+	// 			settings: this.originalAppSettings
+	// 		});
+	// 	}
+	// }
+	//
+	// enableGlobalSettings() {
+	// 	var original = this.state.settings;
+	// 	// Only care if we are coming from the global settings:
+	// 	if (original.name != GLOBAL_SETTINGS) {
+	// 		this.setState({
+	// 			originalAppSettings: original,
+	// 			settings: this.originalGlobalSettings
+	// 		});
+	// 	}
+	// }
 
     render() {
     	if (this.state && this.state.settings) {
     		console.log('about to render settings with state and names: ', this.state);
-			// TODO: move these into a tab view, one for the current app and one for global
 
-			// TODO: mark changed settings with a star * to indicate that they have changed
+			// TODO:
+			// * move these into a tab view, one for the current app and one for global
+			// * mark changed settings with a star * to indicate that they have changed
+			// * add list view code from main window
+
     		return (
-    			<div style={{backgroundColor: this.state.settings.background}}>
-					<h1>Settings for {this.state.settings.name}</h1>
-
-                    <button style={{
-						float:'left',
-						backgroundColor: (this.state.settings.name == GLOBAL_SETTINGS) ? 'blue' : 'white'
-					}} className="react-tabs" onClick={() => {
-						this.enableGlobalSettings();
-                    }}>Settings for all programs</button>
-
-                    <button style={{
-						float:'right',
-						backgroundColor: (this.state.settings.name != GLOBAL_SETTINGS) ? 'blue' : 'white'
-					}} className="react-tabs" onClick={() => {
-						this.enableLocalSettings();
-                    }}>Settings for this program only</button>
+    			<div>
+					<h1>Global settings (applies to all apps)</h1>
 
 		        	<li>
 	                    <button className="simple-button" onClick={() => {
@@ -162,7 +134,7 @@ export default class SettingsView extends Component {
 	                    		alwaysOnTop: alwaysOnTop
 	                    	});
 	                    }}>
-		                    Float on top: {(this.state.settings.alwaysOnTop) ? "true" : "false"}
+		                    global? Float on top: {(this.state.settings.alwaysOnTop) ? "true" : "false"}
 	                    </button>
 		        	</li>
 
@@ -177,7 +149,7 @@ export default class SettingsView extends Component {
 	                    		hidePerApp: holdSettings.hidePerApp
 	                    	});
 	                    }}>
-				        	Hide individually per app: {(this.state.settings.hidePerApp) ? "On" : "Off"}
+				        	global? Hide individually per app: {(this.state.settings.hidePerApp) ? "On" : "Off"}
 	                    </button>
 		        	</li>
 
@@ -192,9 +164,12 @@ export default class SettingsView extends Component {
 	                    		boundsPerApp: holdSettings.boundsPerApp
 	                    	});
 	                    }}>
-				        	Size and position individually per app: {(this.state.settings.boundsPerApp) ? "On" : "Off"}
+				        	global? Size and position individually per app: {(this.state.settings.boundsPerApp) ? "On" : "Off"}
 	                    </button>
 		        	</li>
+
+
+					<h1>Settings for {this.state.settings.name}</h1>
 
 		        	<li>
 		        		Choose color:
@@ -232,13 +207,7 @@ export default class SettingsView extends Component {
 				<div>
 					<h1>ShortcutWizard can't show the settings for some reason...</h1>
 					<button onClick={() => {
-				        var windows = holdRemote.BrowserWindow.getAllWindows();
-				        for (var i = 0; i < windows.length; i++) {
-				            let holdWindow = windows[i];
-				            if (holdWindow && holdWindow.getTitle() == "settingsWindow") {
-								holdWindow.hide();
-				            }
-				        }
+				        holdRemote.BrowserWindow.getFocusedWindow().hide()
 					}}>Close settings</button>
 				</div>
 			);

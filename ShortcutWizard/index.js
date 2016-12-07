@@ -71,7 +71,8 @@ console.log("temporariliy setting currentAppName to Electron at main startup");
 
 // Toggle to next mode if newWindowMode is not defined
 const applyWindowMode = (newWindowMode) => {
-	console.log('|||||||||||||||||||||||| applyWindowMode');
+	if (newWindowMode == windowMode) return;
+
 	var minimizeWindow = () => {
 		mainWindow.hide();
 	};
@@ -256,6 +257,7 @@ function createMainWindow() {
 	mainWindow.setHasShadow(false);
 
 	applyWindowMode(windowMode);
+	// mainWindow.hide();
 
 	// All windows are created, collect all their window id's and let each of them
 	// know what is available to send messages to:

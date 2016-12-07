@@ -32,6 +32,13 @@ var settingsDb = new Datastore({
 	autoload: true
 });
 
+// No need for unique indexes here, we just keep inserting forever(?)
+var settingsHistoryDb = new Datastore({
+	filename: `${__dirname}/../db/settingsHistory.db`,
+	autoload: true
+});
+
+
 settingsDb.ensureIndex({
 	fieldName: 'name',
 	unique: true // Setting unique value constraint on name
@@ -59,7 +66,7 @@ settingsDb.find({
 			}
 		});
 	} else {
-		defaultSettings = doc[0];
+		cachedSettings[GLOBAL_SETTINGS] = defaultSettings = doc[0];
 	}
 });
 
@@ -78,15 +85,11 @@ export class Settings {
 		this.settingsWindow = settingsWindow;
 
 		// When settings are created the SettingsView needs to be initialized
-		this.get(false, (newSettings) => {
+		this.get(ipcRenderer.sendSync('get-app-name-sync'), (newSettings, globalSettings) => {
+			cachedSettings[newSettings.name] = newSettings;
 			this.settingsWindow.setState({
-				originalGlobalSettings: newSettings
-			});
-		});
-
-		this.get(ipcRenderer.sendSync('get-app-name-sync'), (newSettings) => {
-			this.settingsWindow.setState({
-				originalGlobalSettings: newSettings,
+				originalGlobalSettings: globalSettings,
+				originalAppSettings: newSettings,
 				settings: newSettings
 			});
 		});
@@ -97,13 +100,13 @@ export class Settings {
 	// Return a full set of settings for an app
 	get(appName, cb) {
 		if (!appName || appName == "") {
-			cb(defaultSettings);
+			cb(defaultSettings, cachedSettings[GLOBAL_SETTINGS]);
 			return;
 		}
 
 		var val = cachedSettings[appName];
 		if (val) {
-			cb(val);
+			cb(val, cachedSettings[GLOBAL_SETTINGS]);
 			return;
 		}
 		// TODO: farm out to worker? make return value a callback instead?
@@ -117,9 +120,50 @@ export class Settings {
 
 			if (res && res.length > 0 && res[0]) {
 				cachedSettings[appName] = res[0]
-				cb(res[0]);
+				cb(res[0], cachedSettings[GLOBAL_SETTINGS]);
 			} else {
-				cb(defaultSettings);
+				cb(defaultSettings, cachedSettings[GLOBAL_SETTINGS]);
+			}
+		});
+	}
+
+	getHistory(appName, cb) {
+		if (!appName || appName == "") {
+			cb([
+				defaultSettings
+			]);
+			return;
+		}
+
+		// TODO: Cache history too?
+		// var val = cachedSettings[appName];
+		// if (val) {
+		// 	cb(val);
+		// 	return;
+		// }
+
+		// TODO: farm out to worker? make return value a callback instead?
+		settingsHistoryDb.find({
+			name: appName
+		}, function(err, res) {
+			if (err) {
+				console.log("Hit error trying to load setting in settings.get");
+				cb([
+					defaultSettings
+				]);
+				return;
+			}
+
+			// Send entire res, not just res[0]
+			if (res && res.length > 0) {
+				// TODO: Cache history too?
+				// cachedSettings[appName] = res[0]
+				cb(res);
+			} else {
+				// Last resort is to send the default settings in a list...
+				cb([
+					defaultSettings
+				]);
 			}
 		});
 	}
@@ -128,6 +172,7 @@ export class Settings {
 	set(newSettings) {
 		delete newSettings._id;
 		cachedSettings[newSettings.name] = newSettings;
+
 		settingsDb.update({
 			name: newSettings.name
 		}, {
@@ -141,8 +186,16 @@ export class Settings {
 				console.log("Succeeded in saving settings to db: ", newSettings);
 			}
 		});
+
+		newSettings["date"] = new Date();
+		settingsHistoryDb.insert(newSettings, (err, doc) => {
+			if (err) {
+				console.log("error when inserting setting in settingsHistoryDb");
+			}
+		});
 	}
 
+	// TODO: How to make this work with the history?
 	undoSettings(appName) {
 		if (!appName) {
 			console.log("cannot undo settings without appname");
@@ -163,40 +216,39 @@ export class Settings {
 			}
 
 			// TODO: streamline default settings
-			var windows = holdRemote.BrowserWindow.getAllWindows();
-			for (var i = 0; i < windows.length; i++) {
-				let settingsWindow = windows[i];
-				if (settingsWindow && settingsWindow.getTitle() == "settingsWindow") {
-					settingsWindow.webContents.send('default-settings', setDefaultSettings);
-					settingsWindow.show();
-				}
-			}
+			holdRemote.BrowserWindow.getFocusedWindow().show();
 		});
 	}
 	// in window? unnecessary?
 	// destroySettings();
 
 	registerListeners() {
-		// TODO: Should this be in settings.js together with other listeners, and
-		// then trigger a setState from there to here?
 		// TODO: Ideally show a "do you want to save your changes?" dialog if there were
 		// changes done to the app settings (not for global)
 		ipcRenderer.on('app-changed', (event, newName) => {
-			this.get(newName, (newSettings) => {
+			var changeSettings = (newSettings, globalSettings) => {
 				var windows = holdRemote.BrowserWindow.getAllWindows();
 				for (var i = 0; i < windows.length; i++) {
 					let holdWindow = windows[i];
 					if (holdWindow && holdWindow.getTitle() == "mainWindow") {
+						// TODO: Perform more updates based on the settings...?
 						holdWindow.webContents.send('set-background-color', newSettings["backgroundColor"]);
 					}
 				}
 
 				this.settingsWindow.setState({
-					originalGlobalSettings: newSettings,
+					originalGlobalSettings: globalSettings,
 					originalAppSettings: newSettings,
 					settings: newSettings
 				});
-			});
+			};
+
+			var cached = cachedSettings[newName];
+			if (cached) {
+				changeSettings(cached, cachedSettings[GLOBAL_SETTINGS]);
+			} else {
+				this.get(newName, changeSettings);
+			}
 		});
 
 		// pseudocode: move window to left or right side depending on main window position

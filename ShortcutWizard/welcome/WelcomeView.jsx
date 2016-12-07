@@ -41,13 +41,16 @@ export default class WelcomeView extends Component {
                     console.log("todo: request access with some simple script, call to ipcMain");
                 }}>Click here to allow that access.</a></h5>
                 <button onClick={() => {
-
                     // enabled={this.state.accessGranted}
 			        var windows = holdRemote.BrowserWindow.getAllWindows();
 			        for (var i = 0; i < windows.length; i++) {
 			            let holdWindow = windows[i];
-			            if (holdWindow && holdWindow.getTitle() == "welcomeWindow") {
-							holdWindow.hide();
+			            if (holdWindow) {
+                            if (holdWindow.getTitle() == "welcomeWindow") {
+    							holdWindow.hide();
+                            } else if (holdWindow.getTitle() == "mainWindow") {
+                                holdWindow.webContents.send("start-shortcut-window");
+                            }
 			            }
 			        }
                 }}>Start showing shortcuts</button>

@@ -59,7 +59,18 @@ export default class Home extends Component {
         //     this.setState(newSetting);
         // });
 
-        ipcRenderer.on('set-background-color', (backgroundColor) => {
+        ipcRenderer.on('start-shortcut-window', (event) => {
+            var windows = holdRemote.BrowserWindow.getAllWindows();
+            for (var i = 0; i < windows.length; i++) {
+                let mainWindow = windows[i];
+                if (mainWindow && mainWindow.getTitle() == "mainWindow") {
+                    mainWindow.show();
+                }
+            }
+        });
+
+
+        ipcRenderer.on('set-background-color', (event, backgroundColor) => {
             window.document.documentElement.style.backgroundColor = backgroundColor;
         });
 
