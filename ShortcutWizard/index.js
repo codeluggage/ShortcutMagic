@@ -221,15 +221,37 @@ function createSettingsWindow() {
 	console.log("after loading url");
 }
 
+function createWindows() {
+	// The actual shortcut window is only created when the app switches
+	createTray();
+	createBackgroundTaskRunnerWindow();
+	createBackgroundListenerWindow();
+	createSettingsWindow();
+	createWelcomeWindow();
+	createMainWindow();
+}
+
+function onClosed() {
+	// TODO: Clean up each ipcRenderer individually before nulling object
+	// trayObject.destroy(); // TODO: Fix needing to kill process after quitting - maybe it stays in memory?
+	ipcMain.removeAllListeners();
+	trayObject = null;
+	mainWindow = null;
+	settingsWindow = null; // TODO: double check that the settings window isn't destroyed elsewhere
+	backgroundTaskRunnerWindow = null;
+	backgroundListenerWindow = null;
+	welcomeWindow = null;
+}
+
 function createMainWindow() {
 	mainWindow = new BrowserWindow({
 		name: "Electron",
 		acceptFirstClick: true,
 		alwaysOnTop: true,
 		frame: false,
-		show: false,
+		show: false, // Don't show until we have the information of the app that is running
 		x: 1100, y: 100, width: 350, height: 800,
-		backgroundColor: '#adadad',
+		// backgroundColor: '#adadad',
 		title: "mainWindow"
 	});
 
@@ -261,28 +283,9 @@ function createMainWindow() {
 
 	// All windows are created, collect all their window id's and let each of them
 	// know what is available to send messages to:
-}
 
-function createWindows() {
-	// The actual shortcut window is only created when the app switches
-	createTray();
-	createBackgroundTaskRunnerWindow();
-	createBackgroundListenerWindow();
-	createSettingsWindow();
-	createWelcomeWindow();
-	createMainWindow();
-}
-
-function onClosed() {
-	// TODO: Clean up each ipcRenderer individually before nulling object
-	// trayObject.destroy(); // TODO: Fix needing to kill process after quitting - maybe it stays in memory?
-	ipcMain.removeAllListeners();
-	trayObject = null;
-	mainWindow = null;
-	settingsWindow = null; // TODO: double check that the settings window isn't destroyed elsewhere
-	backgroundTaskRunnerWindow = null;
-	backgroundListenerWindow = null;
-	welcomeWindow = null;
+	// TODO: Run applescript to select previous app and set that as the current app,
+	// in order to correctly load the state of that app for the main window settings
 }
 
 function createTray() {

@@ -71,7 +71,9 @@ export default class Home extends Component {
 
 
         ipcRenderer.on('set-background-color', (event, backgroundColor) => {
+            console.log("in main window set-background-color from: ", window.document.documentElement.style.backgroundColor);
             window.document.documentElement.style.backgroundColor = backgroundColor;
+            console.log("in main window set-background-color to: ", window.document.documentElement.style.backgroundColor);
         });
 
         // TODO: Make this:

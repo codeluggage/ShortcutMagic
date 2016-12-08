@@ -88,16 +88,15 @@ export class Settings {
 		this.get(ipcRenderer.sendSync('get-app-name-sync'), (newSettings, globalSettings) => {
 			cachedSettings[newSettings.name] = newSettings;
 			this.settingsWindow.setState({
-				originalGlobalSettings: globalSettings,
-				originalAppSettings: newSettings,
-				settings: newSettings
+				globalSettings: globalSettings,
+				appSettings: newSettings
 			});
 		});
 
 		this.registerListeners();
 	}
 
-	// Return a full set of settings for an app
+	// Return settings for appName, as well as global settings
 	get(appName, cb) {
 		if (!appName || appName == "") {
 			cb(defaultSettings, cachedSettings[GLOBAL_SETTINGS]);
@@ -109,6 +108,7 @@ export class Settings {
 			cb(val, cachedSettings[GLOBAL_SETTINGS]);
 			return;
 		}
+
 		// TODO: farm out to worker? make return value a callback instead?
 		settingsDb.find({
 			name: appName
@@ -122,7 +122,9 @@ export class Settings {
 				cachedSettings[appName] = res[0]
 				cb(res[0], cachedSettings[GLOBAL_SETTINGS]);
 			} else {
-				cb(defaultSettings, cachedSettings[GLOBAL_SETTINGS]);
+				var fallback = defaultSettings;
+				fallback["name"] = appName;
+				cb(fallback, cachedSettings[GLOBAL_SETTINGS]);
 			}
 		});
 	}
@@ -168,27 +170,41 @@ export class Settings {
 		});
 	}
 
-	// Save a full set of settings for an app - uses $set and can be partial as long as name exists
-	set(newSettings) {
-		delete newSettings._id;
-		cachedSettings[newSettings.name] = newSettings;
+	set(appSettings, globalSettings) {
+		delete appSettings._id;
+		cachedSettings[appSettings.name] = appSettings;
+		cachedSettings[GLOBAL_SETTINGS] = globalSettings;
 
 		settingsDb.update({
-			name: newSettings.name
+			name: GLOBAL_SETTINGS
 		}, {
-			$set: newSettings
+			$set: globalSettings
 		}, {
 			upsert: true
 		}, function(err, doc) {
 			if (err) {
-				console.log("Error upserting in settings.js set", err, newSettings);
+				console.log("Error upserting in settings.js set", err, globalSettings);
 			} else {
-				console.log("Succeeded in saving settings to db: ", newSettings);
+				console.log("Succeeded in saving settings to db: ", globalSettings);
 			}
 		});
 
-		newSettings["date"] = new Date();
-		settingsHistoryDb.insert(newSettings, (err, doc) => {
+		settingsDb.update({
+			name: appSettings.name
+		}, {
+			$set: appSettings
+		}, {
+			upsert: true
+		}, function(err, doc) {
+			if (err) {
+				console.log("Error upserting in settings.js set", err, appSettings);
+			} else {
+				console.log("Succeeded in saving settings to db: ", appSettings);
+			}
+		});
+
+		appSettings["date"] = new Date();
+		settingsHistoryDb.insert(appSettings, (err, doc) => {
 			if (err) {
 				console.log("error when inserting setting in settingsHistoryDb");
 			}
@@ -214,9 +230,6 @@ export class Settings {
 			} else if (doc && doc != [] && doc.length > 0) {
 				setDefaultSettings = doc[0];
 			}
-
-			// TODO: streamline default settings
-			holdRemote.BrowserWindow.getFocusedWindow().show();
 		});
 	}
 	// in window? unnecessary?
@@ -237,9 +250,8 @@ export class Settings {
 				}
 
 				this.settingsWindow.setState({
-					originalGlobalSettings: globalSettings,
-					originalAppSettings: newSettings,
-					settings: newSettings
+					globalSettings: globalSettings,
+					appSettings: newSettings
 				});
 			};
 

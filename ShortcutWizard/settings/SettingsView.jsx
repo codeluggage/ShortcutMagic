@@ -32,24 +32,21 @@ export default class SettingsView extends Component {
         this.handleChangeComplete = this.handleChangeComplete.bind(this);
 		this.saveCurrentSettings = this.saveCurrentSettings.bind(this);
 		this.cancelCurrentSettings = this.cancelCurrentSettings.bind(this);
-		// this.enableGlobalSettings = this.enableGlobalSettings.bind(this);
-		// this.enableLocalSettings = this.enableLocalSettings.bind(this);
     }
 
 	saveCurrentSettings() {
-		settings.set(this.state.settings);
+		settings.set(this.state.appSettings);
 
 		// Send message to main window? it should always be loaded by the settings anyway..
         holdRemote.BrowserWindow.getFocusedWindow().hide();
 	}
 
 	cancelCurrentSettings() {
-		settings.get(this.state.settings.name, (newSettings, globalSettings) => {
+		settings.get(this.state.appSettings.name, (newSettings, globalSettings) => {
 			// TODO: apply to main window and then close this settings window
 			this.setState({
-				originalGlobalSettings: globalSettings,
-				originalAppSettings: newSettings,
-				settings: newSettings
+				globalSettings: globalSettings,
+				appSettings: newSettings
 			});
 
 	    	window.document.documentElement.style.backgroundColor = newSettings.backgroundColor;
@@ -71,11 +68,12 @@ export default class SettingsView extends Component {
     handleChangeComplete(color) {
     	console.log('hit handleChangeComplete with color ', color);
     	var colorString = makeColorString(color);
-		var holdSettings = this.state.settings;
-		holdSettings.background = colorString;
+		var holdSettings = this.state.appSettings;
+		holdSettings.backgroundColor = colorString;
     	this.setState({
-			settings: holdSettings
+			appSettings: holdSettings
 		});
+
     	window.document.documentElement.style.backgroundColor = colorString;
 
         var windows = holdRemote.BrowserWindow.getAllWindows();
@@ -87,35 +85,11 @@ export default class SettingsView extends Component {
         }
     }
 
-	// enableLocalSettings() {
-	// 	var original = this.state.settings;
-	// 	// Only care if we are coming from the specific settings we didn't already have:
-	// 	if (original.name == GLOBAL_SETTINGS) {
-	// 		this.setState({
-	// 			originalGlobalSettings: original,
-	// 			settings: this.originalAppSettings
-	// 		});
-	// 	}
-	// }
-	//
-	// enableGlobalSettings() {
-	// 	var original = this.state.settings;
-	// 	// Only care if we are coming from the global settings:
-	// 	if (original.name != GLOBAL_SETTINGS) {
-	// 		this.setState({
-	// 			originalAppSettings: original,
-	// 			settings: this.originalGlobalSettings
-	// 		});
-	// 	}
-	// }
-
     render() {
-    	if (this.state && this.state.settings) {
+    	if (this.state && this.state.appSettings) {
     		console.log('about to render settings with state and names: ', this.state);
 
 			// TODO:
-			// * move these into a tab view, one for the current app and one for global
-			// * mark changed settings with a star * to indicate that they have changed
 			// * add list view code from main window
 
     		return (
@@ -124,57 +98,57 @@ export default class SettingsView extends Component {
 
 		        	<li>
 	                    <button className="simple-button" onClick={() => {
-							var holdSettings = this.state.settings;
+							var holdSettings = this.state.globalSettings;
 	                    	holdSettings.alwaysOnTop = !holdSettings.alwaysOnTop;
 	                    	this.setState({
-								settings: holdSettings
+								globalSettings: holdSettings
 							});
 
 	                    	ipcRenderer.send('temporarily-update-app-setting', {
 	                    		alwaysOnTop: alwaysOnTop
 	                    	});
 	                    }}>
-		                    global? Float on top: {(this.state.settings.alwaysOnTop) ? "true" : "false"}
+		                    Always float window on top of other windows? {(this.state.globalSettings.alwaysOnTop) ? "true" : "false"}
 	                    </button>
 		        	</li>
 
 		        	<li>
 	                    <button className="simple-button" onClick={() => {
-							var holdSettings = this.state.settings;
+							var holdSettings = this.state.globalSettings;
 	                    	holdSettings.hidePerApp = !holdSettings.hidePerApp;
 	                    	this.setState({
-								settings: holdSettings
+								globalSettings: holdSettings
 							});
 	                    	ipcRenderer.send('temporarily-update-app-setting', {
 	                    		hidePerApp: holdSettings.hidePerApp
 	                    	});
 	                    }}>
-				        	global? Hide individually per app: {(this.state.settings.hidePerApp) ? "On" : "Off"}
+				        	Set window state (regular, small, hidden) for all apps? {(this.state.globalSettings.hidePerApp) ? "On" : "Off"}
 	                    </button>
 		        	</li>
 
 		        	<li>
 	                    <button className="simple-button" onClick={() => {
-							var holdSettings = this.state.settings;
+							var holdSettings = this.state.globalSettings;
 	                    	holdSettings.boundsPerApp = !holdSettings.boundsPerApp;
 	                    	this.setState({
-								settings: holdSettings
+								globalSettings: holdSettings
 							});
 	                    	ipcRenderer.send('temporarily-update-app-setting', {
 	                    		boundsPerApp: holdSettings.boundsPerApp
 	                    	});
 	                    }}>
-				        	global? Size and position individually per app: {(this.state.settings.boundsPerApp) ? "On" : "Off"}
+				        	Use one window size for all apps? {(this.state.globalSettings.boundsPerApp) ? "On" : "Off"}
 	                    </button>
 		        	</li>
 
 
-					<h1>Settings for {this.state.settings.name}</h1>
+					<h1>Settings for {this.state.appSettings.name}</h1>
 
 		        	<li>
 		        		Choose color:
 		    			<SketchPicker
-		    				color={this.state.settings.background}
+		    				color={this.state.appSettings.backgroundColor}
 			    			onChangeComplete={this.handleChangeComplete}
 		    			/>
 		    		</li>
