@@ -250,6 +250,7 @@ function createMainWindow() {
 		alwaysOnTop: true,
 		frame: false,
 		show: false, // Don't show until we have the information of the app that is running
+		transparent: true,
 		x: 1100, y: 100, width: 350, height: 800,
 		// backgroundColor: '#adadad',
 		title: "mainWindow"
