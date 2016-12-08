@@ -71,9 +71,9 @@ export default class Home extends Component {
 
 
         ipcRenderer.on('set-background-color', (event, backgroundColor) => {
-            console.log("in main window set-background-color from: ", window.document.documentElement.style.backgroundColor);
-            window.document.documentElement.style.backgroundColor = backgroundColor;
-            console.log("in main window set-background-color to: ", window.document.documentElement.style.backgroundColor);
+            this.setState({
+                backgroundColor: backgroundColor
+            });
         });
 
         // TODO: Make this:
@@ -200,6 +200,8 @@ export default class Home extends Component {
                 question-circle
 
 */
+    	window.document.documentElement.style.backgroundColor = this.state.backgroundColor;
+
         return (
             <div style={{ textAlign: 'center' }}>
                     <button style={{color:"white", float:'left'}} id="reload-button" className="simple-button" onClick={() => {
