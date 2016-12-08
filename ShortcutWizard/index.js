@@ -252,7 +252,7 @@ function createMainWindow() {
 		show: false, // Don't show until we have the information of the app that is running
 		transparent: true,
 		x: 1100, y: 100, width: 350, height: 800,
-		// backgroundColor: '#adadad',
+		backgroundColor: '#00FFFFFF',
 		title: "mainWindow"
 	});
 
@@ -370,7 +370,8 @@ function createBackgroundListenerWindow() {
 function createWelcomeWindow() {
 	welcomeWindow = new BrowserWindow({
 		show: true,
-		title: "welcomeWindow"
+		title: "welcomeWindow",
+		frame: false
 	});
 
 	welcomeWindow.loadURL(`file://${__dirname}/welcome/index.html`);

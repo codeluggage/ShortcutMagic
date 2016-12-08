@@ -71,12 +71,16 @@ export default class Home extends Component {
 
 
         ipcRenderer.on('set-background-color', (event, backgroundColor) => {
-            this.setState({
-                backgroundColor: backgroundColor
-            });
+            var windows = holdRemote.BrowserWindow.getAllWindows();
+            for (var i = 0; i < windows.length; i++) {
+                let mainWindow = windows[i];
+                if (mainWindow && mainWindow.getTitle() == "mainWindow") {
+                    mainWindow.setBackgroundColor(backgroundColor);
+                }
+            }
         });
 
-        // TODO: Make this:
+        // TODO: Start using this
         ipcRenderer.on('set-item-color', (itemColor) => {
             this.setState({
                 itemColor: itemColor
@@ -200,8 +204,15 @@ export default class Home extends Component {
                 question-circle
 
 */
-    	window.document.documentElement.style.backgroundColor = this.state.backgroundColor;
+    	// window.document.documentElement.style.backgroundColor = this.state.backgroundColor;
 
+            var windows = holdRemote.BrowserWindow.getAllWindows();
+            for (var i = 0; i < windows.length; i++) {
+                let mainWindow = windows[i];
+                if (mainWindow && mainWindow.getTitle() == "mainWindow") {
+                    mainWindow.setBackgroundColor((this.state.backgroundColor) ? this.state.backgroundColor : '#00FFFFFF');
+                }
+            }
         return (
             <div style={{ textAlign: 'center' }}>
                     <button style={{color:"white", float:'left'}} id="reload-button" className="simple-button" onClick={() => {

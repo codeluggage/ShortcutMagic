@@ -22,7 +22,7 @@ defaultSettings = {
 	frame: false,
 	show: true,
 	x: 1100, y: 100, width: 350, height: 800,
-	backgroundColor: '#adadad',
+	backgroundColor: '#00FFFFFF',
 	title: "mainWindow"
 };
 

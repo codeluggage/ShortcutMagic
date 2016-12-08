@@ -72,8 +72,6 @@ export default class SettingsView extends Component {
 			appSettings: holdSettings
 		});
 
-    	window.document.documentElement.style.backgroundColor = colorString;
-
         var windows = holdRemote.BrowserWindow.getAllWindows();
         for (var i = 0; i < windows.length; i++) {
             let holdWindow = windows[i];
@@ -86,7 +84,8 @@ export default class SettingsView extends Component {
     render() {
     	if (this.state && this.state.appSettings) {
 
-	    	window.document.documentElement.style.backgroundColor = this.state.appSettings.backgroundColor;
+			holdRemote.BrowserWindow.getFocusedWindow().setBackgroundColor((this.state.appSettings.backgroundColor) ?
+				this.state.appSettings.backgroundColor : '#00FFFFFF');
 
     		console.log('about to render settings with state and names: ', this.state);
 
