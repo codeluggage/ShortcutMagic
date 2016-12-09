@@ -21,7 +21,7 @@
 
   /* Make sure this matches the native window background color that you pass to
    * electron.BrowserWindow({...}), otherwise your app startup will look janky. */
-  /*background: rgb(40, 40, 40);*/
+  /*background: rgb(40, 40, 40, 0.2);*/
 
   /* Smoother startup */
   animation: fadein 0.5s;
@@ -44,6 +44,7 @@ body {
   margin-bottom: 10px;
   margin-left: 10px;
   margin-right: 10px;
+    background-color:rgba(120,120,100,0.2); /*#D0D0D088/*  hsl(0,0%,85%);*/
   /*background-color: transparent;*/
   /*border-color: hsl(0,0%,88%);*/
 }
@@ -71,7 +72,7 @@ input {
 .filter-list {
     margin: auto;
     /*background: #3498db;*/
-    /*background-color:rgba(120,120,100,0.2); /*#D0D0D088/*  hsl(0,0%,85%);*/*/
+    background-color:rgba(120,120,100,0.2); /*#D0D0D088/*  hsl(0,0%,85%);*/
     border-radius: 5px;
 }
 
@@ -101,63 +102,4 @@ input {
     /*background: #FFFFFF;*/
     border: 1px solid #afafaf;
     /*background: #000000;*/
-}
-
-
-/* react-tab-view */
-
-.react-tabs {
-  margin: 0;
-  padding: 1em;
-  font-size: 150%;
-  font-weight: 200;
-  line-height: 1.5;
-}
-
-.react-tabs .hidden {
-  display: none;
-}
-
-.react-tabs .react-tab {
-  background: rgb(250, 250, 250);
-  margin: 1em auto;
-  border: 1px solid #ddd;
-  padding: 1em;
-}
-
-.react-tabs tab-content {
-  width: 80%;
-}
-
-.hidden {
-  display: none;
-}
-
-.react-tabs ul{
-  margin: 0;
-  padding: 0;
-  list-style-type: none;
-  text-align: center;
-}
-
-.react-tabs ul li {
-  display: inline;
-}
-
-.react-tabs a {
-  text-decoration: none;
-  padding: .5em;
-  color: #fff;
-  background-color: #ddd;
-}
-
-.react-tabs .selected a {
-  background-color: #b7b7b7 !important;
-  color: #fff !important;
-  font-weight: bold;
-}
-
-.react-tabs a:hover {
-  color: #fff;
-  background-color: #b7b7b7;
 }

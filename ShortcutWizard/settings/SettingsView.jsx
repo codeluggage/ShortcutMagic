@@ -35,7 +35,7 @@ export default class SettingsView extends Component {
     }
 
 	saveCurrentSettings() {
-		settings.set(this.state.appSettings);
+		settings.set(this.state.appSettings, this.state.globalSettings);
 
 		// Send message to main window? it should always be loaded by the settings anyway..
         holdRemote.BrowserWindow.getFocusedWindow().hide();
@@ -84,7 +84,7 @@ export default class SettingsView extends Component {
     }
 
     render() {
-    	if (this.state && this.state.appSettings) {
+    	if (this.state && this.state.appSettings && this.state.globalSettings) {
 
 	    	window.document.documentElement.style.backgroundColor = this.state.appSettings.backgroundColor;
 

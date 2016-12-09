@@ -22,7 +22,6 @@ defaultSettings = {
 	frame: false,
 	show: true,
 	x: 1100, y: 100, width: 350, height: 800,
-	backgroundColor: '#adadad',
 	title: "mainWindow"
 };
 
@@ -87,6 +86,7 @@ export class Settings {
 		// When settings are created the SettingsView needs to be initialized
 		this.get(ipcRenderer.sendSync('get-app-name-sync'), (newSettings, globalSettings) => {
 			cachedSettings[newSettings.name] = newSettings;
+			cachedSettings[GLOBAL_SETTINGS] = globalSettings;
 			this.settingsWindow.setState({
 				globalSettings: globalSettings,
 				appSettings: newSettings

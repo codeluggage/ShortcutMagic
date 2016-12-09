@@ -404,7 +404,7 @@ function loadForApp(appName) {
 	} else {
 		var holdShortcuts = loadedShortcuts[appName];
 		// Choose the cached shortcuts if possible
-		if (holdShortcuts) {
+		if (holdShortcuts && holdShortcuts.bounds) { // TODO: Why is this check necessary? Why would no bounds exist? 
 			console.log('setting bounds in loadforapp: ', appName, holdShortcuts.bounds);
 			mainWindow.setBounds(holdShortcuts.bounds);
 			mainWindow.webContents.send('update-shortcuts', holdShortcuts);
@@ -425,7 +425,6 @@ function saveWithoutPeriods(payload) {
 	var stringified = JSON.stringify(payload.shortcuts);
 	stringified = stringified.replace(/\./g, 'u002e');
 	payload.shortcuts = JSON.parse(stringified);
-	console.log('about to upsert in db: ', payload.shortcuts);
 
 	db.update({
 		name: payload.name

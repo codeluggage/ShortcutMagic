@@ -2,8 +2,16 @@
 import React, { Component } from 'react';
 import {SortableContainer, SortableElement, arrayMove} from 'react-sortable-hoc';
 import Electron, { ipcRenderer, remote } from 'electron';
+var holdRemote = remote;
 
-const SortableItem = SortableElement(({value}) => <li>{value}</li>);
+
+const SortableItem = SortableElement(({value, itemStyle}) => {
+    return (
+        <div style={itemStyle}>
+            <li>{value}</li>
+        </div>
+    );
+});
 
 const SortableList = SortableContainer(({items, itemStyle}) => {
     return !items ? (<p>No items yet</p>) : (
@@ -34,20 +42,17 @@ const SortableList = SortableContainer(({items, itemStyle}) => {
                 displayValue = value["name"] + ": " + displayValue;
 
                 return (
-                    <div style={itemStyle}>
                         <SortableItem
                           key={`item-${index}`}
                           index={index}
                           value={displayValue}
+                          itemStyle={itemStyle}
                         />
-                    </div>
                 );
             })}
         </div>
     );
 });
-
-var holdRemote = remote;
 
 export default class Home extends Component {
     componentWillMount() {
@@ -187,20 +192,52 @@ export default class Home extends Component {
                 </div>
             );
         }
-/*
-                sort-up
-                sort-down
-                star-o
-                star
-                chevron-up
-                chevron-down
-                check-square
-                check-square-o
-                square
-                question-circle
 
-*/
-    	window.document.documentElement.style.backgroundColor = this.state.backgroundColor;
+    	// window.document.documentElement.style.backgroundColor = this.state.backgroundColor;
+        // background-color: rgba(050,050,050,0.4);
+        function hexToRgb(hex) {
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        // holdRemote.BrowserWindow.getFocusedWindow().setBackgroundColor()
+        //window.document.documentElement.style.backgroundColor = hexToRgb(this.state.backgroundColor);
+        // if (this.state.backgroundColor) {
+        //     var windows = holdRemote.BrowserWindow.getAllWindows();
+        //     for (var i = 0; i < windows.length; i++) {
+        //         let mainWindow = windows[i];
+        //         if (mainWindow && mainWindow.getTitle() == "mainWindow") {
+        //
+        //             console.log("slicing: ", this.state.backgroundColor.slice(0, 3));
+        //             var setColor = this.state.backgroundColor;
+        //
+        //             if (this.state.backgroundColor.slice(0, 3) != "rgb") {
+        //                 console.log("beforeRgb: ", setColor);
+        //                 setColor = hexToRgb(setColor);
+        //                 console.log("afterRgb: ", setColor);
+        //             }
+        //
+        //             mainWindow.setBackgroundColor(setColor);
+        //         }
+        //     }
+        // }
+
+        if (this.state.backgroundColor) {
+            var setColor = this.state.backgroundColor;
+
+            if (this.state.backgroundColor.slice(0, 3) != "rgb") {
+                console.log("beforeRgb: ", setColor);
+                setColor = hexToRgb(setColor);
+                console.log("afterRgb: ", setColor);
+            }
+
+            console.log(`setting window.document.documentElement.style = background-color: ${setColor}`);
+            window.document.documentElement.style = `background-color: ${setColor}`;
+        }
 
         return (
             <div style={{ textAlign: 'center' }}>
@@ -232,5 +269,18 @@ export default class Home extends Component {
                 </div>
             </div>
         );
+/*
+                sort-up
+                sort-down
+                star-o
+                star
+                chevron-up
+                chevron-down
+                check-square
+                check-square-o
+                square
+                question-circle
+
+*/
     }
 }
