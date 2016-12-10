@@ -57,8 +57,8 @@ const SortableList = SortableContainer(({items, itemStyle}) => {
 export default class Home extends Component {
     componentWillMount() {
         // ipcRenderer.on('temporarily-update-app-setting', (event, newSetting) => {
-        //     if (Object.keys(newSetting)[0] == "backgroundColor") {
-        //         window.document.documentElement.style.backgroundColor = newSetting["backgroundColor"];
+        //     if (Object.keys(newSetting)[0] == "backgroundColorAndAlpha") {
+        //         window.document.documentElement.style.backgroundColor = newSetting["backgroundColorAndAlpha"];
         //     }
         //
         //     this.setState(newSetting);
@@ -75,9 +75,9 @@ export default class Home extends Component {
         });
 
 
-        ipcRenderer.on('set-background-color', (event, backgroundColor) => {
+        ipcRenderer.on('set-background-color', (event, backgroundColorAndAlpha) => {
             this.setState({
-                backgroundColor: backgroundColor
+                backgroundColorAndAlpha: backgroundColorAndAlpha
             });
         });
 
@@ -193,7 +193,7 @@ export default class Home extends Component {
             );
         }
 
-    	// window.document.documentElement.style.backgroundColor = this.state.backgroundColor;
+    	// window.document.documentElement.style.backgroundColor = this.state.backgroundColorAndAlpha;
         // background-color: rgba(050,050,050,0.4);
         function hexToRgb(hex) {
             var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -205,17 +205,17 @@ export default class Home extends Component {
         }
 
         // holdRemote.BrowserWindow.getFocusedWindow().setBackgroundColor()
-        //window.document.documentElement.style.backgroundColor = hexToRgb(this.state.backgroundColor);
-        // if (this.state.backgroundColor) {
+        //window.document.documentElement.style.backgroundColor = hexToRgb(this.state.backgroundColorAndAlpha);
+        // if (this.state.backgroundColorAndAlpha) {
         //     var windows = holdRemote.BrowserWindow.getAllWindows();
         //     for (var i = 0; i < windows.length; i++) {
         //         let mainWindow = windows[i];
         //         if (mainWindow && mainWindow.getTitle() == "mainWindow") {
         //
-        //             console.log("slicing: ", this.state.backgroundColor.slice(0, 3));
-        //             var setColor = this.state.backgroundColor;
+        //             console.log("slicing: ", this.state.backgroundColorAndAlpha.slice(0, 3));
+        //             var setColor = this.state.backgroundColorAndAlpha;
         //
-        //             if (this.state.backgroundColor.slice(0, 3) != "rgb") {
+        //             if (this.state.backgroundColorAndAlpha.slice(0, 3) != "rgb") {
         //                 console.log("beforeRgb: ", setColor);
         //                 setColor = hexToRgb(setColor);
         //                 console.log("afterRgb: ", setColor);
@@ -226,17 +226,19 @@ export default class Home extends Component {
         //     }
         // }
 
-        if (this.state.backgroundColor) {
-            var setColor = this.state.backgroundColor;
+        if (this.state.backgroundColorAndAlpha) {
+            var setColor = this.state.backgroundColorAndAlpha;
 
-            if (this.state.backgroundColor.slice(0, 3) != "rgb") {
+            if (this.state.backgroundColorAndAlpha.slice(0, 3) != "rgb") {
                 console.log("beforeRgb: ", setColor);
                 setColor = hexToRgb(setColor);
                 console.log("afterRgb: ", setColor);
             }
 
             console.log(`setting window.document.documentElement.style = background-color: ${setColor}`);
-            window.document.documentElement.style = `background-color: ${setColor}`;
+            // window.document.documentElement.style = `background-color: ${setColor}`; // are we overwriting style here?
+            window.document.documentElement.style.backgroundColor = setColor;
+            // window.document.body? = setColor;
         }
 
         return (

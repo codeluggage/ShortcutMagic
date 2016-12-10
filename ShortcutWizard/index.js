@@ -404,7 +404,7 @@ function loadForApp(appName) {
 	} else {
 		var holdShortcuts = loadedShortcuts[appName];
 		// Choose the cached shortcuts if possible
-		if (holdShortcuts && holdShortcuts.bounds) { // TODO: Why is this check necessary? Why would no bounds exist? 
+		if (holdShortcuts && holdShortcuts.bounds) { // TODO: Why is this check necessary? Why would no bounds exist?
 			console.log('setting bounds in loadforapp: ', appName, holdShortcuts.bounds);
 			mainWindow.setBounds(holdShortcuts.bounds);
 			mainWindow.webContents.send('update-shortcuts', holdShortcuts);

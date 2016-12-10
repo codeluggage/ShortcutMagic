@@ -245,7 +245,7 @@ export class Settings {
 					let holdWindow = windows[i];
 					if (holdWindow && holdWindow.getTitle() == "mainWindow") {
 						// TODO: Perform more updates based on the settings...?
-						holdWindow.webContents.send('set-background-color', newSettings["backgroundColor"]);
+						holdWindow.webContents.send('set-background-color', newSettings["backgroundColorAndAlpha"]);
 					}
 				}
 
