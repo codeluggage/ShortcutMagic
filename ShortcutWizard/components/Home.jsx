@@ -226,18 +226,30 @@ export default class Home extends Component {
         //     }
         // }
 
-        if (this.state.backgroundColor) {
-            var setColor = this.state.backgroundColor;
-
-            if (this.state.backgroundColor.slice(0, 3) != "rgb") {
-                console.log("beforeRgb: ", setColor);
-                setColor = hexToRgb(setColor);
-                console.log("afterRgb: ", setColor);
-            }
-
-            console.log(`setting window.document.documentElement.style = background-color: ${setColor}`);
-            window.document.documentElement.style = `background-color: ${setColor}`;
-        }
+        // if (this.state.backgroundColor) {
+        //     var setColor = this.state.backgroundColor;
+        //
+        //     if (this.state.backgroundColor.slice(0, 3) != "rgb") {
+        //         console.log("beforeRgb: ", setColor);
+        //         setColor = hexToRgb(setColor);
+        //         console.log("afterRgb: ", setColor);
+        //     }
+        //
+        //     console.log(`setting window.document.documentElement.style = background-color: ${setColor}`);
+        //     // window.document.documentElement.style = `background-color: ${setColor}`; // are we overwriting style here?
+        //     // window.document.documentElement.style.backgroundColor = setColor;
+        //     // window.document.body? = setColor;
+        //     var windows = holdRemote.BrowserWindow.getAllWindows();
+        //     for (var i = 0; i < windows.length; i++) {
+        //         let holdWindow = windows[i];
+        //         if (holdWindow && holdWindow.getTitle() == "mainWindow") {
+        //             if (!holdWindow.setBackgroundColor) {
+        //                 console.log("could not even find function setBackgroundColor for mainWindow in Home.jsx");
+        //             }
+        //             holdWindow.setBackgroundColor(setColor);
+        //         }
+        //     }
+        // }
 
         return (
             <div style={{ textAlign: 'center' }}>
