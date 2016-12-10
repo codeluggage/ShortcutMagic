@@ -21,6 +21,7 @@ defaultSettings = {
 	alwaysOnTop: true,
 	frame: false,
 	show: true,
+	transparent: true,
 	x: 1100, y: 100, width: 350, height: 800,
 	title: "mainWindow"
 };
