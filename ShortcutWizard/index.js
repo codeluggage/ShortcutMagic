@@ -269,17 +269,17 @@ function createMainWindow() {
 	// 9 - NSVisualEffectMaterialUltraDark 10.11+
 
 	// Whole window vibrancy with Material 0 and auto resize
-	mainWindow.on('ready-to-show', () => {
-		console.log('loaded window, vibrancy: ', electronVibrancy);
-	    // electronVibrancy.SetVibrancy(true, browserWindowInstance.getNativeWindowHandle());
-		electronVibrancy.SetVibrancy(mainWindow, 0);
-	});
+	// mainWindow.on('ready-to-show', () => {
+	// 	console.log('loaded window, vibrancy: ', electronVibrancy);
+	//     // electronVibrancy.SetVibrancy(true, browserWindowInstance.getNativeWindowHandle());
+	// 	electronVibrancy.SetVibrancy(mainWindow, 0);
+	// });
 
 	mainWindow.loadURL(`file://${__dirname}/index.html`);
 	mainWindow.on('closed', onClosed);
 	mainWindow.setHasShadow(false);
 
-	applyWindowMode(windowMode);
+	// applyWindowMode(windowMode);
 	// mainWindow.hide();
 
 	// All windows are created, collect all their window id's and let each of them

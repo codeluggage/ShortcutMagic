@@ -251,6 +251,15 @@ export default class Home extends Component {
         //     }
         // }
 
+            var windows = holdRemote.BrowserWindow.getAllWindows();
+            for (var i = 0; i < windows.length; i++) {
+                let holdWindow = windows[i];
+                if (holdWindow && holdWindow.getTitle() == "mainWindow") {
+                    holdWindow.setBackgroundColor(setColor);
+                    debugger;
+                }
+            }
+
         return (
             <div style={{ textAlign: 'center' }}>
                     <button style={{color:"white", float:'left'}} id="reload-button" className="simple-button" onClick={() => {
