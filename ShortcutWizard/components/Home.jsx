@@ -1,42 +1,76 @@
 'use babel';
 import React, { Component } from 'react';
-import {SortableContainer, SortableElement, arrayMove} from 'react-sortable-hoc';
+import {SortableContainer, SortableElement, SortableHandle, arrayMove} from 'react-sortable-hoc';
 import Electron, { ipcRenderer, remote } from 'electron';
 
-var globalState = {}; // Expose component state to list elements
+// TODO: Replace this crappy system with proper state passed down through elements somehow
+var sharedGlobalState = {}; // Expose component state to list elements
 
-const SortableItem = SortableElement(({value}, itemColor, textColor) => {
+const DragHandle = SortableHandle(() => {
+    return (
+        <span>::</span>
+    );
+});
+
+
+const SortableItem = SortableElement(({value}) => {
 
     // todo add these:
     // - text size
     // - general list item size
 
-            // margin: 'auto'
+    // TOD: Use this to fill list item correctly?
+    // margin: 'auto'
+
+    var listItem = sharedGlobalState[value];
 
     return (
         <div style={{
             borderRadius: ".25rem",
             borderWidth: ".50rem",
-            border: `2px solid ${globalState.itemColor}`,
-            backgroundColor: globalState.itemColor,
+            border: `2px solid ${sharedGlobalState.itemColor}`,
+            backgroundColor: sharedGlobalState.itemColor,
             width: "100%",
             margin: "4px",
             display: 'flex',
             flexDirection: 'row',
         }}>
-            <p style={{color: globalState.textColor, flex: 6}}>{value}</p>
+            <p style={{color: sharedGlobalState.textColor, flex: 6}}><DragHandle /> {value}</p>
 
-            <button style={{color:"red", flex: 2}} className="simple-button" onClick={() => { }}><i className="fa fa-1x fa-remove"></i></button>
+            <button style={{
+                color: "gold",
+                backgroundColor: (listItem.isFavorite) ? "gold" : "transparent",
+                flex: 2
+            }} onClick={() => {
+                ipcRenderer.send('toggle-favorite-list-item', listItem.value.name);
+            }}>
+                <i className="fa fa-1x fa-star-o"></i>
+                <br />
+                { (listItem.isFavorite) ? "Remove" : "Add" }
+            </button>
 
-            <button style={{color:"green", flex: 2}} className="simple-button" onClick={() => { }}><i className="fa fa-1x fa-play"></i></button>
+            <button style={{
+                color: (listItem.isHidden) ? "green" : "red",
+                backgroundColor: (listItem.isHidden) ? "red" : "transparent",
+                flex: 2
+            }} onClick={() => {
+                ipcRenderer.send('toggle-hide-list-item', listItem.value.name);
+            }}>
+                <i className="fa fa-1x fa-remove"></i>
+                <br />
+                { (listItem.isHidden) ? "Show" : "Hide" }
+            </button>
+
+            <button style={{
+                color:"green",
+                flex: 2,
+                backgroundColor: "transparent",
+            }} onClick={() => {
+                console.log("clicked execute-list-item with ", listItem.value.name, listItem.value.menuName);
+                ipcRenderer.send('execute-list-item', listItem.value.name, listItem.value.menuName);
+            }}><i className="fa fa-1x fa-play"></i></button>
 
 
-            <button style={{color:"gold", flex: 2}} className="simple-button" onClick={() => {
-
-                // TODO: How to extract id/name from the shortcut we are rendering?
-                // ipcRenderer.send('toggle-shortcut-favorite', );
-
-            }}><i className="fa fa-1x fa-star-o"></i></button>
         </div>
     );
             // <div style={{height: '100%', margin: 'auto', backgroundColor: "red", flex:2}}>Hide</div>
@@ -52,10 +86,12 @@ const SortableList = SortableContainer(({items}) => {
                 let displayValue = "";
                 let hasGlyph = false;
                 let hasChar = false;
+                let favorite = false;
+                let hidden = false;
 
                 for (var i = 0; i < keys.length; i++) {
                     let key = keys[i];
-                    if (key != "menuName" && key != "position" && key != "name") {
+                    if (key != "menuName" && key != "position" && key != "name" && key != "isFavorite" && key != "isHidden") {
                         displayValue += `${value[key]} `;
                     }
                     if (key == "glyph") {
@@ -64,13 +100,31 @@ const SortableList = SortableContainer(({items}) => {
                     if (key == "char") {
                         hasChar = true;
                     }
+                    if (key == "isFavorite") {
+                        favorite = true;
+                    }
+                    if (key == "isHidden") {
+                        hidden = true;
+                    }
                 }
 
-                if (keys.length == 4 && hasChar && !hasGlyph) {
+                // This whole thing is stupid, fix by pulling out all values and organising
+                if (keys.length == 4 && hasChar && !hasGlyph && !favorite && !hidden) {
+                    displayValue = "⌘" + displayValue;
+                } else if (keys.length == 5 && hasChar && !hasGlyph && ((!favorite && hidden) || (favorite && !hidden))) { // either fav or hidden exists to add up to 5
+                    displayValue = "⌘" + displayValue;
+                } else if (keys.length == 6 && hasChar && !hasGlyph && favorite && hidden) { // both fav and hidden exist to make up 6
                     displayValue = "⌘" + displayValue;
                 }
 
+
                 displayValue = value["name"] + ": " + displayValue;
+                sharedGlobalState[displayValue] = {
+                    value: value,
+                    index: index,
+                    isFavorite: (favorite) ? value["isFavorite"] : false,
+                    isHidden: (hidden) ? value["isHidden"] : false
+                };
 
                 return (
                     <SortableItem
@@ -211,7 +265,7 @@ export default class Home extends Component {
     }
 
     render() {
-        globalState = this.state;
+        sharedGlobalState = this.state;
 
         console.log('render() called');
         if (!this.state) {
@@ -274,6 +328,7 @@ export default class Home extends Component {
                           onSortEnd={this.onSortEnd}
                           itemColor={this.state.itemColor}
                           textColor={this.state.textColor}
+                          useDragHandle={true}
                           lockAxis='y'
                         />
                     </div>

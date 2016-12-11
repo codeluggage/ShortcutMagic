@@ -1,7 +1,7 @@
 -- `menu_click`, by Jacob Rus, September 2006
--- 
+--
 -- Accepts a list of form: `{"Finder", "View", "Arrange By", "Date"}`
--- Execute the specified menu item.  In this case, assuming the Finder 
+-- Execute the specified menu item.  In this case, assuming the Finder
 -- is the active application, arranging the frontmost folder by date.
 
 on menu_click(mList)
@@ -31,8 +31,8 @@ on menu_click_recurse(mList, parentObject)
         if mList's length is 1 then
         	-- reveal parentObject's menu
         	click parentObject
-        	select parentObject's menu item f
-        	-- click parentObject's menu item f
+        	-- select parentObject's menu item f
+        	click parentObject's menu item f
         else
             my menu_click_recurse(r, (parentObject's (menu item f)'s (menu f)))
         end if
@@ -41,14 +41,14 @@ end menu_click_recurse
 
 
 on executeMenu(processName, menuItemName, menuName) -- subMenuName)
-	tell application processName 
+	tell application processName
 		activate
 	end tell
 
 	menu_click({processName, menuName, menuItemName})
 
-	-- Reactivate if wanted:  
-	-- tell application "ShortcutWizard" 
+	-- Reactivate if wanted:
+	-- tell application "ShortcutWizard"
 	-- 	activate
 	-- end tell
 end executeMenu

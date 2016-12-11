@@ -478,7 +478,7 @@ function loadWithPeriods(appName) {
 			newShortcuts.shortcuts = JSON.parse(stringified);
 
 			// Cache shortcuts in memory too
-			loadedShortcuts[newShortcuts.appName] = newShortcuts;
+			loadedShortcuts[appName] = newShortcuts;
 			if (mainWindow) {
 				mainWindow.webContents.send('update-shortcuts', newShortcuts);
 				mainWindow.setBounds(newShortcuts.bounds);
@@ -598,17 +598,100 @@ ipcMain.on('change-window-mode', function(event, newMode) {
 	}
 });
 
-ipcMain.on('main-parse-shortcuts', function(event, ) {
-
-});
-
-ipcMain.on('change-window-mode', function(event, ) {
-});
+// ipcMain.on('main-parse-shortcuts', function(event, ) {
+// });
+//
+// ipcMain.on('change-window-mode', function(event, ) {
+// });
 
 ipcMain.on('open-settings', function(event) {
 	ipcMain.send('open-settings');
 });
 
-ipcMain.on('toggle-shortcut-favorite', (event, favorite) => {
-	// TODO: How to identify favorite?
+ipcMain.on('toggle-favorite-list-item', (event, listItemName) => {
+	var holdShortcuts = loadedShortcuts[currentAppName];
+	if (!holdShortcuts) {
+		// how did we end up here??
+		console.log("Could not find shortcuts in memory, needs loaded data");
+		// loadWithPeriods(appName); // TODO: load shortcuts and do remaining work in callback here
+	}
+
+	var holdIndex = 0;
+	var shortcut = holdShortcuts.shortcuts.filter((obj, index) => {
+		if (obj.name == listItemName) {
+			holdIndex = index;
+			return true;
+		} else {
+			return false;
+		}
+	})[0];
+
+	console.log("toggling favorite with ", shortcut, listItemName, holdShortcuts);
+	holdShortcuts.shortcuts[holdIndex].isFavorite = shortcut.isFavorite = (shortcut.isFavorite) ? false : true;
+	loadedShortcuts[currentAppName] = holdShortcuts;
+	var shortcutObject = {};
+	shortcutObject[`shortcuts.${shortcut.name}`] = shortcut;
+
+	db.update({
+		name: currentAppName
+	}, {
+		$set: shortcutObject
+	}, {
+		upsert: true
+	}, (err, res) => {
+		if (err) {
+			console.log("error when updating favorite for list item ", listItemName);
+		} else {
+			console.log("succeeded toggling favorite: ", res);
+			loadForApp(currentAppName);
+		}
+	});
+});
+
+ipcMain.on('toggle-hide-list-item', (event, listItemName) => {
+	var holdShortcuts = loadedShortcuts[currentAppName];
+	if (!holdShortcuts) {
+		// how did we end up here??
+		console.log("Could not find shortcuts in memory, needs loaded data");
+		// loadWithPeriods(appName); // TODO: load shortcuts and do remaining work in callback here
+	}
+
+	var holdIndex = 0;
+	var shortcut = holdShortcuts.shortcuts.filter((obj, index) => {
+		if (obj.name == listItemName) {
+			holdIndex = index;
+			return true;
+		} else {
+			return false;
+		}
+	})[0];
+
+	console.log("toggling hidden with ", shortcut, listItemName, holdShortcuts);
+	holdShortcuts.shortcuts[holdIndex].isHidden = shortcut.isHidden = (shortcut.isHidden) ? false : true;
+	loadedShortcuts[currentAppName] = holdShortcuts;
+	var shortcutObject = {};
+	shortcutObject[`shortcuts.${shortcut.name}`] = shortcut;
+
+	db.update({
+		name: currentAppName
+	}, {
+		$set: shortcutObject
+	}, {
+		upsert: true
+	}, (err, res) => {
+		if (err) {
+			console.log("error when updating hidden for list item ", listItemName);
+		} else {
+			console.log("succeeded hiding item: ", res);
+			loadForApp(currentAppName);
+		}
+	});
+});
+
+ipcMain.on('execute-list-item', (event, listItemName, menu) => {
+	// TODO: Run applescript for opening menu here
+	// - perhaps have a toggled state here, where first click sets state and shows the list item, and the second click executes
+	console.log("calling execute-list-item with ", listItemName, menu);
+	backgroundTaskRunnerWindow.webContents.send('webview-execute-menu-item',
+		currentAppName, listItemName, menu);
 });
