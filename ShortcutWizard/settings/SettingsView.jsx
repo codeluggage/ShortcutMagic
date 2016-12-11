@@ -122,7 +122,7 @@ export default class SettingsView extends Component {
     render() {
     	if (this.state && this.state.appSettings && this.state.globalSettings) {
 
-	    	window.document.documentElement.style.backgroundColor = this.state.appSettings.backgroundColor;
+	    	// window.document.documentElement.style.backgroundColor = this.state.appSettings.backgroundColor;
 
     		console.log('about to render settings with state and names: ', this.state);
 
@@ -187,21 +187,27 @@ export default class SettingsView extends Component {
 						flexDirection: 'row',
 						margin: 'auto'
 					}}>
-		        		<h2>Background color</h2>
-		    			<SketchPicker
-		    				color={this.state.appSettings.backgroundColor}
-			    			onChangeComplete={this.handleBackgroundColorChange}
-		    			/>
-		        		<h2>Item color</h2>
-						<SketchPicker
-							color={this.state.appSettings.itemColor}
-							onChangeComplete={this.handleItemColorChange}
-						/>
-		        		<h2>Text color</h2>
-						<SketchPicker
-							color={this.state.appSettings.textColor}
-							onChangeComplete={this.handleTextColorChange}
-						/>
+						<div style={{flexDirection: 'column'}}>
+			        		<h2>Background color</h2>
+			    			<SketchPicker
+			    				color={this.state.appSettings.backgroundColor}
+				    			onChangeComplete={this.handleBackgroundColorChange}
+			    			/>
+						</div>
+						<div style={{flexDirection: 'column'}}>
+			        		<h2>Item color</h2>
+							<SketchPicker
+								color={this.state.appSettings.itemColor}
+								onChangeComplete={this.handleItemColorChange}
+							/>
+						</div>
+						<div style={{flexDirection: 'column'}}>
+			        		<h2>Text color</h2>
+							<SketchPicker
+								color={this.state.appSettings.textColor}
+								onChangeComplete={this.handleTextColorChange}
+							/>
+						</div>
 					</div>
 
                     <button style={{color:"white", float:'left'}} id="reload-button" className="simple-button" onClick={() => {

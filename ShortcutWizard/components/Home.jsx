@@ -7,11 +7,11 @@ var globalState = {}; // Expose component state to list elements
 
 const SortableItem = SortableElement(({value}, itemColor, textColor) => {
 
-    console.log("inside sortable element with arguments>>>>>>>>>>>> : ");
-    console.dir(value, globalState.itemColor, globalState.textColor);
     // todo add these:
     // - text size
     // - general list item size
+
+            // margin: 'auto'
 
     return (
         <div style={{
@@ -21,11 +21,27 @@ const SortableItem = SortableElement(({value}, itemColor, textColor) => {
             backgroundColor: globalState.itemColor,
             width: "100%",
             margin: "4px",
-            color: globalState.textColor
+            display: 'flex',
+            flexDirection: 'row',
         }}>
-            {value}
+            <p style={{color: globalState.textColor, flex: 6}}>{value}</p>
+
+            <button style={{color:"red", flex: 2}} className="simple-button" onClick={() => { }}><i className="fa fa-1x fa-remove"></i></button>
+
+            <button style={{color:"green", flex: 2}} className="simple-button" onClick={() => { }}><i className="fa fa-1x fa-play"></i></button>
+
+
+            <button style={{color:"gold", flex: 2}} className="simple-button" onClick={() => {
+
+                // TODO: How to extract id/name from the shortcut we are rendering?
+                // ipcRenderer.send('toggle-shortcut-favorite', );
+
+            }}><i className="fa fa-1x fa-star-o"></i></button>
         </div>
     );
+            // <div style={{height: '100%', margin: 'auto', backgroundColor: "red", flex:2}}>Hide</div>
+            // <div style={{height: '100%', margin: 'auto', backgroundColor: "yellow", flex:2}}>Favorite</div>
+            // <div style={{height: '100%', margin: 'auto', backgroundColor: "green", flex:2}}>Execute</div>
 });
 
 const SortableList = SortableContainer(({items}) => {

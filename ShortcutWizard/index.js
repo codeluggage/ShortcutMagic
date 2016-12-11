@@ -608,3 +608,7 @@ ipcMain.on('change-window-mode', function(event, ) {
 ipcMain.on('open-settings', function(event) {
 	ipcMain.send('open-settings');
 });
+
+ipcMain.on('toggle-shortcut-favorite', (event, favorite) => {
+	// TODO: How to identify favorite?
+});
