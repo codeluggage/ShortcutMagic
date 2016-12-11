@@ -3,9 +3,32 @@ import React, { Component } from 'react';
 import {SortableContainer, SortableElement, arrayMove} from 'react-sortable-hoc';
 import Electron, { ipcRenderer, remote } from 'electron';
 
-const SortableItem = SortableElement(({value}) => <li>{value}</li>);
+var globalState = {}; // Expose component state to list elements
 
-const SortableList = SortableContainer(({items, itemStyle}) => {
+const SortableItem = SortableElement(({value}, itemColor, textColor) => {
+
+    console.log("inside sortable element with arguments>>>>>>>>>>>> : ");
+    console.dir(value, globalState.itemColor, globalState.textColor);
+    // todo add these:
+    // - text size
+    // - general list item size
+
+    return (
+        <div style={{
+            borderRadius: ".25rem",
+            borderWidth: ".50rem",
+            border: `2px solid ${globalState.itemColor}`,
+            backgroundColor: globalState.itemColor,
+            width: "100%",
+            margin: "4px",
+            color: globalState.textColor
+        }}>
+            {value}
+        </div>
+    );
+});
+
+const SortableList = SortableContainer(({items}) => {
     return !items ? (<p>No items yet</p>) : (
         <div style={{fontWeight:500, fontSize:18, margin:'15px'}}>
             { items.map((value, index) => {
@@ -34,13 +57,11 @@ const SortableList = SortableContainer(({items, itemStyle}) => {
                 displayValue = value["name"] + ": " + displayValue;
 
                 return (
-                    <div style={itemStyle}>
-                        <SortableItem
-                          key={`item-${index}`}
-                          index={index}
-                          value={displayValue}
-                        />
-                    </div>
+                    <SortableItem
+                      key={`item-${index}`}
+                      index={index}
+                      value={displayValue}
+                    />
                 );
             })}
         </div>
@@ -71,15 +92,23 @@ export default class Home extends Component {
 
 
         ipcRenderer.on('set-background-color', (event, backgroundColor) => {
+            console.log('inside Home.jsx set-background-color with ', backgroundColor);
             this.setState({
                 backgroundColor: backgroundColor
             });
         });
 
-        // TODO: Make this:
-        ipcRenderer.on('set-item-color', (itemColor) => {
+        ipcRenderer.on('set-item-color', (event, itemColor) => {
+            console.log('inside Home.jsx set-item-color with ', itemColor);
             this.setState({
                 itemColor: itemColor
+            });
+        });
+
+        ipcRenderer.on('set-text-color', (event, textColor) => {
+            console.log('inside Home.jsx set-text-color with ', textColor);
+            this.setState({
+                textColor: textColor
             });
         });
 
@@ -166,6 +195,8 @@ export default class Home extends Component {
     }
 
     render() {
+        globalState = this.state;
+
         console.log('render() called');
         if (!this.state) {
             return (
@@ -224,13 +255,16 @@ export default class Home extends Component {
                     <div style={{textAlign: 'left'}}>
                         <SortableList
                           items={this.state.items}
-                          itemStyle={{backgroundColor: (this.state.itemColor) ? this.state.itemColor : '#FFFFFF'}}
                           onSortEnd={this.onSortEnd}
+                          itemColor={this.state.itemColor}
+                          textColor={this.state.textColor}
                           lockAxis='y'
                         />
                     </div>
                 </div>
             </div>
         );
+                        // previous sortablelist itemstyle
+                        //   itemStyle={{backgroundColor: (this.state.itemColor) ? this.state.itemColor : '#FFFFFF'}}
     }
 }

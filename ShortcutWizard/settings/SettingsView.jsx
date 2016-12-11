@@ -29,13 +29,15 @@ export default class SettingsView extends Component {
 	    //     this.setState(newSettings);
     	// };
 
-        this.handleChangeComplete = this.handleChangeComplete.bind(this);
+        this.handleBackgroundColorChange = this.handleBackgroundColorChange.bind(this);
+        this.handleItemColorChange = this.handleItemColorChange.bind(this);
+        this.handleTextColorChange = this.handleTextColorChange.bind(this);
 		this.saveCurrentSettings = this.saveCurrentSettings.bind(this);
 		this.cancelCurrentSettings = this.cancelCurrentSettings.bind(this);
     }
 
 	saveCurrentSettings() {
-		settings.set(this.state.appSettings);
+		settings.set(this.state.appSettings, this.state.globalSettings);
 
 		// Send message to main window? it should always be loaded by the settings anyway..
         holdRemote.BrowserWindow.getFocusedWindow().hide();
@@ -63,7 +65,7 @@ export default class SettingsView extends Component {
 		});
 	}
 
-    handleChangeComplete(color) {
+    handleBackgroundColorChange(color) {
     	console.log('hit handleChangeComplete with color ', color);
     	var colorString = makeColorString(color);
 		var holdSettings = this.state.appSettings;
@@ -83,8 +85,42 @@ export default class SettingsView extends Component {
         }
     }
 
+    handleTextColorChange(color) {
+    	var colorString = makeColorString(color);
+		var holdSettings = this.state.appSettings;
+		holdSettings.textColor = colorString;
+    	this.setState({
+			appSettings: holdSettings
+		});
+
+        var windows = holdRemote.BrowserWindow.getAllWindows();
+        for (var i = 0; i < windows.length; i++) {
+            let holdWindow = windows[i];
+            if (holdWindow && holdWindow.getTitle() == "mainWindow") {
+				holdWindow.webContents.send('set-text-color', colorString);
+            }
+        }
+    }
+
+    handleItemColorChange(color) {
+    	var colorString = makeColorString(color);
+		var holdSettings = this.state.appSettings;
+		holdSettings.itemColor = colorString;
+    	this.setState({
+			appSettings: holdSettings
+		});
+
+        var windows = holdRemote.BrowserWindow.getAllWindows();
+        for (var i = 0; i < windows.length; i++) {
+            let holdWindow = windows[i];
+            if (holdWindow && holdWindow.getTitle() == "mainWindow") {
+				holdWindow.webContents.send('set-item-color', colorString);
+            }
+        }
+    }
+
     render() {
-    	if (this.state && this.state.appSettings) {
+    	if (this.state && this.state.appSettings && this.state.globalSettings) {
 
 	    	window.document.documentElement.style.backgroundColor = this.state.appSettings.backgroundColor;
 
@@ -146,13 +182,27 @@ export default class SettingsView extends Component {
 
 					<h1>Settings for {this.state.appSettings.name}</h1>
 
-		        	<li>
-		        		Choose color:
+					<div style={{
+						display: 'flex',
+						flexDirection: 'row',
+						margin: 'auto'
+					}}>
+		        		<h2>Background color</h2>
 		    			<SketchPicker
 		    				color={this.state.appSettings.backgroundColor}
-			    			onChangeComplete={this.handleChangeComplete}
+			    			onChangeComplete={this.handleBackgroundColorChange}
 		    			/>
-		    		</li>
+		        		<h2>Item color</h2>
+						<SketchPicker
+							color={this.state.appSettings.itemColor}
+							onChangeComplete={this.handleItemColorChange}
+						/>
+		        		<h2>Text color</h2>
+						<SketchPicker
+							color={this.state.appSettings.textColor}
+							onChangeComplete={this.handleTextColorChange}
+						/>
+					</div>
 
                     <button style={{color:"white", float:'left'}} id="reload-button" className="simple-button" onClick={() => {
                         console.log('sending reloadShortcuts from ipcRenderer');
