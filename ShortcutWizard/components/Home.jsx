@@ -5,6 +5,8 @@ import Electron, { ipcRenderer, remote } from 'electron';
 
 // TODO: Replace this crappy system with proper state passed down through elements somehow
 var sharedGlobalState = {}; // Expose component state to list elements
+var sharedGlobalThis = {}; // Expose component itself to list elements
+
 
 const DragHandle = SortableHandle(() => {
     return (
@@ -24,7 +26,11 @@ const SortableItem = SortableElement(({value}) => {
     // add back in:
     // margin: 'auto'
 
+    // TODO: Change for a more robust system:
+    // The value and index here belongs to the list passed into the component,
+    // which makes the link follow all the way back to the sorted array
     var listItem = sharedGlobalState[value];
+    console.log("rendered with listItem isMouseOver", listItem.isMouseOver);
 
     return (
         <div style={{
@@ -36,62 +42,73 @@ const SortableItem = SortableElement(({value}) => {
             margin: "4px",
             display: 'flex',
             flexDirection: 'row',
+        }} onMouseEnter={(e) => {
+            sharedGlobalThis.previousShortcuts[listItem.index].isMouseOver = true;
+            sharedGlobalThis.setState({
+                items: sharedGlobalThis.previousShortcuts
+            });
+        }} onMouseLeave={(e) => {
+            sharedGlobalThis.previousShortcuts[listItem.index].isMouseOver = false;
+            sharedGlobalThis.setState({
+                items: sharedGlobalThis.previousShortcuts
+            });
         }}>
             <p style={{color: sharedGlobalState.textColor, flex: 6}}><DragHandle />{value}</p>
-
-            <button style={{
-                color:"green",
-                flex: 2,
-                backgroundColor: "transparent",
-            }} onClick={() => {
-                console.log("clicked execute-list-item with ", listItem.value.name, listItem.value.menuName);
-                ipcRenderer.send('execute-list-item', listItem.value.name, listItem.value.menuName);
-            }}>
-                <i className="fa fa-2x fa-play"></i>
-                Do
-            </button>
-
-            <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                flex: 4
-            }}>
                 <button style={{
-                    color: "gold",
+                    color: "green",
+                    display: (listItem.value.isMouseOver) ? 'block' : 'none',
+                    flex: 2,
                     backgroundColor: "transparent",
-                    flex: 2
                 }} onClick={() => {
-                    ipcRenderer.send('toggle-favorite-list-item', listItem.value.name);
+                    console.log("clicked execute-list-item with ", listItem.value.name, listItem.value.menuName);
+                    ipcRenderer.send('execute-list-item', listItem.value.name, listItem.value.menuName);
                 }}>
-                    {
-                        (listItem.isFavorite) ? (
-                            <div>
-                                <i className="fa fa-2x fa-star"></i>
-                                <br />
-                                Remove
-                            </div>
-                        ) : (
-                            <div>
-                                <i className="fa fa-2x fa-star-o"></i>
-                                <br />
-                                Add
-                            </div>
-                        )
-                    }
+                    <i className="fa fa-2x fa-play"></i>
+                    Do
                 </button>
 
-                <button style={{
-                    color: (listItem.isHidden) ? "green" : "red",
-                    backgroundColor: "transparent",
-                    flex: 2
-                }} onClick={() => {
-                    ipcRenderer.send('toggle-hide-list-item', listItem.value.name);
+                <div style={{
+                    flex: 2,
+                    flexDirection: 'column',
                 }}>
-                    <i className="fa fa-2x fa-remove"></i>
-                    <br />
-                    { (listItem.isHidden) ? "Show" : "Hide" }
-                </button>
-            </div>
+                    <button style={{
+                        color: "gold",
+                        backgroundColor: "transparent",
+                        display: (listItem.value.isMouseOver || listItem.isFavorite) ? 'block' : 'none',
+                        flex: 2,
+                    }} onClick={() => {
+                        ipcRenderer.send('toggle-favorite-list-item', listItem.value.name);
+                    }}>
+                        {
+                            (listItem.isFavorite) ? (
+                                <div>
+                                    <i className="fa fa-2x fa-star"></i>
+                                    <br />
+                                    Remove
+                                </div>
+                            ) : (
+                                <div>
+                                    <i className="fa fa-2x fa-star-o"></i>
+                                    <br />
+                                    Add
+                                </div>
+                            )
+                        }
+                    </button>
+
+                    <button style={{
+                        color: (listItem.isHidden) ? "green" : "red",
+                        backgroundColor: "transparent",
+                        display: (listItem.value.isMouseOver || listItem.isHidden) ? 'block' : 'none',
+                        flex: 2,
+                    }} onClick={() => {
+                        ipcRenderer.send('toggle-hide-list-item', listItem.value.name);
+                    }}>
+                        <i className="fa fa-2x fa-remove"></i>
+                        <br />
+                        { (listItem.isHidden) ? "Show" : "Hide" }
+                    </button>
+                </div>
         </div>
     );
 });
@@ -303,6 +320,7 @@ export default class Home extends Component {
 
     render() {
         sharedGlobalState = this.state;
+        sharedGlobalThis = this;
 
         console.log('render() called');
         if (!this.state) {
@@ -341,20 +359,25 @@ export default class Home extends Component {
     	window.document.documentElement.style.backgroundColor = this.state.backgroundColor;
 
         var shortcuts = this.state.items;
-        shortcuts.sort((a, b) => {
-            if (a.isHidden) {
-                if (b.isHidden) return 0; // a <> b
+        if (!this.previousShortcuts || this.previousShortcuts != shortcuts) {
+            shortcuts.sort((a, b) => {
+                if (a.isHidden) {
+                    if (b.isHidden) return 0; // a <> b
 
-                return 1; // b > a
-            }
-            if (a.isFavorite) {
-                if (b.isFavorite) return 0; // a <> b
+                    return 1; // b > a
+                }
+                if (a.isFavorite) {
+                    if (b.isFavorite) return 0; // a <> b
 
-                return -1; // a > b
-            }
+                    return -1; // a > b
+                }
 
-            return 0; // a <> b
-        });
+                return 0; // a <> b
+            });
+
+            this.previousShortcuts = shortcuts;
+        }
+
 
         return (
             <div style={{ textAlign: 'center' }}>
@@ -377,7 +400,7 @@ export default class Home extends Component {
 
                     <div style={{textAlign: 'left'}}>
                         <SortableList
-                          items={this.state.items}
+                          items={shortcuts}
                           onSortEnd={this.onSortEnd}
                           useDragHandle={true}
                           lockAxis='y'

@@ -40,7 +40,15 @@ export default class SettingsView extends Component {
 		settings.set(this.state.appSettings, this.state.globalSettings);
 
 		// Send message to main window? it should always be loaded by the settings anyway..
-        holdRemote.BrowserWindow.getFocusedWindow().hide();
+        var windows = holdRemote.BrowserWindow.getAllWindows();
+        for (var i = 0; i < windows.length; i++) {
+            let holdWindow = windows[i];
+            if (holdWindow) {
+				if (holdWindow.getTitle() == "settingsWindow") {
+					holdWindow.hide();
+				}
+            }
+        }
 	}
 
 	cancelCurrentSettings() {
@@ -56,6 +64,7 @@ export default class SettingsView extends Component {
 	            let holdWindow = windows[i];
 	            if (holdWindow) {
 					if (holdWindow.getTitle() == "mainWindow") {
+						// TODO: Is this needed when it's already updated?
 						holdWindow.webContents.send('set-background-color', newSettings.backgroundColor);
 					} else if (holdWindow.getTitle() == "settingsWindow") {
 						holdWindow.hide();
@@ -134,6 +143,7 @@ export default class SettingsView extends Component {
 					<h1>Global settings (applies to all apps)</h1>
 
 		        	<li>
+						Always float window on top of other windows?
 	                    <button className="simple-button" onClick={() => {
 							var holdSettings = this.state.globalSettings;
 	                    	holdSettings.alwaysOnTop = !holdSettings.alwaysOnTop;
@@ -145,11 +155,12 @@ export default class SettingsView extends Component {
 	                    		alwaysOnTop: alwaysOnTop
 	                    	});
 	                    }}>
-		                    Always float window on top of other windows? {(this.state.globalSettings.alwaysOnTop) ? "true" : "false"}
+		                    {(this.state.globalSettings.alwaysOnTop) ? "true" : "false"}
 	                    </button>
 		        	</li>
 
 		        	<li>
+						Set window state (regular, small, hidden) for all apps?
 	                    <button className="simple-button" onClick={() => {
 							var holdSettings = this.state.globalSettings;
 	                    	holdSettings.hidePerApp = !holdSettings.hidePerApp;
@@ -160,11 +171,12 @@ export default class SettingsView extends Component {
 	                    		hidePerApp: holdSettings.hidePerApp
 	                    	});
 	                    }}>
-				        	Set window state (regular, small, hidden) for all apps? {(this.state.globalSettings.hidePerApp) ? "On" : "Off"}
+				        	{(this.state.globalSettings.hidePerApp) ? "On" : "Off"}
 	                    </button>
 		        	</li>
 
 		        	<li>
+						Use one window size for all apps?
 	                    <button className="simple-button" onClick={() => {
 							var holdSettings = this.state.globalSettings;
 	                    	holdSettings.boundsPerApp = !holdSettings.boundsPerApp;
@@ -175,7 +187,7 @@ export default class SettingsView extends Component {
 	                    		boundsPerApp: holdSettings.boundsPerApp
 	                    	});
 	                    }}>
-				        	Use one window size for all apps? {(this.state.globalSettings.boundsPerApp) ? "On" : "Off"}
+				        	{(this.state.globalSettings.boundsPerApp) ? "On" : "Off"}
 	                    </button>
 		        	</li>
 
@@ -238,7 +250,13 @@ export default class SettingsView extends Component {
 				<div>
 					<h1>ShortcutWizard can't show the settings for some reason...</h1>
 					<button onClick={() => {
-				        holdRemote.BrowserWindow.getFocusedWindow().hide()
+				        var windows = holdRemote.BrowserWindow.getAllWindows();
+				        for (var i = 0; i < windows.length; i++) {
+				            let holdWindow = windows[i];
+				            if (holdWindow && holdWindow.getTitle() == "settingsWindow") {
+								holdWindow.hide();
+				            }
+				        }
 					}}>Close settings</button>
 				</div>
 			);
