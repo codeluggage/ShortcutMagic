@@ -51,14 +51,14 @@ export default class SettingsView extends Component {
 				appSettings: newSettings
 			});
 
-			holdRemote.BrowserWindow.getFocusedWindow().hide();
-
 	        var windows = holdRemote.BrowserWindow.getAllWindows();
 	        for (var i = 0; i < windows.length; i++) {
 	            let holdWindow = windows[i];
 	            if (holdWindow) {
 					if (holdWindow.getTitle() == "mainWindow") {
 						holdWindow.webContents.send('set-background-color', newSettings.backgroundColor);
+					} else if (holdWindow.getTitle() == "settingsWindow") {
+						holdWindow.hide();
 					}
 	            }
 	        }
@@ -74,7 +74,7 @@ export default class SettingsView extends Component {
 			appSettings: holdSettings
 		});
 
-    	window.document.documentElement.style.backgroundColor = colorString;
+    	// window.document.documentElement.style.backgroundColor = colorString;
 
         var windows = holdRemote.BrowserWindow.getAllWindows();
         for (var i = 0; i < windows.length; i++) {
@@ -216,10 +216,10 @@ export default class SettingsView extends Component {
                     }}><i className="fa fa-1x fa-refresh"></i></button>
 
 
-                    <button style={{color:"white", float:'left'}} className="simple-button" onClick={() => {
+                    <button style={{color:"black", float:'left'}} className="simple-button" onClick={() => {
 						this.saveCurrentSettings();
                     }}>Save</button>
-                    <button style={{color:"white", float:'right'}} className="simple-button" onClick={() => {
+                    <button style={{color:"black", float:'right'}} className="simple-button" onClick={() => {
 						this.cancelCurrentSettings();
                     }}>Cancel</button>
 	    		</div>

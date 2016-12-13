@@ -8,7 +8,7 @@ var sharedGlobalState = {}; // Expose component state to list elements
 
 const DragHandle = SortableHandle(() => {
     return (
-        <span>::</span>
+        <b><strong>[::::]   </strong></b>
     );
 });
 
@@ -20,6 +20,8 @@ const SortableItem = SortableElement(({value}) => {
     // - general list item size
 
     // TOD: Use this to fill list item correctly?
+
+    // add back in:
     // margin: 'auto'
 
     var listItem = sharedGlobalState[value];
@@ -35,31 +37,7 @@ const SortableItem = SortableElement(({value}) => {
             display: 'flex',
             flexDirection: 'row',
         }}>
-            <p style={{color: sharedGlobalState.textColor, flex: 6}}><DragHandle /> {value}</p>
-
-            <button style={{
-                color: "gold",
-                backgroundColor: (listItem.isFavorite) ? "gold" : "transparent",
-                flex: 2
-            }} onClick={() => {
-                ipcRenderer.send('toggle-favorite-list-item', listItem.value.name);
-            }}>
-                <i className="fa fa-1x fa-star-o"></i>
-                <br />
-                { (listItem.isFavorite) ? "Remove" : "Add" }
-            </button>
-
-            <button style={{
-                color: (listItem.isHidden) ? "green" : "red",
-                backgroundColor: (listItem.isHidden) ? "red" : "transparent",
-                flex: 2
-            }} onClick={() => {
-                ipcRenderer.send('toggle-hide-list-item', listItem.value.name);
-            }}>
-                <i className="fa fa-1x fa-remove"></i>
-                <br />
-                { (listItem.isHidden) ? "Show" : "Hide" }
-            </button>
+            <p style={{color: sharedGlobalState.textColor, flex: 6}}><DragHandle />{value}</p>
 
             <button style={{
                 color:"green",
@@ -68,15 +46,56 @@ const SortableItem = SortableElement(({value}) => {
             }} onClick={() => {
                 console.log("clicked execute-list-item with ", listItem.value.name, listItem.value.menuName);
                 ipcRenderer.send('execute-list-item', listItem.value.name, listItem.value.menuName);
-            }}><i className="fa fa-1x fa-play"></i></button>
+            }}>
+                <i className="fa fa-2x fa-play"></i>
+                Do
+            </button>
 
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                flex: 4
+            }}>
+                <button style={{
+                    color: "gold",
+                    backgroundColor: "transparent",
+                    flex: 2
+                }} onClick={() => {
+                    ipcRenderer.send('toggle-favorite-list-item', listItem.value.name);
+                }}>
+                    {
+                        (listItem.isFavorite) ? (
+                            <div>
+                                <i className="fa fa-2x fa-star"></i>
+                                <br />
+                                Remove
+                            </div>
+                        ) : (
+                            <div>
+                                <i className="fa fa-2x fa-star-o"></i>
+                                <br />
+                                Add
+                            </div>
+                        )
+                    }
+                </button>
 
+                <button style={{
+                    color: (listItem.isHidden) ? "green" : "red",
+                    backgroundColor: "transparent",
+                    flex: 2
+                }} onClick={() => {
+                    ipcRenderer.send('toggle-hide-list-item', listItem.value.name);
+                }}>
+                    <i className="fa fa-2x fa-remove"></i>
+                    <br />
+                    { (listItem.isHidden) ? "Show" : "Hide" }
+                </button>
+            </div>
         </div>
     );
-            // <div style={{height: '100%', margin: 'auto', backgroundColor: "red", flex:2}}>Hide</div>
-            // <div style={{height: '100%', margin: 'auto', backgroundColor: "yellow", flex:2}}>Favorite</div>
-            // <div style={{height: '100%', margin: 'auto', backgroundColor: "green", flex:2}}>Execute</div>
 });
+
 
 const SortableList = SortableContainer(({items}) => {
     return !items ? (<p>No items yet</p>) : (
@@ -183,9 +202,12 @@ export default class Home extends Component {
         });
 
         ipcRenderer.on('update-shortcuts', (event, newShortcuts) => {
+            // todo:
+            // - randomize the items?
+
             console.log('entered update-shortcuts in Home');
             let name = newShortcuts.name;
-            if (name == "Electron") return;
+            if (name == "Electron" || name == "ShortcutWizard") return;
 
             let shortcuts = newShortcuts.shortcuts;
             const shortcutsArray = Object.keys(shortcuts).map(key => shortcuts[key]);
@@ -261,6 +283,21 @@ export default class Home extends Component {
             });
         }
 
+        // updatedList.sort((a, b) => {
+        //     if (a.isHidden) {
+        //         if (b.isHidden) return 0; // a <> b
+        //
+        //         return 1; // b > a
+        //     }
+        //     if (a.isFavorite) {
+        //         if (b.isFavorite) return 0; // a <> b
+        //
+        //         return -1; // a > b
+        //     }
+        //
+        //     return 0; // a <> b
+        // });
+
         this.setState({items: updatedList});
     }
 
@@ -303,6 +340,22 @@ export default class Home extends Component {
 */
     	window.document.documentElement.style.backgroundColor = this.state.backgroundColor;
 
+        var shortcuts = this.state.items;
+        shortcuts.sort((a, b) => {
+            if (a.isHidden) {
+                if (b.isHidden) return 0; // a <> b
+
+                return 1; // b > a
+            }
+            if (a.isFavorite) {
+                if (b.isFavorite) return 0; // a <> b
+
+                return -1; // a > b
+            }
+
+            return 0; // a <> b
+        });
+
         return (
             <div style={{ textAlign: 'center' }}>
                     <button style={{color:"white", float:'left'}} id="reload-button" className="simple-button" onClick={() => {
@@ -326,8 +379,6 @@ export default class Home extends Component {
                         <SortableList
                           items={this.state.items}
                           onSortEnd={this.onSortEnd}
-                          itemColor={this.state.itemColor}
-                          textColor={this.state.textColor}
                           useDragHandle={true}
                           lockAxis='y'
                         />

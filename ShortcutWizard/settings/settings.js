@@ -22,7 +22,7 @@ defaultSettings = {
 	frame: false,
 	show: true,
 	x: 1100, y: 100, width: 350, height: 800,
-	backgroundColor: '#adadad',
+	backgroundColor: '#7000aa99',
 	title: "mainWindow"
 };
 
@@ -246,6 +246,8 @@ export class Settings {
 					if (holdWindow && holdWindow.getTitle() == "mainWindow") {
 						// TODO: Perform more updates based on the settings...?
 						holdWindow.webContents.send('set-background-color', newSettings["backgroundColor"]);
+						holdWindow.webContents.send('set-text-color', newSettings["textColor"]);
+						holdWindow.webContents.send('set-item-color', newSettings["itemColor"]);
 					}
 				}
 

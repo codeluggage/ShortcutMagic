@@ -64,8 +64,6 @@ let backgroundListenerWindow;
 let welcomeWindow;
 let loadedShortcuts = [];
 let currentAppName = "Electron";
-console.log("temporariliy setting currentAppName to Electron at main startup");
-
 
 // Functions
 
@@ -108,7 +106,7 @@ const applyWindowMode = (newWindowMode) => {
 
 		var cachedAppSettings = loadedShortcuts[currentAppName];
 		if (cachedAppSettings) {
-			mainWindow.setBounds(loadedShortcuts[currentAppName].fullBounds);
+			mainWindow.setBounds(cachedAppSettings.bounds);
 		} else {
 			db.find({
 				name: currentAppName
@@ -227,7 +225,7 @@ function createWindows() {
 	createBackgroundTaskRunnerWindow();
 	createBackgroundListenerWindow();
 	createSettingsWindow();
-	createWelcomeWindow();
+	// createWelcomeWindow();
 	createMainWindow();
 }
 
@@ -253,6 +251,7 @@ function createMainWindow() {
 		transparent: true,
 		x: 1100, y: 100, width: 350, height: 800,
 		// backgroundColor: '#adadad',
+		// backgroundColor: '#7000aa99',
 		title: "mainWindow"
 	});
 
@@ -280,7 +279,7 @@ function createMainWindow() {
 	mainWindow.setHasShadow(false);
 
 	applyWindowMode(windowMode);
-	// mainWindow.hide();
+	mainWindow.show();
 
 	// All windows are created, collect all their window id's and let each of them
 	// know what is available to send messages to:
@@ -407,6 +406,9 @@ function loadForApp(appName) {
 		// Choose the cached shortcuts if possible
 		if (holdShortcuts) {
 			console.log('setting bounds in loadforapp: ', appName, holdShortcuts.bounds);
+			if (!holdShortcuts.bounds) {
+				holdShortcuts.bounds = { x: 1100, y: 100, width: 350, height: 800 };
+			}
 			mainWindow.setBounds(holdShortcuts.bounds);
 			mainWindow.webContents.send('update-shortcuts', holdShortcuts);
 			return;
@@ -608,6 +610,59 @@ ipcMain.on('open-settings', function(event) {
 	ipcMain.send('open-settings');
 });
 
+// ipcMain.on('toggle-favorite-list-item', (event, listItemName) => {
+// 	var holdShortcuts = loadedShortcuts[currentAppName];
+// 	if (!holdShortcuts) {
+// 		// how did we end up here??
+// 		console.log("Could not find shortcuts in memory, needs loaded data");
+// 		// loadWithPeriods(appName); // TODO: load shortcuts and do remaining work in callback here
+// 	}
+//
+// 	var holdIndex = 0;
+// 	var shortcuts = holdShortcuts.shortcuts;
+// 	if (!shortcuts) {
+// 		console.log("cant find shortcuts for ", listItemName);
+// 		return;
+// 	}
+//
+// 	var shortcut = undefined;
+//
+// 	var i;
+// 	for (i = 0; i < shortcuts.length; i++) {
+// 		if (shortcuts[i] && shortcuts[i].name == listItemName) {
+// 			shortcut = shortcuts[i];
+// 			console.log("found and set shortcut for favorite, breaking out: ", shortcut);
+// 			break;
+// 		}
+// 	}
+//
+// 	if (!shortcut) {
+// 		console.log("cant find shortcut in ", shortcuts);
+// 		return;
+// 	}
+//
+// 	shortcut.isFavorite = (shortcut.isFavorite) ? false : true;
+// 	shortcuts[i] = shortcut;
+// 	holdShortcuts.shortcuts = shortcuts;
+// 	console.log("saving shortcutObject", shortcuts);
+//
+// 	db.update({
+// 		name: currentAppName
+// 	}, {
+// 		$set: holdShortcuts
+// 	}, {
+// 		upsert: true
+// 	}, (err, res) => {
+// 		if (err) {
+// 			console.log("error when updating favorite for list item ", listItemName);
+// 		} else {
+// 			console.log("succeeded toggling favorite: ", res);
+// 			loadedShortcuts[currentAppName] = holdShortcuts;
+//
+// 			mainWindow.webContent.send('update-shortcuts', holdShortcuts);
+// 		}
+// 	});
+// });
 ipcMain.on('toggle-favorite-list-item', (event, listItemName) => {
 	var holdShortcuts = loadedShortcuts[currentAppName];
 	if (!holdShortcuts) {
@@ -626,27 +681,26 @@ ipcMain.on('toggle-favorite-list-item', (event, listItemName) => {
 		}
 	})[0];
 
-	console.log("toggling favorite with ", shortcut, listItemName, holdShortcuts);
+	console.log("toggling fav with ", shortcut, listItemName, holdShortcuts);
 	holdShortcuts.shortcuts[holdIndex].isFavorite = shortcut.isFavorite = (shortcut.isFavorite) ? false : true;
 	loadedShortcuts[currentAppName] = holdShortcuts;
-	var shortcutObject = {};
-	shortcutObject[`shortcuts.${shortcut.name}`] = shortcut;
 
 	db.update({
 		name: currentAppName
 	}, {
-		$set: shortcutObject
+		$set: holdShortcuts
 	}, {
 		upsert: true
 	}, (err, res) => {
 		if (err) {
 			console.log("error when updating favorite for list item ", listItemName);
 		} else {
-			console.log("succeeded toggling favorite: ", res);
+			console.log("succeeded favoriting item: ", res);
 			loadForApp(currentAppName);
 		}
 	});
 });
+
 
 ipcMain.on('toggle-hide-list-item', (event, listItemName) => {
 	var holdShortcuts = loadedShortcuts[currentAppName];
