@@ -53,19 +53,26 @@ const SortableItem = SortableElement(({value}) => {
                 items: sharedGlobalThis.previousShortcuts
             });
         }}>
-            <p style={{color: sharedGlobalState.textColor, flex: 6}}><DragHandle />{value}</p>
-                <button style={{
-                    color: "green",
-                    display: (listItem.value.isMouseOver) ? 'block' : 'none',
-                    flex: 2,
-                    backgroundColor: "transparent",
-                }} onClick={() => {
-                    console.log("clicked execute-list-item with ", listItem.value.name, listItem.value.menuName);
-                    ipcRenderer.send('execute-list-item', listItem.value.name, listItem.value.menuName);
-                }}>
-                    <i className="fa fa-2x fa-play"></i>
-                    Do
-                </button>
+            <p style={{
+                color: sharedGlobalState.textColor,
+                flexGrow: 6,
+                flexBasis: '100%',
+            }}><DragHandle />{value}</p>
+
+            <button style={{
+                color: "green",
+                display: (listItem.value.isMouseOver) ? 'block' : 'none',
+                flexGrow: 2,
+                flexBasis: '50%',
+                backgroundColor: "transparent",
+            }} onClick={() => {
+                console.log("clicked execute-list-item with ", listItem.value.name, listItem.value.menuName);
+                ipcRenderer.send('execute-list-item', listItem.value.name, listItem.value.menuName);
+            }}>
+                <i className="fa fa-2x fa-play"></i>
+                <br />
+                Do
+            </button>
 
                 <div style={{
                     flex: 2,
@@ -73,8 +80,10 @@ const SortableItem = SortableElement(({value}) => {
                 }}>
                     <button style={{
                         color: "gold",
+                        width: '100%',
                         backgroundColor: "transparent",
                         display: (listItem.value.isMouseOver || listItem.isFavorite) ? 'block' : 'none',
+                        // Specifically make favorite bigger if it is shown alone
                         flex: 2,
                     }} onClick={() => {
                         ipcRenderer.send('toggle-favorite-list-item', listItem.value.name);
@@ -97,7 +106,8 @@ const SortableItem = SortableElement(({value}) => {
                     </button>
 
                     <button style={{
-                        color: (listItem.isHidden) ? "green" : "red",
+                        color: (listItem.isHidden) ? "grey" : "red",
+                        width: '100%',
                         backgroundColor: "transparent",
                         display: (listItem.value.isMouseOver || listItem.isHidden) ? 'block' : 'none',
                         flex: 2,

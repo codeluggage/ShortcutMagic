@@ -682,13 +682,16 @@ ipcMain.on('toggle-favorite-list-item', (event, listItemName) => {
 	})[0];
 
 	console.log("toggling fav with ", shortcut, listItemName, holdShortcuts);
-	holdShortcuts.shortcuts[holdIndex].isFavorite = shortcut.isFavorite = (shortcut.isFavorite) ? false : true;
+	shortcut.isFavorite = (shortcut.isFavorite) ? false : true;
+	holdShortcuts.shortcuts[holdIndex] = shortcut;
 	loadedShortcuts[currentAppName] = holdShortcuts;
+	var shortcutObject = {};
+	shortcutObject[`shortcuts.${shortcut.name}`] = shortcut;
 
 	db.update({
 		name: currentAppName
 	}, {
-		$set: holdShortcuts
+		$set: shortcutObject
 	}, {
 		upsert: true
 	}, (err, res) => {
@@ -721,8 +724,9 @@ ipcMain.on('toggle-hide-list-item', (event, listItemName) => {
 	})[0];
 
 	console.log("toggling hidden with ", shortcut, listItemName, holdShortcuts);
-	holdShortcuts.shortcuts[holdIndex].isHidden = shortcut.isHidden = (shortcut.isHidden) ? false : true;
 	loadedShortcuts[currentAppName] = holdShortcuts;
+	shortcut.isHidden = (shortcut.isHidden) ? false : true;
+	holdShortcuts.shortcuts[holdIndex] = shortcut;
 	var shortcutObject = {};
 	shortcutObject[`shortcuts.${shortcut.name}`] = shortcut;
 
