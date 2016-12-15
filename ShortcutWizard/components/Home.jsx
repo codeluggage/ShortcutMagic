@@ -135,9 +135,11 @@ const SortableList = SortableContainer(({items}) => {
                 let favorite = false;
                 let hidden = false;
 
+                // TODO: Can this be simplified to avoid the double loops over and over?
                 for (var i = 0; i < keys.length; i++) {
                     let key = keys[i];
-                    if (key != "menuName" && key != "position" && key != "name" && key != "isFavorite" && key != "isHidden") {
+                    if (key != "menuName" && key != "position" && key != "name" &&
+                        key != "isFavorite" && key != "isHidden" && key != "isMouseOver") {
                         displayValue += `${value[key]} `;
                     }
                     if (key == "glyph") {
@@ -152,6 +154,8 @@ const SortableList = SortableContainer(({items}) => {
                     if (key == "isHidden") {
                         hidden = true;
                     }
+
+                    // TODO: Handle isMouseOver here?
                 }
 
                 // This whole thing is stupid, fix by pulling out all values and organising
