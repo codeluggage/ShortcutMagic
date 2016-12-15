@@ -3,10 +3,7 @@ import React, { Component } from 'react';
 import {SortableContainer, SortableElement, SortableHandle, arrayMove} from 'react-sortable-hoc';
 import Electron, { ipcRenderer, remote } from 'electron';
 
-// TODO: Replace this crappy system with proper state passed down through elements somehow
-var sharedGlobalState = {}; // Expose component state to list elements
-var sharedGlobalThis = {}; // Expose component itself to list elements
-
+var globalState;
 
 const DragHandle = SortableHandle(() => {
     return (
@@ -14,8 +11,107 @@ const DragHandle = SortableHandle(() => {
     );
 });
 
+const SortableItem = SortableElement((componentArguments) => {
 
-const SortableItem = SortableElement(({value}) => {
+    if (!globalState) {
+        console.log("couldnt find global state");
+        return (
+            <div></div>
+        );
+    }
+
+    let listItem = componentArguments.listItem;
+    // let keys = Object.keys(listItem);
+    // let displayValue = "";
+    // let hasGlyph = false;
+    // let hasChar = false;
+    // let favorite = false;
+    // let hidden = false;
+    //
+    // // TODO: Can this be simplified to avoid the double loops over and over?
+    // for (var i = 0; i < keys.length; i++) {
+    //     let key = keys[i];
+    //     if (key != "menuName" && key != "position" && key != "name" &&
+    //         key != "isFavorite" && key != "isHidden" && key != "isMouseOver") {
+    //         displayValue += `${value[key]} `;
+    //     }
+    //     if (key == "glyph") {
+    //         hasGlyph = true;
+    //     }
+    //     if (key == "char") {
+    //         hasChar = true;
+    //     }
+    //     if (key == "isFavorite") {
+    //         favorite = true;
+    //     }
+    //     if (key == "isHidden") {
+    //         hidden = true;
+    //     }
+    //
+    //     // TODO: Handle isMouseOver here?
+    // }
+    //
+    // // This whole thing is stupid, fix by pulling out all values and organising
+    // if (keys.length == 4 && hasChar && !hasGlyph && !favorite && !hidden) {
+    //     displayValue = "⌘" + displayValue;
+    // } else if (keys.length == 5 && hasChar && !hasGlyph && ((!favorite && hidden) || (favorite && !hidden))) { // either fav or hidden exists to add up to 5
+    //     displayValue = "⌘" + displayValue;
+    // } else if (keys.length == 6 && hasChar && !hasGlyph && favorite && hidden) { // both fav and hidden exist to make up 6
+    //     displayValue = "⌘" + displayValue;
+    // }
+    // displayValue = value["name"] + ": " + displayValue;
+
+
+    let topSection = (
+        <h2 style={{color: globalState.textColor, flex: 4}}>{listItem.name}</h2>
+    );
+
+    let bottomSection = (
+        <div style={{flexDirection: 'row', flex: 4}}>
+            {(listItem["glyph"]) ? (
+                <p>glyph</p>
+            ): (
+                <p>no glyph</p>
+            )}
+
+            {(listItem["char"]) ? (
+                <p>char</p>
+            ): (
+                <p>no char</p>
+            )}
+
+            <h3 style={{
+                color: globalState.textColor,
+                // TODO: radius?
+                backgroundColor: 'rgba(69, 69, 69, 10)'
+            }}>{listItem.menuName}</h3>
+        </div>
+    );
+
+            // {(listItem["char"] && ! listItem["glyph"]) ? (
+            //
+            // ): (
+            //
+            // )}
+            //
+            // {(listItem["isFavorite"]) ? (
+            //
+            // ): (
+            //
+            // )}
+            //
+            // {(listItem["isHidden"]) ? (
+            //
+            // ): (
+            //
+            // )}
+            //
+            // {(listItem["isMouseOver"]) ? (
+            //
+            // ): (
+            //
+            // )}
+            //
 
     // todo add these:
     // - text size
@@ -29,161 +125,127 @@ const SortableItem = SortableElement(({value}) => {
     // TODO: Change for a more robust system:
     // The value and index here belongs to the list passed into the component,
     // which makes the link follow all the way back to the sorted array
-    var listItem = sharedGlobalState[value];
     console.log("rendered with listItem isMouseOver", listItem.isMouseOver);
 
     return (
         <div style={{
             borderRadius: ".25rem",
             borderWidth: ".50rem",
-            border: `2px solid ${sharedGlobalState.itemColor}`,
-            backgroundColor: sharedGlobalState.itemColor,
+            border: `2px solid ${listItem.itemColor}`,
+            backgroundColor: listItem.itemColor,
             width: "100%",
             margin: "4px",
             display: 'flex',
             flexDirection: 'row',
         }} onMouseEnter={(e) => {
-            sharedGlobalThis.previousShortcuts[listItem.index].isMouseOver = true;
-            sharedGlobalThis.setState({
-                items: sharedGlobalThis.previousShortcuts
-            });
+
+            // todo use closure:
+            // render: function() {
+            //     ...
+            //     <a data-tag={i} style={showStyle} onClick={this.removeTag(i)}></a>
+            //     ...
+            // },
+            // removeTag: function (i) {
+            //     return function (e) {
+            //         // and you get both `i` and the event `e`
+            //     }.bind(this) //important to bind function
+            // }
+
         }} onMouseLeave={(e) => {
-            sharedGlobalThis.previousShortcuts[listItem.index].isMouseOver = false;
-            sharedGlobalThis.setState({
-                items: sharedGlobalThis.previousShortcuts
-            });
+
         }}>
-            <p style={{
-                color: sharedGlobalState.textColor,
-                flexGrow: 6,
-                flexBasis: '100%',
-            }}><DragHandle />{value}</p>
-
-            <button style={{
-                color: "green",
-                display: (listItem.value.isMouseOver) ? 'block' : 'none',
-                flexGrow: 2,
-                flexBasis: '50%',
-                backgroundColor: "transparent",
-            }} onClick={() => {
-                console.log("clicked execute-list-item with ", listItem.value.name, listItem.value.menuName);
-                ipcRenderer.send('execute-list-item', listItem.value.name, listItem.value.menuName);
-            }}>
-                <i className="fa fa-2x fa-play"></i>
-                <br />
-                Do
-            </button>
-
-                <div style={{
-                    flex: 2,
-                    flexDirection: 'column',
-                }}>
-                    <button style={{
-                        color: "gold",
-                        width: '100%',
-                        backgroundColor: "transparent",
-                        display: (listItem.value.isMouseOver || listItem.isFavorite) ? 'block' : 'none',
-                        // Specifically make favorite bigger if it is shown alone
-                        flex: 2,
-                    }} onClick={() => {
-                        ipcRenderer.send('toggle-favorite-list-item', listItem.value.name);
-                    }}>
-                        {
-                            (listItem.isFavorite) ? (
-                                <div>
-                                    <i className="fa fa-2x fa-star"></i>
-                                    <br />
-                                    Remove
-                                </div>
-                            ) : (
-                                <div>
-                                    <i className="fa fa-2x fa-star-o"></i>
-                                    <br />
-                                    Add
-                                </div>
-                            )
-                        }
-                    </button>
-
-                    <button style={{
-                        color: (listItem.isHidden) ? "grey" : "red",
-                        width: '100%',
-                        backgroundColor: "transparent",
-                        display: (listItem.value.isMouseOver || listItem.isHidden) ? 'block' : 'none',
-                        flex: 2,
-                    }} onClick={() => {
-                        ipcRenderer.send('toggle-hide-list-item', listItem.value.name);
-                    }}>
-                        <i className="fa fa-2x fa-remove"></i>
-                        <br />
-                        { (listItem.isHidden) ? "Show" : "Hide" }
-                    </button>
-                </div>
+            {topSection}
+            {bottomSection}
         </div>
     );
+
+
+
+
+
+        //     <button style={{
+        //         color: "green",
+        //         display: (listItem.value.isMouseOver) ? 'block' : 'none',
+        //         flexGrow: 2,
+        //         flexBasis: '50%',
+        //         backgroundColor: "transparent",
+        //     }} onClick={() => {
+        //         console.log("clicked execute-list-item with ", listItem.value.name, listItem.value.menuName);
+        //         ipcRenderer.send('execute-list-item', listItem.value.name, listItem.value.menuName);
+        //     }}>
+        //         <i className="fa fa-2x fa-play"></i>
+        //         <br />
+        //         Do
+        //     </button>
+        //
+        //     <div style={{
+        //         flex: 2,
+        //         flexDirection: 'column',
+        //     }}>
+        //         <button style={{
+        //             color: "gold",
+        //             width: '100%',
+        //             backgroundColor: "transparent",
+        //             display: (listItem.value.isMouseOver || listItem.isFavorite) ? 'block' : 'none',
+        //             // Specifically make favorite bigger if it is shown alone
+        //             flex: 2,
+        //         }} onClick={() => {
+        //             ipcRenderer.send('toggle-favorite-list-item', listItem.value.name);
+        //         }}>
+        //             {
+        //                 (listItem.isFavorite) ? (
+        //                     <div>
+        //                         <i className="fa fa-2x fa-star"></i>
+        //                         <br />
+        //                         Remove
+        //                     </div>
+        //                 ) : (
+        //                     <div>
+        //                         <i className="fa fa-2x fa-star-o"></i>
+        //                         <br />
+        //                         Add
+        //                     </div>
+        //                 )
+        //             }
+        //         </button>
+        //
+        //         <button style={{
+        //             color: (listItem.isHidden) ? "grey" : "red",
+        //             width: '100%',
+        //             backgroundColor: "transparent",
+        //             display: (listItem.value.isMouseOver || listItem.isHidden) ? 'block' : 'none',
+        //             flex: 2,
+        //         }} onClick={() => {
+        //             ipcRenderer.send('toggle-hide-list-item', listItem.value.name);
+        //         }}>
+        //             <i className="fa fa-2x fa-remove"></i>
+        //             <br />
+        //             { (listItem.isHidden) ? "Show" : "Hide" }
+        //         </button>
+        //     </div>
 });
 
 
-const SortableList = SortableContainer(({items}) => {
-    return !items ? (<p>No items yet</p>) : (
+const SortableList = SortableContainer((componentArguments) => {
+    // console.log("entered SortableContainer with props: ", this.props);
+
+    var items = componentArguments.items;
+
+    return (!items) ? (
+        <p>No items yet</p>
+    ) : (
         <div style={{fontWeight:500, fontSize:18, margin:'15px'}}>
-            { items.map((value, index) => {
-                let keys = Object.keys(value);
-                let displayValue = "";
-                let hasGlyph = false;
-                let hasChar = false;
-                let favorite = false;
-                let hidden = false;
-
-                // TODO: Can this be simplified to avoid the double loops over and over?
-                for (var i = 0; i < keys.length; i++) {
-                    let key = keys[i];
-                    if (key != "menuName" && key != "position" && key != "name" &&
-                        key != "isFavorite" && key != "isHidden" && key != "isMouseOver") {
-                        displayValue += `${value[key]} `;
-                    }
-                    if (key == "glyph") {
-                        hasGlyph = true;
-                    }
-                    if (key == "char") {
-                        hasChar = true;
-                    }
-                    if (key == "isFavorite") {
-                        favorite = true;
-                    }
-                    if (key == "isHidden") {
-                        hidden = true;
-                    }
-
-                    // TODO: Handle isMouseOver here?
-                }
-
-                // This whole thing is stupid, fix by pulling out all values and organising
-                if (keys.length == 4 && hasChar && !hasGlyph && !favorite && !hidden) {
-                    displayValue = "⌘" + displayValue;
-                } else if (keys.length == 5 && hasChar && !hasGlyph && ((!favorite && hidden) || (favorite && !hidden))) { // either fav or hidden exists to add up to 5
-                    displayValue = "⌘" + displayValue;
-                } else if (keys.length == 6 && hasChar && !hasGlyph && favorite && hidden) { // both fav and hidden exist to make up 6
-                    displayValue = "⌘" + displayValue;
-                }
-
-
-                displayValue = value["name"] + ": " + displayValue;
-                sharedGlobalState[displayValue] = {
-                    value: value,
-                    index: index,
-                    isFavorite: (favorite) ? value["isFavorite"] : false,
-                    isHidden: (hidden) ? value["isHidden"] : false
-                };
-
-                return (
-                    <SortableItem
-                      key={`item-${index}`}
-                      index={index}
-                      value={displayValue}
-                    />
-                );
-            })}
+            {
+                items.map((value, index) => {
+                    return (
+                        <SortableItem
+                            key={`item-${index}`}
+                            index={index}
+                            listItem={value}
+                        />
+                    );
+                })
+            }
         </div>
     );
 });
@@ -333,9 +395,7 @@ export default class Home extends Component {
     }
 
     render() {
-        sharedGlobalState = this.state;
-        sharedGlobalThis = this;
-
+        globalState = this.state;
         console.log('render() called');
         if (!this.state) {
             return (
@@ -414,10 +474,10 @@ export default class Home extends Component {
 
                     <div style={{textAlign: 'left'}}>
                         <SortableList
-                          items={shortcuts}
-                          onSortEnd={this.onSortEnd}
-                          useDragHandle={true}
-                          lockAxis='y'
+                            items={shortcuts}
+                            onSortEnd={this.onSortEnd}
+                            useDragHandle={true}
+                            lockAxis='y'
                         />
                     </div>
                 </div>
