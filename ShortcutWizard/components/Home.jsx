@@ -63,55 +63,73 @@ const SortableItem = SortableElement((componentArguments) => {
 
 
     let topSection = (
-        <h2 style={{color: globalState.textColor, flex: 4}}>{listItem.name}</h2>
+        <h3 style={{
+            color: globalState.textColor,
+            flex: 4,
+            marginRight: '4px',
+        }}>{listItem.name}</h3>
     );
 
     let bottomSection = (
-        <div style={{flexDirection: 'row', flex: 4}}>
+        <div style={{
+            display: 'flex',
+            flexDirection: 'row',
+            flex: 2
+        }}>
+            <p style={{
+                flex: 2,
+                marginRight: '5px',
+                marginLeft: '5px',
+                color: globalState.textColor,
+                borderRadius: ".25rem",
+                borderWidth: ".50rem",
+                border: `2px solid ${globalState.itemColor}`,
+                backgroundColor: globalState.itemColor,
+            }}>{
+                // Always show ⌘ if there are no mods or glyphs
+                (listItem["mod"]) ? listItem["mod"] :
+                    (listItem["glyph"] && !listItem["char"]) ? "⌘" :
+                        (!listItem["glyph"] && listItem["char"]) ? "⌘" : ""
+            }</p>
+
             {(listItem["glyph"]) ? (
-                <p>glyph</p>
-            ): (
-                <p>no glyph</p>
-            )}
+                <p style={{
+                    flex: 2,
+                    marginRight: '5px',
+                    marginLeft: '5px',
+                    color: globalState.textColor,
+                    borderRadius: ".25rem",
+                    borderWidth: ".50rem",
+                    border: `2px solid ${globalState.itemColor}`,
+                    backgroundColor: globalState.itemColor,
+                }}>{listItem["glyph"]}</p>
+            ): ""}
 
             {(listItem["char"]) ? (
-                <p>char</p>
-            ): (
-                <p>no char</p>
-            )}
+                <p style={{
+                    flex: 2,
+                    marginRight: '5px',
+                    marginLeft: '5px',
+                    color: globalState.textColor,
+                    borderRadius: ".25rem",
+                    borderWidth: ".50rem",
+                    border: `2px solid ${globalState.itemColor}`,
+                    backgroundColor: globalState.itemColor,
+                }}>{listItem["char"]}</p>
+            ): ""}
 
-            <h3 style={{
+            <p style={{
+                flex: 2,
+                marginRight: '5px',
+                marginLeft: '5px',
                 color: globalState.textColor,
-                // TODO: radius?
-                backgroundColor: 'rgba(69, 69, 69, 10)'
-            }}>{listItem.menuName}</h3>
+                borderRadius: ".25rem",
+                borderWidth: ".50rem",
+                border: `2px solid ${globalState.itemColor}`,
+                backgroundColor: globalState.itemColor,
+            }}>{listItem.menuName}</p>
         </div>
     );
-
-            // {(listItem["char"] && ! listItem["glyph"]) ? (
-            //
-            // ): (
-            //
-            // )}
-            //
-            // {(listItem["isFavorite"]) ? (
-            //
-            // ): (
-            //
-            // )}
-            //
-            // {(listItem["isHidden"]) ? (
-            //
-            // ): (
-            //
-            // )}
-            //
-            // {(listItem["isMouseOver"]) ? (
-            //
-            // ): (
-            //
-            // )}
-            //
 
     // todo add these:
     // - text size
@@ -129,21 +147,20 @@ const SortableItem = SortableElement((componentArguments) => {
 
     return (
         <div style={{
-            borderRadius: ".25rem",
-            borderWidth: ".50rem",
-            border: `2px solid ${listItem.itemColor}`,
-            backgroundColor: listItem.itemColor,
+            // borderRadius: ".25rem",
+            // borderWidth: ".50rem",
+            // border: `2px solid ${listItem.itemColor}`,
+            // backgroundColor: listItem.itemColor,
             width: "100%",
             margin: "4px",
             display: 'flex',
-            flexDirection: 'row',
+            flexDirection: 'column',
         }} onMouseEnter={(e) => {
 
-            // todo use closure:
             // render: function() {
-            //     ...
+            //
             //     <a data-tag={i} style={showStyle} onClick={this.removeTag(i)}></a>
-            //     ...
+            //
             // },
             // removeTag: function (i) {
             //     return function (e) {
@@ -153,77 +170,93 @@ const SortableItem = SortableElement((componentArguments) => {
 
         }} onMouseLeave={(e) => {
 
+            // render: function() {
+            //
+            //     <a data-tag={i} style={showStyle} onClick={this.removeTag(i)}></a>
+            //
+            // },
+            // removeTag: function (i) {
+            //     return function (e) {
+            //         // and you get both `i` and the event `e`
+            //     }.bind(this) //important to bind function
+            // }
+            //
+
         }}>
             {topSection}
             {bottomSection}
+            {
+                (listItem.isMouseOver) ? (
+                    <div>
+                        <button style={{
+                            color: "green",
+                            display: (listItem.value.isMouseOver) ? 'block' : 'none',
+                            flexGrow: 2,
+                            flexBasis: '50%',
+                            backgroundColor: "transparent",
+                        }} onClick={() => {
+                            console.log("clicked execute-list-item with ", listItem.value.name, listItem.value.menuName);
+                            ipcRenderer.send('execute-list-item', listItem.value.name, listItem.value.menuName);
+                        }}>
+                            <i className="fa fa-2x fa-play"></i>
+                            <br />
+                            Do
+                        </button>
+
+                        <div style={{
+                            flex: 2,
+                            flexDirection: 'column',
+                        }}>
+                            <button style={{
+                                color: "gold",
+                                width: '100%',
+                                backgroundColor: "transparent",
+                                display: (listItem.value.isMouseOver || listItem.isFavorite) ? 'block' : 'none',
+                                // Specifically make favorite bigger if it is shown alone
+                                flex: 2,
+                            }} onClick={() => {
+                                ipcRenderer.send('toggle-favorite-list-item', listItem.value.name);
+                            }}>
+                                {
+                                    (listItem.isFavorite) ? (
+                                        <div>
+                                            <i className="fa fa-2x fa-star"></i>
+                                            <br />
+                                            Remove
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            <i className="fa fa-2x fa-star-o"></i>
+                                            <br />
+                                            Add
+                                        </div>
+                                    )
+                                }
+                            </button>
+
+                            <button style={{
+                                color: (listItem.isHidden) ? "grey" : "red",
+                                width: '100%',
+                                backgroundColor: "transparent",
+                                display: (listItem.value.isMouseOver || listItem.isHidden) ? 'block' : 'none',
+                                flex: 2,
+                            }} onClick={() => {
+                                ipcRenderer.send('toggle-hide-list-item', listItem.value.name);
+                            }}>
+                                <i className="fa fa-2x fa-remove"></i>
+                                <br />
+                                { (listItem.isHidden) ? "Show" : "Hide" }
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    ""
+                )
+            }
         </div>
     );
-
-
-
-
-
-        //     <button style={{
-        //         color: "green",
-        //         display: (listItem.value.isMouseOver) ? 'block' : 'none',
-        //         flexGrow: 2,
-        //         flexBasis: '50%',
-        //         backgroundColor: "transparent",
-        //     }} onClick={() => {
-        //         console.log("clicked execute-list-item with ", listItem.value.name, listItem.value.menuName);
-        //         ipcRenderer.send('execute-list-item', listItem.value.name, listItem.value.menuName);
-        //     }}>
-        //         <i className="fa fa-2x fa-play"></i>
-        //         <br />
-        //         Do
-        //     </button>
-        //
-        //     <div style={{
-        //         flex: 2,
-        //         flexDirection: 'column',
-        //     }}>
-        //         <button style={{
-        //             color: "gold",
-        //             width: '100%',
-        //             backgroundColor: "transparent",
-        //             display: (listItem.value.isMouseOver || listItem.isFavorite) ? 'block' : 'none',
-        //             // Specifically make favorite bigger if it is shown alone
-        //             flex: 2,
-        //         }} onClick={() => {
-        //             ipcRenderer.send('toggle-favorite-list-item', listItem.value.name);
-        //         }}>
-        //             {
-        //                 (listItem.isFavorite) ? (
-        //                     <div>
-        //                         <i className="fa fa-2x fa-star"></i>
-        //                         <br />
-        //                         Remove
-        //                     </div>
-        //                 ) : (
-        //                     <div>
-        //                         <i className="fa fa-2x fa-star-o"></i>
-        //                         <br />
-        //                         Add
-        //                     </div>
-        //                 )
-        //             }
-        //         </button>
-        //
-        //         <button style={{
-        //             color: (listItem.isHidden) ? "grey" : "red",
-        //             width: '100%',
-        //             backgroundColor: "transparent",
-        //             display: (listItem.value.isMouseOver || listItem.isHidden) ? 'block' : 'none',
-        //             flex: 2,
-        //         }} onClick={() => {
-        //             ipcRenderer.send('toggle-hide-list-item', listItem.value.name);
-        //         }}>
-        //             <i className="fa fa-2x fa-remove"></i>
-        //             <br />
-        //             { (listItem.isHidden) ? "Show" : "Hide" }
-        //         </button>
-        //     </div>
 });
+
 
 
 const SortableList = SortableContainer((componentArguments) => {
