@@ -12,15 +12,12 @@ const DragHandle = SortableHandle(() => {
 });
 
 const SortableItem = SortableElement((componentArguments) => {
-
     if (!globalState) {
         console.log("couldnt find global state");
         return (
             <div></div>
         );
     }
-
-    let listItem = componentArguments.listItem;
     // let keys = Object.keys(listItem);
     // let displayValue = "";
     // let hasGlyph = false;
@@ -61,6 +58,9 @@ const SortableItem = SortableElement((componentArguments) => {
     // }
     // displayValue = value["name"] + ": " + displayValue;
 
+
+    let listItem = componentArguments.listItem;
+    let doc = componentArguments.contentWindow.document;
 
     let topSection = (
         <h3 style={{
@@ -131,6 +131,73 @@ const SortableItem = SortableElement((componentArguments) => {
         </div>
     );
 
+    var mouseOverButtonsSection = (
+        <div id={`buttonSection-${componentArguments.index}`} style={{
+            display: 'none'
+        }}>
+            <button style={{
+                color: "green",
+                display: 'none',
+                flexGrow: 2,
+                flexBasis: '50%',
+                backgroundColor: "transparent",
+            }} onClick={() => {
+                console.log("clicked execute-list-item with ", listItem.value.name, listItem.value.menuName);
+                ipcRenderer.send('execute-list-item', listItem.value.name, listItem.value.menuName);
+            }}>
+                <i className="fa fa-2x fa-play"></i>
+                <br />
+                Do
+            </button>
+
+            <div style={{
+                flex: 2,
+                flexDirection: 'column',
+            }}>
+                <button style={{
+                    color: "gold",
+                    width: '100%',
+                    backgroundColor: "transparent",
+                    // display: (listItem.isFavorite) ? 'block' : 'none',
+                    // Specifically make favorite bigger if it is shown alone
+                    flex: 2,
+                }} onClick={() => {
+                    ipcRenderer.send('toggle-favorite-list-item', listItem.value.name);
+                }}>
+                    {
+                        (listItem.isFavorite) ? (
+                            <div>
+                                <i className="fa fa-2x fa-star"></i>
+                                <br />
+                                Remove
+                            </div>
+                        ) : (
+                            <div>
+                                <i className="fa fa-2x fa-star-o"></i>
+                                <br />
+                                Add
+                            </div>
+                        )
+                    }
+                </button>
+
+                <button style={{
+                    color: (listItem.isHidden) ? "grey" : "red",
+                    width: '100%',
+                    backgroundColor: "transparent",
+                    // display: (listItem.isHidden) ? 'block' : 'none',
+                    flex: 2,
+                }} onClick={() => {
+                    ipcRenderer.send('toggle-hide-list-item', listItem.value.name);
+                }}>
+                    <i className="fa fa-2x fa-remove"></i>
+                    <br />
+                    { (listItem.isHidden) ? "Show" : "Hide" }
+                </button>
+            </div>
+        </div>
+    );
+
     // todo add these:
     // - text size
     // - general list item size
@@ -167,8 +234,22 @@ const SortableItem = SortableElement((componentArguments) => {
             //         // and you get both `i` and the event `e`
             //     }.bind(this) //important to bind function
             // }
+            let ourselves = doc.getElementById(`buttonSection-${componentArguments.index}`);
+            if (!ourselves) {
+                console.log("could not find button section in list of shortcuts");
+                return;
+            }
+
+            ourselves.style.display = "block";
 
         }} onMouseLeave={(e) => {
+            let ourselves = doc.getElementById(`buttonSection-${componentArguments.index}`);
+            if (!ourselves) {
+                console.log("could not find button section in list of shortcuts");
+                return;
+            }
+
+            ourselves.style.display = "none";
 
             // render: function() {
             //
@@ -181,78 +262,10 @@ const SortableItem = SortableElement((componentArguments) => {
             //     }.bind(this) //important to bind function
             // }
             //
-
         }}>
             {topSection}
             {bottomSection}
-            {
-                (listItem.isMouseOver) ? (
-                    <div>
-                        <button style={{
-                            color: "green",
-                            display: (listItem.value.isMouseOver) ? 'block' : 'none',
-                            flexGrow: 2,
-                            flexBasis: '50%',
-                            backgroundColor: "transparent",
-                        }} onClick={() => {
-                            console.log("clicked execute-list-item with ", listItem.value.name, listItem.value.menuName);
-                            ipcRenderer.send('execute-list-item', listItem.value.name, listItem.value.menuName);
-                        }}>
-                            <i className="fa fa-2x fa-play"></i>
-                            <br />
-                            Do
-                        </button>
-
-                        <div style={{
-                            flex: 2,
-                            flexDirection: 'column',
-                        }}>
-                            <button style={{
-                                color: "gold",
-                                width: '100%',
-                                backgroundColor: "transparent",
-                                display: (listItem.value.isMouseOver || listItem.isFavorite) ? 'block' : 'none',
-                                // Specifically make favorite bigger if it is shown alone
-                                flex: 2,
-                            }} onClick={() => {
-                                ipcRenderer.send('toggle-favorite-list-item', listItem.value.name);
-                            }}>
-                                {
-                                    (listItem.isFavorite) ? (
-                                        <div>
-                                            <i className="fa fa-2x fa-star"></i>
-                                            <br />
-                                            Remove
-                                        </div>
-                                    ) : (
-                                        <div>
-                                            <i className="fa fa-2x fa-star-o"></i>
-                                            <br />
-                                            Add
-                                        </div>
-                                    )
-                                }
-                            </button>
-
-                            <button style={{
-                                color: (listItem.isHidden) ? "grey" : "red",
-                                width: '100%',
-                                backgroundColor: "transparent",
-                                display: (listItem.value.isMouseOver || listItem.isHidden) ? 'block' : 'none',
-                                flex: 2,
-                            }} onClick={() => {
-                                ipcRenderer.send('toggle-hide-list-item', listItem.value.name);
-                            }}>
-                                <i className="fa fa-2x fa-remove"></i>
-                                <br />
-                                { (listItem.isHidden) ? "Show" : "Hide" }
-                            </button>
-                        </div>
-                    </div>
-                ) : (
-                    ""
-                )
-            }
+            {mouseOverButtonsSection}
         </div>
     );
 });
@@ -275,6 +288,7 @@ const SortableList = SortableContainer((componentArguments) => {
                             key={`item-${index}`}
                             index={index}
                             listItem={value}
+                            contentWindow={componentArguments.contentWindow}
                         />
                     );
                 })
