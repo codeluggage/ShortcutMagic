@@ -102,8 +102,8 @@ const SortableItem = SortableElement((componentArguments) => {
                 flexBasis: '50%',
                 backgroundColor: "transparent",
             }} onClick={() => {
-                console.log("clicked execute-list-item with ", listItem.value.name, listItem.value.menuName);
-                ipcRenderer.send('execute-list-item', listItem.value.name, listItem.value.menuName);
+                console.log("clicked execute-list-item with ", listItem.name, listItem.menuName);
+                ipcRenderer.send('execute-list-item', listItem.name, listItem.menuName);
             }}>
                 <i className="fa fa-2x fa-play"></i>
                 <br />
@@ -122,7 +122,7 @@ const SortableItem = SortableElement((componentArguments) => {
                     // Specifically make favorite bigger if it is shown alone
                     flex: 2,
                 }} onClick={() => {
-                    ipcRenderer.send('toggle-favorite-list-item', listItem.value.name);
+                    ipcRenderer.send('toggle-favorite-list-item', listItem.name);
                 }}>
                     {
                         (listItem.isFavorite) ? (
@@ -148,7 +148,7 @@ const SortableItem = SortableElement((componentArguments) => {
                     // display: (listItem.isHidden) ? 'block' : 'none',
                     flex: 2,
                 }} onClick={() => {
-                    ipcRenderer.send('toggle-hide-list-item', listItem.value.name);
+                    ipcRenderer.send('toggle-hide-list-item', listItem.name);
                 }}>
                     <i className="fa fa-2x fa-remove"></i>
                     <br />
@@ -426,18 +426,27 @@ export default class Home extends Component {
 
         return (
             <div style={{ textAlign: 'center' }}>
-                    <button style={{color:"white", float:'left'}} id="reload-button" className="simple-button" onClick={() => {
+                    <button style={{
+                        color: this.state.itemColor,
+                        float: 'right'
+                    }} id="reload-button" className="simple-button" onClick={() => {
                         console.log('sending reloadShortcuts from ipcRenderer');
                         ipcRenderer.send('main-parse-shortcuts');
                     }}><i className="fa fa-1x fa-rotate-right"></i></button>
 
-                    <button style={{color:"white", float:'right'}} id="settings-button" className="simple-button" onClick={() => {
+                    <button style={{
+                        color: this.state.itemColor,
+                        float: 'right'
+                    }} id="settings-button" className="simple-button" onClick={() => {
                         console.log("clicked settings");
                         this.toggleSettings();
                     }}>
                         <i className="fa fa-1x fa-cog"></i>
                     </button>
-                <h1 style={{color:"white", marginTop:'5px'}}>{this.state.name}</h1>
+                <h1 style={{
+                    color: this.state.textColor,
+                    marginTop:'5px'
+                }}>{this.state.name}</h1>
 
 
                 <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
