@@ -18,46 +18,6 @@ const SortableItem = SortableElement((componentArguments) => {
             <div></div>
         );
     }
-    // let keys = Object.keys(listItem);
-    // let displayValue = "";
-    // let hasGlyph = false;
-    // let hasChar = false;
-    // let favorite = false;
-    // let hidden = false;
-    //
-    // // TODO: Can this be simplified to avoid the double loops over and over?
-    // for (var i = 0; i < keys.length; i++) {
-    //     let key = keys[i];
-    //     if (key != "menuName" && key != "position" && key != "name" &&
-    //         key != "isFavorite" && key != "isHidden" && key != "isMouseOver") {
-    //         displayValue += `${value[key]} `;
-    //     }
-    //     if (key == "glyph") {
-    //         hasGlyph = true;
-    //     }
-    //     if (key == "char") {
-    //         hasChar = true;
-    //     }
-    //     if (key == "isFavorite") {
-    //         favorite = true;
-    //     }
-    //     if (key == "isHidden") {
-    //         hidden = true;
-    //     }
-    //
-    //     // TODO: Handle isMouseOver here?
-    // }
-    //
-    // // This whole thing is stupid, fix by pulling out all values and organising
-    // if (keys.length == 4 && hasChar && !hasGlyph && !favorite && !hidden) {
-    //     displayValue = "⌘" + displayValue;
-    // } else if (keys.length == 5 && hasChar && !hasGlyph && ((!favorite && hidden) || (favorite && !hidden))) { // either fav or hidden exists to add up to 5
-    //     displayValue = "⌘" + displayValue;
-    // } else if (keys.length == 6 && hasChar && !hasGlyph && favorite && hidden) { // both fav and hidden exist to make up 6
-    //     displayValue = "⌘" + displayValue;
-    // }
-    // displayValue = value["name"] + ": " + displayValue;
-
 
     let listItem = componentArguments.listItem;
     let doc = componentArguments.contentWindow.document;
@@ -207,10 +167,10 @@ const SortableItem = SortableElement((componentArguments) => {
     // add back in:
     // margin: 'auto'
 
-    // TODO: Change for a more robust system:
-    // The value and index here belongs to the list passed into the component,
-    // which makes the link follow all the way back to the sorted array
-    console.log("rendered with listItem isMouseOver", listItem.isMouseOver);
+    let buttonSectionElement = doc.getElementById(`buttonSection-${componentArguments.index}`);
+    if (!buttonSectionElement) {
+        console.log("could not find button section in list of shortcuts");
+    }
 
     return (
         <div style={{
@@ -223,45 +183,9 @@ const SortableItem = SortableElement((componentArguments) => {
             display: 'flex',
             flexDirection: 'column',
         }} onMouseEnter={(e) => {
-
-            // render: function() {
-            //
-            //     <a data-tag={i} style={showStyle} onClick={this.removeTag(i)}></a>
-            //
-            // },
-            // removeTag: function (i) {
-            //     return function (e) {
-            //         // and you get both `i` and the event `e`
-            //     }.bind(this) //important to bind function
-            // }
-            let ourselves = doc.getElementById(`buttonSection-${componentArguments.index}`);
-            if (!ourselves) {
-                console.log("could not find button section in list of shortcuts");
-                return;
-            }
-
-            ourselves.style.display = "block";
-
+            if (buttonSectionElement) buttonSectionElement.style.display = "block";
         }} onMouseLeave={(e) => {
-            let ourselves = doc.getElementById(`buttonSection-${componentArguments.index}`);
-            if (!ourselves) {
-                console.log("could not find button section in list of shortcuts");
-                return;
-            }
-
-            ourselves.style.display = "none";
-
-            // render: function() {
-            //
-            //     <a data-tag={i} style={showStyle} onClick={this.removeTag(i)}></a>
-            //
-            // },
-            // removeTag: function (i) {
-            //     return function (e) {
-            //         // and you get both `i` and the event `e`
-            //     }.bind(this) //important to bind function
-            // }
-            //
+            if (buttonSectionElement) buttonSectionElement.style.display = "none";
         }}>
             {topSection}
             {bottomSection}
