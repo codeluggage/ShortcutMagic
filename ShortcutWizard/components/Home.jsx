@@ -120,7 +120,7 @@ const SortableItem = SortableElement((componentArguments) => {
             }}>
                 <i className="fa fa-2x fa-play"></i>
                 <br />
-                Do
+                Run
             </div>
 
                 <div style={{

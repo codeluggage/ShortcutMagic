@@ -18,6 +18,7 @@ const Datastore = require('nedb');
 // console.log('after creating, settings now has window: ', settings.settingsWindow);
 
 
+var hackyStopSavePos = false;
 
 // TODO: Save to settings db
 var allFalseWindowMode = {
@@ -162,6 +163,8 @@ const toggleWindow = () => {
 function savePosition(appName) {
 	if (!appName || !mainWindow) return;
 
+	var newBounds = mainWindow.getBounds();
+
 	db.find({
 		name: appName
 	}, function(err, doc) {
@@ -170,22 +173,31 @@ function savePosition(appName) {
 			return;
 		}
 
-		var newBounds = mainWindow.getBounds();
-		if (doc && doc != [] && doc.length > 0 && doc[0].bounds != newBounds) {
+		if (doc && doc != [] && doc.length > 0) {
 			// First set in memory:
-			loadedShortcuts[doc.name] = doc;
-			loadedShortcuts[doc.name].bounds = newBounds;
+			var newShortcuts = doc[0];
 
-			// ...then in storage:
-			db.update({
-				name: appName
-			}, {
-				$set: {
-					bounds: newBounds
-				}
-			}, function(err, res) {
-				console.log('finished updating bounds with err res doc', err, res, newBounds);
-			});
+			console.log(`comparing old ${JSON.stringify(newBounds)} with loaded ${JSON.stringify(newShortcuts.bounds)}`);
+
+			if (JSON.stringify(newShortcuts.bounds) != JSON.stringify(newBounds)) {
+				console.log("========== compare fail, updating db ");
+
+				newShortcuts.bounds = newBounds;
+				loadedShortcuts[appName] = newShortcuts;
+
+				// ...then in storage:
+				db.update({
+					name: appName
+				}, {
+					$set: {
+						bounds: newBounds
+					}
+				}, function(err, res) {
+					console.log('finished updating bounds with err res doc', err, res, newBounds);
+				});
+			} else {
+				console.log("========== compare success ");
+			}
 		}
 	});
 }
@@ -285,11 +297,17 @@ function createMainWindow() {
 
 	mainWindow.on('resize', (event) => {
 		// TODO: Set up a limit here to not save too often, or queue it up
-		savePosition(currentAppName);
+		console.log("//////////////////////////////////////// on.resize");
+		if (!hackyStopSavePos) {
+			savePosition(currentAppName);
+		}
 	});
 
 	mainWindow.on('moved', (event) => {
-		savePosition(currentAppName);
+		console.log("//////////////////////////////////////// on.moved");
+		if (!hackyStopSavePos) {
+			savePosition(currentAppName);
+		}
 	});
 
 	mainWindow.setHasShadow(false);
@@ -427,6 +445,8 @@ function updateRenderedShortcuts(shortcuts) {
 }
 
 function saveWithoutPeriods(payload) {
+	var newBounds = mainWindow.getBounds();
+	payload.bounds = newBounds;
 	loadedShortcuts[payload.name] = payload;
 
 	var stringified = JSON.stringify(payload.shortcuts);
@@ -437,11 +457,7 @@ function saveWithoutPeriods(payload) {
 	db.update({
 		name: payload.name
 	}, {
-		$set: {
-			name: payload.name,
-			shortcuts: payload.shortcuts,
-			bounds: mainWindow.getBounds()
-		}
+		$set: payload
 	}, {
 		upsert: true
 	}, function(err, res) {
@@ -458,8 +474,12 @@ function loadWithPeriods(appName) {
 	var holdShortcuts = loadedShortcuts[appName];
 	if (holdShortcuts && holdShortcuts.bounds) {
 		console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> found and loaded in-memory shortcuts');
-		mainWindow.webContents.send('update-shortcuts', holdShortcuts);
+
+		hackyStopSavePos = true;
 		mainWindow.setBounds(holdShortcuts.bounds);
+		hackyStopSavePos = false;
+
+		mainWindow.webContents.send('update-shortcuts', holdShortcuts);
 		return;
 	}
 
@@ -486,8 +506,10 @@ function loadWithPeriods(appName) {
 			// Cache shortcuts in memory too
 			loadedShortcuts[appName] = newShortcuts;
 			if (mainWindow) {
-				mainWindow.webContents.send('update-shortcuts', newShortcuts);
+				hackyStopSavePos = true;
 				mainWindow.setBounds(newShortcuts.bounds);
+				hackyStopSavePos = false;
+				mainWindow.webContents.send('update-shortcuts', newShortcuts);
 			} else {
 				console.log("CANT FIND MAIN WINDOW WHEN LOADING SHORTCUTS");
 			}
