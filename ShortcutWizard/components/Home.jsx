@@ -78,29 +78,42 @@ const SortableItem = SortableElement((componentArguments) => {
                 }}>{listItem["char"]}</p>
             ): ""}
 
-            <p style={{
-                flex: 2,
-                marginRight: '5px',
-                marginLeft: '5px',
-                color: globalState.textColor,
-                borderRadius: ".25rem",
-                borderWidth: ".50rem",
-                border: `2px solid ${globalState.itemColor}`,
-                backgroundColor: globalState.itemColor,
-            }}>{listItem.menuName}</p>
+            { (globalState.showMenuNames) ? (
+                <p style={{
+                    flex: 2,
+                    marginRight: '5px',
+                    marginLeft: '5px',
+                    color: globalState.textColor,
+                    borderRadius: ".25rem",
+                    borderWidth: ".50rem",
+                    border: `2px solid ${globalState.itemColor}`,
+                    // backgroundColor: globalState.itemColor,
+                }}>{listItem.menuName}</p>
+            ) : ""}
         </div>
     );
 
     var mouseOverButtonsSection = (
         <div id={`buttonSection-${componentArguments.index}`} style={{
-            display: 'none'
+            display: 'none',
+            flexDirection: 'column',
+            flex: 2,
+            flexWrap: 'nowrap',
+            alignContent: 'stretch',
         }}>
-            <button style={{
+            <div style={{
                 color: "green",
-                display: 'none',
-                flexGrow: 2,
-                flexBasis: '50%',
-                backgroundColor: "transparent",
+
+                flex: '4 100%',
+                height: '100%',
+                width: '50%',
+                backgroundColor: globalState.itemColor,
+                float: 'left',
+                marginRight: '1px',
+                marginLeft: '1px',
+                borderRadius: ".25rem",
+                borderWidth: ".50rem",
+                border: `2px solid ${globalState.itemColor}`,
             }} onClick={() => {
                 console.log("clicked execute-list-item with ", listItem.name, listItem.menuName);
                 ipcRenderer.send('execute-list-item', listItem.name, listItem.menuName);
@@ -108,53 +121,64 @@ const SortableItem = SortableElement((componentArguments) => {
                 <i className="fa fa-2x fa-play"></i>
                 <br />
                 Do
-            </button>
+            </div>
 
-            <div style={{
-                flex: 2,
-                flexDirection: 'column',
-            }}>
-                <button style={{
+                <div style={{
                     color: "gold",
-                    width: '100%',
-                    backgroundColor: "transparent",
+                    // marginLeft: 'auto',
+                    // marginRight: 'auto',
+                    backgroundColor: globalState.itemColor,
                     // display: (listItem.isFavorite) ? 'block' : 'none',
                     // Specifically make favorite bigger if it is shown alone
-                    flex: 2,
+                    flex: '2 100%',
+                    // width: '50%',
+                    float: 'right',
+                    marginRight: '1px',
+                    marginLeft: '1px',
+                    borderRadius: ".25rem",
+                    borderWidth: ".50rem",
+                    border: `2px solid ${globalState.itemColor}`,
                 }} onClick={() => {
                     ipcRenderer.send('toggle-favorite-list-item', listItem.name);
                 }}>
                     {
                         (listItem.isFavorite) ? (
                             <div>
-                                <i className="fa fa-2x fa-star"></i>
+                                <i className="fa fa-star"></i>
                                 <br />
                                 Remove
                             </div>
                         ) : (
                             <div>
-                                <i className="fa fa-2x fa-star-o"></i>
+                                <i className="fa fa-star-o"></i>
                                 <br />
                                 Add
                             </div>
                         )
                     }
-                </button>
+                </div>
 
-                <button style={{
+                <div style={{
                     color: (listItem.isHidden) ? "grey" : "red",
-                    width: '100%',
-                    backgroundColor: "transparent",
+                    backgroundColor: globalState.itemColor,
+                    float: 'right',
+                    // marginLeft: 'auto',
+                    // marginRight: 'auto',
                     // display: (listItem.isHidden) ? 'block' : 'none',
-                    flex: 2,
+                    flex: '2 100%',
+                    // width: '50%',
+                    marginRight: '1px',
+                    marginLeft: '1px',
+                    borderRadius: ".25rem",
+                    borderWidth: ".50rem",
+                    border: `2px solid ${globalState.itemColor}`,
                 }} onClick={() => {
                     ipcRenderer.send('toggle-hide-list-item', listItem.name);
                 }}>
-                    <i className="fa fa-2x fa-remove"></i>
+                    <i className="fa fa-remove"></i>
                     <br />
                     { (listItem.isHidden) ? "Show" : "Hide" }
-                </button>
-            </div>
+                </div>
         </div>
     );
 
@@ -178,18 +202,25 @@ const SortableItem = SortableElement((componentArguments) => {
             // borderWidth: ".50rem",
             // border: `2px solid ${listItem.itemColor}`,
             // backgroundColor: listItem.itemColor,
-            width: "100%",
             margin: "4px",
             display: 'flex',
+            // justifyContent: 'space-between',
             flexDirection: 'column',
         }} onMouseEnter={(e) => {
             if (buttonSectionElement) buttonSectionElement.style.display = "block";
         }} onMouseLeave={(e) => {
             if (buttonSectionElement) buttonSectionElement.style.display = "none";
         }}>
-            {topSection}
+            <div style={{
+                display: 'flex',
+                flexDirection: 'row',
+                flex: 2,
+            }}>
+                {topSection}
+                {mouseOverButtonsSection}
+            </div>
+
             {bottomSection}
-            {mouseOverButtonsSection}
         </div>
     );
 });
@@ -225,13 +256,13 @@ var holdRemote = remote;
 
 export default class Home extends Component {
     componentWillMount() {
-        // ipcRenderer.on('temporarily-update-app-setting', (event, newSetting) => {
-        //     if (Object.keys(newSetting)[0] == "backgroundColor") {
-        //         window.document.documentElement.style.backgroundColor = newSetting["backgroundColor"];
-        //     }
-        //
-        //     this.setState(newSetting);
-        // });
+        ipcRenderer.on('temporarily-update-app-setting', (event, newSetting) => {
+            if (Object.keys(newSetting)[0] == "backgroundColor") {
+                window.document.documentElement.style.backgroundColor = newSetting["backgroundColor"];
+            }
+
+            this.setState(newSetting);
+        });
 
         ipcRenderer.on('start-shortcut-window', (event) => {
             var windows = holdRemote.BrowserWindow.getAllWindows();
@@ -246,6 +277,8 @@ export default class Home extends Component {
 
         ipcRenderer.on('set-background-color', (event, backgroundColor) => {
             console.log('inside Home.jsx set-background-color with ', backgroundColor);
+
+            window.document.documentElement.style.backgroundColor = backgroundColor;
             this.setState({
                 backgroundColor: backgroundColor
             });
@@ -388,6 +421,8 @@ export default class Home extends Component {
                 </div>
             );
         }
+
+        window.document.documentElement.style.backgroundColor = this.state.backgroundColor;
 /*
                 sort-up
                 sort-down
@@ -401,7 +436,6 @@ export default class Home extends Component {
                 question-circle
 
 */
-    	window.document.documentElement.style.backgroundColor = this.state.backgroundColor;
 
         var shortcuts = this.state.items;
         if (!this.previousShortcuts || this.previousShortcuts != shortcuts) {
@@ -427,15 +461,8 @@ export default class Home extends Component {
         return (
             <div style={{ textAlign: 'center' }}>
                     <button style={{
-                        color: this.state.itemColor,
-                        float: 'right'
-                    }} id="reload-button" className="simple-button" onClick={() => {
-                        console.log('sending reloadShortcuts from ipcRenderer');
-                        ipcRenderer.send('main-parse-shortcuts');
-                    }}><i className="fa fa-1x fa-rotate-right"></i></button>
-
-                    <button style={{
-                        color: this.state.itemColor,
+                        color: this.state.textColor,
+                        backgroundColor: 'transparent',
                         float: 'right'
                     }} id="settings-button" className="simple-button" onClick={() => {
                         console.log("clicked settings");

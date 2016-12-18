@@ -19,6 +19,7 @@ defaultSettings = {
 	name: GLOBAL_SETTINGS,
 	acceptFirstClick: true,
 	alwaysOnTop: true,
+	showMenuNames: false,
 	frame: false,
 	show: true,
 	x: 1100, y: 100, width: 350, height: 800,

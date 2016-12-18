@@ -665,7 +665,7 @@ ipcMain.on('open-settings', function(event) {
 // });
 ipcMain.on('toggle-favorite-list-item', (event, listItemName) => {
 	var holdShortcuts = loadedShortcuts[currentAppName];
-	if (!holdShortcuts) {
+	if (!holdShortcuts || !holdShortcuts.shortcuts) {
 		// how did we end up here??
 		console.log("Could not find shortcuts in memory, needs loaded data");
 		// loadWithPeriods(appName); // TODO: load shortcuts and do remaining work in callback here
@@ -707,7 +707,7 @@ ipcMain.on('toggle-favorite-list-item', (event, listItemName) => {
 
 ipcMain.on('toggle-hide-list-item', (event, listItemName) => {
 	var holdShortcuts = loadedShortcuts[currentAppName];
-	if (!holdShortcuts) {
+	if (!holdShortcuts || !holdShortcuts.shortcuts) {
 		// how did we end up here??
 		console.log("Could not find shortcuts in memory, needs loaded data");
 		// loadWithPeriods(appName); // TODO: load shortcuts and do remaining work in callback here
@@ -747,6 +747,11 @@ ipcMain.on('toggle-hide-list-item', (event, listItemName) => {
 });
 
 ipcMain.on('execute-list-item', (event, listItemName, menu) => {
+	if (!listItemName || !menu) {
+		// how did we end up here??
+		console.log("tried to execute non existent stuff");
+		// loadWithPeriods(appName); // TODO: load shortcuts and do remaining work in callback here
+	}
 	// TODO: Run applescript for opening menu here
 	// - perhaps have a toggled state here, where first click sets state and shows the list item, and the second click executes
 	console.log("calling execute-list-item with ", listItemName, menu);

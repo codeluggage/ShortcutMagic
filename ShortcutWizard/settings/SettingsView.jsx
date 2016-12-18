@@ -191,8 +191,32 @@ export default class SettingsView extends Component {
 	                    </button>
 		        	</li>
 
+		        	<li>
+						Show menu names?
+	                    <button className="simple-button" onClick={() => {
+							var holdSettings = this.state.globalSettings;
+	                    	holdSettings.showMenuNames = !holdSettings.showMenuNames;
+	                    	this.setState({
+								globalSettings: holdSettings
+							});
+	                    	ipcRenderer.send('temporarily-update-app-setting', {
+	                    		showMenuNames: holdSettings.showMenuNames
+	                    	});
+	                    }}>
+				        	{(this.state.globalSettings.showMenuNames) ? "On" : "Off"}
+	                    </button>
+		        	</li>
+
 
 					<h1>Settings for {this.state.appSettings.name}</h1>
+
+					<li>
+						Reload shortcuts for the current program 
+	                    <button id="reload-button" className="simple-button" onClick={() => {
+	                        console.log('sending reloadShortcuts from ipcRenderer');
+	                        ipcRenderer.send('main-parse-shortcuts');
+	                    }}>Reload</button>
+					</li>
 
 					<div style={{
 						display: 'flex',
