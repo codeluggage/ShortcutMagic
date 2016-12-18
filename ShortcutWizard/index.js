@@ -172,6 +172,11 @@ function savePosition(appName) {
 
 		var newBounds = mainWindow.getBounds();
 		if (doc && doc != [] && doc.length > 0 && doc[0].bounds != newBounds) {
+			// First set in memory:
+			loadedShortcuts[doc.name] = doc;
+			loadedShortcuts[doc.name].bounds = newBounds;
+
+			// ...then in storage:
 			db.update({
 				name: appName
 			}, {
@@ -179,7 +184,7 @@ function savePosition(appName) {
 					bounds: newBounds
 				}
 			}, function(err, res) {
-				console.log('finished updating bounds with err res', err, res);
+				console.log('finished updating bounds with err res doc', err, res, newBounds);
 			});
 		}
 	});
@@ -276,6 +281,17 @@ function createMainWindow() {
 
 	mainWindow.loadURL(`file://${__dirname}/index.html`);
 	mainWindow.on('closed', onClosed);
+
+
+	mainWindow.on('resize', (event) => {
+		// TODO: Set up a limit here to not save too often, or queue it up
+		savePosition(currentAppName);
+	});
+
+	mainWindow.on('moved', (event) => {
+		savePosition(currentAppName);
+	});
+
 	mainWindow.setHasShadow(false);
 
 	applyWindowMode(windowMode);
@@ -401,18 +417,6 @@ function loadForApp(appName) {
 		console.log('sending webview-parse-shortcuts with appName');
 		backgroundTaskRunnerWindow.webContents.send('webview-parse-shortcuts'); // Send without name to reload current
 		return;
-	} else {
-		var holdShortcuts = loadedShortcuts[appName];
-		// Choose the cached shortcuts if possible
-		if (holdShortcuts) {
-			console.log('setting bounds in loadforapp: ', appName, holdShortcuts.bounds);
-			if (!holdShortcuts.bounds) {
-				holdShortcuts.bounds = { x: 1100, y: 100, width: 350, height: 800 };
-			}
-			mainWindow.setBounds(holdShortcuts.bounds);
-			mainWindow.webContents.send('update-shortcuts', holdShortcuts);
-			return;
-		}
 	}
 
 	loadWithPeriods(appName);
@@ -452,9 +456,9 @@ function saveWithoutPeriods(payload) {
 function loadWithPeriods(appName) {
 	console.log('entering loadWithPeriods for appname: ', appName);
 	var holdShortcuts = loadedShortcuts[appName];
-	if (holdShortcuts) {
+	if (holdShortcuts && holdShortcuts.bounds) {
 		console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> found and loaded in-memory shortcuts');
-		mainWindow.webContents.send('update-shortcut', holdShortcuts);
+		mainWindow.webContents.send('update-shortcuts', holdShortcuts);
 		mainWindow.setBounds(holdShortcuts.bounds);
 		return;
 	}
@@ -536,11 +540,11 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 	console.log('app switch. app name was', currentAppName, "appname will change to: ", appName);
 
 
-	if (currentAppName) {
-		savePosition(currentAppName);
-	}
-	console.log('finished updating pos of app: ', currentAppName);
-	console.log("before loadForApp, bounds was: ", mainWindow.getBounds());
+	// if (currentAppName) {
+	// 	savePosition(currentAppName);
+	// }
+	// console.log('finished updating pos of app: ', currentAppName);
+	// console.log("before loadForApp, bounds was: ", mainWindow.getBounds());
 
 	// TODO: add css spinner when this is running
 	// TODO: load in background render thread
@@ -663,30 +667,17 @@ ipcMain.on('open-settings', function(event) {
 // 		}
 // 	});
 // });
-ipcMain.on('toggle-favorite-list-item', (event, listItemName) => {
-	var holdShortcuts = loadedShortcuts[currentAppName];
-	if (!holdShortcuts || !holdShortcuts.shortcuts) {
-		// how did we end up here??
-		console.log("Could not find shortcuts in memory, needs loaded data");
-		// loadWithPeriods(appName); // TODO: load shortcuts and do remaining work in callback here
-	}
 
-	var holdIndex = 0;
-	var shortcut = holdShortcuts.shortcuts.filter((obj, index) => {
-		if (obj.name == listItemName) {
-			holdIndex = index;
-			return true;
-		} else {
-			return false;
-		}
-	})[0];
 
-	console.log("toggling fav with ", shortcut, listItemName, holdShortcuts);
-	shortcut.isFavorite = (shortcut.isFavorite) ? false : true;
-	holdShortcuts.shortcuts[holdIndex] = shortcut;
-	loadedShortcuts[currentAppName] = holdShortcuts;
+ipcMain.on('update-shortcut-item', (event, shortcutItem) => {
 	var shortcutObject = {};
-	shortcutObject[`shortcuts.${shortcut.name}`] = shortcut;
+	shortcutObject[`shortcuts.${shortcutItem.name}`] = shortcutItem;
+
+	if (!loadedShortcuts || !loadedShortcuts[currentAppName]) {
+		console.log("error: no loaded shortcuts when updating with update-shortcut-item");
+	} else {
+		loadedShortcuts[currentAppName].shortcuts[shortcutItem.name] = shortcutItem;
+	}
 
 	db.update({
 		name: currentAppName
@@ -699,49 +690,7 @@ ipcMain.on('toggle-favorite-list-item', (event, listItemName) => {
 			console.log("error when updating favorite for list item ", listItemName);
 		} else {
 			console.log("succeeded favoriting item: ", res);
-			loadForApp(currentAppName);
-		}
-	});
-});
-
-
-ipcMain.on('toggle-hide-list-item', (event, listItemName) => {
-	var holdShortcuts = loadedShortcuts[currentAppName];
-	if (!holdShortcuts || !holdShortcuts.shortcuts) {
-		// how did we end up here??
-		console.log("Could not find shortcuts in memory, needs loaded data");
-		// loadWithPeriods(appName); // TODO: load shortcuts and do remaining work in callback here
-	}
-
-	var holdIndex = 0;
-	var shortcut = holdShortcuts.shortcuts.filter((obj, index) => {
-		if (obj.name == listItemName) {
-			holdIndex = index;
-			return true;
-		} else {
-			return false;
-		}
-	})[0];
-
-	console.log("toggling hidden with ", shortcut, listItemName, holdShortcuts);
-	loadedShortcuts[currentAppName] = holdShortcuts;
-	shortcut.isHidden = (shortcut.isHidden) ? false : true;
-	holdShortcuts.shortcuts[holdIndex] = shortcut;
-	var shortcutObject = {};
-	shortcutObject[`shortcuts.${shortcut.name}`] = shortcut;
-
-	db.update({
-		name: currentAppName
-	}, {
-		$set: shortcutObject
-	}, {
-		upsert: true
-	}, (err, res) => {
-		if (err) {
-			console.log("error when updating hidden for list item ", listItemName);
-		} else {
-			console.log("succeeded hiding item: ", res);
-			loadForApp(currentAppName);
+			loadForApp(currentAppName); // TODO: Is this really needed? Double rendering
 		}
 	});
 });
@@ -755,6 +704,5 @@ ipcMain.on('execute-list-item', (event, listItemName, menu) => {
 	// TODO: Run applescript for opening menu here
 	// - perhaps have a toggled state here, where first click sets state and shows the list item, and the second click executes
 	console.log("calling execute-list-item with ", listItemName, menu);
-	backgroundTaskRunnerWindow.webContents.send('webview-execute-menu-item',
-		currentAppName, listItemName, menu);
+	backgroundTaskRunnerWindow.webContents.send('webview-execute-menu-item', currentAppName, listItemName, menu);
 });

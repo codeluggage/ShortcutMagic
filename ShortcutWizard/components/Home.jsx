@@ -139,21 +139,15 @@ const SortableItem = SortableElement((componentArguments) => {
                     borderWidth: ".50rem",
                     border: `2px solid ${globalState.itemColor}`,
                 }} onClick={() => {
-                    ipcRenderer.send('toggle-favorite-list-item', listItem.name);
+                    listItem.isFavorite = !listItem.isFavorite;
+                    console.log("Updating shortcut item with toggled isFavorite: ", listItem);
+                    ipcRenderer.send('update-shortcut-item', listItem);
                 }}>
                     {
                         (listItem.isFavorite) ? (
-                            <div>
-                                <i className="fa fa-star"></i>
-                                <br />
-                                Remove
-                            </div>
+                            <i className="fa fa-2x fa-star"></i>
                         ) : (
-                            <div>
-                                <i className="fa fa-star-o"></i>
-                                <br />
-                                Add
-                            </div>
+                            <i className="fa fa-2x fa-star-o"></i>
                         )
                     }
                 </div>
@@ -173,11 +167,11 @@ const SortableItem = SortableElement((componentArguments) => {
                     borderWidth: ".50rem",
                     border: `2px solid ${globalState.itemColor}`,
                 }} onClick={() => {
-                    ipcRenderer.send('toggle-hide-list-item', listItem.name);
+                    listItem.isHidden = !listItem.isHidden;
+                    console.log("Updating shortcut item with toggled isHidden: ", listItem);
+                    ipcRenderer.send('update-shortcut-item', listItem);
                 }}>
-                    <i className="fa fa-remove"></i>
-                    <br />
-                    { (listItem.isHidden) ? "Show" : "Hide" }
+                    <i className="fa fa-2x fa-remove"></i>
                 </div>
         </div>
     );
