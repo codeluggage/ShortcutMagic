@@ -246,18 +246,6 @@ function createWindows() {
 	createMainWindow();
 }
 
-function onClosed() {
-	// TODO: Clean up each ipcRenderer individually before nulling object
-	// trayObject.destroy(); // TODO: Fix needing to kill process after quitting - maybe it stays in memory?
-	ipcMain.removeAllListeners();
-	trayObject = null;
-	mainWindow = null;
-	settingsWindow = null; // TODO: double check that the settings window isn't destroyed elsewhere
-	backgroundTaskRunnerWindow = null;
-	backgroundListenerWindow = null;
-	welcomeWindow = null;
-}
-
 function createMainWindow() {
 	mainWindow = new BrowserWindow({
 		name: "Electron",
@@ -292,7 +280,23 @@ function createMainWindow() {
 	// });
 
 	mainWindow.loadURL(`file://${__dirname}/index.html`);
-	mainWindow.on('closed', onClosed);
+	mainWindow.on('closed', () => {
+		// TODO: Clean up each ipcRenderer individually before nulling object
+		trayObject.destroy(); // TODO: Fix needing to kill process after quitting - maybe it stays in memory?
+		trayObject = null;
+		// settingsWindow.send('removeAllListeners');
+		settingsWindow = null; // TODO: double check that the settings window isn't destroyed elsewhere
+		// backgroundTaskRunnerWindow.send('removeAllListeners');
+		backgroundTaskRunnerWindow = null;
+		// backgroundListenerWindow.send('removeAllListeners');
+		backgroundListenerWindow = null;
+		// welcomeWindow.send('removeAllListeners');
+		welcomeWindow = null;
+		// mainWindow.send('removeAllListeners');
+		mainWindow = null;
+		app.quit();
+	});
+
 
 
 	mainWindow.on('resize', (event) => {

@@ -8,7 +8,7 @@
   "private": true,
   "repository": "bitbucket.org:codeluggage/shortcutwizard.git",
   "scripts": {
-    "start": "NODE_ENV=development ./node_modules/.bin/electron bootstrapper.js"
+    "start": "NODE_ENV=development ./node_modules/.bin/electron shortcutwizard.js"
   },
   "dependencies": {
     "babel-preset-es2015": "^6.3.13",
