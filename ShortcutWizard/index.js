@@ -53,6 +53,16 @@ db.ensureIndex({
 	}
 });
 
+
+// console.log("temporary removal of PomoDoneApp and mysms shortcuts for testing, TODO: hard remove instead");
+// db.remove({
+// 	name: "PomoDoneApp"
+// });
+// db.remove({
+// 	name: "mysms"
+// });
+
+
 app.setName("ShortcutWizard");
 app.dock.hide();
 
@@ -63,7 +73,7 @@ let mainWindow;
 let backgroundTaskRunnerWindow;
 let backgroundListenerWindow;
 let welcomeWindow;
-let loadedShortcuts = [];
+let inMemoryShortcuts = [];
 let currentAppName = "Electron";
 
 // Functions
@@ -81,7 +91,7 @@ const applyWindowMode = (newWindowMode) => {
 		mainWindow.show();
 		mainWindow.webContents.send('stealth-mode');
 
-		if (!loadedShortcuts[currentAppName]) {
+		if (!inMemoryShortcuts[currentAppName]) {
 			db.find({
 				name: currentAppName
 			}, function(err, res) {
@@ -96,7 +106,7 @@ const applyWindowMode = (newWindowMode) => {
 				}
 			});
 		} else {
-			mainWindow.setBounds(loadedShortcuts[currentAppName].stealthBounds);
+			mainWindow.setBounds(inMemoryShortcuts[currentAppName].stealthBounds);
 		}
 	};
 
@@ -105,7 +115,7 @@ const applyWindowMode = (newWindowMode) => {
 		mainWindow.show();
 		mainWindow.webContents.send('full-mode');
 
-		var cachedAppSettings = loadedShortcuts[currentAppName];
+		var cachedAppSettings = inMemoryShortcuts[currentAppName];
 		if (cachedAppSettings) {
 			mainWindow.setBounds(cachedAppSettings.bounds);
 		} else {
@@ -194,7 +204,7 @@ function savePosition(appName) {
 				console.log("========== compare fail, updating db ");
 
 				newShortcuts.bounds = newBounds;
-				loadedShortcuts[appName] = newShortcuts;
+				inMemoryShortcuts[appName] = newShortcuts;
 
 				// ...then in storage:
 				db.update({
@@ -294,15 +304,15 @@ function createMainWindow() {
 
 	mainWindow.on('resize', (event) => {
 		// TODO: Set up a limit here to not save too often, or queue it up
-		console.log("//////////////////////////////////////// on.resize");
 		if (!hackyStopSavePos) {
+			console.log("//////////////////////////////////////// on.resize");
 			savePosition(currentAppName);
 		}
 	});
 
 	mainWindow.on('moved', (event) => {
-		console.log("//////////////////////////////////////// on.moved");
 		if (!hackyStopSavePos) {
+			console.log("//////////////////////////////////////// on.moved");
 			savePosition(currentAppName);
 		}
 	});
@@ -406,38 +416,6 @@ function createWelcomeWindow() {
 	welcomeWindow.loadURL(`file://${__dirname}/welcome/index.html`);
 }
 
-function loadForApp(appName) {
-	// if (!appName || !mainWindow) return;
-
-	// db.find({
-	// 	name: appName
-	// }, function(err, doc) {
-	// 	if (err) {
-	// 		console.log('error finding in loadPosition: ', err);
-	// 	}
-
-	// 	if (doc && doc != [] && doc.length > 0) {
-	// 		var bounds = doc[0].bounds;
-	// 		console.log('found app bounds when loading: ', bounds);
-	// 		if (!bounds) return;
-
-	// 		console.log('setting bounds');
-	// 		mainWindow.setBounds(bounds);
-	// 	}
-	// });
-
-	// console.log('loadForApp with appName', appName);
-
-	if (!appName) {
-		console.log('sending webview-parse-shortcuts with appName');
-		mainWindow.webContents.send('set-loading', true);
-		backgroundTaskRunnerWindow.webContents.send('webview-parse-shortcuts'); // Send without name to reload current
-		return;
-	}
-
-	loadWithPeriods(appName);
-}
-
 function updateRenderedShortcuts(shortcuts) {
 	mainWindow.webContents.send('update-shortcuts', shortcuts);
 }
@@ -445,7 +423,7 @@ function updateRenderedShortcuts(shortcuts) {
 function saveWithoutPeriods(payload) {
 	var newBounds = mainWindow.getBounds();
 	payload.bounds = newBounds;
-	loadedShortcuts[payload.name] = payload;
+	inMemoryShortcuts[payload.name] = payload;
 
 	var stringified = JSON.stringify(payload.shortcuts);
 	stringified = stringified.replace(/\./g, 'u002e');
@@ -469,7 +447,7 @@ function saveWithoutPeriods(payload) {
 
 function loadWithPeriods(appName) {
 	console.log('entering loadWithPeriods for appname: ', appName);
-	var holdShortcuts = loadedShortcuts[appName];
+	var holdShortcuts = inMemoryShortcuts[appName];
 	if (holdShortcuts && holdShortcuts.bounds) {
 		console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> found and loaded in-memory shortcuts');
 
@@ -480,6 +458,7 @@ function loadWithPeriods(appName) {
 		mainWindow.webContents.send('update-shortcuts', holdShortcuts);
 		return;
 	}
+
 
 	// TODO: This is not going to work until appName is known before this point
 	db.find({
@@ -502,7 +481,7 @@ function loadWithPeriods(appName) {
 			newShortcuts.shortcuts = JSON.parse(stringified);
 
 			// Cache shortcuts in memory too
-			loadedShortcuts[appName] = newShortcuts;
+			inMemoryShortcuts[appName] = newShortcuts;
 			if (mainWindow) {
 				hackyStopSavePos = true;
 				mainWindow.setBounds(newShortcuts.bounds);
@@ -512,8 +491,8 @@ function loadWithPeriods(appName) {
 				console.log("CANT FIND MAIN WINDOW WHEN LOADING SHORTCUTS");
 			}
 		} else {
+			mainWindow.webContents.send('set-loading', appName);
 			console.log('sending webview-parse-shortcuts with appName', appName);
-			mainWindow.webContents.send('set-loading', true);
 			backgroundTaskRunnerWindow.webContents.send('webview-parse-shortcuts', appName);
 		}
 	});
@@ -522,7 +501,6 @@ function loadWithPeriods(appName) {
 
 // Events
 app.on('window-all-closed', function() {
-	onClosed();
 	app.quit();
 });
 
@@ -534,7 +512,7 @@ app.on('activate-with-no-open-windows', () => {
 
 app.on('ready', () => {
 	createWindows();
-	loadForApp();
+	loadWithPeriods(backgroundTaskRunnerWindow.webContents.send('read-last-app-name'));
 });
 
 app.on('before-quit', (event) => {
@@ -569,11 +547,11 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 	// 	savePosition(currentAppName);
 	// }
 	// console.log('finished updating pos of app: ', currentAppName);
-	// console.log("before loadForApp, bounds was: ", mainWindow.getBounds());
+	// console.log("before loadWithPeriods, bounds was: ", mainWindow.getBounds());
 
 	// TODO: add css spinner when this is running
 	// TODO: load in background render thread
-	loadForApp(appName);
+	loadWithPeriods(appName);
 	console.log("finished loading pos for app: ", mainWindow.getBounds(), appName);
 	currentAppName = appName;
 
@@ -588,7 +566,7 @@ ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
 
 ipcMain.on('main-parse-shortcuts', function(event, appName) {
 	console.log('#2 - root index.js, triggered main-parse-shortcuts, with appName: ', appName, typeof appName);
-	loadForApp(appName);
+	loadWithPeriods(appName);
 });
 
 ipcMain.on('show-window', () => {
@@ -640,7 +618,7 @@ ipcMain.on('open-settings', function(event) {
 });
 
 // ipcMain.on('toggle-favorite-list-item', (event, listItemName) => {
-// 	var holdShortcuts = loadedShortcuts[currentAppName];
+// 	var holdShortcuts = inMemoryShortcuts[currentAppName];
 // 	if (!holdShortcuts) {
 // 		// how did we end up here??
 // 		console.log("Could not find shortcuts in memory, needs loaded data");
@@ -686,7 +664,7 @@ ipcMain.on('open-settings', function(event) {
 // 			console.log("error when updating favorite for list item ", listItemName);
 // 		} else {
 // 			console.log("succeeded toggling favorite: ", res);
-// 			loadedShortcuts[currentAppName] = holdShortcuts;
+// 			inMemoryShortcuts[currentAppName] = holdShortcuts;
 //
 // 			mainWindow.webContent.send('update-shortcuts', holdShortcuts);
 // 		}
@@ -698,10 +676,10 @@ ipcMain.on('update-shortcut-item', (event, shortcutItem) => {
 	var shortcutObject = {};
 	shortcutObject[`shortcuts.${shortcutItem.name}`] = shortcutItem;
 
-	if (!loadedShortcuts || !loadedShortcuts[currentAppName]) {
+	if (!inMemoryShortcuts || !inMemoryShortcuts[currentAppName]) {
 		console.log("error: no loaded shortcuts when updating with update-shortcut-item");
 	} else {
-		loadedShortcuts[currentAppName].shortcuts[shortcutItem.name] = shortcutItem;
+		inMemoryShortcuts[currentAppName].shortcuts[shortcutItem.name] = shortcutItem;
 	}
 
 	db.update({
@@ -715,7 +693,7 @@ ipcMain.on('update-shortcut-item', (event, shortcutItem) => {
 			console.log("error when updating favorite for list item ", listItemName);
 		} else {
 			console.log("succeeded favoriting item: ", res);
-			loadForApp(currentAppName); // TODO: Is this really needed? Double rendering
+			loadWithPeriods(currentAppName); // TODO: Is this really needed? Double rendering
 		}
 	});
 });

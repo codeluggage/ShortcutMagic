@@ -298,7 +298,19 @@ export default class Home extends Component {
 
             console.log('entered update-shortcuts in Home');
             let name = newShortcuts.name;
-            if (name == "Electron" || name == "ShortcutWizard") return;
+            if (name == "Electron" || name == "ShortcutWizard") return; // TODO: Could this mess with other electron starter projects?
+
+            let loadingList = null;
+            if (this.state && this.state.loading) {
+                loadingList = this.state.loading;
+                var loadingIndex = loadingList.indexOf(name);
+                if (loadingIndex < 0) return; // Stop any new rendering if we are not about to show shortcuts for an app that is loading
+
+                loadingList.splice(loadingIndex, 1);
+                if (loadingList.length == 0) {
+                    loadingList = null;
+                }
+            }
 
             let shortcuts = newShortcuts.shortcuts;
             const shortcutsArray = Object.keys(shortcuts).map(key => shortcuts[key]);
@@ -308,14 +320,23 @@ export default class Home extends Component {
                 name: name,
                 initialItems: shortcutsArray,
                 items: shortcutsArray,
-                loading: false
+                loading: loadingList
             });
         });
 
         ipcRenderer.on('set-loading', (event, loading) => {
+            var alreadyLoading = (this.state) ? this.state.loading : null;
+            if (!alreadyLoading) alreadyLoading = [];
+
+            alreadyLoading.push(loading);
             this.setState({
-                loading: loading
+                loading: alreadyLoading
             });
+        });
+
+        // Sync function
+        ipcRenderer.on('get-loading', (event) => {
+            event.returnValue = (this.state && this.state.loading) ? this.state.loading : undefined;
         });
 
         console.log('home constructor called');
@@ -425,10 +446,15 @@ export default class Home extends Component {
 
         window.document.documentElement.style.backgroundColor = this.state.backgroundColor;
 
+        // TODO: check for length here instead of nulling it out above?
         if (this.state.loading) {
+            var loadingLength = this.state.loading.length - 1;
             return (
                 <div>
-                    <h1>Loading...</h1>
+                    <h1>Loading shortcuts for {
+                        this.state.loading.map((obj, index) => (index == loadingLength) ? obj : obj + ", ")
+                    }...</h1>
+
                     <i className="fa fa-3x fa-spin fa-fw"></i>
                 </div>
             );
