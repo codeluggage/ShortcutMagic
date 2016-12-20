@@ -160,6 +160,17 @@ const toggleWindow = () => {
   }
 }
 
+function quitShortcutWizard() {
+       trayObject.destroy();
+       trayObject = null;
+       settingsWindow = null; // TODO: double check that the settings window isn't destroyed elsewhere
+       backgroundTaskRunnerWindow = null;
+       backgroundListenerWindow.destroy(); // This holds on to objective c code, so we force destroy it
+       backgroundListenerWindow = null;
+       mainWindow = null;
+};
+
+
 function savePosition(appName) {
 	if (!appName || !mainWindow) return;
 
@@ -280,24 +291,6 @@ function createMainWindow() {
 	// });
 
 	mainWindow.loadURL(`file://${__dirname}/index.html`);
-	mainWindow.on('closed', () => {
-		// TODO: Clean up each ipcRenderer individually before nulling object
-		trayObject.destroy(); // TODO: Fix needing to kill process after quitting - maybe it stays in memory?
-		trayObject = null;
-		// settingsWindow.send('removeAllListeners');
-		settingsWindow = null; // TODO: double check that the settings window isn't destroyed elsewhere
-		// backgroundTaskRunnerWindow.send('removeAllListeners');
-		backgroundTaskRunnerWindow = null;
-		// backgroundListenerWindow.send('removeAllListeners');
-		backgroundListenerWindow = null;
-		// welcomeWindow.send('removeAllListeners');
-		welcomeWindow = null;
-		// mainWindow.send('removeAllListeners');
-		mainWindow = null;
-		app.quit();
-	});
-
-
 
 	mainWindow.on('resize', (event) => {
 		// TODO: Set up a limit here to not save too often, or queue it up
@@ -540,6 +533,10 @@ app.on('activate-with-no-open-windows', () => {
 app.on('ready', () => {
 	createWindows();
 	loadForApp();
+});
+
+app.on('before-quit', (event) => {
+	quitShortcutWizard();
 });
 
 ipcMain.on('get-app-name-sync', function(event) {
