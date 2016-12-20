@@ -430,6 +430,7 @@ function loadForApp(appName) {
 
 	if (!appName) {
 		console.log('sending webview-parse-shortcuts with appName');
+		mainWindow.webContents.send('set-loading', true);
 		backgroundTaskRunnerWindow.webContents.send('webview-parse-shortcuts'); // Send without name to reload current
 		return;
 	}
@@ -512,6 +513,7 @@ function loadWithPeriods(appName) {
 			}
 		} else {
 			console.log('sending webview-parse-shortcuts with appName', appName);
+			mainWindow.webContents.send('set-loading', true);
 			backgroundTaskRunnerWindow.webContents.send('webview-parse-shortcuts', appName);
 		}
 	});

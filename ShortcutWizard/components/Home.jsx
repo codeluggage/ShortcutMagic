@@ -307,7 +307,14 @@ export default class Home extends Component {
             this.setState({
                 name: name,
                 initialItems: shortcutsArray,
-                items: shortcutsArray
+                items: shortcutsArray,
+                loading: false
+            });
+        });
+
+        ipcRenderer.on('set-loading', (event, loading) => {
+            this.setState({
+                loading: loading
             });
         });
 
@@ -417,6 +424,15 @@ export default class Home extends Component {
         }
 
         window.document.documentElement.style.backgroundColor = this.state.backgroundColor;
+
+        if (this.state.loading) {
+            return (
+                <div>
+                    <h1>Loading...</h1>
+                    <i className="fa fa-3x fa-spin fa-fw"></i>
+                </div>
+            );
+        }
 /*
                 sort-up
                 sort-down
