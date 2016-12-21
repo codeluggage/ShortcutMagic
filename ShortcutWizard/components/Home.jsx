@@ -4,6 +4,15 @@ import {SortableContainer, SortableElement, SortableHandle, arrayMove} from 'rea
 import Electron, { ipcRenderer, remote } from 'electron';
 
 var globalState;
+// From http://www.visualcinnamon.com/2016/05/smooth-color-legend-d3-svg-gradient.html
+var beautifulColors = ["#ffffff", "#000000", "#2c7bb6",  "#00a6ca", "#00ccbc",
+	"#90eb9d", "#ffff8c", "#f9d057", "#f29e2e", "#e76818", "#d7191c"];
+
+function hexToRgba(hex, alpha) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+	if (!result) return;
+	return `rgba(${ parseInt(result[1], 16) }, ${ parseInt(result[2], 16) }, ${ parseInt(result[3], 16) }, ${ alpha })`;
+}
 
 const DragHandle = SortableHandle(() => {
     return (
@@ -292,13 +301,25 @@ export default class Home extends Component {
             });
         });
 
+        ipcRenderer.on('set-all-colors', (event, colors) => {
+            console.log('inside Home.jsx set-all-colors with ', colors);
+            this.setState({
+                backgroundColor: colors.backgroundColor,
+                itemColor: colors.itemColor,
+                textColor: colors.textColor,
+            });
+        });
+
         ipcRenderer.on('update-shortcuts', (event, newShortcuts) => {
             // todo:
             // - randomize the items?
 
             console.log('entered update-shortcuts in Home');
             let name = newShortcuts.name;
-            if (name == "Electron" || name == "ShortcutWizard") return; // TODO: Could this mess with other electron starter projects?
+            if (name == "Electron" || name == "ShortcutWizard" ||
+                name == "ScreenSaverEngine" || name == "loginwindow") {
+                return; // TODO: Could this mess with other electron starter projects?
+            }
 
             let loadingList = null;
             if (this.state && this.state.loading) {
@@ -421,17 +442,22 @@ export default class Home extends Component {
     }
 
     render() {
+		// itemColor:hexToRgba(beautifulColors[2], 100),
+		// textColor:hexToRgba(beautifulColors[0], 100),
+
         globalState = this.state;
         console.log('render() called');
         if (!this.state) {
+            window.document.documentElement.style.backgroundColor = hexToRgba(beautifulColors[5], 0.5);
+
             return (
                 <div style={{textAlign: 'center'}}>
-                    <button style={{color:"white", float:'left'}} id="reload-button" className="simple-button" onClick={() => {
+                    <button style={{color:"white", backgroundColor:"transparent", float:'left'}} id="reload-button" className="simple-button" onClick={() => {
                         console.log('sending reloadShortcuts from ipcRenderer');
                         ipcRenderer.send('main-parse-shortcuts');
                     }}><i className="fa fa-1x fa-rotate-right"></i></button>
 
-                    <button style={{color:"white", float:'right'}} id="settings-button" className="simple-button" onClick={() => {
+                    <button style={{color:"white", backgroundColor:"transparent", float:'right'}} id="settings-button" className="simple-button" onClick={() => {
                         console.log("clicked settings");
                         this.toggleSettings();
                     }}>
@@ -444,7 +470,8 @@ export default class Home extends Component {
             );
         }
 
-        window.document.documentElement.style.backgroundColor = this.state.backgroundColor;
+        window.document.documentElement.style.backgroundColor = (this.state.backgroundColor) ?
+            this.state.backgroundColor : hexToRgba(beautifulColors[5], 0.5);
 
         // TODO: check for length here instead of nulling it out above?
         if (this.state.loading) {

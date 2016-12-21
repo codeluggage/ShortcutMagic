@@ -5,19 +5,6 @@ const { app, BrowserWindow, ipcMain, Tray, systemPreferences } = require('electr
 const path = require('path');
 const Datastore = require('nedb');
 
-// import { Settings } from './settings/settings';
-// console.log("first settings: ", Settings);
-// var settings = new Settings();
-// // const Settings = require('./settings/settings');
-// console.log('imported settings: ', settings, JSON.stringify(settings) );
-// // console.log('>>> ', Settings());
-// // for (val in settings) {
-// // 	console.log(val);
-// // }
-// settings.create();
-// console.log('after creating, settings now has window: ', settings.settingsWindow);
-
-
 var hackyStopSavePos = false;
 
 // TODO: Save to settings db
@@ -54,13 +41,13 @@ db.ensureIndex({
 });
 
 
-// console.log("temporary removal of PomoDoneApp and mysms shortcuts for testing, TODO: hard remove instead");
-// db.remove({
-// 	name: "PomoDoneApp"
-// });
-// db.remove({
-// 	name: "mysms"
-// });
+console.log("temporary removal of PomoDoneApp and mysms shortcuts for testing, TODO: hard remove instead");
+db.remove({
+	name: "PomoDoneApp"
+});
+db.remove({
+	name: "mysms"
+});
 
 
 app.setName("ShortcutWizard");
@@ -269,15 +256,13 @@ function createWindows() {
 
 function createMainWindow() {
 	mainWindow = new BrowserWindow({
-		name: "Electron",
+		name: "ShortcutWizard",
 		acceptFirstClick: true,
 		alwaysOnTop: true,
 		frame: false,
 		show: false, // Don't show until we have the information of the app that is running
 		transparent: true,
 		x: 1100, y: 100, width: 350, height: 800,
-		// backgroundColor: '#adadad',
-		// backgroundColor: '#7000aa99',
 		title: "mainWindow"
 	});
 
@@ -316,6 +301,8 @@ function createMainWindow() {
 			savePosition(currentAppName);
 		}
 	});
+
+
 
 	mainWindow.setHasShadow(false);
 
@@ -524,8 +511,9 @@ ipcMain.on('get-app-name-sync', function(event) {
 });
 
 ipcMain.on('main-app-switched-notification', function(event, appName) {
-	if (appName == "Electron") {
-		console.log('cannot switch to ourselves');
+	if (appName == "Electron" || appName == "ShortcutWizard" ||
+		appName == "ScreenSaverEngine" || appName == "loginwindow") {
+		console.log("Not switching to this app: ", appName);
 		return;
 	}
 
@@ -539,8 +527,7 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 		return;
 	}
 
-	// TODO: Do the message sending in a cleaner way
-	console.log('app switch. app name was', currentAppName, "appname will change to: ", appName);
+	console.log(`${currentAppName} -> ${appName}`);
 
 
 	// if (currentAppName) {

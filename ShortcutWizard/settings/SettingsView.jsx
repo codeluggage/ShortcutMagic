@@ -211,7 +211,7 @@ export default class SettingsView extends Component {
 					<h1>Settings for {this.state.appSettings.name}</h1>
 
 					<li>
-						Reload shortcuts for the current program 
+						Reload shortcuts for the current program
 	                    <button id="reload-button" className="simple-button" onClick={() => {
 	                        console.log('sending reloadShortcuts from ipcRenderer');
 	                        ipcRenderer.send('main-parse-shortcuts');
@@ -228,6 +228,7 @@ export default class SettingsView extends Component {
 			    			<SketchPicker
 			    				color={this.state.appSettings.backgroundColor}
 				    			onChangeComplete={this.handleBackgroundColorChange}
+								presetColors={settings.beautifulColors}
 			    			/>
 						</div>
 						<div style={{flexDirection: 'column'}}>
@@ -235,6 +236,7 @@ export default class SettingsView extends Component {
 							<SketchPicker
 								color={this.state.appSettings.itemColor}
 								onChangeComplete={this.handleItemColorChange}
+								presetColors={settings.beautifulColors}
 							/>
 						</div>
 						<div style={{flexDirection: 'column'}}>
@@ -242,6 +244,7 @@ export default class SettingsView extends Component {
 							<SketchPicker
 								color={this.state.appSettings.textColor}
 								onChangeComplete={this.handleTextColorChange}
+								presetColors={settings.beautifulColors}
 							/>
 						</div>
 					</div>

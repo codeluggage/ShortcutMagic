@@ -15,6 +15,11 @@ var lastSavedSettings = {};
 var cachedSettings = {};
 var defaultSettings = {};
 // TODO: Split startup settings from saved settings?
+
+// From http://www.visualcinnamon.com/2016/05/smooth-color-legend-d3-svg-gradient.html
+var beautifulColors = ["#ffffff", "#000000", "#2c7bb6",  "#00a6ca", "#00ccbc",
+	"#90eb9d", "#ffff8c", "#f9d057", "#f29e2e", "#e76818", "#d7191c"];
+
 defaultSettings = {
 	name: GLOBAL_SETTINGS,
 	acceptFirstClick: true,
@@ -23,7 +28,9 @@ defaultSettings = {
 	frame: false,
 	show: true,
 	x: 1100, y: 100, width: 350, height: 800,
-	backgroundColor: '#7000aa99',
+	backgroundColor: beautifulColors[5],
+	itemColor:beautifulColors[2],
+	textColor:beautifulColors[1],
 	title: "mainWindow"
 };
 
@@ -95,6 +102,7 @@ export class Settings {
 		});
 
 		this.registerListeners();
+		this.beautifulColors = beautifulColors;
 	}
 
 	// Return settings for appName, as well as global settings
