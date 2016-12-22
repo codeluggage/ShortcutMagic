@@ -124,8 +124,8 @@ const SortableItem = SortableElement((componentArguments) => {
                 borderWidth: ".50rem",
                 border: `2px solid ${globalState.itemColor}`,
             }} onClick={() => {
-                console.log("clicked execute-list-item with ", listItem.name, listItem.menuName);
-                ipcRenderer.send('execute-list-item', listItem.name, listItem.menuName);
+                console.log("clicked execute-list-item with ", listItem);
+                ipcRenderer.send('execute-list-item', listItem);
             }}>
                 <i className="fa fa-2x fa-play"></i>
                 <br />
@@ -358,6 +358,10 @@ export default class Home extends Component {
         // Sync function
         ipcRenderer.on('get-loading', (event) => {
             event.returnValue = (this.state && this.state.loading) ? this.state.loading : undefined;
+        });
+
+        ipcRenderer.on('no-shortcuts-visual-notification', (event) => {
+            console.log("TODO: Show that the list item execution might not work");
         });
 
         console.log('home constructor called');

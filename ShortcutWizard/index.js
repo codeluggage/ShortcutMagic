@@ -685,14 +685,29 @@ ipcMain.on('update-shortcut-item', (event, shortcutItem) => {
 	});
 });
 
-ipcMain.on('execute-list-item', (event, listItemName, menu) => {
-	if (!listItemName || !menu) {
+ipcMain.on('execute-list-item', (event, listItem) => {
+	if (listItem) {
 		// how did we end up here??
 		console.log("tried to execute non existent stuff");
+		return;
 		// loadWithPeriods(appName); // TODO: load shortcuts and do remaining work in callback here
 	}
+
+	var listItemName = listItem.name;
+	var menu = listItem.menu;
 	// TODO: Run applescript for opening menu here
 	// - perhaps have a toggled state here, where first click sets state and shows the list item, and the second click executes
 	console.log("calling execute-list-item with ", listItemName, menu);
-	backgroundTaskRunnerWindow.webContents.send('webview-execute-menu-item', currentAppName, listItemName, menu);
+
+
+	// Only check for shortcut values that can stand alone, and defines if the list item has
+	// shortcuts that can be executed. Not sure how only a mod could be assigned, but it would
+	// not be possible to execute that as a key combo.
+	if (listItem.char || listItem.glyph) {
+		// Found shortcuts, execute
+		backgroundTaskRunnerWindow.webContents.send('webview-execute-shortcut', currentAppName, listItem);
+	} else {
+		// Did not find shortcuts, still attempt to execute the menu item by clicking it with applescript
+		backgroundTaskRunnerWindow.webContents.send('webview-execute-menu-item', currentAppName, listItemName, menu);
+	}
 });
