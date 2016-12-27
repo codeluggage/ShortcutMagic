@@ -686,7 +686,7 @@ ipcMain.on('update-shortcut-item', (event, shortcutItem) => {
 });
 
 ipcMain.on('execute-list-item', (event, listItem) => {
-	if (listItem) {
+	if (!listItem) {
 		// how did we end up here??
 		console.log("tried to execute non existent stuff");
 		return;
@@ -697,7 +697,7 @@ ipcMain.on('execute-list-item', (event, listItem) => {
 	var menu = listItem.menu;
 	// TODO: Run applescript for opening menu here
 	// - perhaps have a toggled state here, where first click sets state and shows the list item, and the second click executes
-	console.log("calling execute-list-item with ", listItemName, menu);
+	console.log("calling execute-list-item with ", listItem);
 
 
 	// Only check for shortcut values that can stand alone, and defines if the list item has

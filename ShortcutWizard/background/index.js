@@ -21,6 +21,7 @@ window.onload = function () {
 	});
 
 	ipcRenderer.on('webview-execute-shortcut', (event, appName, listItem) => {
+		console.log("webview-execute-shortcut called with ", appName, listItem);
 		executeShortcut(appName, listItem);
 	});
 };

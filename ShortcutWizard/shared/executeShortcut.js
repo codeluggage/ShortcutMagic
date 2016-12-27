@@ -3,6 +3,7 @@ var $ = require('NodObjC');
 $.import('OSAKit');
 
 module.exports = function executeShortcut(listItem) {
+    console.log("executeShortcut starting");
 	var scriptName = "executeShortcut";
 	var encoding = $.NSUTF8StringEncoding;
 	var dirName = $(`${__dirname}/${scriptName}.scpt`);
@@ -15,16 +16,35 @@ module.exports = function executeShortcut(listItem) {
 	var compiled = hold('compileAndReturnError', errorInfo.ref());
 
 	if (!compiled) {
-	    $.NSLog("Compile failed: %@", errorInfo);
+        console.log("error in executeShortcut with errorInfo", $.NSString("stringWithFormat", "%@", errorInfo));
+	    // $.NSLog("Compile failed: %@", errorInfo);
 	    return null;
 	}
 
+    console.log("error in executeShortcut with errorInfo", errorInfo);
 	var arrayArgs = $.NSMutableArray('alloc')('init');
 
     // TODO: Split out each piece of the shortcut
     var char = listItem.char;
+
     var glyph = listItem.glyph;
+    if (glyph) {
+        // Convert from visual back to key code
+
+        // let control = mod.indexOf("⌃");
+        // let alt = mod.indexOf("⌥");
+        // let shift = mod.indexOf("⇧");
+        // let command = mod.indexOf("⌘");
+    }
+
     var mod = listItem.mod;
+    if (mod) {
+        // Strip out the different commands and give them regular words like control
+        let control = mod.indexOf("⌃");
+        let alt = mod.indexOf("⌥");
+        let shift = mod.indexOf("⇧");
+        let command = mod.indexOf("⌘");
+    }
 
     if (char && !glyph && !mod) {
         arrayArgs('addObject', $(char));

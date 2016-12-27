@@ -1,42 +1,53 @@
 on executeChar(processName, char)
     try
         tell application processName
-            keystroke { char down }
+            key down char
         end tell
-    catch
-        keystroke { char up }
     end try
-end executeShortcut
+
+    -- Make sure they always come back up again
+    key up char
+end executeChar
+
+on run()
+    executeCharMod("iTerm2", "p", "command")
+end run
 
 on executeCharMod(processName, char, mod)
     try
         tell application processName
-            keystroke { mod down, char down }
+            keystroke char using { mod down }
         end tell
-    catch
-        keystroke { mod up, char up }
     end try
-end executeShortcut
+
+    -- Make sure they always come back up again
+    key up char
+    key up mod
+end executeCharMod
 
 on executeGlyph(processName, glyph)
     try
     	tell application processName
-            keystroke { glyph down }
+            key down glyph
     	end tell
-    catch
-        keystroke { glyph up }
     end try
-end executeShortcut
+
+    -- Make sure they always come back up again
+    key up glyph
+end executeGlyph
 
 on executeGlyphMod(processName, glyph, mod)
     try
     	tell application processName
-            keystroke { mod down, glyph down }
+            keystroke glyph using mod
     	end tell
-    catch
-        keystroke { mod up, glyph up }
     end try
-end executeShortcut
+
+    -- Make sure they always come back up again
+    key up glyph
+
+        keystroke { mod up, glyph up }
+end executeGlyphMod
 
 on executeCharGlyphMod(processName, char, glyph, mod)
     try
@@ -46,7 +57,7 @@ on executeCharGlyphMod(processName, char, glyph, mod)
     catch
         keystroke { mod up, char up, glyph up }
     end try
-end executeShortcut
+end executeCharGlyphMod
 
 -- Is this even possible?
 on executeCharGlyph(processName, char, glyph)
@@ -57,4 +68,4 @@ on executeCharGlyph(processName, char, glyph)
     catch
         keystroke { char up, glyph up }
     end try
-end executeShortcut
+end executeCharGlyph
