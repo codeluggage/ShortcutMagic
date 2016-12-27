@@ -1,71 +1,162 @@
-on executeChar(processName, char)
+-- Just char
+on execute(processName, char)
     try
-        tell application processName
-            key down char
-        end tell
+    	activate application processName
+    	tell application "System Events" to key code char
     end try
+end execute
 
-    -- Make sure they always come back up again
-    key up char
-end executeChar
 
-on run()
-    executeCharMod("iTerm2", "p", "command")
-end run
 
-on executeCharMod(processName, char, mod)
+
+-- SINGLE
+----------
+
+
+
+
+on executeCmd(processName, char)
     try
-        tell application processName
-            keystroke char using { mod down }
-        end tell
+    	activate application processName
+    	tell application "System Events" to key code char using {command down}
     end try
+end executeCmd
 
-    -- Make sure they always come back up again
-    key up char
-    key up mod
-end executeCharMod
-
-on executeGlyph(processName, glyph)
+on executeOpt(processName, char)
     try
-    	tell application processName
-            key down glyph
-    	end tell
+        activate application processName
+        tell application "System Events" to key code char using {option down}
     end try
+end executeOpt
 
-    -- Make sure they always come back up again
-    key up glyph
-end executeGlyph
-
-on executeGlyphMod(processName, glyph, mod)
+on executeCtrl(processName, char)
     try
-    	tell application processName
-            keystroke glyph using mod
-    	end tell
+        activate application processName
+        tell application "System Events" to key code char using {control down}
     end try
+end executeCtrl
 
-    -- Make sure they always come back up again
-    key up glyph
-
-        keystroke { mod up, glyph up }
-end executeGlyphMod
-
-on executeCharGlyphMod(processName, char, glyph, mod)
+on executeShift(processName, char)
     try
-    	tell application processName
-            keystroke { mod down, char down, glyph down }
-    	end tell
-    catch
-        keystroke { mod up, char up, glyph up }
+        activate application processName
+        tell application "System Events" to key code char using {shift down}
     end try
-end executeCharGlyphMod
+end executeShift
 
--- Is this even possible?
-on executeCharGlyph(processName, char, glyph)
+
+
+
+-- DOUBLES, CMD
+----------
+
+
+
+
+on executeCmdOpt(processName, char)
     try
-    	tell application processName
-            keystroke { char down, glyph down }
-    	end tell
-    catch
-        keystroke { char up, glyph up }
+        activate application processName
+        tell application "System Events" to key code char using {command down, option down}
     end try
-end executeCharGlyph
+end executeCmdOpt
+
+on executeCmdCtrl(processName, char)
+    try
+        activate application processName
+        tell application "System Events" to key code char using {command down, control down}
+    end try
+end executeCmdCtrl
+
+on executeCmdShift(processName, char)
+    try
+        activate application processName
+        tell application "System Events" to key code char using {command down, shift down}
+    end try
+end executeCmdShift
+
+
+
+-- DOUBLES, OPTION (no cmd)
+----------
+
+
+
+on executeOptCtrl(processName, char)
+    try
+        activate application processName
+        tell application "System Events" to key code char using {option down, control down}
+    end try
+end executeOptCtrl
+
+on executeOptShift(processName, char)
+    try
+        activate application processName
+        tell application "System Events" to key code char using {option down, shift down}
+    end try
+end executeOptShift
+
+
+
+
+-- DOUBLES, SHIFT (no alt, cmd)
+----------
+
+
+
+
+on executeShiftCtrl(processName, char)
+    try
+        activate application processName
+        tell application "System Events" to key code char using {shift down, control down}
+    end try
+end executeShiftCtrl
+
+
+
+
+-- TRIPLES
+----------
+
+
+
+
+on executeCmdOptShift(processName, char)
+    try
+        activate application processName
+        tell application "System Events" to key code char using {command down, option down, shift down}
+    end try
+end executeCmdOptShift
+
+on executeCmdOptCtrl(processName, char)
+    try
+        activate application processName
+        tell application "System Events" to key code char using {command down, option down, control down}
+    end try
+end executeCmdOptCtrl
+
+on executeCmdShiftCtrl(processName, char)
+    try
+        activate application processName
+        tell application "System Events" to key code char using {command down, shift down, control down}
+    end try
+end executeCmdShiftCtrl
+
+on executeOptCtrlShift(processName, char)
+    try
+        activate application processName
+        tell application "System Events" to key code char using {option down, control down, shift down}
+    end try
+end executeOptCtrlShift
+
+
+
+-- QUADRUPLE
+------------
+
+
+
+on executeCmdOptCtrlShift(processName, char)
+    try
+        activate application processName
+        tell application "System Events" to key code char using {command down, option down, control down, shift down}
+    end try
+end executeCmdOptCtrlShift
