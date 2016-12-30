@@ -2,6 +2,31 @@
 var $ = require('NodObjC');
 $.import('OSAKit');
 
+function buildExecuteFunction(control, option, shift, command) {
+    var executeFunction;
+
+    if (!control && !option && !shift && !command)       { executeFunction = "execute";
+    } else if (control && !option && !shift && !command) { executeFunction = "executeCtrl";
+    } else if (!control && !option && !shift && command) { executeFunction = "executeCmd";
+    } else if (!control && option && !shift && !command) { executeFunction = "executeOpt";
+    } else if (!control && !option && shift && !command) { executeFunction = "executeShift";
+    } else if (!control && option && !shift && command)  { executeFunction = "executeCmdOpt";
+    } else if (control && !option && !shift && command)  { executeFunction = "executeCmdCtrl";
+    } else if (!control && !option && shift && command)  { executeFunction = "executeCmdShift";
+    } else if (control && option && !shift && !command)  { executeFunction = "executeOptCtrl";
+    } else if (!control && option && shift && !command)  { executeFunction = "executeOptShift";
+    } else if (control && !option && !shift && !command) { executeFunction = "executeCtrl";
+    } else if (control && !option && shift && !command)  { executeFunction = "executeShiftCtrl";
+    } else if (!control && option && shift && command)   { executeFunction = "executeCmdOptShift";
+    } else if (control && option && !shift && command)   { executeFunction = "executeCmdOptCtrl";
+    } else if (control && !option && !shift && !command) { executeFunction = "executeCmdShiftCtrl";
+    } else if (control && option && shift && !command)   { executeFunction = "executeOptCtrlShift";
+    } else if (control && option && shift && command)    { executeFunction = "executeCmdOptCtrlShift";
+    }
+
+    return executeFunction;
+}
+
 module.exports = function executeShortcut(appName, listItem) {
     console.log("executeShortcut starting", listItem);
     var pool = $.NSAutoreleasePool('alloc')('init')
@@ -20,7 +45,7 @@ module.exports = function executeShortcut(appName, listItem) {
 
 	if (!compiled) {
         console.log("error in executeShortcut with errorInfo");
-        console.log($.NSString("stringWithFormat", "%@", errorInfo));
+        console.log(errorInfo);
 	    // $.NSLog("Compile failed: %@", errorInfo);
 	    return null;
 	}
@@ -29,10 +54,48 @@ module.exports = function executeShortcut(appName, listItem) {
     // console.log("error in executeShortcut with errorInfo", errorInfo,  dirName);
 	var arrayArgs = $.NSMutableArray('alloc')('init');
 
-    // TODO: Split out each piece of the shortcut
-    var char = listItem.char;
+    var char = convertCharToKeyCode(listItem.char, listItem.glyph);
+
+    arrayArgs('addObject', $(appName));
+    arrayArgs('addObject', $(char));
+
+    var mod = listItem.mod;
+    let control;
+    let option;
+    let shift;
+    let command;
+    if (mod) {
+        // Strip out the different commands and give them regular words like control
+        control = (mod.indexOf("⌃") != -1);
+        option = (mod.indexOf("⌥") != -1);
+        shift = (mod.indexOf("⇧") != -1);
+        command = (mod.indexOf("⌘") != -1);
+    }
+
+
+    if (!control && !option && !shift && !command) {
+        console.log("TODO: Fix this - No mod found, applying command mod as minimum");
+        command = true;
+    }
+
+    console.log("----> ", control, option, shift, command);
+    console.log(arrayArgs);
+
+    var executeFunction = buildExecuteFunction(control, option, shift, command);
+
+
+
+    console.log("after setting executeFunction", executeFunction);
+    var returnValue = hold('executeHandlerWithName', $(executeFunction), 'arguments', arrayArgs, 'error', errorInfo.ref());
+    console.log("after executing ", returnValue);
+
+    // TODO: Deal with potential errors?
+    pool('drain');
+};
+
+function convertCharToKeyCode(char, glyph) {
     if (!char) {
-        char = listItem.glyph;
+        char = glyph;
 
         if (!char) {
             // No char, no glyph, no way to execute this shortcut...
@@ -40,7 +103,7 @@ module.exports = function executeShortcut(appName, listItem) {
         }
     }
 
-    console.log("before char comparisons", char);
+    console.log("creating key code with ", char);
 
     // Force to string in case it's a number - maybe not needed
     char = "" + char;
@@ -120,7 +183,8 @@ module.exports = function executeShortcut(appName, listItem) {
         char = 34;
     } else if (char.indexOf("p") != -1) {
         char = 35;
-    } else if (char.indexOf("⏎") != -1 || char.indexOf("↵") != -1 || char.indexOf("⌤") != -1 || char.indexOf("Enter") != -1) {
+    } else if (char.indexOf("⏎") != -1 || char.indexOf("↵") != -1 || char.indexOf("↩") != -1
+        || char.indexOf("⌤") != -1 || char.indexOf("Enter") != -1) {
         char = 36;
     } else if (char.indexOf("l") != -1) {
         char = 37;
@@ -286,48 +350,7 @@ module.exports = function executeShortcut(appName, listItem) {
         char = 126;
     }
 
+    console.log("result key code: ", char);
 
-    var mod = listItem.mod;
-    let control;
-    let option;
-    let shift;
-    let command;
-    if (mod) {
-        // Strip out the different commands and give them regular words like control
-        control = (mod.indexOf("⌃") != -1);
-        option = (mod.indexOf("⌥") != -1);
-        shift = (mod.indexOf("⇧") != -1);
-        command = (mod.indexOf("⌘") != -1);
-    }
-
-    arrayArgs('addObject', $(char));
-
-    console.log("----> ", control, option, shift, command);
-    console.log(arrayArgs);
-
-    var executeFunction;
-    if (!control && !option && !shift && !command)       { executeFunction = "execute";
-    } else if (control && !option && !shift && !command) { executeFunction = "executeCtrl";
-    } else if (!control && !option && !shift && command) { executeFunction = "executeCmd";
-    } else if (!control && option && !shift && !command) { executeFunction = "executeOpt";
-    } else if (!control && !option && shift && !command) { executeFunction = "executeShift";
-    } else if (!control && option && !shift && command)  { executeFunction = "executeCmdOpt";
-    } else if (control && !option && !shift && command)  { executeFunction = "executeCmdCtrl";
-    } else if (!control && !option && shift && command)  { executeFunction = "executeCmdShift";
-    } else if (control && option && !shift && !command)  { executeFunction = "executeOptCtrl";
-    } else if (!control && option && shift && !command)  { executeFunction = "executeOptShift";
-    } else if (control && !option && !shift && !command) { executeFunction = "executeCtrl";
-    } else if (control && !option && shift && !command)  { executeFunction = "executeShiftCtrl";
-    } else if (!control && option && shift && command)   { executeFunction = "executeCmdOptShift";
-    } else if (control && option && !shift && command)   { executeFunction = "executeCmdOptCtrl";
-    } else if (control && !option && !shift && !command) { executeFunction = "executeCmdShiftCtrl";
-    } else if (control && option && shift && !command)   { executeFunction = "executeOptCtrlShift";
-    } else if (control && option && shift && command)    { executeFunction = "executeCmdOptCtrlShift";
-    }
-
-    console.log("after setting executeFunction", executeFunction);
-    hold('executeHandlerWithName', $(executeFunction), 'arguments', arrayArgs, 'error', errorInfo.ref());
-
-    // TODO: Deal with potential errors?
-    pool('drain');
-};
+    return char;
+}

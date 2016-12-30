@@ -546,9 +546,11 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 });
 
 ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
-	console.log('#3 - root index.js, ipc on main-parse-shortcuts-callback, upserting shortcuts in db: ');
-	updateRenderedShortcuts(payload);
-	saveWithoutPeriods(payload);
+	console.log("main-parse-shortcuts-callback");
+	if (payload) {
+		updateRenderedShortcuts(payload);
+		saveWithoutPeriods(payload);
+	}
 });
 
 ipcMain.on('main-parse-shortcuts', function(event, appName) {

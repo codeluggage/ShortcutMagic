@@ -1,16 +1,54 @@
-on run(processName, char)
-    executeCmd(processName, char)
+on run(executeFunction, processName, char)
+    if (executeFunction is equal to "execute") then execute(processName, char)
+    if (executeFunction is equal to "executeCmd") then return executeCmd(processName, char)
+    if (executeFunction is equal to "executeOpt") then executeOpt(processName, char)
+    if (executeFunction is equal to "executeCtrl") then executeCtrl(processName, char)
+    if (executeFunction is equal to "executeShift") then executeShift(processName, char)
+    if (executeFunction is equal to "executeCmdOpt") then executeCmdOpt(processName, char)
+    if (executeFunction is equal to "executeCmdCtrl") then executeCmdCtrl(processName, char)
+    if (executeFunction is equal to "executeCmdShift") then executeCmdShift(processName, char)
+    if (executeFunction is equal to "executeOptCtrl") then executeOptCtrl(processName, char)
+    if (executeFunction is equal to "executeOptShift") then executeOptShift(processName, char)
+    if (executeFunction is equal to "executeShiftCtrl") then executeShiftCtrl(processName, char)
+    if (executeFunction is equal to "executeCmdOptShift") then executeCmdOptShift(processName, char)
+    if (executeFunction is equal to "executeCmdOptCtrl") then executeCmdOptCtrl(processName, char)
+    if (executeFunction is equal to "executeCmdShiftCtrl") then executeCmdShiftCtrl(processName, char)
+    if (executeFunction is equal to "executeOptCtrlShift") then executeOptCtrlShift(processName, char)
+    if (executeFunction is equal to "executeCmdOptCtrlShift") then executeCmdOptCtrlShift(processName, char)
+end run
+
+on executeShortcut(executeFunction, processName, char)
+    if (executeFunction is equal to "execute") then execute(processName, char)
+    if (executeFunction is equal to "executeCmd") then executeCmd(processName, char)
+    if (executeFunction is equal to "executeOpt") then executeOpt(processName, char)
+    if (executeFunction is equal to "executeCtrl") then executeCtrl(processName, char)
+    if (executeFunction is equal to "executeShift") then executeShift(processName, char)
+    if (executeFunction is equal to "executeCmdOpt") then executeCmdOpt(processName, char)
+    if (executeFunction is equal to "executeCmdCtrl") then executeCmdCtrl(processName, char)
+    if (executeFunction is equal to "executeCmdShift") then executeCmdShift(processName, char)
+    if (executeFunction is equal to "executeOptCtrl") then executeOptCtrl(processName, char)
+    if (executeFunction is equal to "executeOptShift") then executeOptShift(processName, char)
+    if (executeFunction is equal to "executeShiftCtrl") then executeShiftCtrl(processName, char)
+    if (executeFunction is equal to "executeCmdOptShift") then executeCmdOptShift(processName, char)
+    if (executeFunction is equal to "executeCmdOptCtrl") then executeCmdOptCtrl(processName, char)
+    if (executeFunction is equal to "executeCmdShiftCtrl") then executeCmdShiftCtrl(processName, char)
+    if (executeFunction is equal to "executeOptCtrlShift") then executeOptCtrlShift(processName, char)
+    if (executeFunction is equal to "executeCmdOptCtrlShift") then executeCmdOptCtrlShift(processName, char)
+
+    return "run done"
 end run
 
 
 -- Just char
 on execute(processName, char)
     try
+        activate application processName
         tell application "System Events"
-            if processName is not equal to (name of first process where it is frontmost) then activate application processName
             key code char
         end tell
     end try
+
+    return "execute"
 end execute
 
 
@@ -24,8 +62,8 @@ end execute
 
 on executeCmd(processName, char)
     try
+        activate application processName
         tell application "System Events"
-            if processName is not equal to (name of first process where it is frontmost) then activate application processName
             key code char using {command down}
         end tell
     end try
@@ -33,8 +71,8 @@ end executeCmd
 
 on executeOpt(processName, char)
     try
+        activate application processName
         tell application "System Events"
-            if processName is not equal to (name of first process where it is frontmost) then activate application processName
             key code char using {option down}
         end tell
     end try
@@ -42,8 +80,8 @@ end executeOpt
 
 on executeCtrl(processName, char)
     try
+        activate application processName
         tell application "System Events"
-            if processName is not equal to (name of first process where it is frontmost) then activate application processName
             key code char using {control down}
         end tell
     end try
@@ -51,8 +89,8 @@ end executeCtrl
 
 on executeShift(processName, char)
     try
+        activate application processName
         tell application "System Events"
-            if processName is not equal to (name of first process where it is frontmost) then activate application processName
             key code char using {shift down}
         end tell
     end try
@@ -69,8 +107,8 @@ end executeShift
 
 on executeCmdOpt(processName, char)
     try
+        activate application processName
         tell application "System Events"
-            if processName is not equal to (name of first process where it is frontmost) then activate application processName
             key code char using {command down, option down}
         end tell
     end try
@@ -78,8 +116,8 @@ end executeCmdOpt
 
 on executeCmdCtrl(processName, char)
     try
+        activate application processName
         tell application "System Events"
-            if processName is not equal to (name of first process where it is frontmost) then activate application processName
             key code char using {command down, control down}
         end tell
     end try
@@ -87,8 +125,8 @@ end executeCmdCtrl
 
 on executeCmdShift(processName, char)
     try
+        activate application processName
         tell application "System Events"
-            if processName is not equal to (name of first process where it is frontmost) then activate application processName
             key code char using {command down, shift down}
         end tell
     end try
@@ -103,8 +141,8 @@ end executeCmdShift
 
 on executeOptCtrl(processName, char)
     try
+        activate application processName
         tell application "System Events"
-            if processName is not equal to (name of first process where it is frontmost) then activate application processName
             key code char using {option down, control down}
         end tell
     end try
@@ -112,8 +150,8 @@ end executeOptCtrl
 
 on executeOptShift(processName, char)
     try
+        activate application processName
         tell application "System Events"
-            if processName is not equal to (name of first process where it is frontmost) then activate application processName
             key code char using {option down, shift down}
         end tell
     end try
@@ -130,8 +168,8 @@ end executeOptShift
 
 on executeShiftCtrl(processName, char)
     try
+        activate application processName
         tell application "System Events"
-            if processName is not equal to (name of first process where it is frontmost) then activate application processName
             key code char using {shift down, control down}
         end tell
     end try
@@ -148,8 +186,8 @@ end executeShiftCtrl
 
 on executeCmdOptShift(processName, char)
     try
+        activate application processName
         tell application "System Events"
-            if processName is not equal to (name of first process where it is frontmost) then activate application processName
             key code char using {command down, option down, shift down}
         end tell
     end try
@@ -157,8 +195,8 @@ end executeCmdOptShift
 
 on executeCmdOptCtrl(processName, char)
     try
+        activate application processName
         tell application "System Events"
-            if processName is not equal to (name of first process where it is frontmost) then activate application processName
             key code char using {command down, option down, control down}
         end tell
     end try
@@ -166,8 +204,8 @@ end executeCmdOptCtrl
 
 on executeCmdShiftCtrl(processName, char)
     try
+        activate application processName
         tell application "System Events"
-            if processName is not equal to (name of first process where it is frontmost) then activate application processName
             key code char using {command down, shift down, control down}
         end tell
     end try
@@ -175,8 +213,8 @@ end executeCmdShiftCtrl
 
 on executeOptCtrlShift(processName, char)
     try
+        activate application processName
         tell application "System Events"
-            if processName is not equal to (name of first process where it is frontmost) then activate application processName
             key code char using {option down, control down, shift down}
         end tell
     end try
@@ -191,8 +229,8 @@ end executeOptCtrlShift
 
 on executeCmdOptCtrlShift(processName, char)
     try
+        activate application processName
         tell application "System Events"
-            if processName is not equal to (name of first process where it is frontmost) then activate application processName
             key code char using {command down, option down, control down, shift down}
         end tell
     end try
