@@ -343,6 +343,8 @@ export default class Home extends Component {
                 items: shortcutsArray,
                 loading: loadingList
             });
+
+            window.document.getElementById("searchField").value = "";
         });
 
         ipcRenderer.on('set-loading', (event, loading) => {
@@ -544,7 +546,7 @@ export default class Home extends Component {
 
 
                 <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
-                    <input style={{fontSize: 18}} type="text" placeholder="&#xF002;" onChange={this.filterListTrigger}/>
+                    <input id="searchField" style={{fontSize: 18}} type="text" placeholder="&#xF002;" onChange={this.filterListTrigger}/>
 
                     <div style={{textAlign: 'left'}}>
                         <SortableList
