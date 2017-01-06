@@ -295,17 +295,19 @@ on executeOptCtrlShift(processName, char)
     end try
 end executeOptCtrlShift
 
+-- QUADRUPLES
+-------------
 
 on executeCmdOptCtrlShift(processName, char)
     try
-		tell application "System Events"
-			set bId to (bundle identifier of first process whose name is equal to processName)
-		end tell
+	tell application "System Events"
+		set bId to (bundle identifier of first process whose name is equal to processName)
+	end tell
 
-		tell application id bId to activate
+	tell application id bId to activate
 
-        tell application "System Events"
-            key code char using {command down, option down, control down, shift down}
-        end tell
+	tell application "System Events"
+		key code char using {command down, option down, control down, shift down}
+	end tell
     end try
 end executeCmdOptCtrlShift
