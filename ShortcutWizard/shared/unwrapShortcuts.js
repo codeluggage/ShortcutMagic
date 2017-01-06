@@ -3,6 +3,9 @@ var $ = require('NodObjC')
 $.framework('Foundation');
 
 module.exports = function(desc) {
+    if (!desc) return null;
+
+    
   var info = {}
   var numItems = desc('numberOfItems');
   let set = $.NSMutableArray('alloc')('init');
@@ -12,12 +15,12 @@ module.exports = function(desc) {
       for (var j = 0; j <= numItems; j++) {
         let innerDesc = desc('descriptorAtIndex', j);
         if (!innerDesc) continue;
-        
+
         //          NSLog(@"inner desc: %@", innerDesc);
         let str = innerDesc('stringValue');
         if (str) {
           set('addObject', str);
-          
+
           if (set('count') > 1) {
             let newMerged = explainOrKeep(set);
             if (Object.keys(newMerged).length > 2 && (newMerged["char"] || newMerged["glyph"])) {
@@ -25,36 +28,36 @@ module.exports = function(desc) {
               set('removeAllObjects');
             }
           }
-          
+
           continue;
         }
-        
+
         for (var k = 0; k <= innerDesc('numberOfItems'); k++) {
           let innerDescriptor2 = innerDesc('descriptorAtIndex', k);
           if (!innerDescriptor2) {
             continue;
           }
-          
+
           str = innerDescriptor2('stringValue');
-          
+
           if (str) {
             set('addObject', str);
           } else {
             for (var x = 0; x <= innerDescriptor2('numberOfItems'); x++) {
               let innerDescriptor3 = innerDescriptor2('descriptorAtIndex', x);
               if (!innerDescriptor3) continue;
-              
+
               str = innerDescriptor3('stringValue');
-              
+
               if (str) {
                 set('addObject', str);
               } else {
                 for (var y = 0; y <= innerDescriptor3('numberOfItems'); y++) {
                   let innerDescriptor4 = innerDescriptor3('descriptorAtIndex', y);
                   if (!innerDescriptor4) continue;
-                  
+
                   str = innerDescriptor4('stringValue');
-                  
+
                   if (str) {
                     set('addObject', str);
                   } else {
@@ -65,7 +68,7 @@ module.exports = function(desc) {
               }
             }
           }
-          
+
           let newMerged = explainOrKeep(set);
           if (Object.keys(newMerged).length > 2 && (newMerged["char"] || newMerged["glyph"])) {
             info[newMerged["name"]] = newMerged;
@@ -75,20 +78,20 @@ module.exports = function(desc) {
           }
         }
       }
-  
+
   return info;
 };
 
 // function explainOrKeepWindow(set) {
 //     console.log('explainOrKeepWindow', set);
-  
+
 //     if (set('count') < 5) return null;
-  
+
 //     let newSet = {
 //       "name": "" + set[0];
 //     };
 
-//     // TODO: convert to floats 
+//     // TODO: convert to floats
 //     let rect = $.NSMakeRect(set[1]('floatValue'), set[2]('floatValue'), set[3]('floatValue'), set[4]('floatValue'));
 //     newSet('setObject', $.NSStringFromRect(rect), 'forKey', "position");
 //     return newSet;
@@ -99,7 +102,7 @@ function explainOrKeep(set) {
 
   var setCount = set('count');
   if (setCount < 2 || !set) return null;
-  
+
   let newSet = {
     "name": "" + set('objectAtIndex', 0)
   };
@@ -109,10 +112,10 @@ function explainOrKeep(set) {
   let nextCmdGlyph = false;
   let nextPosition = false;
   let nextMenuName = false;
-  
+
   for (var idx = 0; idx < setCount; idx++) {
-    // TODO: Make this cleaner? 
-    let obj = "" + set('objectAtIndex', idx); 
+    // TODO: Make this cleaner?
+    let obj = "" + set('objectAtIndex', idx);
 
     // Skip first index - that is always the name
     if (idx != 0 && obj) {
@@ -124,11 +127,11 @@ function explainOrKeep(set) {
         newSet["menuName"] = obj;
       } else if (nextCmdMod) {
         nextCmdMod = false;
-        
+
         let mod = null;
         // TODO: Cleaner covert?
         let switchCase = obj; switchCase++; switchCase--;
-        
+
         switch (switchCase) {
           case 0:
             mod = "⌘";
@@ -180,17 +183,17 @@ function explainOrKeep(set) {
             mod = "⌃⌥⇧";
             break;
         }
-        
+
         if (mod) {
           newSet["mod"] = mod;
         }
       } else if (nextCmdGlyph) {
         nextCmdGlyph = false;
-        
+
         // TODO: Cleaner converts
         let switchCase = obj; switchCase++; switchCase--;
         let glyph = null;
-        
+
         // set menuglyphs to text items of "2 ⇥ 3 ⇤ 4 ⌤ 9 ␣ 10 ⌦ 11 ↩ 16 ↓ 23 ⌫ 24 ← 25 ↑ 26 → 27 ⎋ 28 ⌧ 98 ⇞ 99 ⇪ 100 ← 101 → 102 ↖ 104 ↑ 105 ↘ 106 ↓ 107 ⇟ 111 F1 112 F2 113 F3 114 F4 115 F5 116 F6 117 F7 118 F8 119 F9 120 F10 121 F11 122 F12 135 F13 136 F14 137 F15 140 ⏏ 143 F16 144 F17 145 F18 146 F19"
         switch (switchCase) {
           case 2:
@@ -320,11 +323,11 @@ function explainOrKeep(set) {
             glyph = "F19";
             break;
         }
-        
+
         if (glyph) {
           newSet["glyph"] = glyph;
         }
-        
+
       } else if (nextCmdChar) {
         nextCmdChar = false;
         newSet["char"] = obj;
@@ -341,7 +344,7 @@ function explainOrKeep(set) {
       }
     }
   }
-  
+
   //  NSLog(@"explain after: %@", newSet);
   return newSet;
 }
@@ -349,35 +352,35 @@ function explainOrKeep(set) {
 function readWindowOfApp(applicationName) {
     let readWindowsOfApp = SWApplescriptManager('scriptForKey', "readWindowsOfApp");
     let errorInfo;
-    
+
     let desc = readWindowsOfApp('executeHandlerWithName', "readWindowsOfApp", 'arguments', [applicationName], 'error', errorInfo); // todo pass ref
-    
+
     if (errorInfo) {
       // $.NSLog("error: %@", errorInfo);
       console.log('readWindowOfApp', errorInfo);
     }
-    
-    
+
+
     let info = {};
     let numItems = desc('numberOfItems');
     // $.NSLog("Found number of items: %ld", numItems);
     console.log('found numItems', numItems);
     for (var i = 0; i < numItems; i++) {
-      
+
       let numItems = desc('numberOfItems');
-      
+
       if (numItems) {
         let set = $.NSMutableArray('alloc')('init');
-        
+
         for (var j = 0; j <= numItems; j++) {
           let innerDesc = desc('descriptorAtIndex', j);
           if (!innerDesc) continue;
-          
+
           //          NSLog(@"inner desc: %@", innerDesc);
           let str = innerDesc('stringValue');
           if (str) {
             set('addObject', str);
-            
+
             if (set('count') > 1) {
               let newMerged = explainOrKeep(set);
               if (Object.keys(newMerged).length > 2 && (newMerged["char"] || newMerged["glyph"])) {
@@ -385,36 +388,36 @@ function readWindowOfApp(applicationName) {
                 set('removeAllObjects');
               }
             }
-            
+
             continue;
           }
-          
+
           for (var k = 0; k <= innerDesc('numberOfItems'); k++) {
             let innerDescriptor2 = innerDesc('descriptorAtIndex', k);
             if (!innerDescriptor2) {
               continue;
             }
-            
+
             str = innerDescriptor2('stringValue');
-            
+
             if (str) {
               set('addObject', str);
             } else {
               for (var x = 0; x <= innerDescriptor2('numberOfItems'); x++) {
                 let innerDescriptor3 = innerDescriptor2('descriptorAtIndex', x);
                 if (!innerDescriptor3) continue;
-                
+
                 str = innerDescriptor3('stringValue');
-                
+
                 if (str) {
                   set('addObject', str);
                 } else {
                   for (var y = 0; y <= innerDescriptor3('numberOfItems'); y++) {
                     let innerDescriptor4 = innerDescriptor3('descriptorAtIndex', y);
                     if (!innerDescriptor4) continue;
-                    
+
                     str = innerDescriptor4('stringValue');
-                    
+
                     if (str) {
                       set('addObject', str);
                     } else {
@@ -425,7 +428,7 @@ function readWindowOfApp(applicationName) {
                 }
               }
             }
-            
+
             let newMerged = explainOrKeep(set);
             if (Object.keys(newMerged).length > 2 && (newMerged["char"] || newMerged["glyph"])) {
               info[newMerged["name"]] = newMerged;
@@ -437,68 +440,68 @@ function readWindowOfApp(applicationName) {
         }
       }
     }
-    
+
   return info;
 }
 
 // function readWindowOfApp(applicationName) {
 //     let readWindowsOfApp = SWApplescriptManager('scriptForKey', "readWindowOfApp");
 //     let errorInfo;
-    
+
 //     let desc = readWindowsOfApp('executeHandlerWithName', "readWindowOfApp", 'arguments', [applicationName], 'error', errorInfo);
-    
+
 //     if (errorInfo) {
 //       $.NSLog("+++++++++readWindowOfApp error: %@", errorInfo);
 //     }
-    
-    
+
+
 //     let info = $.NSMutableDictionary('alloc')('init');
 //     let numItems = desc('numberOfItems');
 //     $.NSLog("++++++++++++++readWindowOfApp Found number of items: %ld", numItems);
 //     for (var i = 0; i < numItems; i++) {
-      
+
 //       var numItems = desc('numberOfItems');
-      
+
 //       if (numItems) {
 //         let set = $.NSMutableArray('alloc')('init');
-        
+
 //         for (var j = 0; j <= numItems; j++) {
 //           let innerDesc = desc('descriptorAtIndex', j);
 //           if (!innerDesc) continue;
-          
+
 //           //          NSLog(@"inner desc: %@", innerDesc);
 //           let str = innerDesc('stringValue');
 //           if (str) {
 //             set('addObject', str);
 //             continue;
 //           }
-          
+
 //           for (var k = 0; k <= innerDesc('numberOfItems'); k++) {
 //             let innerDescriptor2 = innerDesc('descriptorAtIndex', k);
 //             if (!innerDescriptor2) {
 //               continue;
 //             }
-            
+
 //             str = innerDescriptor2('stringValue');
-            
+
 //             if (str) {
 //               set('addObject', str);
 //             } else {
 //               for (var x = 0; x <= innerDescriptor2('numberOfItems'); x++) {
 //                 let innerDescriptor3 = innerDescriptor2('descriptorAtIndex', x);
 //                 if (!innerDescriptor3) continue;
-                
+
 //                 str = innerDescriptor3('stringValue');
-                
+
 //                 if (str) {
 //                   set('addObject', str);
 //                 } else {
 //                   for (var y = 0; y <= innerDescriptor3('numberOfItems'); y++) {
 //                     let innerDescriptor4 = innerDescriptor3('descriptorAtIndex', y);
 //                     if (!innerDescriptor4) continue;
-                    
+
 //                     str = innerDescriptor4('stringValue');
-                    
+
 //                     if (str) {
 //                       set('addObject', str);
 //                     } else {
@@ -508,7 +511,7 @@ function readWindowOfApp(applicationName) {
 //                 }
 //               }
 //             }
-            
+
 //             let newMerged = SWApplescriptManager('explainOrKeepWindow', set);
 //             if (newMerged) {
 //               info('addEntriesFromDictionary', newMerged);
@@ -518,7 +521,7 @@ function readWindowOfApp(applicationName) {
 //         }
 //       }
 //     }
-    
+
 //     return $.NSDictionary('dictionaryWithDictionary', info);
 // }
 
@@ -526,13 +529,12 @@ function windowNameOfApp(applicationName) {
     let readWindowsOfApp = SWApplescriptManager('scriptForKey', "windowNameOfApp");
     let errorInfo;
     let desc = readWindowsOfApp('executeHandlerWithName', "windowNameOfApp", 'arguments', [applicationName], 'error', errorInfo);
-    
+
     if (errorInfo) {
       // $.NSLog("--------windowNameOfApp error: %@", errorInfo);
       console.log('windowNameOfApp err', errorInfo);
       return "";
     }
-    
+
     return desc('stringValue');
 }
-

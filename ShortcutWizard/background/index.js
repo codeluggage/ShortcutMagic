@@ -2,7 +2,9 @@
 const { ipcRenderer } = require('electron');
 const readShortcutsObj = require('../shared/readShortcuts');
 const readShortcuts = readShortcutsObj();
-const executeMenuItem = require('../shared/executeMenuItem')
+const executeMenuItem = require('../shared/executeMenuItem');
+const executeShortcut = require('../shared/executeShortcut');
+
 
 window.onload = function () {
 	ipcRenderer.on('webview-parse-shortcuts', (event, appName) => {
@@ -16,5 +18,10 @@ window.onload = function () {
 	// This handler works sync not async
 	ipcRenderer.on('read-last-app-name', (event) => {
 		event.returnValue = readShortcuts.readAppName();
+	});
+
+	ipcRenderer.on('webview-execute-shortcut', (event, appName, listItem) => {
+		console.log("webview-execute-shortcut called with ", appName, listItem);
+		executeShortcut(appName, listItem);
 	});
 };
