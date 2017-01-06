@@ -32,11 +32,13 @@ const SortableItem = SortableElement((componentArguments) => {
     let doc = componentArguments.contentWindow.document;
 
     let topSection = (
-        <h3 style={{
+        <p style={{
             color: globalState.textColor,
             flex: 4,
             marginRight: '4px',
-        }}>{listItem.name}</h3>
+			fontSize: globalState.listTitleFontSize,
+			fontWeight: globalState.listTitleFontWeight,
+        }}>{listItem.name}</p>
     );
 
     let bottomSection = (
@@ -54,6 +56,8 @@ const SortableItem = SortableElement((componentArguments) => {
                 borderWidth: ".50rem",
                 border: `2px solid ${globalState.itemColor}`,
                 backgroundColor: globalState.itemColor,
+				fontSize: globalState.listItemFontSize,
+				fontWeight: globalState.listItemFontWeight,
             }}>{
                 // Always show ⌘ if there are no mods or glyphs
                 (listItem["mod"]) ? listItem["mod"] :
@@ -238,7 +242,7 @@ const SortableList = SortableContainer((componentArguments) => {
     return (!items) ? (
         <p>No items yet</p>
     ) : (
-        <div style={{fontWeight:500, fontSize:18, margin:'15px'}}>
+        <div style={{margin:'15px'}}>
             {
                 items.map((value, index) => {
                     return (
@@ -259,6 +263,17 @@ var holdRemote = remote;
 
 export default class Home extends Component {
     componentWillMount() {
+		//
+		// // TODO: Save properly
+		// this.state = {
+		// 	listTitleFontSize: 24,
+		// 	listTitleFontWeight: 600,
+		// 	listItemFontSize: 20,
+		// 	listItemFontWeight: 500,
+		// };
+		//
+
+
         ipcRenderer.on('temporarily-update-app-setting', (event, newSetting) => {
             if (Object.keys(newSetting)[0] == "backgroundColor") {
                 window.document.documentElement.style.backgroundColor = newSetting["backgroundColor"];
@@ -386,7 +401,38 @@ export default class Home extends Component {
         this.filterListTrigger = this.filterListTrigger.bind(this);
         this.filterList = this.filterList.bind(this);
         this.toggleSettings = this.toggleSettings.bind(this);
+        this.changeFontUp = this.changeFontUp.bind(this);
+        this.changeFontDown = this.changeFontDown.bind(this);
     }
+
+    changeFontUp() {
+			console.log("fonts");
+			console.log(this.state.listTitleFontSize);
+			console.log(this.state.listTitleFontWeight);
+			console.log(this.state.listItemFontSize);
+			console.log(this.state.listItemFontWeight);
+		this.setState({
+			listTitleFontSize: this.state.listTitleFontSize + 2,
+			listTitleFontWeight: this.state.listTitleFontWeight + 100,
+			listItemFontSize: this.state.listItemFontSize + 2,
+			listItemFontWeight: this.state.listItemFontWeight + 100,
+		});
+	}
+
+    changeFontDown() {
+			console.log("fonts");
+			console.log(this.state.listTitleFontSize);
+			console.log(this.state.listTitleFontWeight);
+			console.log(this.state.listItemFontSize);
+			console.log(this.state.listItemFontWeight);
+
+		this.setState({
+			listTitleFontSize: this.state.listTitleFontSize - 2,
+			listTitleFontWeight: this.state.listTitleFontWeight - 100,
+			listItemFontSize: this.state.listItemFontSize - 2,
+			listItemFontWeight: this.state.listItemFontWeight - 100,
+		});
+	}
 
     toggleSettings() {
         // TODO: refer directly to the browser window by id instead of grabbing all windows
@@ -454,6 +500,13 @@ export default class Home extends Component {
         globalState = this.state;
         console.log('render() called');
         if (!this.state) {
+			this.state = {
+				listTitleFontWeight: 800,
+				listTitleFontSize: 24,
+				listItemFontWeight: 600,
+				listItemFontSize: 14,
+			};
+
             window.document.documentElement.style.backgroundColor = hexToRgba(beautifulColors[5], 0.5);
 
             return (
@@ -529,6 +582,30 @@ export default class Home extends Component {
 
         return (
             <div style={{ textAlign: 'center' }}>
+
+					<button style={{
+                        color: this.state.textColor,
+                        backgroundColor: 'transparent',
+                        float: 'left'
+                    }} id="increase-font-size-button" className="simple-button" onClick={() => {
+                        console.log("clicked settings");
+                        this.changeFontUp();
+                    }}>
+                        <i className="fa fa-1x fa-fa-font"> </i><i className="fa fa-1x fa-plus"></i>
+                    </button>
+
+
+                    <button style={{
+                        color: this.state.textColor,
+                        backgroundColor: 'transparent',
+                        float: 'left'
+                    }} id="decrease-font-size-button" className="simple-button" onClick={() => {
+                        console.log("clicked settings");
+                        this.changeFontDown();
+                    }}>
+                        <i className="fa fa-1x fa-minus"></i>
+                    </button>
+
                     <button style={{
                         color: this.state.textColor,
                         backgroundColor: 'transparent',
