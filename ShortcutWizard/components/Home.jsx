@@ -292,7 +292,6 @@ export default class Home extends Component {
             }
         });
 
-
         ipcRenderer.on('set-background-color', (event, backgroundColor) => {
             console.log('inside Home.jsx set-background-color with ', backgroundColor);
 
@@ -352,11 +351,20 @@ export default class Home extends Component {
             const shortcutsArray = Object.keys(shortcuts).map(key => shortcuts[key]);
             console.log('ipcRenderer callback, raw, name, new array: ', newShortcuts, name, shortcutsArray);
 
+			var listTitleFontWeight = (newShortcuts.listTitleFontWeight) ? newShortcuts.listTitleFontWeight : 800;
+			var listTitleFontSize = (newShortcuts.listTitleFontSize) ? newShortcuts.listTitleFontSize : 24;
+			var listItemFontWeight = (newShortcuts.listItemFontWeight) ? newShortcuts.listItemFontWeight : 600;
+			var listItemFontSize = (newShortcuts.listItemFontSize) ? newShortcuts.listItemFontSize : 14;
+
             this.setState({
                 name: name,
                 initialItems: shortcutsArray,
                 items: shortcutsArray,
-                loading: loadingList
+                loading: loadingList,
+				listTitleFontWeight: listTitleFontWeight,
+				listTitleFontSize: listTitleFontSize,
+				listItemFontWeight: listItemFontWeight,
+				listItemFontSize: listItemFontSize,
             });
 
             window.document.getElementById("searchField").value = "";
@@ -406,32 +414,41 @@ export default class Home extends Component {
     }
 
     changeFontUp() {
-			console.log("fonts");
-			console.log(this.state.listTitleFontSize);
-			console.log(this.state.listTitleFontWeight);
-			console.log(this.state.listItemFontSize);
-			console.log(this.state.listItemFontWeight);
-		this.setState({
+		console.log("font up");
+		console.log(this.state.listTitleFontSize);
+		console.log(this.state.listTitleFontWeight);
+		console.log(this.state.listItemFontSize);
+		console.log(this.state.listItemFontWeight);
+
+		var newFontValues = {
 			listTitleFontSize: this.state.listTitleFontSize + 2,
 			listTitleFontWeight: this.state.listTitleFontWeight + 100,
 			listItemFontSize: this.state.listItemFontSize + 2,
 			listItemFontWeight: this.state.listItemFontWeight + 100,
-		});
+		};
+
+		ipcRenderer.send('update-current-app-value', newFontValues);
+
+		this.setState(newFontValues);
 	}
 
     changeFontDown() {
-			console.log("fonts");
-			console.log(this.state.listTitleFontSize);
-			console.log(this.state.listTitleFontWeight);
-			console.log(this.state.listItemFontSize);
-			console.log(this.state.listItemFontWeight);
+		console.log("font down");
+		console.log(this.state.listTitleFontSize);
+		console.log(this.state.listTitleFontWeight);
+		console.log(this.state.listItemFontSize);
+		console.log(this.state.listItemFontWeight);
 
-		this.setState({
+		var newFontValues = {
 			listTitleFontSize: this.state.listTitleFontSize - 2,
 			listTitleFontWeight: this.state.listTitleFontWeight - 100,
 			listItemFontSize: this.state.listItemFontSize - 2,
 			listItemFontWeight: this.state.listItemFontWeight - 100,
-		});
+		};
+
+		ipcRenderer.send('update-current-app-value', newFontValues);
+
+		this.setState(newFontValues);
 	}
 
     toggleSettings() {
@@ -500,12 +517,6 @@ export default class Home extends Component {
         globalState = this.state;
         console.log('render() called');
         if (!this.state) {
-			this.state = {
-				listTitleFontWeight: 800,
-				listTitleFontSize: 24,
-				listItemFontWeight: 600,
-				listItemFontSize: 14,
-			};
 
             window.document.documentElement.style.backgroundColor = hexToRgba(beautifulColors[5], 0.5);
 
@@ -578,7 +589,6 @@ export default class Home extends Component {
 
             this.previousShortcuts = shortcuts;
         }
-
 
         return (
             <div style={{ textAlign: 'center' }}>

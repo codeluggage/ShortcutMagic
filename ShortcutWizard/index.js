@@ -713,3 +713,19 @@ ipcMain.on('execute-list-item', (event, listItem) => {
 		backgroundTaskRunnerWindow.webContents.send('webview-execute-menu-item', currentAppName, listItemName, menu);
 	}
 });
+
+ipcMain.on('update-current-app-value', function(event, newAppValue) {
+	console.log('on update-current-app-value with ', newAppValue);
+
+	db.update({
+		name: currentAppName
+	}, {
+		$set: newAppValue
+	}, function(err, doc) {
+		if (err) {
+			console.log('failed to update current app value in "update-current-app-value"', err);
+		} else {
+			console.log('successfully updated app value');
+		}
+	});
+});
