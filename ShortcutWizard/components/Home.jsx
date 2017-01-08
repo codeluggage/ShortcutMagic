@@ -631,10 +631,24 @@ export default class Home extends Component {
                     marginTop:'5px'
                 }}>{this.state.name}</h1>
 
+                <input id="searchField" style={{
+					fontSize: 18,
+					height: "80%",
+					width: "10%",
+					float: "right",
+					backgroundColor: 'transparent',
+					borderColor: 'transparent',
+				}} type="text" placeholder="&#xF002;"
+					onChange={this.filterListTrigger} onFocus={() => {
+						window.document.getElementById("searchField").style.width = "100%";
+						window.document.getElementById("searchField").style.backgroundColor = "white";
+					}} onBlur={() => {
+						window.document.getElementById("searchField").style.width = "10%";
+						window.document.getElementById("searchField").style.backgroundColor = "transparent";
+					}}/>
+
 
                 <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
-                    <input id="searchField" style={{fontSize: 18}} type="text" placeholder="&#xF002;" onChange={this.filterListTrigger}/>
-
                     <div style={{textAlign: 'left'}}>
                         <SortableList
                             items={shortcuts}
