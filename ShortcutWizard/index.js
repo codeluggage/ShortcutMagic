@@ -56,6 +56,7 @@ app.dock.hide();
 // Global (for now) objects:
 let trayObject;
 let settingsWindow;
+let miniSettingsWindow;
 let mainWindow;
 let backgroundTaskRunnerWindow;
 let backgroundListenerWindow;
@@ -161,6 +162,7 @@ function quitShortcutWizard() {
        trayObject.destroy();
        trayObject = null;
        settingsWindow = null; // TODO: double check that the settings window isn't destroyed elsewhere
+	   miniSettingsWindow = null;
        backgroundTaskRunnerWindow = null;
        backgroundListenerWindow.destroy(); // This holds on to objective c code, so we force destroy it
        backgroundListenerWindow = null;
@@ -229,13 +231,30 @@ const showWindow = () => {
 	mainWindow.focus()
 }
 
+function createMiniSettingsWindow() {
+	miniSettingsWindow = new BrowserWindow({
+		show: false,
+		title: "miniSettingsWindow",
+		alwaysOnTop: true,
+		acceptFirstClick: true,
+		transparent: true,
+		frame: false,
+		x: 800, y: 50, width: 300, height: 800,
+	});
+
+	var settingsPath = `file://${__dirname}/settings/miniIndex.html`;
+	miniSettingsWindow.loadURL(settingsPath);
+}
+
 function createSettingsWindow() {
 	settingsWindow = new BrowserWindow({
 		show: false,
 		title: "settingsWindow",
 		alwaysOnTop: true,
 		acceptFirstClick: true,
-		frame: false
+		frame: false,
+		height: 700,
+		width: 700,
 	});
 
 	var settingsPath = `file://${__dirname}/settings/index.html`;
@@ -250,6 +269,7 @@ function createWindows() {
 	createBackgroundTaskRunnerWindow();
 	createBackgroundListenerWindow();
 	createSettingsWindow();
+	createMiniSettingsWindow();
 	// createWelcomeWindow();
 	createMainWindow();
 }
@@ -355,6 +375,13 @@ function createTray() {
 		if (welcomeWindow) {
 			welcomeWindow.show();
 			welcomeWindow.openDevTools();
+		} else {
+			console.log("cant find backgroundListenerWindow to show");
+		}
+
+		if (miniSettingsWindow) {
+			miniSettingsWindow.show();
+			miniSettingsWindow.openDevTools();
 		} else {
 			console.log("cant find backgroundListenerWindow to show");
 		}
@@ -511,8 +538,10 @@ ipcMain.on('get-app-name-sync', function(event) {
 });
 
 ipcMain.on('main-app-switched-notification', function(event, appName) {
+	// TODO: Make this list editable somewhere to avoid people having problems?
 	if (appName == "Electron" || appName == "ShortcutWizard" ||
-		appName == "ScreenSaverEngine" || appName == "loginwindow") {
+		appName == "ScreenSaverEngine" || appName == "loginwindow" ||
+		appName == "Dock") {
 		console.log("Not switching to this app: ", appName);
 		return;
 	}

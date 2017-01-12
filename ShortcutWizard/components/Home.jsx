@@ -56,7 +56,6 @@ const SortableItem = SortableElement((componentArguments) => {
                 borderWidth: ".50rem",
                 border: `2px solid ${globalState.itemColor}`,
                 backgroundColor: globalState.itemColor,
-				fontSize: globalState.listItemFontSize,
 				fontWeight: globalState.listItemFontWeight,
             }}>{
                 // Always show ⌘ if there are no mods or glyphs
@@ -184,7 +183,7 @@ const SortableItem = SortableElement((componentArguments) => {
                     console.log("Updating shortcut item with toggled isHidden: ", listItem);
                     ipcRenderer.send('update-shortcut-item', listItem);
                 }}>
-                    <i className="fa fa-2x fa-remove"></i>
+                    <i className="fa fa-2x fa-eye"></i>
                 </div>
         </div>
     );
@@ -409,6 +408,7 @@ export default class Home extends Component {
         this.filterListTrigger = this.filterListTrigger.bind(this);
         this.filterList = this.filterList.bind(this);
         this.toggleSettings = this.toggleSettings.bind(this);
+        this.toggleMiniSettings = this.toggleMiniSettings.bind(this);
         this.changeFontUp = this.changeFontUp.bind(this);
         this.changeFontDown = this.changeFontDown.bind(this);
     }
@@ -456,9 +456,45 @@ export default class Home extends Component {
         var windows = holdRemote.BrowserWindow.getAllWindows();
         for (var i = 0; i < windows.length; i++) {
             let settingsWindow = windows[i];
-            if (settingsWindow && settingsWindow.getTitle() == "settingsWindow") {
-                settingsWindow.show();
-            }
+            if (settingsWindow) {
+				if (settingsWindow.getTitle() == "settingsWindow") {
+					// TODO: Listen for escape once window is visible, to hide window again
+					if (settingsWindow.isVisible()) {
+						// TODO: Save changes when window is hidden again
+		                settingsWindow.hide();
+					} else {
+		                settingsWindow.show();
+					}
+	            } else if (settingsWindow.getTitle() == "miniSettingsWindow") {
+					if (settingsWindow.isVisible()) {
+		                settingsWindow.hide();
+					}
+	            }
+			}
+        }
+    }
+
+    toggleMiniSettings() {
+        // TODO: refer directly to the browser window by id instead of grabbing all windows
+        var windows = holdRemote.BrowserWindow.getAllWindows();
+        for (var i = 0; i < windows.length; i++) {
+            let settingsWindow = windows[i];
+            if (settingsWindow) {
+				if (settingsWindow.getTitle() == "miniSettingsWindow") {
+					// TODO: Listen for escape once window is visible, to hide window again
+					if (settingsWindow.isVisible()) {
+						// TODO: Save changes when window is hidden again
+		                settingsWindow.hide();
+					} else {
+		                settingsWindow.show();
+					}
+	            } else if (settingsWindow.getTitle() == "settingsWindow") {
+					// Hide main settings window if we clicked eyedropper settings window
+					if (settingsWindow.isVisible()) {
+						settingsWindow.hide();
+					}
+	            }
+			}
         }
     }
 
@@ -593,59 +629,120 @@ export default class Home extends Component {
         return (
             <div style={{ textAlign: 'center' }}>
 
-					<button style={{
-                        color: this.state.textColor,
-                        backgroundColor: 'transparent',
-                        float: 'left'
-                    }} id="increase-font-size-button" className="simple-button" onClick={() => {
-                        console.log("clicked settings");
-                        this.changeFontUp();
-                    }}>
-                        <i className="fa fa-1x fa-fa-font"> </i><i className="fa fa-1x fa-plus"></i>
-                    </button>
-
-
-                    <button style={{
-                        color: this.state.textColor,
-                        backgroundColor: 'transparent',
-                        float: 'left'
-                    }} id="decrease-font-size-button" className="simple-button" onClick={() => {
-                        console.log("clicked settings");
-                        this.changeFontDown();
-                    }}>
-                        <i className="fa fa-1x fa-minus"></i>
-                    </button>
-
-                    <button style={{
-                        color: this.state.textColor,
-                        backgroundColor: 'transparent',
-                        float: 'right'
-                    }} id="settings-button" className="simple-button" onClick={() => {
-                        console.log("clicked settings");
-                        this.toggleSettings();
-                    }}>
-                        <i className="fa fa-1x fa-cog"></i>
-                    </button>
-                <h1 style={{
+				<button style={{
                     color: this.state.textColor,
-                    marginTop:'5px'
-                }}>{this.state.name}</h1>
+                    borderColor: 'transparent',
+                    backgroundColor: 'transparent',
+					float: 'right',
+					margin: 0,
+                }} id="toggle-main-buttons" className="simple-button" onClick={() => {
+					var visible = window.document.getElementById('main-buttons').style.display;
+					window.document.getElementById('main-buttons').style.display = (visible == 'flex') ? 'none' : 'flex';
+                }}>
+                    <i className="fa fa-1x fa-cog"></i>
+                </button>
 
-                <input id="searchField" style={{
-					fontSize: 18,
-					height: "80%",
-					width: "10%",
-					float: "right",
-					backgroundColor: 'transparent',
-					borderColor: 'transparent',
-				}} type="text" placeholder="&#xF002;"
-					onChange={this.filterListTrigger} onFocus={() => {
+				<div id='main-buttons' style={{
+					display: 'none',
+					flexDirection: 'row',
+				}}>
+					<i className="fa fa-1x fa-text-height" style={{
+						flex: 1,
+	                    marginTop:'7px',
+						color: this.state.textColor,
+					}}></i>
+
+					<div style={{
+						display: 'flex',
+						flex: 2,
+						flexDirection: 'column'
+					}}>
+						<button style={{
+		                    color: this.state.textColor,
+		                    backgroundColor: 'transparent',
+							flex: 2,
+							margin: 0,
+		                }} id="increase-font-size-button" className="simple-button" onClick={() => {
+		                    console.log("clicked settings");
+		                    this.changeFontUp();
+		                }}>
+		                    <i className="fa fa-1x fa-plus"></i>
+		                </button>
+
+		                <button style={{
+		                    color: this.state.textColor,
+		                    backgroundColor: 'transparent',
+							flex: 2,
+							margin: 0,
+		                }} id="decrease-font-size-button" className="simple-button" onClick={() => {
+		                    console.log("clicked settings");
+		                    this.changeFontDown();
+		                }}>
+		                    <i className="fa fa-1x fa-minus"></i>
+		                </button>
+					</div>
+
+					<i className="fa fa-1x fa-cog" style={{
+						flex: 1,
+	                    marginTop:'7px',
+						color: this.state.textColor,
+					}}></i>
+
+					<div style={{
+						display: 'flex',
+						flex: 2,
+						flexDirection: 'column'
+					}}>
+		                <button style={{
+		                    color: this.state.textColor,
+		                    backgroundColor: 'transparent',
+							flex: 2,
+							margin: 0,
+		                }} id="settings-button" className="simple-button" onClick={() => {
+		                    console.log("clicked settings");
+		                    this.toggleSettings();
+		                }}>
+		                    <i className="fa fa-1x fa-sliders"></i>
+		                </button>
+
+		                <button style={{
+		                    color: this.state.textColor,
+		                    backgroundColor: 'transparent',
+							flex: 2,
+							margin: 0,
+		                }} id="mini-settings-button" className="simple-button" onClick={() => {
+		                    console.log("clicked miniSettings");
+		                    this.toggleMiniSettings();
+		                }}>
+		                    <i className="fa fa-1x fa-eyedropper"></i>
+		                </button>
+					</div>
+
+
+	                <input id="searchField" style={{
+						fontSize: 18,
+						width: "20%",
+						color: this.state.textColor,
+						backgroundColor: 'transparent',
+						borderColor: 'transparent',
+						flex: 2,
+					}} type="text" placeholder="&#xF002;" onChange={this.filterListTrigger} onFocus={() => {
+						// TODO: Move this down one line so it has the entire width to show search box
 						window.document.getElementById("searchField").style.width = "100%";
+						window.document.getElementById("searchField").style.flex = 6;
 						window.document.getElementById("searchField").style.backgroundColor = "white";
 					}} onBlur={() => {
-						window.document.getElementById("searchField").style.width = "10%";
+						window.document.getElementById("searchField").style.width = "20%";
+						window.document.getElementById("searchField").style.flex = 2;
 						window.document.getElementById("searchField").style.backgroundColor = "transparent";
 					}}/>
+				</div>
+
+                <h1 style={{
+                    color: this.state.textColor,
+                    marginTop:'2px',
+                    marginBottom:'2px',
+                }}>{this.state.name}</h1>
 
 
                 <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>

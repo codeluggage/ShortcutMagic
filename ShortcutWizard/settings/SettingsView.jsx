@@ -20,9 +20,23 @@ function makeColorString(color) {
 
 var holdRemote = remote;
 
+
 export default class SettingsView extends Component {
     componentWillMount() {
 		settings.create(this);
+
+		ipcRenderer.on('set-background-color', (event, color) => {
+			this.handleBackgroundColorChange(color);
+		});
+		ipcRenderer.on('set-item-color', (event, color) => {
+			this.handleItemColorChange(color);
+		});
+		ipcRenderer.on('set-text-color', (event, color) => {
+			this.handleTextColorChange(color);
+		});
+		ipcRenderer.on('get-app-settings', (event) => {
+			event.returnValue = this.state.appSettings;
+		});
 
 		// TODO: tweak this to fit global and local settings
     	// var applySettingsToState = (event, newSettings) => {
