@@ -34,8 +34,14 @@ export default class SettingsView extends Component {
 		ipcRenderer.on('set-text-color', (event, color) => {
 			this.handleTextColorChange(color);
 		});
+		ipcRenderer.on('set-item-background-color', (event, color) => {
+			this.handleItemBackgroundColorChange(color);
+		});
 		ipcRenderer.on('get-app-settings', (event) => {
 			event.returnValue = this.state.appSettings;
+		});
+		ipcRenderer.on('save', (event) => {
+			this.saveCurrentSettings();
 		});
 
 		// TODO: tweak this to fit global and local settings
@@ -107,6 +113,23 @@ export default class SettingsView extends Component {
             }
         }
     }
+
+	handleItemBackgroundColorChange(color) {
+    	var colorString = makeColorString(color);
+		var holdSettings = this.state.appSettings;
+		holdSettings.itemBackgroundColor = colorString;
+    	this.setState({
+			appSettings: holdSettings
+		});
+
+        var windows = holdRemote.BrowserWindow.getAllWindows();
+        for (var i = 0; i < windows.length; i++) {
+            let holdWindow = windows[i];
+            if (holdWindow && holdWindow.getTitle() == "mainWindow") {
+				holdWindow.webContents.send('set-item-background-color', colorString);
+            }
+        }
+	}
 
     handleTextColorChange(color) {
     	var colorString = makeColorString(color);
@@ -250,6 +273,14 @@ export default class SettingsView extends Component {
 							<SketchPicker
 								color={this.state.appSettings.itemColor}
 								onChangeComplete={this.handleItemColorChange}
+								presetColors={settings.beautifulColors}
+							/>
+						</div>
+						<div style={{flexDirection: 'column'}}>
+			        		<h2>Item background color</h2>
+							<SketchPicker
+								color={this.state.appSettings.itemBackgroundColor}
+								onChangeComplete={this.handleItemBackgroundColorChange}
 								presetColors={settings.beautifulColors}
 							/>
 						</div>

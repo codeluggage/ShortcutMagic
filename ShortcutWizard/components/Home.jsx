@@ -51,6 +51,8 @@ const SortableItem = SortableElement((componentArguments) => {
                 flex: 2,
                 marginRight: '5px',
                 marginLeft: '5px',
+				marginTop: 0,
+				marginBottom: 0,
                 color: globalState.textColor,
                 borderRadius: ".25rem",
                 borderWidth: ".50rem",
@@ -69,6 +71,8 @@ const SortableItem = SortableElement((componentArguments) => {
                     flex: 2,
                     marginRight: '5px',
                     marginLeft: '5px',
+					marginTop: 0,
+					marginBottom: 0,
                     color: globalState.textColor,
                     borderRadius: ".25rem",
                     borderWidth: ".50rem",
@@ -82,6 +86,8 @@ const SortableItem = SortableElement((componentArguments) => {
                     flex: 2,
                     marginRight: '5px',
                     marginLeft: '5px',
+					marginTop: 0,
+					marginBottom: 0,
                     color: globalState.textColor,
                     borderRadius: ".25rem",
                     borderWidth: ".50rem",
@@ -108,83 +114,88 @@ const SortableItem = SortableElement((componentArguments) => {
     var mouseOverButtonsSection = (
         <div id={`buttonSection-${componentArguments.index}`} style={{
             display: 'none',
-            flexDirection: 'column',
+            flexDirection: 'row',
             flex: 2,
             flexWrap: 'nowrap',
             alignContent: 'stretch',
         }}>
             <div style={{
-                color: "green",
-
-                flex: '4 100%',
+				color: globalState.textColor,
+				flex: 1,
                 height: '100%',
-                width: '50%',
                 backgroundColor: globalState.itemColor,
-                float: 'left',
                 marginRight: '1px',
                 marginLeft: '1px',
                 borderRadius: ".25rem",
                 borderWidth: ".50rem",
                 border: `2px solid ${globalState.itemColor}`,
+				textAlign: 'center',
             }} onClick={() => {
                 console.log("clicked execute-list-item with ", listItem);
                 ipcRenderer.send('execute-list-item', listItem);
             }}>
-                <i className="fa fa-2x fa-play"></i>
+                <i className="fa fa-2x fa-play" style={{
+					color: "green",
+				}}></i>
                 <br />
                 Run
             </div>
 
-                <div style={{
-                    color: "gold",
-                    // marginLeft: 'auto',
-                    // marginRight: 'auto',
-                    backgroundColor: globalState.itemColor,
-                    // display: (listItem.isFavorite) ? 'block' : 'none',
-                    // Specifically make favorite bigger if it is shown alone
-                    flex: '2 100%',
-                    // width: '50%',
-                    float: 'right',
-                    marginRight: '1px',
-                    marginLeft: '1px',
-                    borderRadius: ".25rem",
-                    borderWidth: ".50rem",
-                    border: `2px solid ${globalState.itemColor}`,
-                }} onClick={() => {
-                    listItem.isFavorite = !listItem.isFavorite;
-                    console.log("Updating shortcut item with toggled isFavorite: ", listItem);
-                    ipcRenderer.send('update-shortcut-item', listItem);
-                }}>
-                    {
-                        (listItem.isFavorite) ? (
-                            <i className="fa fa-2x fa-star"></i>
-                        ) : (
-                            <i className="fa fa-2x fa-star-o"></i>
-                        )
-                    }
-                </div>
+            <div style={{
+				color: globalState.textColor,
+                backgroundColor: globalState.itemColor,
+                // display: (listItem.isFavorite) ? 'block' : 'none',
+                // Specifically make favorite bigger if it is shown alone
+				flex: 1,
+				height: '100%',
+                marginRight: '1px',
+                marginLeft: '1px',
+                borderRadius: ".25rem",
+                borderWidth: ".50rem",
+                border: `2px solid ${globalState.itemColor}`,
+				textAlign: 'center',
+            }} onClick={() => {
+                listItem.isFavorite = !listItem.isFavorite;
+                console.log("Updating shortcut item with toggled isFavorite: ", listItem);
+                ipcRenderer.send('update-shortcut-item', listItem);
+            }}>
+                {
+                    (listItem.isFavorite) ? (
+                        <i className="fa fa-2x fa-star" style={{
+							color: "gold",
+						}}></i>
+                    ) : (
+                        <i className="fa fa-2x fa-star-o" style={{
+							color: "gold",
+						}}></i>
+                    )
+                }
+				<br />
+				Favorite
+            </div>
 
-                <div style={{
-                    color: (listItem.isHidden) ? "grey" : "red",
-                    backgroundColor: globalState.itemColor,
-                    float: 'right',
-                    // marginLeft: 'auto',
-                    // marginRight: 'auto',
-                    // display: (listItem.isHidden) ? 'block' : 'none',
-                    flex: '2 100%',
-                    // width: '50%',
-                    marginRight: '1px',
-                    marginLeft: '1px',
-                    borderRadius: ".25rem",
-                    borderWidth: ".50rem",
-                    border: `2px solid ${globalState.itemColor}`,
-                }} onClick={() => {
-                    listItem.isHidden = !listItem.isHidden;
-                    console.log("Updating shortcut item with toggled isHidden: ", listItem);
-                    ipcRenderer.send('update-shortcut-item', listItem);
-                }}>
-                    <i className="fa fa-2x fa-eye"></i>
-                </div>
+            <div style={{
+				color: globalState.textColor,
+                backgroundColor: globalState.itemColor,
+				flex: 1,
+				height: '100%',
+                marginRight: '1px',
+                marginLeft: '1px',
+                borderRadius: ".25rem",
+                borderWidth: ".50rem",
+                border: `2px solid ${globalState.itemColor}`,
+				textAlign: 'center',
+            }} onClick={() => {
+                listItem.isHidden = !listItem.isHidden;
+                console.log("Updating shortcut item with toggled isHidden: ", listItem);
+                ipcRenderer.send('update-shortcut-item', listItem);
+            }}>
+                <i className="fa fa-2x fa-eye" style={{
+					color: (listItem.isHidden) ? "grey" : "red",
+				}}></i>
+				<br />
+				Hide
+            </div>
         </div>
     );
 
@@ -204,16 +215,16 @@ const SortableItem = SortableElement((componentArguments) => {
 
     return (
         <div style={{
-            // borderRadius: ".25rem",
-            // borderWidth: ".50rem",
-            // border: `2px solid ${listItem.itemColor}`,
-            // backgroundColor: listItem.itemColor,
-            margin: "4px",
+            borderRadius: ".25rem",
+            borderWidth: ".50rem",
+            border: `2px solid ${globalState.itemBackgroundColor}`,
+            backgroundColor: globalState.itemBackgroundColor,
+            marginBottom: "8px",
             display: 'flex',
             // justifyContent: 'space-between',
             flexDirection: 'column',
         }} onMouseEnter={(e) => {
-            if (buttonSectionElement) buttonSectionElement.style.display = "block";
+            if (buttonSectionElement) buttonSectionElement.style.display = "flex";
         }} onMouseLeave={(e) => {
             if (buttonSectionElement) buttonSectionElement.style.display = "none";
         }}>
@@ -314,12 +325,20 @@ export default class Home extends Component {
             });
         });
 
+        ipcRenderer.on('set-item-background-color', (event, itemBackgroundColor) => {
+            console.log('inside Home.jsx set-item-background-color with ', itemBackgroundColor);
+            this.setState({
+                itemBackgroundColor: itemBackgroundColor
+            });
+        });
+
         ipcRenderer.on('set-all-colors', (event, colors) => {
             console.log('inside Home.jsx set-all-colors with ', colors);
             this.setState({
                 backgroundColor: colors.backgroundColor,
                 itemColor: colors.itemColor,
                 textColor: colors.textColor,
+                itemBackgroundColor: colors.itemBackgroundColor,
             });
         });
 
@@ -663,7 +682,7 @@ export default class Home extends Component {
 							flex: 2,
 							margin: 0,
 		                }} id="increase-font-size-button" className="simple-button" onClick={() => {
-		                    console.log("clicked settings");
+		                    console.log("clicked font size up");
 		                    this.changeFontUp();
 		                }}>
 		                    <i className="fa fa-1x fa-plus"></i>
@@ -675,7 +694,7 @@ export default class Home extends Component {
 							flex: 2,
 							margin: 0,
 		                }} id="decrease-font-size-button" className="simple-button" onClick={() => {
-		                    console.log("clicked settings");
+		                    console.log("clicked font size down");
 		                    this.changeFontDown();
 		                }}>
 		                    <i className="fa fa-1x fa-minus"></i>
@@ -717,6 +736,28 @@ export default class Home extends Component {
 		                    <i className="fa fa-1x fa-eyedropper"></i>
 		                </button>
 					</div>
+
+					<button	id="sw_full_view_icon" className="simple-button" onClick{() => {
+						ipcRenderer.send('set-full_view-mode');
+						console.log("clicked sw_full_view_icon");
+					}}>
+						<i source="../assets/sw_full_view_icon.png"></i>
+					</button>
+
+					<button id="sw_bubble_icon" className="simple-button" onClick{() => {
+						ipcRenderer.send('set-bubble-mode');
+						console.log("clicked sw_bubble_icon");
+					}}>
+						<i source="../assets/sw_bubble_icon.png"></i>
+					</button>
+
+					<button id="sw_hidden_icon" className="simple-button" onClick{() => {
+						ipcRenderer.send('set-hidden-mode');
+						console.log("clicked sw_hidden_icon");
+					}}>
+						<i source="../assets/sw_hidden_icon.png"></i>
+					</button>
+
 
 
 	                <input id="searchField" style={{

@@ -31,6 +31,7 @@ defaultSettings = {
 	backgroundColor: beautifulColors[5],
 	itemColor:beautifulColors[2],
 	textColor:beautifulColors[1],
+	itemBackgroundColor:beautifulColors[4],
 	title: "mainWindow"
 };
 
@@ -257,6 +258,7 @@ export class Settings {
 						holdWindow.webContents.send('set-background-color', newSettings["backgroundColor"]);
 						holdWindow.webContents.send('set-text-color', newSettings["textColor"]);
 						holdWindow.webContents.send('set-item-color', newSettings["itemColor"]);
+						holdWindow.webContents.send('set-item-background-color', newSettings["itemBackgroundColor"]);
 					}
 				}
 

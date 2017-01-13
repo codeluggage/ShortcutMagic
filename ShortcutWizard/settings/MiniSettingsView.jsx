@@ -15,7 +15,19 @@ export default class MiniSettingsView extends Component {
         this.handleBackgroundColorChange = this.handleBackgroundColorChange.bind(this);
         this.handleItemColorChange = this.handleItemColorChange.bind(this);
         this.handleTextColorChange = this.handleTextColorChange.bind(this);
+        this.handleItemBackgroundColorChange = this.handleItemBackgroundColorChange.bind(this);
     }
+
+	handleItemBackgroundColorChange(color) {
+        var windows = holdRemote.BrowserWindow.getAllWindows();
+        for (var i = 0; i < windows.length; i++) {
+            let holdWindow = windows[i];
+            if (holdWindow && holdWindow.getTitle() == "settingsWindow") {
+				holdWindow.webContents.send('set-item-background-color', color);
+				holdWindow.webContents.send('save');
+            }
+        }
+	}
 
     handleBackgroundColorChange(color) {
         var windows = holdRemote.BrowserWindow.getAllWindows();
@@ -23,6 +35,7 @@ export default class MiniSettingsView extends Component {
             let holdWindow = windows[i];
             if (holdWindow && holdWindow.getTitle() == "settingsWindow") {
 				holdWindow.webContents.send('set-background-color', color);
+				holdWindow.webContents.send('save');
             }
         }
     }
@@ -33,6 +46,7 @@ export default class MiniSettingsView extends Component {
             let holdWindow = windows[i];
             if (holdWindow && holdWindow.getTitle() == "settingsWindow") {
 				holdWindow.webContents.send('set-text-color', color);
+				holdWindow.webContents.send('save');
             }
         }
     }
@@ -43,6 +57,7 @@ export default class MiniSettingsView extends Component {
             let holdWindow = windows[i];
             if (holdWindow && holdWindow.getTitle() == "settingsWindow") {
 				holdWindow.webContents.send('set-item-color', color);
+				holdWindow.webContents.send('save');
             }
         }
     }
@@ -87,6 +102,14 @@ export default class MiniSettingsView extends Component {
 					<SketchPicker
 						color={appSettings.itemColor}
 						onChangeComplete={this.handleItemColorChange}
+						presetColors={beautifulColors}
+					/>
+                    <br />
+
+	        		<p>Item background color</p>
+					<SketchPicker
+						color={appSettings.itemColor}
+						onChangeComplete={this.handleItemBackgroundColorChange}
 						presetColors={beautifulColors}
 					/>
                     <br />
