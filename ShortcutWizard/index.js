@@ -9,20 +9,20 @@ var hackyStopSavePos = false;
 
 // TODO: Save to settings db
 var allFalseWindowMode = {
-	minimized: false,
-	stealth: false,
+	hidden: false,
+	bubble: false,
 	full: false
 };
 
 var defaultWindowMode = {
-	minimized: false,
-	stealth: false,
+	hidden: false,
+	bubble: false,
 	full: false
 };
 
 var windowMode = {
-	minimized: false,
-	stealth: false,
+	hidden: false,
+	bubble: false,
 	full: true
 };
 
@@ -70,14 +70,14 @@ let currentAppName = "Electron";
 const applyWindowMode = (newWindowMode) => {
 	if (newWindowMode == windowMode) return;
 
-	var minimizeWindow = () => {
+	var hiddenWindow = () => {
 		mainWindow.hide();
 	};
 
-	var stealthWindow = () => {
+	var bubbleWindow = () => {
 		// TODO: Fix weird bug where window won't resize
 		mainWindow.show();
-		mainWindow.webContents.send('stealth-mode');
+		mainWindow.webContents.send('bubble-mode');
 
 		if (!inMemoryShortcuts[currentAppName]) {
 			db.find({
@@ -94,7 +94,7 @@ const applyWindowMode = (newWindowMode) => {
 				}
 			});
 		} else {
-			mainWindow.setBounds(inMemoryShortcuts[currentAppName].stealthBounds);
+			mainWindow.setBounds(inMemoryShortcuts[currentAppName].bubbleBounds);
 		}
 	};
 
@@ -124,27 +124,27 @@ const applyWindowMode = (newWindowMode) => {
 	};
 
 	if (newWindowMode) {
-		if (newWindowMode.minimized) {
-			minimizeWindow();
-		} else if (newWindowMode.stealth) {
-			stealthWindow();
+		if (newWindowMode.hidden) {
+			hiddenWindow();
+		} else if (newWindowMode.bubble) {
+			bubbleWindow();
 		} else if (newWindowMode.full) {
 			fullWindow();
 		}
 	} else {
 		// Toggle through modes, smaller and smaller
-		if (windowMode.minimized) {
-			windowMode.minimized = false;
+		if (windowMode.hidden) {
+			windowMode.hidden = false;
 			windowMode.full = true;
 			fullWindow();
-		} else if (windowMode.stealth) {
-			windowMode.stealth = false;
-			windowMode.minimized = true;
-			minimizeWindow();
+		} else if (windowMode.bubble) {
+			windowMode.bubble = false;
+			windowMode.hidden = true;
+			hiddenWindow();
 		} else if (windowMode.full) {
 			windowMode.full = false;
-			windowMode.stealth = true;
-			stealthWindow();
+			windowMode.bubble = true;
+			bubbleWindow();
 		}
 	}
 };
@@ -608,23 +608,6 @@ ipcMain.on('update-shortcut-order', function(event, appName, shortcuts) {
 	});
 });
 
-ipcMain.on('change-window-mode', function(event, newMode) {
-	if (newMode) {
-		// This type of input is easy to send and annoying to unwind on the receiving end -
-		// would it be better to simply have a string state instead?
-		var newModeKey = Object.keys(newMode)[0];
-		var newModeVal = Object.values(newMode)[0];
-		if  (windowMode[newModeKey] != newModeVal) {
-			windowMode = allFalseWindowMode;
-			windowMode[newModeKey] = newModeVal;
-			applyWindowMode(windowMode);
-		}
-	} else {
-		// Toggle over to next mode
-		applyWindowMode();
-	}
-});
-
 // ipcMain.on('main-parse-shortcuts', function(event, ) {
 // });
 //
@@ -757,4 +740,16 @@ ipcMain.on('update-current-app-value', function(event, newAppValue) {
 			console.log('successfully updated app value');
 		}
 	});
+});
+
+ipcMain.on('set-full-view-mode', (event) => {
+	applyWindowMode("full");
+});
+
+ipcMain.on('set-bubble-mode', (event) => {
+	applyWindowMode("bubble");
+});
+
+ipcMain.on('set-hidden-mode', (event) => {
+	applyWindowMode("hidden");
 });

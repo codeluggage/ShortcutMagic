@@ -112,14 +112,14 @@ const SortableItem = SortableElement((componentArguments) => {
     );
 
     var mouseOverButtonsSection = (
-        <div id={`buttonSection-${componentArguments.index}`} style={{
-            display: 'none',
+        <div style={{
             flexDirection: 'row',
             flex: 2,
             flexWrap: 'nowrap',
             alignContent: 'stretch',
         }}>
-            <div style={{
+            <div name={`buttonSection-${componentArguments.index}`} style={{
+				display: 'none',
 				color: globalState.textColor,
 				flex: 1,
                 height: '100%',
@@ -141,11 +141,12 @@ const SortableItem = SortableElement((componentArguments) => {
                 Run
             </div>
 
-            <div style={{
+            <div id={(listItem.isFavorite) ? 'enabled-favorite-button' : ''}
+			name={`buttonSection-${componentArguments.index}`}
+			style={{
+				display: (listItem.isFavorite) ? 'block' : 'none',
 				color: globalState.textColor,
                 backgroundColor: globalState.itemColor,
-                // display: (listItem.isFavorite) ? 'block' : 'none',
-                // Specifically make favorite bigger if it is shown alone
 				flex: 1,
 				height: '100%',
                 marginRight: '1px',
@@ -174,7 +175,8 @@ const SortableItem = SortableElement((componentArguments) => {
 				Favorite
             </div>
 
-            <div style={{
+            <div name={`buttonSection-${componentArguments.index}`} style={{
+				display: 'none',
 				color: globalState.textColor,
                 backgroundColor: globalState.itemColor,
 				flex: 1,
@@ -208,10 +210,6 @@ const SortableItem = SortableElement((componentArguments) => {
     // add back in:
     // margin: 'auto'
 
-    let buttonSectionElement = doc.getElementById(`buttonSection-${componentArguments.index}`);
-    if (!buttonSectionElement) {
-        console.log("could not find button section in list of shortcuts");
-    }
 
     return (
         <div style={{
@@ -224,9 +222,21 @@ const SortableItem = SortableElement((componentArguments) => {
             // justifyContent: 'space-between',
             flexDirection: 'column',
         }} onMouseEnter={(e) => {
-            if (buttonSectionElement) buttonSectionElement.style.display = "flex";
+			let buttonSectionElements = doc.getElementsByName(`buttonSection-${componentArguments.index}`);
+            if (buttonSectionElements) {
+				for (var i = 0; i < buttonSectionElements.length; i++) {
+					buttonSectionElements[i].style.display = "block";
+				}
+			}
         }} onMouseLeave={(e) => {
-            if (buttonSectionElement) buttonSectionElement.style.display = "none";
+			let buttonSectionElements = doc.getElementsByName(`buttonSection-${componentArguments.index}`);
+            if (buttonSectionElements) {
+				for (var i = 0; i < buttonSectionElements.length; i++) {
+					if (buttonSectionElements[i].id != "enabled-favorite-button") {
+						buttonSectionElements[i].style.display = "none";
+					}
+				}
+			}
         }}>
             <div style={{
                 display: 'flex',
@@ -737,21 +747,21 @@ export default class Home extends Component {
 		                </button>
 					</div>
 
-					<button	id="sw_full_view_icon" className="simple-button" onClick{() => {
-						ipcRenderer.send('set-full_view-mode');
+					<button	id="toggle-full-mode" className="simple-button" onClick={() => {
+						ipcRenderer.send('set-full-view-mode');
 						console.log("clicked sw_full_view_icon");
 					}}>
 						<i source="../assets/sw_full_view_icon.png"></i>
 					</button>
 
-					<button id="sw_bubble_icon" className="simple-button" onClick{() => {
+					<button id="toggle-bubble-mode" className="simple-button" onClick={() => {
 						ipcRenderer.send('set-bubble-mode');
 						console.log("clicked sw_bubble_icon");
 					}}>
 						<i source="../assets/sw_bubble_icon.png"></i>
 					</button>
 
-					<button id="sw_hidden_icon" className="simple-button" onClick{() => {
+					<button id="toggle-hidden-mode" className="simple-button" onClick={() => {
 						ipcRenderer.send('set-hidden-mode');
 						console.log("clicked sw_hidden_icon");
 					}}>
