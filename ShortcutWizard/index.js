@@ -6,25 +6,7 @@ const path = require('path');
 const Datastore = require('nedb');
 
 var hackyStopSavePos = false;
-
-// TODO: Save to settings db
-var allFalseWindowMode = {
-	hidden: false,
-	bubble: false,
-	full: false
-};
-
-var defaultWindowMode = {
-	hidden: false,
-	bubble: false,
-	full: false
-};
-
-var windowMode = {
-	hidden: false,
-	bubble: false,
-	full: true
-};
+var defaultBubbleBounds = {x: 800, y: 10, width: 250, height: 200};
 
 var db = new Datastore({
 	filename: `${__dirname}/db/shortcuts.db`,
@@ -63,23 +45,80 @@ let backgroundListenerWindow;
 let welcomeWindow;
 let inMemoryShortcuts = [];
 let currentAppName = "Electron";
+// TODO: Save to settings db
+var inMemoryShortcuts[currentAppName].windowMode = "full"
+
 
 // Functions
 
 // Toggle to next mode if newWindowMode is not defined
 const applyWindowMode = (newWindowMode) => {
-	if (newWindowMode == windowMode) return;
+	if (newWindowMode == inMemoryShortcuts[currentAppName].windowMode) return;
+
+	var saveBounds = (boundsPayload) => {
+		db.update({
+			name: currentAppName
+		}, {
+			$set: boundsPayload
+		}, {
+			upsert: true
+		}, function(err, res) {
+			if (err) {
+				console.log('ERROR: upserting bounds in db got error: ', err);
+			} else {
+				console.log('finished upserting bounds in db');
+			}
+		});
+	}
+
+	var saveLastFullBounds = () => {
+		var currentApp = inMemoryShortcuts[currentAppName];
+		currentApp.lastFullBounds = mainWindow.getBounds();
+		saveBounds({
+			lastFullBounds: currentApp.lastFullBounds
+		});
+	};
+
+	var saveLastBubbleBounds = () => {
+		var currentApp = inMemoryShortcuts[currentAppName];
+		currentApp.lastBubbleBounds = mainWindow.getBounds();
+		saveBounds({
+			lastBubbleBounds: currentApp.lastBubbleBounds
+		});
+	};
 
 	var hiddenWindow = () => {
+		if (inMemoryShortcuts[currentAppName].windowMode == "full") {
+			saveLastFullBounds();
+		} else if (inMemoryShortcuts[currentAppName].windowMode == "bubble") {
+			saveLastBubbleBounds();
+		}
+
+		inMemoryShortcuts[currentAppName].windowMode = "hidden";
+
 		mainWindow.hide();
+		console.log("In hidden-mode in applyWindowMode, sending to mainWindow");
+		mainWindow.webContents.send('hidden-mode');
 	};
 
 	var bubbleWindow = () => {
+		if (inMemoryShortcuts[currentAppName].windowMode == "full") {
+			saveLastFullBounds();
+		}
+
+		inMemoryShortcuts[currentAppName].windowMode = "bubble";
+
 		// TODO: Fix weird bug where window won't resize
 		mainWindow.show();
+		console.log("In bubble-mode in applyWindowMode, sending to mainWindow");
 		mainWindow.webContents.send('bubble-mode');
 
-		if (!inMemoryShortcuts[currentAppName]) {
+		var bubbleBounds = undefined;
+		var currentApp = inMemoryShortcuts[currentAppName];
+
+		if (currentApp) {
+			bubbleBounds = (currentApp) ? currentApp.lastBubbleBounds : undefined;
+		} else {
 			db.find({
 				name: currentAppName
 			}, function(err, res) {
@@ -90,22 +129,36 @@ const applyWindowMode = (newWindowMode) => {
 				}
 
 				if (res != [] && res.length > 0) {
-					mainWindow.setBounds(res[0].bounds);
+					inMemoryShortcuts[currentAppName] = currentApp = res[0];
+					bubbleBounds = currentApp.lastBubbleBounds;
 				}
 			});
+		}
+
+		if (bubbleBounds) {
+			mainWindow.setBounds(bubbleBounds);
 		} else {
-			mainWindow.setBounds(inMemoryShortcuts[currentAppName].bubbleBounds);
+			mainWindow.setBounds(defaultBubbleBounds);
 		}
 	};
 
 	var fullWindow = () => {
+		if (inMemoryShortcuts[currentAppName].windowMode == "bubble") {
+			saveLastBubbleBounds();
+		}
+
+		inMemoryShortcuts[currentAppName].windowMode = "full";
+
 		// TODO: load from full settings or use default
 		mainWindow.show();
+		console.log("In full-mode in applyWindowMode, sending to mainWindow");
 		mainWindow.webContents.send('full-mode');
 
-		var cachedAppSettings = inMemoryShortcuts[currentAppName];
-		if (cachedAppSettings) {
-			mainWindow.setBounds(cachedAppSettings.bounds);
+		var fullBounds = undefined;
+		var currentApp = inMemoryShortcuts[currentAppName];
+
+		if (currentApp) {
+			fullBounds = (currentApp) ? currentApp.lastFullBounds : undefined;
 		} else {
 			db.find({
 				name: currentAppName
@@ -117,33 +170,34 @@ const applyWindowMode = (newWindowMode) => {
 				}
 
 				if (res != [] && res.length > 0) {
-					mainWindow.setBounds(res[0].bounds);
+					inMemoryShortcuts[currentAppName] = currentApp = res[0];
+					fullBounds = currentApp.lastFullBounds;
 				}
 			});
+		}
+
+		if (fullBounds) {
+			mainWindow.setBounds(fullBounds);
+		} else {
+			mainWindow.setBounds(currentApp.bounds);
 		}
 	};
 
 	if (newWindowMode) {
-		if (newWindowMode.hidden) {
+		if (newWindowMode == "hidden") {
 			hiddenWindow();
-		} else if (newWindowMode.bubble) {
+		} else if (newWindowMode == "bubble") {
 			bubbleWindow();
-		} else if (newWindowMode.full) {
+		} else if (newWindowMode == "full") {
 			fullWindow();
 		}
 	} else {
 		// Toggle through modes, smaller and smaller
-		if (windowMode.hidden) {
-			windowMode.hidden = false;
-			windowMode.full = true;
+		if (inMemoryShortcuts[currentAppName].windowMode == "hidden") {
 			fullWindow();
-		} else if (windowMode.bubble) {
-			windowMode.bubble = false;
-			windowMode.hidden = true;
+		} else if (inMemoryShortcuts[currentAppName].windowMode == "bubble") {
 			hiddenWindow();
-		} else if (windowMode.full) {
-			windowMode.full = false;
-			windowMode.bubble = true;
+		} else if (inMemoryShortcuts[currentAppName].windowMode == "full") {
 			bubbleWindow();
 		}
 	}
@@ -326,7 +380,7 @@ function createMainWindow() {
 
 	mainWindow.setHasShadow(false);
 
-	applyWindowMode(windowMode);
+	applyWindowMode(inMemoryShortcuts[currentAppName].windowMode);
 	mainWindow.show();
 
 	// All windows are created, collect all their window id's and let each of them
@@ -389,6 +443,7 @@ function createTray() {
 
 	trayObject.on('double-click', applyWindowMode);
 	trayObject.on('click', (event) => {
+		// TODO: switch to main window and focus the search field
 		applyWindowMode();
 
 		if (mainWindow.isVisible() && process.defaultApp && event.metaKey) {
@@ -743,13 +798,16 @@ ipcMain.on('update-current-app-value', function(event, newAppValue) {
 });
 
 ipcMain.on('set-full-view-mode', (event) => {
+	console.log("entrypoint for set-full-view-mode");
 	applyWindowMode("full");
 });
 
 ipcMain.on('set-bubble-mode', (event) => {
+	console.log("entrypoint for set-bubble-mode");
 	applyWindowMode("bubble");
 });
 
 ipcMain.on('set-hidden-mode', (event) => {
+	console.log("entrypoint for set-hidden-mode");
 	applyWindowMode("hidden");
 });

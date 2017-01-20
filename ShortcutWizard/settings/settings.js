@@ -21,7 +21,7 @@ var beautifulColors = ["#ffffff", "#000000", "#2c7bb6",  "#00a6ca", "#00ccbc",
 	"#90eb9d", "#ffff8c", "#f9d057", "#f29e2e", "#e76818", "#d7191c"];
 
 var defaultBounds = {x: 1100, y: 100, width: 350, height: 800};
-var defaultBubbleBounds = {x: 800, y: 10, width: 250, height: 100};
+var defaultBubbleBounds = {x: 800, y: 10, width: 250, height: 200};
 
 defaultSettings = {
 	name: GLOBAL_SETTINGS,
@@ -32,12 +32,14 @@ defaultSettings = {
 	show: true,
 	x: defaultBounds.x, y: defaultBounds.y, width: defaultBounds.width, height: defaultBounds.height,
 	bounds: defaultBounds,
-	bubbleBounds: defaultBubbleBounds,
+	lastFullBounds: defaultBounds,
+	lastBubbleBounds: defaultBubbleBounds,
 	backgroundColor: beautifulColors[5],
 	itemColor:beautifulColors[2],
 	textColor:beautifulColors[1],
 	itemBackgroundColor:beautifulColors[4],
-	title: "mainWindow"
+	title: "mainWindow",
+	windowMode: "full",
 };
 
 // Defaults
