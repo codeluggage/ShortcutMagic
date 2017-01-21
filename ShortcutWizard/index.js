@@ -46,14 +46,15 @@ let welcomeWindow;
 let inMemoryShortcuts = [];
 let currentAppName = "Electron";
 // TODO: Save to settings db
-var inMemoryShortcuts[currentAppName].windowMode = "full"
 
 
 // Functions
 
 // Toggle to next mode if newWindowMode is not defined
 const applyWindowMode = (newWindowMode) => {
-	if (newWindowMode == inMemoryShortcuts[currentAppName].windowMode) return;
+	console.log("Entered applyWindowMode", newWindowMode, inMemoryShortcuts[currentAppName].windowMode);
+	if (newWindowMode && newWindowMode == inMemoryShortcuts[currentAppName].windowMode) return;
+	console.log("Continuing in applyWindowMode", newWindowMode, inMemoryShortcuts[currentAppName].windowMode);
 
 	var saveBounds = (boundsPayload) => {
 		db.update({
@@ -71,27 +72,29 @@ const applyWindowMode = (newWindowMode) => {
 		});
 	}
 
-	var saveLastFullBounds = () => {
+	var saveLastFullBounds = (newMode) => {
 		var currentApp = inMemoryShortcuts[currentAppName];
 		currentApp.lastFullBounds = mainWindow.getBounds();
 		saveBounds({
-			lastFullBounds: currentApp.lastFullBounds
+			lastFullBounds: currentApp.lastFullBounds,
+			windowMode: newMode
 		});
 	};
 
-	var saveLastBubbleBounds = () => {
+	var saveLastBubbleBounds = (newMode) => {
 		var currentApp = inMemoryShortcuts[currentAppName];
 		currentApp.lastBubbleBounds = mainWindow.getBounds();
 		saveBounds({
-			lastBubbleBounds: currentApp.lastBubbleBounds
+			lastBubbleBounds: currentApp.lastBubbleBounds,
+			windowMode: newMode
 		});
 	};
 
 	var hiddenWindow = () => {
 		if (inMemoryShortcuts[currentAppName].windowMode == "full") {
-			saveLastFullBounds();
+			saveLastFullBounds("hidden");
 		} else if (inMemoryShortcuts[currentAppName].windowMode == "bubble") {
-			saveLastBubbleBounds();
+			saveLastBubbleBounds("hidden");
 		}
 
 		inMemoryShortcuts[currentAppName].windowMode = "hidden";
@@ -103,7 +106,7 @@ const applyWindowMode = (newWindowMode) => {
 
 	var bubbleWindow = () => {
 		if (inMemoryShortcuts[currentAppName].windowMode == "full") {
-			saveLastFullBounds();
+			saveLastFullBounds("bubble");
 		}
 
 		inMemoryShortcuts[currentAppName].windowMode = "bubble";
@@ -144,7 +147,7 @@ const applyWindowMode = (newWindowMode) => {
 
 	var fullWindow = () => {
 		if (inMemoryShortcuts[currentAppName].windowMode == "bubble") {
-			saveLastBubbleBounds();
+			saveLastBubbleBounds("full");
 		}
 
 		inMemoryShortcuts[currentAppName].windowMode = "full";
@@ -193,7 +196,7 @@ const applyWindowMode = (newWindowMode) => {
 		}
 	} else {
 		// Toggle through modes, smaller and smaller
-		if (inMemoryShortcuts[currentAppName].windowMode == "hidden") {
+		if (!inMemoryShortcuts[currentAppName].windowMode || inMemoryShortcuts[currentAppName].windowMode == "hidden") {
 			fullWindow();
 		} else if (inMemoryShortcuts[currentAppName].windowMode == "bubble") {
 			hiddenWindow();
@@ -380,7 +383,7 @@ function createMainWindow() {
 
 	mainWindow.setHasShadow(false);
 
-	applyWindowMode(inMemoryShortcuts[currentAppName].windowMode);
+	// applyWindowMode(inMemoryShortcuts[currentAppName].windowMode);
 	mainWindow.show();
 
 	// All windows are created, collect all their window id's and let each of them
