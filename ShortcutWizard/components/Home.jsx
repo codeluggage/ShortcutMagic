@@ -417,9 +417,9 @@ export default class Home extends Component {
             console.log("TODO: Show that the list item execution might not work");
         });
 
-		ipcRenderer.on('minimized-mode', (event) => {
+		ipcRenderer.on('hidden-mode', (event) => {
 			this.setState({
-				mode: "minimized-mode"
+				mode: "hidden-mode"
 			})
 		});
 
@@ -656,7 +656,7 @@ export default class Home extends Component {
 
 
 		var SettingsToggle = (
-			<div style={{backgroundColor: 'black'}}>
+			<div style={{backgroundColor: this.state.backgroundColor}}>
 				<button style={{
 	                color: this.state.textColor,
 	                borderColor: 'transparent',
@@ -671,7 +671,7 @@ export default class Home extends Component {
 	            </button>
 
 				<div id='main-buttons' style={{
-					// display: 'none',
+					display: 'none',
 					flexDirection: 'row',
 				}}>
 					<i className="fa fa-1x fa-text-height" style={{
@@ -834,8 +834,8 @@ export default class Home extends Component {
             }}>{this.state.name}</h1>
 		);
 
-		if (this.state.mode == "minimized-mode") {
-			// Minimized mode:
+		if (this.state.mode == "hidden-mode") {
+			// Hidden mode:
 			return (
 				<div>
 					{SearchField} {SettingsToggle}

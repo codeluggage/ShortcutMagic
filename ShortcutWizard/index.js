@@ -52,50 +52,75 @@ let currentAppName = "Electron";
 
 // Toggle to next mode if newWindowMode is not defined
 const applyWindowMode = (newWindowMode) => {
-	console.log("Entered applyWindowMode", newWindowMode, inMemoryShortcuts[currentAppName].windowMode);
-	if (newWindowMode && newWindowMode == inMemoryShortcuts[currentAppName].windowMode) return;
-	console.log("Continuing in applyWindowMode", newWindowMode, inMemoryShortcuts[currentAppName].windowMode);
+	var saveBounds = (oldMode, newMode) => {
+		var bounds = mainWindow.getBounds();
+		var payload = { windowMode: newMode };
 
-	var saveBounds = (boundsPayload) => {
+		if (oldMode == "full") {
+			payload["lastFullBounds"] = inMemoryShortcuts[currentAppName].lastFullBounds = bounds;
+		} else if (oldMode == "bubble") {
+			payload["lastBubbleBounds"] = inMemoryShortcuts[currentAppName].lastBubbleBounds = bounds;
+		} else {
+			console.log("in saveBounds() ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+			console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+			console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+			console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+		}
+
+		console.log("_________________________________________ SAVING ____________________________________");
+		console.log(`---------newMode: ${newMode}------------`);
+		console.log(`---------oldMode: ${oldMode}------------`);
+		console.log(`---------bounds: ${JSON.stringify(inMemoryShortcuts[currentAppName].bounds)}------------`);
+		console.log(`---------lastFullBounds: ${JSON.stringify(inMemoryShortcuts[currentAppName].lastFullBounds)}------------`);
+		console.log(`---------lastBubbleBounds: ${JSON.stringify(inMemoryShortcuts[currentAppName].lastBubbleBounds)}------------`);
+		console.log("_________________________________________ SAVING ____________________________________");
+
+
 		db.update({
 			name: currentAppName
 		}, {
-			$set: boundsPayload
+			$set: payload
 		}, {
 			upsert: true
 		}, function(err, res) {
 			if (err) {
-				console.log('ERROR: upserting bounds in db got error: ', err);
+				console.log('ERROR: upserting bounds in applywindowmode in db got error: ', err);
 			} else {
-				console.log('finished upserting bounds in db');
+				console.log('finished upserting bounds in applywindowmode');
 			}
 		});
 	}
 
 	var saveLastFullBounds = (newMode) => {
-		var currentApp = inMemoryShortcuts[currentAppName];
-		currentApp.lastFullBounds = mainWindow.getBounds();
-		saveBounds({
-			lastFullBounds: currentApp.lastFullBounds,
-			windowMode: newMode
-		});
+		inMemoryShortcuts[currentAppName].lastFullBounds = mainWindow.getBounds();
+		saveBounds(inMemoryShortcuts[currentAppName].windowMode, newMode);
 	};
 
 	var saveLastBubbleBounds = (newMode) => {
-		var currentApp = inMemoryShortcuts[currentAppName];
-		currentApp.lastBubbleBounds = mainWindow.getBounds();
-		saveBounds({
-			lastBubbleBounds: currentApp.lastBubbleBounds,
-			windowMode: newMode
-		});
+		inMemoryShortcuts[currentAppName].lastBubbleBounds = mainWindow.getBounds();
+		saveBounds(inMemoryShortcuts[currentAppName].windowMode, newMode);
 	};
 
 	var hiddenWindow = () => {
+
 		if (inMemoryShortcuts[currentAppName].windowMode == "full") {
 			saveLastFullBounds("hidden");
 		} else if (inMemoryShortcuts[currentAppName].windowMode == "bubble") {
 			saveLastBubbleBounds("hidden");
+		} else {
+			console.log("in hiddenWindow() ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+			console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+			console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+			console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
 		}
+
+
+		console.log("+++++++++++++++++++++++++++++++++++hiddenWindow() after saving+++++++++++++++++++++++++++++++++++++");
+		console.log(`---------windowMode: ${inMemoryShortcuts[currentAppName].windowMode}------------`);
+		console.log(`---------bounds: ${JSON.stringify(inMemoryShortcuts[currentAppName].bounds)}------------`);
+		console.log(`---------lastFullBounds: ${JSON.stringify(inMemoryShortcuts[currentAppName].lastFullBounds)}------------`);
+		console.log(`---------lastBubbleBounds: ${JSON.stringify(inMemoryShortcuts[currentAppName].lastBubbleBounds)}------------`);
+		console.log("++++++++++++++++++++++++++++++++++++++++++hiddenWindow()+++++++++++++++++++++++++++++++++++++");
 
 		inMemoryShortcuts[currentAppName].windowMode = "hidden";
 
@@ -121,6 +146,9 @@ const applyWindowMode = (newWindowMode) => {
 
 		if (currentApp) {
 			bubbleBounds = (currentApp) ? currentApp.lastBubbleBounds : undefined;
+			hackyStopSavePos = true;
+			mainWindow.setBounds((bubbleBounds) ? bubbleBounds : defaultBubbleBounds);
+			hackyStopSavePos = false;
 		} else {
 			db.find({
 				name: currentAppName
@@ -135,13 +163,11 @@ const applyWindowMode = (newWindowMode) => {
 					inMemoryShortcuts[currentAppName] = currentApp = res[0];
 					bubbleBounds = currentApp.lastBubbleBounds;
 				}
-			});
-		}
 
-		if (bubbleBounds) {
-			mainWindow.setBounds(bubbleBounds);
-		} else {
-			mainWindow.setBounds(defaultBubbleBounds);
+				hackyStopSavePos = true;
+				mainWindow.setBounds((bubbleBounds) ? bubbleBounds : defaultBubbleBounds);
+				hackyStopSavePos = false;
+			});
 		}
 	};
 
@@ -162,6 +188,9 @@ const applyWindowMode = (newWindowMode) => {
 
 		if (currentApp) {
 			fullBounds = (currentApp) ? currentApp.lastFullBounds : undefined;
+			hackyStopSavePos = true;
+			mainWindow.setBounds((fullBounds) ? fullBounds : currentApp.bounds);
+			hackyStopSavePos = false;
 		} else {
 			db.find({
 				name: currentAppName
@@ -176,15 +205,17 @@ const applyWindowMode = (newWindowMode) => {
 					inMemoryShortcuts[currentAppName] = currentApp = res[0];
 					fullBounds = currentApp.lastFullBounds;
 				}
+
+				hackyStopSavePos = true;
+				mainWindow.setBounds((fullBounds) ? fullBounds : currentApp.bounds);
+				hackyStopSavePos = false;
 			});
 		}
-
-		if (fullBounds) {
-			mainWindow.setBounds(fullBounds);
-		} else {
-			mainWindow.setBounds(currentApp.bounds);
-		}
 	};
+
+
+	if (newWindowMode && newWindowMode == inMemoryShortcuts[currentAppName].windowMode) return;
+	console.log(`_________ newWindowMode:${newWindowMode}, in memory window mode: ${inMemoryShortcuts[currentAppName].windowMode}`);
 
 	if (newWindowMode) {
 		if (newWindowMode == "hidden") {
@@ -196,11 +227,20 @@ const applyWindowMode = (newWindowMode) => {
 		}
 	} else {
 		// Toggle through modes, smaller and smaller
-		if (!inMemoryShortcuts[currentAppName].windowMode || inMemoryShortcuts[currentAppName].windowMode == "hidden") {
+		if (inMemoryShortcuts[currentAppName].windowMode == "hidden") {
 			fullWindow();
+			console.log(`fullWindow() done `);
 		} else if (inMemoryShortcuts[currentAppName].windowMode == "bubble") {
 			hiddenWindow();
+			console.log(`hiddenWindow() done `);
 		} else if (inMemoryShortcuts[currentAppName].windowMode == "full") {
+			bubbleWindow();
+			console.log(`bubbleWindow() done `);
+		}
+
+
+		if (!inMemoryShortcuts[currentAppName].windowMode) {
+			console.log("Error: no window mode found, setting bubble as fallback");
 			bubbleWindow();
 		}
 	}
@@ -208,11 +248,11 @@ const applyWindowMode = (newWindowMode) => {
 
 const toggleWindow = () => {
 	console.log('togglewindow with isVisible: ', mainWindow.isVisible());
-  if (mainWindow.isVisible()) {
-    mainWindow.hide();
-  } else {
-    showWindow();
-  }
+	if (mainWindow.isVisible()) {
+		mainWindow.hide();
+	} else {
+		showWindow();
+	}
 }
 
 function quitShortcutWizard() {
@@ -240,15 +280,15 @@ function savePosition(appName) {
 			return;
 		}
 
-		if (doc && doc != [] && doc.length > 0) {
-			// First set in memory:
+		if (doc != [] && doc.length > 0) {
 			var newShortcuts = doc[0];
 
 			console.log(`comparing old ${JSON.stringify(newBounds)} with loaded ${JSON.stringify(newShortcuts.bounds)}`);
 
 			if (JSON.stringify(newShortcuts.bounds) != JSON.stringify(newBounds)) {
-				console.log("========== compare fail, updating db ");
+				console.log("========== compare found differences, updating db ");
 
+				// First set in memory:
 				newShortcuts.bounds = newBounds;
 				inMemoryShortcuts[appName] = newShortcuts;
 
@@ -493,8 +533,7 @@ function updateRenderedShortcuts(shortcuts) {
 }
 
 function saveWithoutPeriods(payload) {
-	var newBounds = mainWindow.getBounds();
-	payload.bounds = newBounds;
+	payload.bounds = mainWindow.getBounds();
 	inMemoryShortcuts[payload.name] = payload;
 
 	var stringified = JSON.stringify(payload.shortcuts);
