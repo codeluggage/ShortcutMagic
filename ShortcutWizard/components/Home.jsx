@@ -671,7 +671,7 @@ export default class Home extends Component {
 	            </button>
 
 				<div id='main-buttons' style={{
-					display: 'none',
+					// display: 'none',
 					flexDirection: 'row',
 				}}>
 					<i className="fa fa-1x fa-text-height" style={{
