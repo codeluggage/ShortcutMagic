@@ -38,7 +38,11 @@ export default class SettingsView extends Component {
 			this.handleItemBackgroundColorChange(color);
 		});
 		ipcRenderer.on('get-app-settings', (event) => {
-			event.returnValue = this.state.appSettings;
+			if (this.state) {
+				event.returnValue = this.state.appSettings;
+			} else {
+				event.returnValue = null;
+			}
 		});
 		ipcRenderer.on('save', (event) => {
 			this.saveCurrentSettings();

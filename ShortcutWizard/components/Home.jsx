@@ -417,6 +417,25 @@ export default class Home extends Component {
             console.log("TODO: Show that the list item execution might not work");
         });
 
+		ipcRenderer.on('hidden-mode', (event) => {
+			this.setState({
+				mode: "hidden-mode"
+			})
+		});
+
+		ipcRenderer.on('bubble-mode', (event) => {
+
+			this.setState({
+				mode: "bubble-mode"
+			})
+		});
+
+		ipcRenderer.on('full-mode', (event) => {
+			this.setState({
+				mode: "full-mode"
+			})
+		});
+
         console.log('home constructor called');
         // this.setState({
         //     name: "ShortcutWizard",
@@ -635,44 +654,24 @@ export default class Home extends Component {
 
 */
 
-        var shortcuts = this.state.items;
-        if (!this.previousShortcuts || this.previousShortcuts != shortcuts) {
-            shortcuts.sort((a, b) => {
-                if (a.isHidden) {
-                    if (b.isHidden) return 0; // a <> b
 
-                    return 1; // b > a
-                }
-                if (a.isFavorite) {
-                    if (b.isFavorite) return 0; // a <> b
-
-                    return -1; // a > b
-                }
-
-                return 0; // a <> b
-            });
-
-            this.previousShortcuts = shortcuts;
-        }
-
-        return (
-            <div style={{ textAlign: 'center' }}>
-
+		var SettingsToggle = (
+			<div style={{backgroundColor: this.state.backgroundColor}}>
 				<button style={{
-                    color: this.state.textColor,
-                    borderColor: 'transparent',
-                    backgroundColor: 'transparent',
+	                color: this.state.textColor,
+	                borderColor: 'transparent',
+	                backgroundColor: 'transparent',
 					float: 'right',
 					margin: 0,
-                }} id="toggle-main-buttons" className="simple-button" onClick={() => {
+	            }} id="toggle-main-buttons" className="simple-button" onClick={() => {
 					var visible = window.document.getElementById('main-buttons').style.display;
 					window.document.getElementById('main-buttons').style.display = (visible == 'flex') ? 'none' : 'flex';
-                }}>
-                    <i className="fa fa-1x fa-cog"></i>
-                </button>
+	            }}>
+	                <i className="fa fa-1x fa-cog"></i>
+	            </button>
 
 				<div id='main-buttons' style={{
-					display: 'none',
+					// display: 'none',
 					flexDirection: 'row',
 				}}>
 					<i className="fa fa-1x fa-text-height" style={{
@@ -767,48 +766,102 @@ export default class Home extends Component {
 					}}>
 						<i source="../assets/sw_hidden_icon.png"></i>
 					</button>
-
-
-
-	                <input id="searchField" style={{
-						fontSize: 18,
-						width: "20%",
-						color: this.state.textColor,
-						backgroundColor: 'transparent',
-						borderColor: 'transparent',
-						flex: 2,
-					}} type="text" placeholder="&#xF002;" onChange={this.filterListTrigger} onFocus={() => {
-						// TODO: Move this down one line so it has the entire width to show search box
-						window.document.getElementById("searchField").style.width = "100%";
-						window.document.getElementById("searchField").style.flex = 6;
-						window.document.getElementById("searchField").style.backgroundColor = "white";
-					}} onBlur={() => {
-						window.document.getElementById("searchField").style.width = "20%";
-						window.document.getElementById("searchField").style.flex = 2;
-						window.document.getElementById("searchField").style.backgroundColor = "transparent";
-					}}/>
 				</div>
+			</div>
+		);
 
-                <h1 style={{
-                    color: this.state.textColor,
-                    marginTop:'2px',
-                    marginBottom:'2px',
-                }}>{this.state.name}</h1>
+		var SearchField = (
+            <input id="searchField" style={{
+				fontSize: 18,
+				width: "20%",
+				color: this.state.textColor,
+				backgroundColor: 'transparent',
+				borderColor: 'transparent',
+				flex: 2,
+			}} type="text"
+			placeholder="&#xF002;"
+			onChange={this.filterListTrigger}
+			onFocus={() => {
+				// TODO: Move this down one line so it has the entire width to show search box
+				window.document.getElementById("searchField").style.width = "100%";
+				window.document.getElementById("searchField").style.flex = 6;
+				window.document.getElementById("searchField").style.backgroundColor = "white";
+			}} onBlur={() => {
+				window.document.getElementById("searchField").style.width = "20%";
+				window.document.getElementById("searchField").style.flex = 2;
+				window.document.getElementById("searchField").style.backgroundColor = "transparent";
+			}}/>
+		);
 
+        let shortcuts = this.state.items;
+        if (!this.previousShortcuts || this.previousShortcuts != shortcuts) {
+            shortcuts.sort((a, b) => {
+                if (a.isHidden) {
+                    if (b.isHidden) return 0; // a <> b
 
-                <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
-                    <div style={{textAlign: 'left'}}>
-                        <SortableList
-                            items={shortcuts}
-                            onSortEnd={this.onSortEnd}
-                            useDragHandle={true}
-                            lockAxis='y'
-                        />
-                    </div>
+                    return 1; // b > a
+                }
+                if (a.isFavorite) {
+                    if (b.isFavorite) return 0; // a <> b
+
+                    return -1; // a > b
+                }
+
+                return 0; // a <> b
+            });
+
+            this.previousShortcuts = shortcuts;
+        }
+
+		var ShortcutList = (
+            <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
+                <div style={{textAlign: 'left'}}>
+                    <SortableList
+                        items={shortcuts}
+                        onSortEnd={this.onSortEnd}
+                        useDragHandle={true}
+                        lockAxis='y'
+                    />
                 </div>
             </div>
-        );
-                        // previous sortablelist itemstyle
-                        //   itemStyle={{backgroundColor: (this.state.itemColor) ? this.state.itemColor : '#FFFFFF'}}
+		);
+
+		var Title = (
+            <h1 style={{
+                color: this.state.textColor,
+                marginTop:'2px',
+                marginBottom:'2px',
+            }}>{this.state.name}</h1>
+		);
+
+		if (this.state.mode == "hidden-mode") {
+			// Hidden mode:
+			return (
+				<div>
+					{SearchField} {SettingsToggle}
+					{SearchResults}
+				</div>
+			);
+		} else if (this.state.mode == "bubble-mode") {
+			// Bubble mode:
+			return (
+				<div>
+					{SearchField} {SettingsToggle}
+					{ShortcutList}
+				</div>
+			);
+		} else {
+			// Full mode:
+	        return (
+	            <div style={{ textAlign: 'center' }}>
+					{Title}
+					{SettingsToggle}
+					{SearchField}
+					{ShortcutList}
+	            </div>
+	        );
+			// previous sortablelist itemstyle
+			//   itemStyle={{backgroundColor: (this.state.itemColor) ? this.state.itemColor : '#FFFFFF'}}
+		}
     }
 }
