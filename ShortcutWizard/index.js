@@ -586,12 +586,14 @@ function loadWithPeriods(appName) {
             success = true;
 			mainWindow.setBounds(holdShortcuts.lastBubbleBounds);
             if (!mainWindow.isVisible()) {
+                // TODO: Fix this issue - when using alt+` as shortcut for iTerm the window does not get focus because mainWindow.show() takes focus here
                 setTimeout(() => { mainWindow.show() }, 100);
             }
 		} else if (holdShortcuts.windowMode == "full" && holdShortcuts.lastFullBounds) {
             success = true;
 			mainWindow.setBounds(holdShortcuts.lastFullBounds);
             if (!mainWindow.isVisible()) {
+                // TODO: Fix this issue - when using alt+` as shortcut for iTerm the window does not get focus because mainWindow.show() takes focus here
                 setTimeout(() => { mainWindow.show() }, 100);
             }
 		} else if (holdShortcuts.windowMode == "hidden") {
