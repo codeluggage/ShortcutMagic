@@ -498,10 +498,12 @@ function createTray() {
 		}
 	});
 
-	trayObject.on('double-click', applyWindowMode);
+	// trayObject.on('double-click', applyWindowMode);
 	trayObject.on('click', (event) => {
 		// TODO: switch to main window and focus the search field
-		applyWindowMode();
+        if (currentAppName != "Electron" && inMemoryShortcuts[currentAppName].windowMode) {
+    		applyWindowMode();
+        }
 
 		if (mainWindow.isVisible() && process.defaultApp && event.metaKey) {
 			mainWindow.openDevTools({
@@ -629,18 +631,35 @@ function loadWithPeriods(appName) {
 			stringified = stringified.replace(/u002e/g, '.');
 			newShortcuts.shortcuts = JSON.parse(stringified);
 
-			// Cache shortcuts in memory too
+            // TODO: This is probably redundant and can be skipped
+            if (!newShortcuts.windowMode) {
+                newShortcuts.windowMode = "full";
+                newShortcuts.lastFullBounds = defaultFullBounds;
+            }
 			inMemoryShortcuts[appName] = newShortcuts;
+
 			if (mainWindow) {
 				hackyStopSavePos = true;
-				if (newShortcuts.windowMode == "bubble" && newShortcuts.lastBubbleBounds) {
-					mainWindow.setBounds(newShortcuts.lastBubbleBounds);
-				} else if (newShortcuts.windowMode == "full" && newShortcuts.lastFullBounds) {
-					mainWindow.setBounds(newShortcuts.lastFullBounds);
-                } else if (newShortcuts.windowMode == "hidden") {
-                    mainWindow.hide();
+
+        		if (newShortcuts.windowMode == "bubble" && newShortcuts.lastBubbleBounds) {
+        			mainWindow.setBounds(newShortcuts.lastBubbleBounds);
+                    if (!mainWindow.isVisible()) {
+                        // TODO: Fix this issue - when using alt+` as shortcut for iTerm the window does not get focus because mainWindow.show() takes focus here
+                        setTimeout(() => { mainWindow.show() }, 100);
+                    }
+        		} else if (newShortcuts.windowMode == "full" && newShortcuts.lastFullBounds) {
+        			mainWindow.setBounds(newShortcuts.lastFullBounds);
+                    if (!mainWindow.isVisible()) {
+                        // TODO: Fix this issue - when using alt+` as shortcut for iTerm the window does not get focus because mainWindow.show() takes focus here
+                        setTimeout(() => { mainWindow.show() }, 100);
+                    }
+        		} else if (newShortcuts.windowMode == "hidden") {
+                    if (mainWindow.isVisible()) {
+                        mainWindow.hide();
+                    }
                 }
 				hackyStopSavePos = false;
+
 				mainWindow.webContents.send('update-shortcuts', newShortcuts);
 			} else {
 				console.log("CANT FIND MAIN WINDOW WHEN LOADING SHORTCUTS");

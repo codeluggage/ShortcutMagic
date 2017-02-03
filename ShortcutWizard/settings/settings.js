@@ -39,7 +39,6 @@ defaultSettings = {
 	textColor:beautifulColors[1],
 	itemBackgroundColor:beautifulColors[4],
 	title: "mainWindow",
-	windowMode: "full",
 };
 
 // Defaults
