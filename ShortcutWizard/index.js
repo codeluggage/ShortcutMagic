@@ -51,6 +51,12 @@ let currentAppName = "Electron";
 
 // Functions
 
+const getDefaultWindowMode = (obj) => {
+    obj.windowMode = "full";
+    obj.lastFullBounds = defaultFullBounds;
+    return obj;
+}
+
 const setAndSaveBounds = (newBounds) => {
 	if (!newBounds) {
 		newBounds = mainWindow.getBounds();
@@ -64,10 +70,7 @@ const setAndSaveBounds = (newBounds) => {
 	} else if (oldMode == "bubble") {
 		payload["lastBubbleBounds"] = inMemoryShortcuts[currentAppName].lastBubbleBounds = newBounds;
 	} else {
-		console.log("in saveBounds() ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
-		console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
-		console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
-		console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+		console.log(`in saveBounds() with ${oldMode}`);
 	}
 
 	console.log("_________________________________________ SAVING ____________________________________");
@@ -75,6 +78,8 @@ const setAndSaveBounds = (newBounds) => {
 	console.log(`---------bounds (should be nothing): ${JSON.stringify(inMemoryShortcuts[currentAppName].bounds)}------------`);
 	console.log(`---------lastFullBounds: ${JSON.stringify(inMemoryShortcuts[currentAppName].lastFullBounds)}------------`);
 	console.log(`---------lastBubbleBounds: ${JSON.stringify(inMemoryShortcuts[currentAppName].lastBubbleBounds)}------------`);
+	console.log(`---------currentAppName: ${currentAppName}------------`);
+	console.log(`---------about to save: ${JSON.stringify(payload)}------------`);
 	console.log("_________________________________________ SAVING ____________________________________");
 
 
@@ -139,7 +144,9 @@ const applyWindowMode = (newWindowMode) => {
 			setAndSaveBounds();
 			inMemoryShortcuts[currentAppName].windowMode = "bubble";
 
-			mainWindow.show();
+            if (!mainWindow.isVisible()) {
+    			mainWindow.show();
+            }
 			console.log("In bubble-mode in applyWindowMode, sending to mainWindow");
 			mainWindow.webContents.send('bubble-mode');
 
@@ -176,7 +183,9 @@ const applyWindowMode = (newWindowMode) => {
 			inMemoryShortcuts[currentAppName].windowMode = "full";
 
 			// TODO: load from full settings or use default
-			mainWindow.show();
+            if (!mainWindow.isVisible()) {
+    			mainWindow.show();
+            }
 			console.log("In full-mode in applyWindowMode, sending to mainWindow");
 			mainWindow.webContents.send('full-mode');
 
@@ -216,7 +225,7 @@ const applyWindowMode = (newWindowMode) => {
 			console.log("In hidden-mode in applyWindowMode, sending to mainWindow");
 			mainWindow.webContents.send('hidden-mode');
 		} else {
-			console.log("in setAndSaveWindowMode() ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+			console.log("in setAndSaveWindowMode() with windowmode: ", newWindowMode);
 			console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
 			console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
 			console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
@@ -549,7 +558,10 @@ function updateRenderedShortcuts(shortcuts) {
 }
 
 function saveWithoutPeriods(payload) {
-	if (payload.windowMode == "bubble") {
+
+    if (!payload.windowMode) {
+        payload = getDefaultWindowMode(payload);
+    } else if (payload.windowMode == "bubble") {
 		payload.lastBubbleBounds = mainWindow.getBounds();
 	} else if (payload.windowMode == "full") {
 		payload.lastFullBounds = mainWindow.getBounds();
@@ -579,37 +591,39 @@ function saveWithoutPeriods(payload) {
 function loadWithPeriods(appName) {
 	console.log(`entering loadWithPeriods for appname ${appName}`);
 	var holdShortcuts = inMemoryShortcuts[appName];
-	if (holdShortcuts) {
+	if (holdShortcuts && holdShortcuts.windowMode) {
 		console.log(`found and loaded in-memory shortcuts and window mode ${inMemoryShortcuts[appName].windowMode}`);
-        var success = false;
 
-		hackyStopSavePos = true;
-		if (holdShortcuts.windowMode == "bubble" && holdShortcuts.lastBubbleBounds) {
-            success = true;
-			mainWindow.setBounds(holdShortcuts.lastBubbleBounds);
-            if (!mainWindow.isVisible()) {
-                // TODO: Fix this issue - when using alt+` as shortcut for iTerm the window does not get focus because mainWindow.show() takes focus here
-                setTimeout(() => { mainWindow.show() }, 100);
-            }
-		} else if (holdShortcuts.windowMode == "full" && holdShortcuts.lastFullBounds) {
-            success = true;
-			mainWindow.setBounds(holdShortcuts.lastFullBounds);
-            if (!mainWindow.isVisible()) {
-                // TODO: Fix this issue - when using alt+` as shortcut for iTerm the window does not get focus because mainWindow.show() takes focus here
-                setTimeout(() => { mainWindow.show() }, 100);
-            }
-		} else if (holdShortcuts.windowMode == "hidden") {
-            success = true;
-            if (mainWindow.isVisible()) {
-                mainWindow.hide();
-            }
-        }
-		hackyStopSavePos = false;
+        applyWindowMode(holdShortcuts.windowMode);
 
-        if (success) {
+        // var success = false;
+		// hackyStopSavePos = true;
+		// if (holdShortcuts.windowMode == "bubble" && holdShortcuts.lastBubbleBounds) {
+        //     success = true;
+		// 	mainWindow.setBounds(holdShortcuts.lastBubbleBounds);
+        //     if (!mainWindow.isVisible()) {
+        //         // TODO: Fix this issue - when using alt+` as shortcut for iTerm the window does not get focus because mainWindow.show() takes focus here
+        //         setTimeout(() => { mainWindow.show() }, 100);
+        //     }
+		// } else if (holdShortcuts.windowMode == "full" && holdShortcuts.lastFullBounds) {
+        //     success = true;
+		// 	mainWindow.setBounds(holdShortcuts.lastFullBounds);
+        //     if (!mainWindow.isVisible()) {
+        //         // TODO: Fix this issue - when using alt+` as shortcut for iTerm the window does not get focus because mainWindow.show() takes focus here
+        //         setTimeout(() => { mainWindow.show() }, 100);
+        //     }
+		// } else if (holdShortcuts.windowMode == "hidden") {
+        //     success = true;
+        //     if (mainWindow.isVisible()) {
+        //         mainWindow.hide();
+        //     }
+        // }
+		// hackyStopSavePos = false;
+
+        // if (success) {
             mainWindow.webContents.send('update-shortcuts', holdShortcuts);
             return;
-        }
+        // }
 	}
 
 
@@ -633,32 +647,32 @@ function loadWithPeriods(appName) {
 
             // TODO: This is probably redundant and can be skipped
             if (!newShortcuts.windowMode) {
-                newShortcuts.windowMode = "full";
-                newShortcuts.lastFullBounds = defaultFullBounds;
+                newShortcuts = getDefaultWindowMode(newShortcuts);
             }
 			inMemoryShortcuts[appName] = newShortcuts;
 
 			if (mainWindow) {
-				hackyStopSavePos = true;
-
-        		if (newShortcuts.windowMode == "bubble" && newShortcuts.lastBubbleBounds) {
-        			mainWindow.setBounds(newShortcuts.lastBubbleBounds);
-                    if (!mainWindow.isVisible()) {
-                        // TODO: Fix this issue - when using alt+` as shortcut for iTerm the window does not get focus because mainWindow.show() takes focus here
-                        setTimeout(() => { mainWindow.show() }, 100);
-                    }
-        		} else if (newShortcuts.windowMode == "full" && newShortcuts.lastFullBounds) {
-        			mainWindow.setBounds(newShortcuts.lastFullBounds);
-                    if (!mainWindow.isVisible()) {
-                        // TODO: Fix this issue - when using alt+` as shortcut for iTerm the window does not get focus because mainWindow.show() takes focus here
-                        setTimeout(() => { mainWindow.show() }, 100);
-                    }
-        		} else if (newShortcuts.windowMode == "hidden") {
-                    if (mainWindow.isVisible()) {
-                        mainWindow.hide();
-                    }
-                }
-				hackyStopSavePos = false;
+                applyWindowMode(newShortcuts.windowMode);
+				// hackyStopSavePos = true;
+                //
+        		// if (newShortcuts.windowMode == "bubble" && newShortcuts.lastBubbleBounds) {
+        		// 	mainWindow.setBounds(newShortcuts.lastBubbleBounds);
+                //     if (!mainWindow.isVisible()) {
+                //         // TODO: Fix this issue - when using alt+` as shortcut for iTerm the window does not get focus because mainWindow.show() takes focus here
+                //         setTimeout(() => { mainWindow.show() }, 100);
+                //     }
+        		// } else if (newShortcuts.windowMode == "full" && newShortcuts.lastFullBounds) {
+        		// 	mainWindow.setBounds(newShortcuts.lastFullBounds);
+                //     if (!mainWindow.isVisible()) {
+                //         // TODO: Fix this issue - when using alt+` as shortcut for iTerm the window does not get focus because mainWindow.show() takes focus here
+                //         setTimeout(() => { mainWindow.show() }, 100);
+                //     }
+        		// } else if (newShortcuts.windowMode == "hidden") {
+                //     if (mainWindow.isVisible()) {
+                //         mainWindow.hide();
+                //     }
+                // }
+				// hackyStopSavePos = false;
 
 				mainWindow.webContents.send('update-shortcuts', newShortcuts);
 			} else {
