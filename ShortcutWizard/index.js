@@ -1,19 +1,34 @@
 'use strict';
-// Imports
+
+// Vibrancy changes how the window transparency looks. Blurred, foggy, dim, etc.
 const electronVibrancy = require('electron-vibrancy');
-const { app, BrowserWindow, ipcMain, Tray, systemPreferences } = require('electron');
+const {
+    // app lets us access global things about the whole running application, like the application name, the dock state,
+    // and events that trigger for the whole application, like app.on('before-quit', ...
+    app,
+    // BrowserWindow is a chrome window which loads a html file. Used for all the windows of the application
+    BrowserWindow,
+    // ipcMain is used for listening to events sent from other threads, like from inside BrowserWindow's
+    ipcMain,
+    // Tray is used for the icon in the menu bar on mac, where we show the wizard hat
+    Tray,
+    // systemPreferences let us access things like if the operating system is in dark mode
+    systemPreferences
+} = require('electron');
+
+// path lets us work with the file path of the running application
 const path = require('path');
+// nedb is a simple javascript database, smilar to mongodb, where we store the shortcuts and other things about another program
 const Datastore = require('nedb');
-
-var hackyStopSavePos = false;
-var defaultFullBounds = {x: 1100, y: 100, width: 350, height: 800};
-var defaultBubbleBounds = {x: 800, y: 10, width: 250, height: 200};
-
+// db is an instance of nedb and lets us store things on disk in pure text, and treat it like mongodb. this stores the shortcut information
 var db = new Datastore({
 	filename: `${__dirname}/db/shortcuts.db`,
 	autoload: true
 });
 
+// The field for "name" is the one we want to keep unique, so anything we write to the db for another running program is
+// updated, and not duplicated.
+// TODO: this is not always been unique and needs to be improved
 db.ensureIndex({
 	fieldName: 'name',
 	unique: true // Setting unique value constraint on name
@@ -24,6 +39,9 @@ db.ensureIndex({
 });
 
 
+// For testing, we need to check parsing of shortcuts sometimes. These applications are simple and have few shortcuts,
+// so they are quick to test with.
+// TODO: Make this only run in debug/dev mode
 console.log("temporary removal of PomoDoneApp and mysms shortcuts for testing, TODO: hard remove instead");
 db.remove({
 	name: "PomoDoneApp"
@@ -33,51 +51,74 @@ db.remove({
 });
 
 
+
+// hackyStopSavePos needs to be replaced with a better system. right now it just stops the size and position of the application
+// from being saved. this is typically set when we are loading a position or moving between window modes
+var hackyStopSavePos = false;
+// The default bounds are appliend when no other bounds are found, typically for new running programs we open and parse
+var defaultFullBounds = {x: 1100, y: 100, width: 350, height: 800};
+var defaultBubbleBounds = {x: 800, y: 10, width: 250, height: 200};
+
 app.setName("ShortcutWizard");
+// The dock icon is hidden because we are trying to be an overlay application that is just "always there"
+// TODO: Set this in the settings, in case someone wants a full running program
 app.dock.hide();
 
 // Global (for now) objects:
+// controls the tray of the application
 let trayObject;
+// the BrowserWindow for the settings window
 let settingsWindow;
+// the popover BrowserWindow for quick settings
 let miniSettingsWindow;
+// the BrowserWindow for the running actual application window
 let mainWindow;
+// a hidden background BrowserWindow that runs tasks in a "background" thread
 let backgroundTaskRunnerWindow;
+// a hidden background BrowserWindow that runs objective c code to listen for application switches in the operating system and calls to our ipcMain
 let backgroundListenerWindow;
+// the front window when the application opens, introduction and explanation of how to run correctly with security settings
+// TODO: make hideable with a setting
 let welcomeWindow;
+// a hacky bad construct holding the shortcuts from the db in memory
+// TODO: merge into a class that encapsulates the db and functionality, and caches things in memory without checking this array everywhere :|
 let inMemoryShortcuts = [];
+// the name of the app that was switched to last time, so we know it's the name of the currently active program
 let currentAppName = "Electron";
 // TODO: Save to settings db
 
 
 // Functions
 
+// Sets bounds for the current window mode, saves it in the db
 const setAndSaveBounds = (newBounds) => {
+    // If we're called without newBounds, the current bounds are the basis
 	if (!newBounds) {
 		newBounds = mainWindow.getBounds();
 	}
 
-    var oldMode = inMemoryShortcuts[currentAppName].windowMode;
-	var payload = { windowMode: oldMode };
+    // Take the existing window mode and prepare it for saving to the db
+    var windowMode = inMemoryShortcuts[currentAppName].windowMode;
+	var payload = { windowMode: windowMode };
 
-	if (oldMode == "full") {
+	if (windowMode == "full") {
+        // We are currently in "full" mode, so the bounds should be saved to the memory shortcuts and the db payload
 		payload["lastFullBounds"] = inMemoryShortcuts[currentAppName].lastFullBounds = newBounds;
-	} else if (oldMode == "bubble") {
+	} else if (windowMode == "bubble") {
+        // We are currently in "bubble" mode, so the bounds should be saved to the memory shortcuts and the db payload
 		payload["lastBubbleBounds"] = inMemoryShortcuts[currentAppName].lastBubbleBounds = newBounds;
 	} else {
-		console.log("in saveBounds() ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
-		console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
-		console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
-		console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+        // No bounds need to be stored for hidden mode
 	}
 
 	console.log("_________________________________________ SAVING ____________________________________");
-	console.log(`---------oldMode: ${oldMode}------------`);
+	console.log(`---------windowMode: ${windowMode}------------`);
 	console.log(`---------bounds (should be nothing): ${JSON.stringify(inMemoryShortcuts[currentAppName].bounds)}------------`);
 	console.log(`---------lastFullBounds: ${JSON.stringify(inMemoryShortcuts[currentAppName].lastFullBounds)}------------`);
 	console.log(`---------lastBubbleBounds: ${JSON.stringify(inMemoryShortcuts[currentAppName].lastBubbleBounds)}------------`);
 	console.log("_________________________________________ SAVING ____________________________________");
 
-
+    // Store the payload in the db for the current app
 	db.update({
 		name: currentAppName
 	}, {
@@ -92,47 +133,8 @@ const setAndSaveBounds = (newBounds) => {
 		}
 	});
 };
-	// var saveLastFullBounds = (newMode) => {
-	// 	inMemoryShortcuts[currentAppName].lastFullBounds = mainWindow.getBounds();
-	// 	saveBounds(inMemoryShortcuts[currentAppName].windowMode, newMode);
-	// };
-	//
-	// var saveLastBubbleBounds = (newMode) => {
-	// 	inMemoryShortcuts[currentAppName].lastBubbleBounds = mainWindow.getBounds();
-	// 	saveBounds(inMemoryShortcuts[currentAppName].windowMode, newMode);
-	// };
-		// var bubbleBounds = undefined;
-		// var currentApp = inMemoryShortcuts[currentAppName];
-		//
-		// if (currentApp) {
-		// 	bubbleBounds = (currentApp) ? currentApp.lastBubbleBounds : undefined;
-		// 	hackyStopSavePos = true;
-		// 	mainWindow.setBounds((bubbleBounds) ? bubbleBounds : defaultBubbleBounds);
-		// 	hackyStopSavePos = false;
-		// } else {
-		// 	db.find({
-		// 		name: currentAppName
-		// 	}, function(err, res) {
-		// 		console.log('loaded shortcuts: ');
-		// 		if (err) {
-		// 			console.log('errored during db find: ', err);
-		// 			return;
-		// 		}
-		//
-		// 		if (res != [] && res.length > 0) {
-		// 			inMemoryShortcuts[currentAppName] = currentApp = res[0];
-		// 			bubbleBounds = currentApp.lastBubbleBounds;
-		// 		}
-		//
-		// 		hackyStopSavePos = true;
-		// 		mainWindow.setBounds((bubbleBounds) ? bubbleBounds : defaultBubbleBounds);
-		// 		hackyStopSavePos = false;
-		// 	});
-		// }
 
-
-
-// Toggle to next mode if newWindowMode is not defined
+// Changes the window mode, either by just calling it or calling it with the argument
 const applyWindowMode = (newWindowMode) => {
 	var setAndSaveWindowMode = (newWindowMode) => {
 		if (newWindowMode == "bubble") {
@@ -224,6 +226,8 @@ const applyWindowMode = (newWindowMode) => {
 	};
 
 
+    // Bail out if we are already on this window mode
+    // TODO: handle this better, what does the user expect when arriving here? First click, misclick?
 	if (newWindowMode && newWindowMode == inMemoryShortcuts[currentAppName].windowMode) return;
 	console.log(`_________ newWindowMode:${newWindowMode}, in memory window mode: ${inMemoryShortcuts[currentAppName].windowMode}`);
 
@@ -236,7 +240,7 @@ const applyWindowMode = (newWindowMode) => {
 			setAndSaveWindowMode("full");
 		}
 	} else {
-		// Toggle through modes, smaller and smaller
+		// Without a new specific window mode, we toggle through each mode
 		if (inMemoryShortcuts[currentAppName].windowMode == "hidden") {
 			setAndSaveWindowMode("full");
 			console.log(`setAndSaveWindowMode("full") done `);
@@ -248,13 +252,18 @@ const applyWindowMode = (newWindowMode) => {
 			console.log(`setAndSaveWindowMode("bubble") done `);
 		}
 
-
+        // This should not happen, but if it does it's probably from a new app so go to the next natural mode; bubble
 		if (!inMemoryShortcuts[currentAppName].windowMode) {
 			console.log("Error: no window mode found, setting bubble as fallback");
 			setAndSaveWindowMode("bubble");
 		}
 	}
 };
+
+const showWindow = () => {
+	mainWindow.show()
+	mainWindow.focus()
+}
 
 const toggleWindow = () => {
 	console.log('togglewindow with isVisible: ', mainWindow.isVisible());
@@ -265,15 +274,19 @@ const toggleWindow = () => {
 	}
 }
 
+ipcMain.on('show-window', () => {
+    showWindow();
+});
+
 function quitShortcutWizard() {
-       trayObject.destroy();
-       trayObject = null;
-       settingsWindow = null; // TODO: double check that the settings window isn't destroyed elsewhere
-	   miniSettingsWindow = null;
-       backgroundTaskRunnerWindow = null;
-       backgroundListenerWindow.destroy(); // This holds on to objective c code, so we force destroy it
-       backgroundListenerWindow = null;
-       mainWindow = null;
+    trayObject.destroy();
+    trayObject = null;
+    settingsWindow = null; // TODO: double check that the settings window isn't destroyed elsewhere
+    miniSettingsWindow = null;
+    backgroundTaskRunnerWindow = null;
+    backgroundListenerWindow.destroy(); // This holds on to objective c code, so we force destroy it
+    backgroundListenerWindow = null;
+    mainWindow = null;
 };
 
 
@@ -335,11 +348,6 @@ function savePosition(appName) {
 			}
 		}
 	});
-}
-
-const showWindow = () => {
-	mainWindow.show()
-	mainWindow.focus()
 }
 
 function createMiniSettingsWindow() {
@@ -745,10 +753,6 @@ ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
 ipcMain.on('main-parse-shortcuts', function(event, appName) {
 	console.log('#2 - root index.js, triggered main-parse-shortcuts, with appName: ', appName, typeof appName);
 	loadWithPeriods(appName);
-});
-
-ipcMain.on('show-window', () => {
-  showWindow();
 });
 
 ipcMain.on('update-shortcut-order', function(event, appName, shortcuts) {
