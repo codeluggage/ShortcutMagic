@@ -359,7 +359,7 @@ function createMiniSettingsWindow() {
 		acceptFirstClick: true,
 		transparent: true,
 		frame: false,
-		x: 800, y: 50, width: 300, height: 800,
+		x: 800, y: 50, width: 400, height: 700,
 	});
 
 	var settingsPath = `file://${__dirname}/settings/miniIndex.html`;
@@ -465,42 +465,42 @@ function createTray() {
 	trayObject.setToolTip('ShortcutWizard!');
 	trayObject.on('right-click', (event) => {
 		if (mainWindow) {
-			mainWindow.show();
+			// mainWindow.show();
 			mainWindow.openDevTools();
 		} else {
 			console.log("cant find mainwindow to show");
 		}
 
 		if (settingsWindow) {
-			settingsWindow.show();
+			// settingsWindow.show();
 			settingsWindow.openDevTools();
 		} else {
 			console.log("cant find settingswindow to show");
 		}
 
 		if (backgroundTaskRunnerWindow) {
-			backgroundTaskRunnerWindow.show();
+			// backgroundTaskRunnerWindow.show();
 			backgroundTaskRunnerWindow.openDevTools();
 		} else {
 			console.log("cant find backgroundTaskRunnerWindow to show");
 		}
 
 		if (backgroundListenerWindow) {
-			backgroundListenerWindow.show();
+			// backgroundListenerWindow.show();
 			backgroundListenerWindow.openDevTools();
 		} else {
 			console.log("cant find backgroundListenerWindow to show");
 		}
 
 		if (welcomeWindow) {
-			welcomeWindow.show();
+			// welcomeWindow.show();
 			welcomeWindow.openDevTools();
 		} else {
 			console.log("cant find backgroundListenerWindow to show");
 		}
 
 		if (miniSettingsWindow) {
-			miniSettingsWindow.show();
+			// miniSettingsWindow.show();
 			miniSettingsWindow.openDevTools();
 		} else {
 			console.log("cant find backgroundListenerWindow to show");
@@ -710,7 +710,8 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 	// TODO: Make this list editable somewhere to avoid people having problems?
 	if (appName == "Electron" || appName == "ShortcutWizard" ||
 		appName == "ScreenSaverEngine" || appName == "loginwindow" ||
-		appName == "Dock") {
+		appName == "Dock" ||
+        appName == "Google Software Update...") {
 		console.log("Not switching to this app: ", appName);
 		return;
 	}

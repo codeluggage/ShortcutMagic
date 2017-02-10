@@ -37,15 +37,18 @@ export default class SettingsView extends Component {
 		ipcRenderer.on('set-item-background-color', (event, color) => {
 			this.handleItemBackgroundColorChange(color);
 		});
-		ipcRenderer.on('get-app-settings', (event) => {
-			if (this.state) {
-				event.returnValue = this.state.appSettings;
-			} else {
-				event.returnValue = null;
-			}
-		});
 		ipcRenderer.on('save', (event) => {
 			this.saveCurrentSettings();
+		});
+		ipcRenderer.on('get-app-settings', (event) => {
+            var windows = holdRemote.BrowserWindow.getAllWindows();
+            for (var i = 0; i < windows.length; i++) {
+                let holdWindow = windows[i];
+                if (holdWindow && holdWindow.getTitle() == "miniSettingsWindow") {
+                    console.log("inside settingsWindow sending to miniSettingsWindow: ", this.state.appSettings);
+                    holdWindow.webContents.send('send-app-settings', this.state.appSettings);
+                }
+            }
 		});
 
 		// TODO: tweak this to fit global and local settings
