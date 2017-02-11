@@ -525,6 +525,12 @@ export default class Home extends Component {
     toggleMiniSettings() {
         // TODO: refer directly to the browser window by id instead of grabbing all windows
         var windows = holdRemote.BrowserWindow.getAllWindows();
+        var mainWindow = null;
+        for (var i = 0; i < windows.length; i++) {
+            mainWindow = windows[i];
+            if (mainWindow && mainWindow.getTitle() == "mainWindow") break;
+        }
+
         for (var i = 0; i < windows.length; i++) {
             let settingsWindow = windows[i];
             if (settingsWindow) {
@@ -534,6 +540,15 @@ export default class Home extends Component {
 						// TODO: Save changes when window is hidden again
 		                settingsWindow.hide();
 					} else {
+                        let originalBounds = settingsWindow.getBounds();
+                        let mainBounds = mainWindow.getBounds();
+                        // Show window left or right of main window depending on screen position:
+                        if (mainBounds.x > 600) {
+                            originalBounds.x = mainBounds.x - originalBounds.width;
+                        } else {
+                            originalBounds.x = mainBounds.x + mainBounds.width;
+                        }
+                        settingsWindow.setBounds(originalBounds);
 		                settingsWindow.show();
 					}
 	            } else if (settingsWindow.getTitle() == "settingsWindow") {

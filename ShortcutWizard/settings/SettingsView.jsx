@@ -268,7 +268,7 @@ export default class SettingsView extends Component {
 						margin: 'auto'
 					}}>
 						<div style={{flexDirection: 'column'}}>
-			        		<h2>Background color</h2>
+			        		<h3>Background color</h3>
 			    			<SketchPicker
 			    				color={this.state.appSettings.backgroundColor}
 				    			onChangeComplete={this.handleBackgroundColorChange}
@@ -276,7 +276,7 @@ export default class SettingsView extends Component {
 			    			/>
 						</div>
 						<div style={{flexDirection: 'column'}}>
-			        		<h2>Item color</h2>
+			        		<h3>Item color</h3>
 							<SketchPicker
 								color={this.state.appSettings.itemColor}
 								onChangeComplete={this.handleItemColorChange}
@@ -284,7 +284,7 @@ export default class SettingsView extends Component {
 							/>
 						</div>
 						<div style={{flexDirection: 'column'}}>
-			        		<h2>Item background color</h2>
+			        		<h3>Item background color</h3>
 							<SketchPicker
 								color={this.state.appSettings.itemBackgroundColor}
 								onChangeComplete={this.handleItemBackgroundColorChange}
@@ -292,7 +292,7 @@ export default class SettingsView extends Component {
 							/>
 						</div>
 						<div style={{flexDirection: 'column'}}>
-			        		<h2>Text color</h2>
+			        		<h3>Text color</h3>
 							<SketchPicker
 								color={this.state.appSettings.textColor}
 								onChangeComplete={this.handleTextColorChange}

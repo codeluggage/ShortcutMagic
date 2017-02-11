@@ -22,6 +22,7 @@ export default class MiniSettingsView extends Component {
         this.handleItemColorChange = this.handleItemColorChange.bind(this);
         this.handleTextColorChange = this.handleTextColorChange.bind(this);
         this.handleItemBackgroundColorChange = this.handleItemBackgroundColorChange.bind(this);
+        this.reloadSettings = this.reloadSettings.bind(this);
     }
 
 	handleItemBackgroundColorChange(color) {
@@ -68,9 +69,8 @@ export default class MiniSettingsView extends Component {
         }
     }
 
-    render() {
-        // TODO: How to run this each time the window gets shown?
-
+    // TODO: Handle a "show" event here to read the settings again, instead of a stupid recurring system
+    reloadSettings(recur) {
         var windows = holdRemote.BrowserWindow.getAllWindows();
         for (var i = 0; i < windows.length; i++) {
             let holdWindow = windows[i];
@@ -80,7 +80,17 @@ export default class MiniSettingsView extends Component {
             }
         }
 
+        if (recur && (!this.state || !this.state.appSettings)) {
+            setTimeout(() => {
+                this.reloadSettings(true);
+            }, 200);
+        }
+    }
+
+    render() {
+        this.reloadSettings();
         if (!this.state || !this.state.appSettings) {
+            this.reloadSettings(true);
             return (
                 <div style={{
                     backgroundColor: 'white'
@@ -100,6 +110,8 @@ export default class MiniSettingsView extends Component {
 				border: 0,
 				padding: 0,
                 backgroundColor: this.state.appSettings.backgroundColor,
+                color: this.state.appSettings.textColor,
+                textAlign: 'center',
 			}}>
     			<div style={{
     				display: 'flex',
