@@ -91,7 +91,7 @@ let currentAppName = "Electron";
 // Functions
 
 // Sets bounds for the current window mode, saves it in the db
-const setAndSaveBounds = (newMode) => {
+function setAndSaveBounds(newMode) {
     var newBounds = mainWindow.getBounds();
 
     // Take the existing window mode and prepare it for saving to the db
@@ -130,103 +130,104 @@ const setAndSaveBounds = (newMode) => {
 			console.log('finished upserting bounds in applywindowmode');
 		}
 	});
-};
+}
 
-// Changes the window mode, either by just calling it or calling it with the argument
-const applyWindowMode = (newWindowMode) => {
-	var setAndSaveWindowMode = (newWindowMode) => {
-		if (newWindowMode == "bubble") {
-			setAndSaveBounds(newWindowMode);
-			inMemoryShortcuts[currentAppName].windowMode = "bubble";
 
-			mainWindow.show();
-			console.log("In bubble-mode in applyWindowMode, sending to mainWindow");
-			mainWindow.webContents.send('bubble-mode');
+function setAndSaveWindowMode(newWindowMode) {
+	if (newWindowMode == "bubble") {
+		setAndSaveBounds(newWindowMode);
+		inMemoryShortcuts[currentAppName].windowMode = "bubble";
 
-			var bubbleBounds = undefined;
-			var currentApp = inMemoryShortcuts[currentAppName];
+		mainWindow.show();
+		console.log("In bubble-mode in applyWindowMode, sending to mainWindow");
+		mainWindow.webContents.send('bubble-mode');
 
-			if (currentApp) {
-				bubbleBounds = (currentApp) ? currentApp.lastBubbleBounds : undefined;
+		var bubbleBounds = undefined;
+		var currentApp = inMemoryShortcuts[currentAppName];
+
+		if (currentApp) {
+			bubbleBounds = (currentApp) ? currentApp.lastBubbleBounds : undefined;
+			hackyStopSavePos = true;
+			mainWindow.setBounds((bubbleBounds) ? bubbleBounds : defaultBubbleBounds);
+			hackyStopSavePos = false;
+		} else {
+			db.find({
+				name: currentAppName
+			}, function(err, res) {
+				console.log('loaded shortcuts: ');
+				if (err) {
+					console.log('errored during db find: ', err);
+					return;
+				}
+
+				if (res != [] && res.length > 0) {
+					inMemoryShortcuts[currentAppName] = currentApp = res[0];
+					bubbleBounds = currentApp.lastFullBounds;
+				}
+
 				hackyStopSavePos = true;
 				mainWindow.setBounds((bubbleBounds) ? bubbleBounds : defaultBubbleBounds);
 				hackyStopSavePos = false;
-			} else {
-				db.find({
-					name: currentAppName
-				}, function(err, res) {
-					console.log('loaded shortcuts: ');
-					if (err) {
-						console.log('errored during db find: ', err);
-						return;
-					}
+			});
+		}
+	} else if (newWindowMode == "full") {
+		setAndSaveBounds(newWindowMode);
+		inMemoryShortcuts[currentAppName].windowMode = "full";
 
-					if (res != [] && res.length > 0) {
-						inMemoryShortcuts[currentAppName] = currentApp = res[0];
-						bubbleBounds = currentApp.lastFullBounds;
-					}
+		// TODO: load from full settings or use default
+		mainWindow.show();
+		console.log("In full-mode in applyWindowMode, sending to mainWindow");
+		mainWindow.webContents.send('full-mode');
 
-					hackyStopSavePos = true;
-					mainWindow.setBounds((bubbleBounds) ? bubbleBounds : defaultBubbleBounds);
-					hackyStopSavePos = false;
-				});
-			}
-		} else if (newWindowMode == "full") {
-			setAndSaveBounds(newWindowMode);
-			inMemoryShortcuts[currentAppName].windowMode = "full";
+		var fullBounds = undefined;
+		var currentApp = inMemoryShortcuts[currentAppName];
 
-			// TODO: load from full settings or use default
-			mainWindow.show();
-			console.log("In full-mode in applyWindowMode, sending to mainWindow");
-			mainWindow.webContents.send('full-mode');
+		if (currentApp) {
+			fullBounds = (currentApp) ? currentApp.lastFullBounds : undefined;
+			hackyStopSavePos = true;
+			mainWindow.setBounds((fullBounds) ? fullBounds : defaultFullBounds);
+			hackyStopSavePos = false;
+		} else {
+			db.find({
+				name: currentAppName
+			}, function(err, res) {
+				console.log('loaded shortcuts: ');
+				if (err) {
+					console.log('errored during db find: ', err);
+					return;
+				}
 
-			var fullBounds = undefined;
-			var currentApp = inMemoryShortcuts[currentAppName];
+				if (res != [] && res.length > 0) {
+					inMemoryShortcuts[currentAppName] = currentApp = res[0];
+					fullBounds = currentApp.lastFullBounds;
+				}
 
-			if (currentApp) {
-				fullBounds = (currentApp) ? currentApp.lastFullBounds : undefined;
 				hackyStopSavePos = true;
 				mainWindow.setBounds((fullBounds) ? fullBounds : defaultFullBounds);
 				hackyStopSavePos = false;
-			} else {
-				db.find({
-					name: currentAppName
-				}, function(err, res) {
-					console.log('loaded shortcuts: ');
-					if (err) {
-						console.log('errored during db find: ', err);
-						return;
-					}
-
-					if (res != [] && res.length > 0) {
-						inMemoryShortcuts[currentAppName] = currentApp = res[0];
-						fullBounds = currentApp.lastFullBounds;
-					}
-
-					hackyStopSavePos = true;
-					mainWindow.setBounds((fullBounds) ? fullBounds : defaultFullBounds);
-					hackyStopSavePos = false;
-				});
-			}
-		} else if (newWindowMode == "hidden") {
-            setAndSaveBounds(newWindowMode);
-			inMemoryShortcuts[currentAppName].windowMode = "hidden";
-
-			mainWindow.hide();
-			console.log("In hidden-mode in applyWindowMode, sending to mainWindow");
-			mainWindow.webContents.send('hidden-mode');
-		} else {
-			console.log("in setAndSaveWindowMode() ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
-			console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
-			console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
-			console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+			});
 		}
-	};
+	} else if (newWindowMode == "hidden") {
+        setAndSaveBounds(newWindowMode);
+		inMemoryShortcuts[currentAppName].windowMode = "hidden";
 
+		mainWindow.hide();
+		console.log("In hidden-mode in applyWindowMode, sending to mainWindow");
+		mainWindow.webContents.send('hidden-mode');
+	} else {
+		console.log("in setAndSaveWindowMode() ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+		console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+		console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+		console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+	}
+}
 
+// Changes the window mode, either by just calling it or calling it with the argument
+function applyWindowMode(newWindowMode) {
     // Bail out if we are already on this window mode
     // TODO: handle this better, what does the user expect when arriving here? First click, misclick?
 	if (newWindowMode && newWindowMode == inMemoryShortcuts[currentAppName].windowMode) return;
+
 	console.log(`_________ newWindowMode:${newWindowMode}, in memory window mode: ${inMemoryShortcuts[currentAppName].windowMode}`);
 
 	if (newWindowMode) {
@@ -256,14 +257,14 @@ const applyWindowMode = (newWindowMode) => {
 			setAndSaveWindowMode("bubble");
 		}
 	}
-};
+}
 
-const showWindow = () => {
+function showWindow() {
 	mainWindow.show()
 	mainWindow.focus()
 }
 
-const toggleWindow = () => {
+function toggleWindow() {
 	console.log('togglewindow with isVisible: ', mainWindow.isVisible());
 	if (mainWindow.isVisible()) {
 		mainWindow.hide();
@@ -271,10 +272,6 @@ const toggleWindow = () => {
 		showWindow();
 	}
 }
-
-ipcMain.on('show-window', () => {
-    showWindow();
-});
 
 function quitShortcutWizard() {
     trayObject.destroy();
@@ -285,8 +282,7 @@ function quitShortcutWizard() {
     backgroundListenerWindow.destroy(); // This holds on to objective c code, so we force destroy it
     backgroundListenerWindow = null;
     mainWindow = null;
-};
-
+}
 
 function savePosition(appName) {
 	if (!appName || !mainWindow) return;
@@ -683,6 +679,10 @@ function loadWithPeriods(appName) {
 
 
 // Events
+ipcMain.on('show-window', () => {
+    showWindow();
+});
+
 app.on('window-all-closed', function() {
 	app.quit();
 });
@@ -774,70 +774,9 @@ ipcMain.on('update-shortcut-order', function(event, appName, shortcuts) {
 	});
 });
 
-// ipcMain.on('main-parse-shortcuts', function(event, ) {
-// });
-//
-// ipcMain.on('change-window-mode', function(event, ) {
-// });
-
 ipcMain.on('open-settings', function(event) {
 	ipcMain.send('open-settings');
 });
-
-// ipcMain.on('toggle-favorite-list-item', (event, listItemName) => {
-// 	var holdShortcuts = inMemoryShortcuts[currentAppName];
-// 	if (!holdShortcuts) {
-// 		// how did we end up here??
-// 		console.log("Could not find shortcuts in memory, needs loaded data");
-// 		// loadWithPeriods(appName); // TODO: load shortcuts and do remaining work in callback here
-// 	}
-//
-// 	var holdIndex = 0;
-// 	var shortcuts = holdShortcuts.shortcuts;
-// 	if (!shortcuts) {
-// 		console.log("cant find shortcuts for ", listItemName);
-// 		return;
-// 	}
-//
-// 	var shortcut = undefined;
-//
-// 	var i;
-// 	for (i = 0; i < shortcuts.length; i++) {
-// 		if (shortcuts[i] && shortcuts[i].name == listItemName) {
-// 			shortcut = shortcuts[i];
-// 			console.log("found and set shortcut for favorite, breaking out: ", shortcut);
-// 			break;
-// 		}
-// 	}
-//
-// 	if (!shortcut) {
-// 		console.log("cant find shortcut in ", shortcuts);
-// 		return;
-// 	}
-//
-// 	shortcut.isFavorite = (shortcut.isFavorite) ? false : true;
-// 	shortcuts[i] = shortcut;
-// 	holdShortcuts.shortcuts = shortcuts;
-// 	console.log("saving shortcutObject", shortcuts);
-//
-// 	db.update({
-// 		name: currentAppName
-// 	}, {
-// 		$set: holdShortcuts
-// 	}, {
-// 		upsert: true
-// 	}, (err, res) => {
-// 		if (err) {
-// 			console.log("error when updating favorite for list item ", listItemName);
-// 		} else {
-// 			console.log("succeeded toggling favorite: ", res);
-// 			inMemoryShortcuts[currentAppName] = holdShortcuts;
-//
-// 			mainWindow.webContent.send('update-shortcuts', holdShortcuts);
-// 		}
-// 	});
-// });
-
 
 ipcMain.on('update-shortcut-item', (event, shortcutItem) => {
 	var shortcutObject = {};
