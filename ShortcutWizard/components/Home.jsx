@@ -651,7 +651,19 @@ export default class Home extends Component {
                         this.state.loading.map((obj, index) => (index == loadingLength) ? obj : obj + ", ")
                     }...</h1>
 
-                    <i className="fa fa-3x fa-spin fa-fw"></i>
+                    <i className="fa fa-3x fa-spin fa-spinner"></i>
+
+                    <button style={{
+                        color: this.state.textColor,
+                        borderColor: 'transparent',
+                        margin: 0,
+                    }} id="toggle-main-buttons" className="simple-button" onClick={() => {
+                        this.setState({
+                            loading: undefined
+                        });
+                    }}>
+                        Hide
+                    </button>
                 </div>
             );
         }
