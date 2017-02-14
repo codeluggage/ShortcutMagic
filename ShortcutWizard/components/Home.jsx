@@ -45,7 +45,7 @@ const SortableItem = SortableElement((componentArguments) => {
         <div style={{
             display: 'flex',
             flexDirection: 'row',
-            flex: 2
+            flex: 2,
         }}>
             <p style={{
                 flex: 2,
@@ -389,6 +389,7 @@ export default class Home extends Component {
                 initialItems: shortcutsArray,
                 items: shortcutsArray,
                 loading: loadingList,
+                hiddenLoading: false,
 				listTitleFontWeight: listTitleFontWeight,
 				listTitleFontSize: listTitleFontSize,
 				listItemFontWeight: listItemFontWeight,
@@ -643,7 +644,7 @@ export default class Home extends Component {
             this.state.backgroundColor : hexToRgba(beautifulColors[5], 0.5);
 
         // TODO: check for length here instead of nulling it out above?
-        if (this.state.loading) {
+        if (this.state.loading && !this.state.hiddenLoading) {
             var loadingLength = this.state.loading.length - 1;
             return (
                 <div>
@@ -659,7 +660,7 @@ export default class Home extends Component {
                         margin: 0,
                     }} id="toggle-main-buttons" className="simple-button" onClick={() => {
                         this.setState({
-                            loading: undefined
+                            hiddenLoading: true
                         });
                     }}>
                         Hide
@@ -863,6 +864,10 @@ export default class Home extends Component {
 
 		if (this.state.mode == "hidden-mode") {
 			// Hidden mode:
+            // TODO:
+            // 1) listen to some kind of click on the tray
+            // 2) Show mini window with 1 random favorite
+            // 3) Show search, focused
 			return (
 				<div>
 					{SearchField} {SettingsToggle}
