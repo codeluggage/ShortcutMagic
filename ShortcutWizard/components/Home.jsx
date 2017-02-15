@@ -397,6 +397,7 @@ export default class Home extends Component {
             });
 
             window.document.getElementById("searchField").value = "";
+            // TODO: Scroll to top here
         });
 
         ipcRenderer.on('set-loading', (event, loading) => {
@@ -405,7 +406,8 @@ export default class Home extends Component {
 
             alreadyLoading.push(loading);
             this.setState({
-                loading: alreadyLoading
+                loading: alreadyLoading,
+                hiddenLoading: false,
             });
         });
 
@@ -619,23 +621,60 @@ export default class Home extends Component {
         if (!this.state) {
 
             window.document.documentElement.style.backgroundColor = hexToRgba(beautifulColors[5], 0.5);
+            let randomWelcomeText = "Welcome to ShortcutWizard!";
+
+            switch (Math.floor(Math.random() * 10)) {
+                case 0:
+                    randomWelcomeText = "Did you know ShortcutWizard was created with the dream to help all humans use computers?";
+                    break;
+                case 1:
+                    randomWelcomeText = `Did you know that ShortcutWizard pretends to press the shortcut keys?
+                    That is the only way the computer believes that the shortcut was used.`;
+                    break;
+                case 2:
+                    randomWelcomeText = "Did you know that using shortcuts prevents carpal tunnel, and other injuries?";
+                    break;
+                case 3:
+                    randomWelcomeText = `Did you know that using a shortcut over and over will create a "muscle memory"
+                    so it is easier for you to remember? The more you do it, the easier it becomes.`;
+                    break;
+                case 4:
+                    randomWelcomeText = `Did you know that shortcuts are often the same in many different programs?
+                    Copying and pasting are the most common ones.`;
+                    break;
+                case 5:
+                    randomWelcomeText = `Did you know that ShortcutWizard will remember where you placed it for each program?
+                    This way you can place it just right, and never worry about it again.`;
+                    break;
+                case 6:
+                    randomWelcomeText = `Did you know that ShortcutWizard will remember what color and transparency you set for each program?
+                    This way you can make look exactly the way you want to.`;
+                    break;
+                case 7:
+                    randomWelcomeText = `Did you know that you are helping people in need by becoming a ShortcutWizard member?
+                    Because you contribute with paying for a membership, a person in need will get ShortcutWizard for free.`;
+                    break;
+                case 8:
+                    randomWelcomeText = `Did you know that ShortcutWizard has its own shortcuts? You can make the window small,
+                    hide it completely, or show it like normal. ShortcutWizard remembers which mode you like for each app.`;
+                    break;
+                case 9:
+                    randomWelcomeText = `Did you know that ShortcutWizard was created as if it was a web page?
+                    That way it will work on as many different computers as possible, so it can help as many as possible.`;
+                    break;
+                case 10:
+                    randomWelcomeText = `Did you know that ShortcutWizard will work for website shortcuts too?
+                    This is more difficult than program shortcuts, because websites don't follow a standard for
+                    making shortcuts, so it has to be added individually for each one.`;
+                    break;
+            }
 
             return (
                 <div style={{textAlign: 'center'}}>
-                    <button style={{color:"white", backgroundColor:"transparent", float:'left'}} id="reload-button" className="simple-button" onClick={() => {
-                        console.log('sending reloadShortcuts from ipcRenderer');
-                        ipcRenderer.send('main-parse-shortcuts');
-                    }}><i className="fa fa-1x fa-rotate-right"></i></button>
-
-                    <button style={{color:"white", backgroundColor:"transparent", float:'right'}} id="settings-button" className="simple-button" onClick={() => {
-                        console.log("clicked settings");
-                        this.toggleSettings();
-                    }}>
-                        <i className="fa fa-1x fa-cog"></i>
-                    </button>
-
                     <h1 style={{color:"white"}}>ShortcutWizard</h1>
-                    <p style={{color:'white'}}>When you focus another application, this area will show you shortcuts</p>
+                    <p style={{color:'white'}}>
+                        {randomWelcomeText}
+                    </p>
                 </div>
             );
         }
