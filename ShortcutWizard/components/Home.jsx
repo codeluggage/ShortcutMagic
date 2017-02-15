@@ -34,7 +34,7 @@ const SortableItem = SortableElement((componentArguments) => {
     let topSection = (
         <p style={{
             color: globalState.textColor,
-            flex: 4,
+            flex: 2,
             marginRight: '4px',
 			fontSize: globalState.listTitleFontSize,
 			fontWeight: globalState.listTitleFontWeight,
@@ -113,16 +113,18 @@ const SortableItem = SortableElement((componentArguments) => {
 
     var mouseOverButtonsSection = (
         <div style={{
+            display: 'flex',
             flexDirection: 'row',
             flex: 2,
-            flexWrap: 'nowrap',
-            alignContent: 'stretch',
+            marginBottom: '2px',
+            // marginTop: '2px',
+            // alignContent: 'stretch',
         }}>
             <div name={`buttonSection-${componentArguments.index}`} style={{
 				display: 'none',
 				color: globalState.textColor,
-				flex: 1,
-                height: '100%',
+				flex: 3,
+                // height: '100%',
                 backgroundColor: globalState.itemColor,
                 marginRight: '1px',
                 marginLeft: '1px',
@@ -141,62 +143,70 @@ const SortableItem = SortableElement((componentArguments) => {
                 Run
             </div>
 
-            <div id={(listItem.isFavorite) ? 'enabled-favorite-button' : ''}
-			name={`buttonSection-${componentArguments.index}`}
-			style={{
-				display: (listItem.isFavorite) ? 'block' : 'none',
-				color: globalState.textColor,
-                backgroundColor: globalState.itemColor,
-				flex: 1,
-				height: '100%',
-                marginRight: '1px',
-                marginLeft: '1px',
-                borderRadius: ".25rem",
-                borderWidth: ".50rem",
-                border: `2px solid ${globalState.itemColor}`,
-				textAlign: 'center',
-            }} onClick={() => {
-                listItem.isFavorite = !listItem.isFavorite;
-                console.log("Updating shortcut item with toggled isFavorite: ", listItem);
-                ipcRenderer.send('update-shortcut-item', listItem);
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                flex: 2,
+                flexWrap: 'nowrap',
+                // alignContent: 'stretch',
             }}>
-                {
-                    (listItem.isFavorite) ? (
-                        <i className="fa fa-2x fa-star" style={{
-							color: "gold",
-						}}></i>
-                    ) : (
-                        <i className="fa fa-2x fa-star-o" style={{
-							color: "gold",
-						}}></i>
-                    )
-                }
-				<br />
-				Favorite
-            </div>
+                <div id={(listItem.isFavorite) ? 'enabled-favorite-button' : ''}
+    			name={`buttonSection-${componentArguments.index}`}
+    			style={{
+    				display: (listItem.isFavorite) ? 'block' : 'none',
+    				color: globalState.textColor,
+                    backgroundColor: globalState.itemColor,
+    				flex: 1,
+    				// height: '100%',
+                    marginRight: '1px',
+                    marginLeft: '1px',
+                    borderRadius: ".25rem",
+                    borderWidth: ".50rem",
+                    border: `2px solid ${globalState.itemColor}`,
+    				textAlign: 'center',
+                }} onClick={() => {
+                    listItem.isFavorite = !listItem.isFavorite;
+                    console.log("Updating shortcut item with toggled isFavorite: ", listItem);
+                    ipcRenderer.send('update-shortcut-item', listItem);
+                }}>
+                    {
+                        (listItem.isFavorite) ? (
+                            <i className="fa fa-2x fa-star" style={{
+    							color: "gold",
+    						}}></i>
+                        ) : (
+                            <i className="fa fa-2x fa-star-o" style={{
+    							color: "gold",
+    						}}></i>
+                        )
+                    }
+    				<br />
+    				Favorite
+                </div>
 
-            <div name={`buttonSection-${componentArguments.index}`} style={{
-				display: 'none',
-				color: globalState.textColor,
-                backgroundColor: globalState.itemColor,
-				flex: 1,
-				height: '100%',
-                marginRight: '1px',
-                marginLeft: '1px',
-                borderRadius: ".25rem",
-                borderWidth: ".50rem",
-                border: `2px solid ${globalState.itemColor}`,
-				textAlign: 'center',
-            }} onClick={() => {
-                listItem.isHidden = !listItem.isHidden;
-                console.log("Updating shortcut item with toggled isHidden: ", listItem);
-                ipcRenderer.send('update-shortcut-item', listItem);
-            }}>
-                <i className="fa fa-2x fa-eye" style={{
-					color: (listItem.isHidden) ? "grey" : "red",
-				}}></i>
-				<br />
-				Hide
+                <div name={`buttonSection-${componentArguments.index}`} style={{
+    				display: 'none',
+    				color: globalState.textColor,
+                    backgroundColor: globalState.itemColor,
+    				flex: 1,
+    				// height: '100%',
+                    marginRight: '1px',
+                    marginLeft: '1px',
+                    borderRadius: ".25rem",
+                    borderWidth: ".50rem",
+                    border: `2px solid ${globalState.itemColor}`,
+    				textAlign: 'center',
+                }} onClick={() => {
+                    listItem.isHidden = !listItem.isHidden;
+                    console.log("Updating shortcut item with toggled isHidden: ", listItem);
+                    ipcRenderer.send('update-shortcut-item', listItem);
+                }}>
+                    <i className="fa fa-2x fa-eye" style={{
+    					color: (listItem.isHidden) ? "grey" : "red",
+    				}}></i>
+    				<br />
+    				Hide
+                </div>
             </div>
         </div>
     );
@@ -240,7 +250,7 @@ const SortableItem = SortableElement((componentArguments) => {
         }}>
             <div style={{
                 display: 'flex',
-                flexDirection: 'row',
+                flexDirection: 'column',
                 flex: 2,
             }}>
                 {topSection}
