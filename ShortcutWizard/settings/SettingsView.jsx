@@ -183,137 +183,159 @@ export default class SettingsView extends Component {
 			// * add list view code from main window
 
     		return (
-    			<div>
-					<h1>Global settings (applies to all apps)</h1>
+                <div>
+                    <div>
+                        <button className='simple-button' onClick={() => {
+                            window.document.getElementById("globalSettings").style.display = "block";
+                            window.document.getElementById("appSettings").style.display = "none";
+                        }}>
+                            Global
+                        </button>
+                        <button className='simple-button' onClick={() => {
+                            window.document.getElementById("globalSettings").style.display = "none";
+                            window.document.getElementById("appSettings").style.display = "block";
+                        }}>
+                            Global
+                        </button>
+                    </div>
 
-		        	<li>
-						Always float window on top of other windows?
-	                    <button className="simple-button" onClick={() => {
-							var holdSettings = this.state.globalSettings;
-	                    	holdSettings.alwaysOnTop = !holdSettings.alwaysOnTop;
-	                    	this.setState({
-								globalSettings: holdSettings
-							});
+        			<div id="globalSettings" style={{
+                        display: 'none'
+                    }}>
+    					<h1>Global settings (applies to all apps)</h1>
 
-	                    	ipcRenderer.send('temporarily-update-app-setting', {
-	                    		alwaysOnTop: alwaysOnTop
-	                    	});
-	                    }}>
-		                    {(this.state.globalSettings.alwaysOnTop) ? "true" : "false"}
-	                    </button>
-		        	</li>
+    		        	<li>
+    						Always float window on top of other windows?
+    	                    <button className="simple-button" onClick={() => {
+    							var holdSettings = this.state.globalSettings;
+    	                    	holdSettings.alwaysOnTop = !holdSettings.alwaysOnTop;
+    	                    	this.setState({
+    								globalSettings: holdSettings
+    							});
 
-		        	<li>
-						Set window state (regular, small, hidden) for all apps?
-	                    <button className="simple-button" onClick={() => {
-							var holdSettings = this.state.globalSettings;
-	                    	holdSettings.hidePerApp = !holdSettings.hidePerApp;
-	                    	this.setState({
-								globalSettings: holdSettings
-							});
-	                    	ipcRenderer.send('temporarily-update-app-setting', {
-	                    		hidePerApp: holdSettings.hidePerApp
-	                    	});
-	                    }}>
-				        	{(this.state.globalSettings.hidePerApp) ? "On" : "Off"}
-	                    </button>
-		        	</li>
+    	                    	ipcRenderer.send('temporarily-update-app-setting', {
+    	                    		alwaysOnTop: alwaysOnTop
+    	                    	});
+    	                    }}>
+    		                    {(this.state.globalSettings.alwaysOnTop) ? "true" : "false"}
+    	                    </button>
+    		        	</li>
 
-		        	<li>
-						Use one window size for all apps?
-	                    <button className="simple-button" onClick={() => {
-							var holdSettings = this.state.globalSettings;
-	                    	holdSettings.boundsPerApp = !holdSettings.boundsPerApp;
-	                    	this.setState({
-								globalSettings: holdSettings
-							});
-	                    	ipcRenderer.send('temporarily-update-app-setting', {
-	                    		boundsPerApp: holdSettings.boundsPerApp
-	                    	});
-	                    }}>
-				        	{(this.state.globalSettings.boundsPerApp) ? "On" : "Off"}
-	                    </button>
-		        	</li>
+    		        	<li>
+    						Set window state (regular, small, hidden) for all apps?
+    	                    <button className="simple-button" onClick={() => {
+    							var holdSettings = this.state.globalSettings;
+    	                    	holdSettings.hidePerApp = !holdSettings.hidePerApp;
+    	                    	this.setState({
+    								globalSettings: holdSettings
+    							});
+    	                    	ipcRenderer.send('temporarily-update-app-setting', {
+    	                    		hidePerApp: holdSettings.hidePerApp
+    	                    	});
+    	                    }}>
+    				        	{(this.state.globalSettings.hidePerApp) ? "On" : "Off"}
+    	                    </button>
+    		        	</li>
 
-		        	<li>
-						Show menu names?
-	                    <button className="simple-button" onClick={() => {
-							var holdSettings = this.state.globalSettings;
-	                    	holdSettings.showMenuNames = !holdSettings.showMenuNames;
-	                    	this.setState({
-								globalSettings: holdSettings
-							});
-	                    	ipcRenderer.send('temporarily-update-app-setting', {
-	                    		showMenuNames: holdSettings.showMenuNames
-	                    	});
-	                    }}>
-				        	{(this.state.globalSettings.showMenuNames) ? "On" : "Off"}
-	                    </button>
-		        	</li>
+    		        	<li>
+    						Use one window size for all apps?
+    	                    <button className="simple-button" onClick={() => {
+    							var holdSettings = this.state.globalSettings;
+    	                    	holdSettings.boundsPerApp = !holdSettings.boundsPerApp;
+    	                    	this.setState({
+    								globalSettings: holdSettings
+    							});
+    	                    	ipcRenderer.send('temporarily-update-app-setting', {
+    	                    		boundsPerApp: holdSettings.boundsPerApp
+    	                    	});
+    	                    }}>
+    				        	{(this.state.globalSettings.boundsPerApp) ? "On" : "Off"}
+    	                    </button>
+    		        	</li>
 
-
-					<h1>Settings for {this.state.appSettings.name}</h1>
-
-					<li>
-						Reload shortcuts for the current program
-	                    <button id="reload-button" className="simple-button" onClick={() => {
-	                        console.log('sending reloadShortcuts from ipcRenderer');
-	                        ipcRenderer.send('main-parse-shortcuts');
-	                    }}>Reload</button>
-					</li>
-
-					<div style={{
-						display: 'flex',
-						flexDirection: 'row',
-						margin: 'auto'
-					}}>
-						<div style={{flexDirection: 'column'}}>
-			        		<h3>Background color</h3>
-			    			<SketchPicker
-			    				color={this.state.appSettings.backgroundColor}
-				    			onChangeComplete={this.handleBackgroundColorChange}
-								presetColors={settings.beautifulColors}
-			    			/>
-						</div>
-						<div style={{flexDirection: 'column'}}>
-			        		<h3>Item color</h3>
-							<SketchPicker
-								color={this.state.appSettings.itemColor}
-								onChangeComplete={this.handleItemColorChange}
-								presetColors={settings.beautifulColors}
-							/>
-						</div>
-						<div style={{flexDirection: 'column'}}>
-			        		<h3>Item background color</h3>
-							<SketchPicker
-								color={this.state.appSettings.itemBackgroundColor}
-								onChangeComplete={this.handleItemBackgroundColorChange}
-								presetColors={settings.beautifulColors}
-							/>
-						</div>
-						<div style={{flexDirection: 'column'}}>
-			        		<h3>Text color</h3>
-							<SketchPicker
-								color={this.state.appSettings.textColor}
-								onChangeComplete={this.handleTextColorChange}
-								presetColors={settings.beautifulColors}
-							/>
-						</div>
-					</div>
-
-                    <button style={{color:"white", float:'left'}} id="reload-button" className="simple-button" onClick={() => {
-                        console.log('sending reloadShortcuts from ipcRenderer');
-                        ipcRenderer.send('main-parse-shortcuts');
-                    }}><i className="fa fa-1x fa-refresh"></i></button>
+    		        	<li>
+    						Show menu names?
+    	                    <button className="simple-button" onClick={() => {
+    							var holdSettings = this.state.globalSettings;
+    	                    	holdSettings.showMenuNames = !holdSettings.showMenuNames;
+    	                    	this.setState({
+    								globalSettings: holdSettings
+    							});
+    	                    	ipcRenderer.send('temporarily-update-app-setting', {
+    	                    		showMenuNames: holdSettings.showMenuNames
+    	                    	});
+    	                    }}>
+    				        	{(this.state.globalSettings.showMenuNames) ? "On" : "Off"}
+    	                    </button>
+    		        	</li>
 
 
-                    <button style={{color:"black", float:'left'}} className="simple-button" onClick={() => {
-						this.saveCurrentSettings();
-                    }}>Save</button>
-                    <button style={{color:"black", float:'right'}} className="simple-button" onClick={() => {
-						this.cancelCurrentSettings();
-                    }}>Cancel</button>
-	    		</div>
+                    </div>
+
+                    <div id="appSettings">
+    					<h1>Settings for {this.state.appSettings.name}</h1>
+
+    					<li>
+    						Reload shortcuts for the current program
+    	                    <button id="reload-button" className="simple-button" onClick={() => {
+    	                        console.log('sending reloadShortcuts from ipcRenderer');
+    	                        ipcRenderer.send('main-parse-shortcuts');
+    	                    }}>Reload</button>
+    					</li>
+
+    					<div style={{
+    						display: 'flex',
+    						flexDirection: 'row',
+    						margin: 'auto'
+    					}}>
+    						<div style={{flexDirection: 'column'}}>
+    			        		<h3>Background color</h3>
+    			    			<SketchPicker
+    			    				color={this.state.appSettings.backgroundColor}
+    				    			onChangeComplete={this.handleBackgroundColorChange}
+    								presetColors={settings.beautifulColors}
+    			    			/>
+    						</div>
+    						<div style={{flexDirection: 'column'}}>
+    			        		<h3>Item color</h3>
+    							<SketchPicker
+    								color={this.state.appSettings.itemColor}
+    								onChangeComplete={this.handleItemColorChange}
+    								presetColors={settings.beautifulColors}
+    							/>
+    						</div>
+    						<div style={{flexDirection: 'column'}}>
+    			        		<h3>Item background color</h3>
+    							<SketchPicker
+    								color={this.state.appSettings.itemBackgroundColor}
+    								onChangeComplete={this.handleItemBackgroundColorChange}
+    								presetColors={settings.beautifulColors}
+    							/>
+    						</div>
+    						<div style={{flexDirection: 'column'}}>
+    			        		<h3>Text color</h3>
+    							<SketchPicker
+    								color={this.state.appSettings.textColor}
+    								onChangeComplete={this.handleTextColorChange}
+    								presetColors={settings.beautifulColors}
+    							/>
+    						</div>
+    					</div>
+
+                        <button style={{color:"white", float:'left'}} id="reload-button" className="simple-button" onClick={() => {
+                            console.log('sending reloadShortcuts from ipcRenderer');
+                            ipcRenderer.send('main-parse-shortcuts');
+                        }}><i className="fa fa-1x fa-refresh"></i></button>
+
+
+                        <button style={{color:"black", float:'left'}} className="simple-button" onClick={() => {
+    						this.saveCurrentSettings();
+                        }}>Save</button>
+                        <button style={{color:"black", float:'right'}} className="simple-button" onClick={() => {
+    						this.cancelCurrentSettings();
+                        }}>Cancel</button>
+    	    		</div>
+                </div>
 			);
 	  //   	return (
 	  //   		<h1>hello from settings!</h1>
