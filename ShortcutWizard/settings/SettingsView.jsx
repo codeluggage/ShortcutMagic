@@ -14,6 +14,10 @@ var settings = new Settings();
 // for (val in settings) {
 // 	console.log(val);
 // }
+
+var beautifulColors = ["#ffffff", "#000000", "#2c7bb6",  "#00a6ca", "#00ccbc",
+	"#90eb9d", "#ffff8c", "#f9d057", "#f29e2e", "#e76818", "#d7191c"];
+
 function makeColorString(color) {
 	return `rgba(${ color.rgb.r }, ${ color.rgb.g }, ${ color.rgb.b }, ${ color.rgb.a })`;
 }
@@ -195,14 +199,14 @@ export default class SettingsView extends Component {
                             window.document.getElementById("globalSettings").style.display = "none";
                             window.document.getElementById("appSettings").style.display = "block";
                         }}>
-                            Global
+                            {this.state.appSettings.name}
                         </button>
                     </div>
 
         			<div id="globalSettings" style={{
                         display: 'none'
                     }}>
-    					<h1>Global settings (applies to all apps)</h1>
+    					<h1>Global settings that are always active</h1>
 
     		        	<li>
     						Always float window on top of other windows?
@@ -268,12 +272,10 @@ export default class SettingsView extends Component {
     				        	{(this.state.globalSettings.showMenuNames) ? "On" : "Off"}
     	                    </button>
     		        	</li>
-
-
                     </div>
 
                     <div id="appSettings">
-    					<h1>Settings for {this.state.appSettings.name}</h1>
+    					<h1>Specific settings for {this.state.appSettings.name} only</h1>
 
     					<li>
     						Reload shortcuts for the current program
@@ -283,50 +285,59 @@ export default class SettingsView extends Component {
     	                    }}>Reload</button>
     					</li>
 
-    					<div style={{
-    						display: 'flex',
-    						flexDirection: 'row',
-    						margin: 'auto'
-    					}}>
-    						<div style={{flexDirection: 'column'}}>
-    			        		<h3>Background color</h3>
-    			    			<SketchPicker
-    			    				color={this.state.appSettings.backgroundColor}
-    				    			onChangeComplete={this.handleBackgroundColorChange}
-    								presetColors={settings.beautifulColors}
-    			    			/>
-    						</div>
-    						<div style={{flexDirection: 'column'}}>
-    			        		<h3>Item color</h3>
-    							<SketchPicker
-    								color={this.state.appSettings.itemColor}
-    								onChangeComplete={this.handleItemColorChange}
-    								presetColors={settings.beautifulColors}
-    							/>
-    						</div>
-    						<div style={{flexDirection: 'column'}}>
-    			        		<h3>Item background color</h3>
-    							<SketchPicker
-    								color={this.state.appSettings.itemBackgroundColor}
-    								onChangeComplete={this.handleItemBackgroundColorChange}
-    								presetColors={settings.beautifulColors}
-    							/>
-    						</div>
-    						<div style={{flexDirection: 'column'}}>
-    			        		<h3>Text color</h3>
-    							<SketchPicker
-    								color={this.state.appSettings.textColor}
-    								onChangeComplete={this.handleTextColorChange}
-    								presetColors={settings.beautifulColors}
-    							/>
-    						</div>
-    					</div>
+            			<div style={{
+            				display: 'flex',
+            				flexDirection: 'row',
+            				margin: 0,
+            				border: 0,
+            				padding: 0,
+                            // backgroundColor: this.state.appSettings.backgroundColor,
+                            // color: this.state.appSettings.textColor,
+                            textAlign: 'center',
+            			}}>
+                			<div style={{
+                				display: 'flex',
+                				flexDirection: 'column',
+                                flex: 1,
+                			}}>
+                        		<h3>Background color</h3>
+                    			<SketchPicker
+                    				color={this.state.appSettings.backgroundColor}
+                	    			onChangeComplete={this.handleBackgroundColorChange}
+                					presetColors={beautifulColors}
+                    			/>
+                        		<h3>Item color</h3>
+                				<SketchPicker
+                					color={this.state.appSettings.itemColor}
+                					onChangeComplete={this.handleItemColorChange}
+                					presetColors={beautifulColors}
+                				/>
+                            </div>
+
+                			<div style={{
+                				display: 'flex',
+                				flexDirection: 'column',
+                                flex: 1,
+                			}}>
+                        		<h3>Item background color</h3>
+                				<SketchPicker
+                					color={this.state.appSettings.itemColor}
+                					onChangeComplete={this.handleItemBackgroundColorChange}
+                					presetColors={beautifulColors}
+                				/>
+                        		<h3>Text color</h3>
+                				<SketchPicker
+                					color={this.state.appSettings.textColor}
+                					onChangeComplete={this.handleTextColorChange}
+                					presetColors={beautifulColors}
+                				/>
+                            </div>
+            			</div>
 
                         <button style={{color:"white", float:'left'}} id="reload-button" className="simple-button" onClick={() => {
                             console.log('sending reloadShortcuts from ipcRenderer');
                             ipcRenderer.send('main-parse-shortcuts');
                         }}><i className="fa fa-1x fa-refresh"></i></button>
-
 
                         <button style={{color:"black", float:'left'}} className="simple-button" onClick={() => {
     						this.saveCurrentSettings();

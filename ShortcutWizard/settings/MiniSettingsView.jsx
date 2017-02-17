@@ -69,7 +69,7 @@ export default class MiniSettingsView extends Component {
         }
     }
 
-    // TODO: Handle a "show" event here to read the settings again, instead of a stupid recurring system
+    // TODO: Handle a "show" event here to read the settings again, instead of this stupid recurring system
     reloadSettings(recur) {
         var windows = holdRemote.BrowserWindow.getAllWindows();
         for (var i = 0; i < windows.length; i++) {

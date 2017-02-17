@@ -910,25 +910,34 @@ export default class Home extends Component {
 		                </button>
 					</div>
 
-					<button	id="toggle-full-mode" className="simple-button" onClick={() => {
+					<button	id="toggle-full-mode" className="simple-button" style={{
+                        backgroundColor: 'transparent',
+                        borderColor: 'transparent',
+                    }} onClick={() => {
 						ipcRenderer.send('set-full-view-mode');
 						console.log("clicked sw_full_view_icon");
 					}}>
-						<i source="../assets/sw_full_view_icon.png"></i>
+						<img src="assets/sw_full_view_icon.png" />
 					</button>
 
-					<button id="toggle-bubble-mode" className="simple-button" onClick={() => {
+					<button id="toggle-bubble-mode" className="simple-button" style={{
+                        backgroundColor: 'transparent',
+                        borderColor: 'transparent',
+                    }} onClick={() => {
 						ipcRenderer.send('set-bubble-mode');
 						console.log("clicked sw_bubble_icon");
 					}}>
-						<i source="../assets/sw_bubble_icon.png"></i>
+						<img src="assets/sw_bubble_icon.png" />
 					</button>
 
-					<button id="toggle-hidden-mode" className="simple-button" onClick={() => {
+					<button id="toggle-hidden-mode" className="simple-button" style={{
+                        backgroundColor: 'transparent',
+                        borderColor: 'transparent',
+                    }} onClick={() => {
 						ipcRenderer.send('set-hidden-mode');
 						console.log("clicked sw_hidden_icon");
 					}}>
-						<i source="../assets/sw_hidden_icon.png"></i>
+						<img src="assets/sw_hidden_icon.png" />
 					</button>
 				</div>
 			</div>
