@@ -745,7 +745,7 @@ export default class Home extends Component {
                     break;
                 case 6:
                     randomWelcomeText = `Did you know that ShortcutWizard will remember what color and transparency you set for each program?
-                    This way you can make look exactly the way you want to.`;
+                    This way you can make it look exactly the way you want to.`;
                     break;
                 case 7:
                     randomWelcomeText = `Did you know that you are helping people in need by becoming a ShortcutWizard member?

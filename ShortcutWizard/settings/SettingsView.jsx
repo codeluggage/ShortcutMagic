@@ -186,6 +186,40 @@ export default class SettingsView extends Component {
 			// TODO:
 			// * add list view code from main window
 
+
+            // Potential future settings:
+    		        	// <li>
+    					// 	Set window state (regular/small/hidden) for all apps?
+    	                //     <button className="simple-button" onClick={() => {
+    					// 		var holdSettings = this.state.globalSettings;
+    	                //     	holdSettings.hidePerApp = !holdSettings.hidePerApp;
+    	                //     	this.setState({
+    					// 			globalSettings: holdSettings
+    					// 		});
+    	                //     	ipcRenderer.send('temporarily-update-app-setting', {
+    	                //     		hidePerApp: holdSettings.hidePerApp
+    	                //     	});
+    	                //     }}>
+    				    //     	{(this.state.globalSettings.hidePerApp) ? "On" : "Off"}
+    	                //     </button>
+    		        	// </li>
+    		        	// <li>
+    					// 	Show menu names?
+    	                //     <button className="simple-button" onClick={() => {
+    					// 		var holdSettings = this.state.globalSettings;
+    	                //     	holdSettings.showMenuNames = !holdSettings.showMenuNames;
+    	                //     	this.setState({
+    					// 			globalSettings: holdSettings
+    					// 		});
+    	                //     	ipcRenderer.send('temporarily-update-app-setting', {
+    	                //     		showMenuNames: holdSettings.showMenuNames
+    	                //     	});
+    	                //     }}>
+    				    //     	{(this.state.globalSettings.showMenuNames) ? "On" : "Off"}
+    	                //     </button>
+    		        	// </li>
+
+
     		return (
                 <div>
                     <div>
@@ -226,22 +260,6 @@ export default class SettingsView extends Component {
     		        	</li>
 
     		        	<li>
-    						Set window state (regular, small, hidden) for all apps?
-    	                    <button className="simple-button" onClick={() => {
-    							var holdSettings = this.state.globalSettings;
-    	                    	holdSettings.hidePerApp = !holdSettings.hidePerApp;
-    	                    	this.setState({
-    								globalSettings: holdSettings
-    							});
-    	                    	ipcRenderer.send('temporarily-update-app-setting', {
-    	                    		hidePerApp: holdSettings.hidePerApp
-    	                    	});
-    	                    }}>
-    				        	{(this.state.globalSettings.hidePerApp) ? "On" : "Off"}
-    	                    </button>
-    		        	</li>
-
-    		        	<li>
     						Use one window size for all apps?
     	                    <button className="simple-button" onClick={() => {
     							var holdSettings = this.state.globalSettings;
@@ -257,21 +275,6 @@ export default class SettingsView extends Component {
     	                    </button>
     		        	</li>
 
-    		        	<li>
-    						Show menu names?
-    	                    <button className="simple-button" onClick={() => {
-    							var holdSettings = this.state.globalSettings;
-    	                    	holdSettings.showMenuNames = !holdSettings.showMenuNames;
-    	                    	this.setState({
-    								globalSettings: holdSettings
-    							});
-    	                    	ipcRenderer.send('temporarily-update-app-setting', {
-    	                    		showMenuNames: holdSettings.showMenuNames
-    	                    	});
-    	                    }}>
-    				        	{(this.state.globalSettings.showMenuNames) ? "On" : "Off"}
-    	                    </button>
-    		        	</li>
                     </div>
 
                     <div id="appSettings">

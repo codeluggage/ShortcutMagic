@@ -23,7 +23,7 @@ const Datastore = require('nedb');
 // db is an instance of nedb and lets us store things on disk in pure text, and treat it like mongodb. this stores the shortcut information
 var db = new Datastore({
 	filename: `${__dirname}/db/shortcuts.db`,
-	autoload: true
+	autoload: true,
 });
 
 // The field for "name" is the one we want to keep unique, so anything we write to the db for another running program is
@@ -58,6 +58,8 @@ var hackyStopSavePos = false;
 // The default bounds are appliend when no other bounds are found, typically for new running programs we open and parse
 var defaultFullBounds = {x: 1100, y: 100, width: 350, height: 800};
 var defaultBubbleBounds = {x: 800, y: 10, width: 250, height: 200};
+// These global settings are stored together with the shortcuts, and this is the "name":
+var GLOBAL_SETTINGS = "all programs";
 
 app.setName("ShortcutWizard");
 // The dock icon is hidden because we are trying to be an overlay application that is just "always there"
@@ -391,65 +393,82 @@ function createWindows() {
 }
 
 function createMainWindow() {
-	mainWindow = new BrowserWindow({
-		name: "ShortcutWizard",
-		acceptFirstClick: true,
-		alwaysOnTop: true,
-		frame: false,
-		show: false, // Don't show until we have the information of the app that is running
-		transparent: true,
-        x: 334, y: 153, width: 826, height: 568,
-		title: "mainWindow"
-	});
+    db.find({
+        name: GLOBAL_SETTINGS
+    }, function(err, res) {
 
-	// TODO: make experimental settings:
-	// 0 - NSVisualEffectMaterialAppearanceBased 10.10+
-	// 1 - NSVisualEffectMaterialLight 10.10+
-	// 2 - NSVisualEffectMaterialDark 10.10+
-	// 3 - NSVisualEffectMaterialTitlebar 10.10+
-	// 4 - NSVisualEffectMaterialSelection 10.11+
-	// 5 - NSVisualEffectMaterialMenu 10.11+
-	// 6 - NSVisualEffectMaterialPopover 10.11+
-	// 7 - NSVisualEffectMaterialSidebar 10.11+
-	// 8 - NSVisualEffectMaterialMediumLight 10.11+
-	// 9 - NSVisualEffectMaterialUltraDark 10.11+
-
-	// Whole window vibrancy with Material 0 and auto resize
-	// mainWindow.on('ready-to-show', () => {
-	// 	console.log('loaded window, vibrancy: ', electronVibrancy);
-	//     // electronVibrancy.SetVibrancy(true, browserWindowInstance.getNativeWindowHandle());
-	// 	electronVibrancy.SetVibrancy(mainWindow, 0);
-	// });
-
-	mainWindow.loadURL(`file://${__dirname}/index.html`);
-
-	mainWindow.on('resize', (event) => {
-		// TODO: Set up a limit here to not save too often, or queue it up
-		if (!hackyStopSavePos) {
-			console.log("//////////////////////////////////////// on.resize");
-			savePosition(currentAppName);
+		if (err || !doc) {
+			console.log('error finding in savePosition: ', err);
+			return;
 		}
-	});
 
-	mainWindow.on('moved', (event) => {
-		if (!hackyStopSavePos) {
-			console.log("//////////////////////////////////////// on.moved");
-			savePosition(currentAppName);
-		}
-	});
+		if (doc != [] && doc.length > 0) {
+            // doc["boundsPerApp"]
+            // doc["showMenuNames"]
+            // doc["alwaysOnTop"]
+            inMemoryShortcuts[GLOBAL_SETTINGS]["boundsPerApp"] = true;
+
+        	mainWindow = new BrowserWindow({
+        		name: "ShortcutWizard",
+        		acceptFirstClick: true,
+        		alwaysOnTop: doc["alwaysOnTop"],
+        		frame: false,
+        		show: false, // Don't show until we have the information of the app that is running
+        		transparent: true,
+                x: 334, y: 153, width: 826, height: 568,
+        		title: "mainWindow"
+        	});
+
+        	// TODO: make experimental settings:
+        	// 0 - NSVisualEffectMaterialAppearanceBased 10.10+
+        	// 1 - NSVisualEffectMaterialLight 10.10+
+        	// 2 - NSVisualEffectMaterialDark 10.10+
+        	// 3 - NSVisualEffectMaterialTitlebar 10.10+
+        	// 4 - NSVisualEffectMaterialSelection 10.11+
+        	// 5 - NSVisualEffectMaterialMenu 10.11+
+        	// 6 - NSVisualEffectMaterialPopover 10.11+
+        	// 7 - NSVisualEffectMaterialSidebar 10.11+
+        	// 8 - NSVisualEffectMaterialMediumLight 10.11+
+        	// 9 - NSVisualEffectMaterialUltraDark 10.11+
+
+        	// Whole window vibrancy with Material 0 and auto resize
+        	// mainWindow.on('ready-to-show', () => {
+        	// 	console.log('loaded window, vibrancy: ', electronVibrancy);
+        	//     // electronVibrancy.SetVibrancy(true, browserWindowInstance.getNativeWindowHandle());
+        	// 	electronVibrancy.SetVibrancy(mainWindow, 0);
+        	// });
+
+        	mainWindow.loadURL(`file://${__dirname}/index.html`);
+
+        	mainWindow.on('resize', (event) => {
+        		// TODO: Set up a limit here to not save too often, or queue it up
+        		if (!hackyStopSavePos) {
+        			console.log("//////////////////////////////////////// on.resize");
+        			savePosition(currentAppName);
+        		}
+        	});
+
+        	mainWindow.on('moved', (event) => {
+        		if (!hackyStopSavePos) {
+        			console.log("//////////////////////////////////////// on.moved");
+        			savePosition(currentAppName);
+        		}
+        	});
 
 
 
-	mainWindow.setHasShadow(false);
+        	mainWindow.setHasShadow(false);
 
-	// applyWindowMode(inMemoryShortcuts[currentAppName].windowMode);
-	mainWindow.show();
+        	// applyWindowMode(inMemoryShortcuts[currentAppName].windowMode);
+        	mainWindow.show();
 
-	// All windows are created, collect all their window id's and let each of them
-	// know what is available to send messages to:
+        	// All windows are created, collect all their window id's and let each of them
+        	// know what is available to send messages to:
 
-	// TODO: Run applescript to select previous app and set that as the current app,
-	// in order to correctly load the state of that app for the main window settings
+        	// TODO: Run applescript to select previous app and set that as the current app,
+        	// in order to correctly load the state of that app for the main window settings
+        }
+    });
 }
 
 function createTray() {
@@ -861,4 +880,16 @@ ipcMain.on('set-bubble-mode', (event) => {
 ipcMain.on('set-hidden-mode', (event) => {
 	console.log("entrypoint for set-hidden-mode");
 	applyWindowMode("hidden");
+});
+
+ipcMain.on('temporarily-update-app-setting', (event, newSetting) => {
+    var settingName = Object.keys(newSetting)[0];
+    var settingValue = Object.values(newSetting)[0];
+    if (settingName == "boundsPerApp") {
+        inMemoryShortcuts[GLOBAL_SETTINGS]["boundsPerApp"] = true;
+    } else if (settingName == "alwaysOnTop") {
+        inMemoryShortcuts[GLOBAL_SETTINGS]["alwaysOnTop"] = settingValue;
+        mainWindow.alwaysOnTop = settingValue;
+    // } else if (settingName == "showMenuNames") {
+    }
 });
