@@ -1,12 +1,29 @@
 <!DOCTYPE html>
 <html>
-	<head>
-	    <script>
-		    require('babel-register');
-	    	require('./WelcomeView');
-	    </script>
-	</head>
-	<body>
-	    <div id="welcome-root"></div>
-	</body>
+  <head>
+    <title>ShortcutWizard</title>
+
+    <link rel="stylesheet" href="../dist/css/photon.css">
+
+    <script>
+        require('babel-register');
+        require('./WelcomeView');
+    </script>
+  </head>
+  <body>
+    <div className="window">
+
+      <header className="toolbar toolbar-header">
+        <h1 className="title">Introduction to ShortcutWizard</h1>
+      </header>
+
+
+      <div className="window-content">
+        <div id="welcome-root">
+        </div>
+
+        </div>
+      </div>
+    </div>
+  </body>
 </html>

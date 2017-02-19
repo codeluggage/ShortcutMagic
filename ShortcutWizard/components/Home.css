@@ -5,7 +5,7 @@ body, html {
   /*background-color: #282828*/
 }
 .base {
-  font-family: Dosis, sans-serif;;
+  font: caption;
   /*padding: 10px;*/
   box-sizing: border-box;
   width: 100%;

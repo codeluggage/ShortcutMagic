@@ -89,7 +89,6 @@ let inMemoryShortcuts = [];
 let currentAppName = "Electron";
 // TODO: Save to settings db
 
-
 // Functions
 
 // Sets bounds for the current window mode, saves it in the db
@@ -388,30 +387,41 @@ function createWindows() {
 	createBackgroundListenerWindow();
 	createSettingsWindow();
 	createMiniSettingsWindow();
-	// createWelcomeWindow();
+	createWelcomeWindow();
 	createMainWindow();
 }
 
 function createMainWindow() {
-    db.find({
-        name: GLOBAL_SETTINGS
-    }, function(err, res) {
+    // db.find({
+    //     name: GLOBAL_SETTINGS
+    // }, function(err, res) {
+    //
+	// 	if (err || !res) {
+	// 		console.log('error finding in savePosition: ', err);
+	// 		return;
+	// 	}
+    //
+	// 	if (res != [] && res.length > 0) {
+            // res["boundsPerApp"]
+            // res["showMenuNames"]
+            // res["alwaysOnTop"]
 
-		if (err || !doc) {
-			console.log('error finding in savePosition: ', err);
-			return;
-		}
+            if (!inMemoryShortcuts[GLOBAL_SETTINGS]) {
+                inMemoryShortcuts[GLOBAL_SETTINGS] = {
+                    boundsPerApp: true,
+                    alwaysOnTop: true,
+                };
+            }
 
-		if (doc != [] && doc.length > 0) {
-            // doc["boundsPerApp"]
-            // doc["showMenuNames"]
-            // doc["alwaysOnTop"]
-            inMemoryShortcuts[GLOBAL_SETTINGS]["boundsPerApp"] = true;
+            // temp
+            var res = [];
+            inMemoryShortcuts[GLOBAL_SETTINGS]["boundsPerApp"] = (res["boundsPerApp"]) ? res["boundsPerApp"] : true;
+            inMemoryShortcuts[GLOBAL_SETTINGS]["alwaysOnTop"] = (res["alwaysOnTop"]) ? res["alwaysOnTop"] : true;
 
         	mainWindow = new BrowserWindow({
         		name: "ShortcutWizard",
         		acceptFirstClick: true,
-        		alwaysOnTop: doc["alwaysOnTop"],
+        		alwaysOnTop: inMemoryShortcuts[GLOBAL_SETTINGS]["alwaysOnTop"],
         		frame: false,
         		show: false, // Don't show until we have the information of the app that is running
         		transparent: true,
@@ -467,8 +477,8 @@ function createMainWindow() {
 
         	// TODO: Run applescript to select previous app and set that as the current app,
         	// in order to correctly load the state of that app for the main window settings
-        }
-    });
+    //     }
+    // });
 }
 
 function createTray() {
@@ -689,9 +699,11 @@ function loadWithPeriods(appName) {
 				console.log("CANT FIND MAIN WINDOW WHEN LOADING SHORTCUTS");
 			}
 		} else {
-			mainWindow.webContents.send('set-loading', appName);
-			console.log('sending webview-parse-shortcuts with appName', appName);
-			backgroundTaskRunnerWindow.webContents.send('webview-parse-shortcuts', appName);
+            if (mainWindow && mainWindow.webContents) {
+    			mainWindow.webContents.send('set-loading', appName);
+    			console.log('sending webview-parse-shortcuts with appName', appName);
+    			backgroundTaskRunnerWindow.webContents.send('webview-parse-shortcuts', appName);
+            }
 		}
 	});
 }
