@@ -387,7 +387,7 @@ function createWindows() {
 	createBackgroundListenerWindow();
 	createSettingsWindow();
 	createMiniSettingsWindow();
-	createWelcomeWindow();
+	// createWelcomeWindow();
 	createMainWindow();
 }
 

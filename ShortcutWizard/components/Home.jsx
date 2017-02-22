@@ -250,14 +250,14 @@ const SortableItem = SortableElement((componentArguments) => {
 			style={{
 				display: (listItem.isFavorite) ? 'block' : 'none',
 				color: globalState.textColor,
-                backgroundColor: globalState.itemColor,
+				backgroundColor: (listItem.isFavorite) ? 'transparent' : globalState.itemColor,
+				border: (listItem.isFavorite) ? 'transparent' : `2px solid ${globalState.itemColor}`,
 				flex: 2,
 				// height: '100%',
                 marginRight: '1px',
                 marginLeft: '1px',
                 borderRadius: ".25rem",
                 borderWidth: ".50rem",
-                border: `2px solid ${globalState.itemColor}`,
 				textAlign: 'center',
             }} onClick={() => {
                 listItem.isFavorite = !listItem.isFavorite;
@@ -322,7 +322,13 @@ const SortableItem = SortableElement((componentArguments) => {
 			let buttonSectionElements = doc.getElementsByName(`buttonSection-${componentArguments.index}`);
             if (buttonSectionElements) {
 				for (var i = 0; i < buttonSectionElements.length; i++) {
+
 					buttonSectionElements[i].style.display = "block";
+
+					if (buttonSectionElements[i].id === "enabled-favorite-button") {
+                        buttonSectionElements[i].style.backgroundColor = globalState.itemColor;
+                        buttonSectionElements[i].style.border = `2px solid ${globalState.itemColor}`;
+                    }
 				}
 			}
         }} onMouseLeave={(e) => {
@@ -331,7 +337,10 @@ const SortableItem = SortableElement((componentArguments) => {
 				for (var i = 0; i < buttonSectionElements.length; i++) {
 					if (buttonSectionElements[i].id != "enabled-favorite-button") {
 						buttonSectionElements[i].style.display = "none";
-					}
+					} else {
+                        buttonSectionElements[i].style.backgroundColor = "transparent";
+                        buttonSectionElements[i].style.border = "transparent";
+                    }
 				}
 			}
         }}>
