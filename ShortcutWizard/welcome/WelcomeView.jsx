@@ -84,12 +84,12 @@ export default class WelcomeView extends Component {
                     let holdWindow = windows[i];
                     if (holdWindow) {
                               if (holdWindow.getTitle() == "welcomeWindow") {
-                    holdWindow.hide();
+                                  holdWindow.hide();
                               } else if (holdWindow.getTitle() == "mainWindow") {
                                   holdWindow.webContents.send("start-shortcut-window");
                               }
-                    }
-                }
+                          }
+                      }
                   }}>Start showing shortcuts</button>
               </div>
           </div>
