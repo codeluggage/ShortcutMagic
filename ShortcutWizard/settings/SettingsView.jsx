@@ -63,6 +63,7 @@ export default class SettingsView extends Component {
         this.handleBackgroundColorChange = this.handleBackgroundColorChange.bind(this);
         this.handleItemColorChange = this.handleItemColorChange.bind(this);
         this.handleTextColorChange = this.handleTextColorChange.bind(this);
+        this.handleItemBackgroundColorChange = this.handleItemBackgroundColorChange.bind(this);
 		this.saveCurrentSettings = this.saveCurrentSettings.bind(this);
 		this.cancelCurrentSettings = this.cancelCurrentSettings.bind(this);
     }
@@ -222,122 +223,54 @@ export default class SettingsView extends Component {
 
     		return (
                 <div>
-                    <div>
-                        <button className='simple-button' onClick={() => {
-                            window.document.getElementById("globalSettings").style.display = "block";
-                            window.document.getElementById("appSettings").style.display = "none";
-                        }}>
-                            Global
-                        </button>
-                        <button className='simple-button' onClick={() => {
-                            window.document.getElementById("globalSettings").style.display = "none";
-                            window.document.getElementById("appSettings").style.display = "block";
-                        }}>
-                            {this.state.appSettings.name}
-                        </button>
-                    </div>
+                    <header className="toolbar toolbar-header">
+                      <h1 className="title">ShortcutWizard Settings</h1>
+
+                      <div className="toolbar-actions">
+                        <div className="btn-group">
+                            <button className="btn btn-default" onClick={() => {
+                                window.document.getElementById("globalSettings").style.display = "block";
+                                window.document.getElementById("appSettings").style.display = "none";
+                            }}>
+                              General Settings
+                            </button>
+
+                            <button className="btn btn-default" onClick={() => {
+                                window.document.getElementById("globalSettings").style.display = "none";
+                                window.document.getElementById("appSettings").style.display = "block";
+                            }}>
+                              {this.state.appSettings.name} Settings
+                            </button>
+                          </div>
+                        </div>
+                    </header>
 
         			<div id="globalSettings" style={{
-                        display: 'none'
+                        display: 'none',
+                        padding: '15px',
                     }}>
 						<form>
-							<div className="form-group">
-								<label>Email address</label>
-								<input type="email" className="form-control" placeholder="Email" />
-							</div>
-							<div className="form-group">
-								<label>Password</label>
-								<input type="password" className="form-control" placeholder="Password" />
-							</div>
-							<div className="form-group">
-								<label>Description</label>
-								<textarea className="form-control" rows="3"></textarea>
-							</div>
-							<select className="form-control">
-								<option>Option one</option>
-								<option>Option two</option>
-								<option>Option three</option>
-								<option>Option four</option>
-								<option>Option five</option>
-								<option>Option six</option>
-								<option>Option seven</option>
-								<option>Option eight</option>
-							</select>
 							<div className="checkbox">
 								<label>
-								<input type="checkbox" /> This is a checkbox
-								</label>
+								<input type="checkbox" /> Always float window on top of other windows?
+                                </label>
 							</div>
+
 							<div className="checkbox">
 								<label>
-								<input type="checkbox" /> This is a checkbox too
-								</label>
-							</div>
-							<div className="radio">
-								<label>
-								<input type="radio" name="radios" checked />
-								Keep your options open
-								</label>
-							</div>
-							<div className="radio">
-								<label>
-								<input type="radio" name="radios" />
-								Be sure to remember to check for unknown unknowns
-								</label>
-							</div>
-							<div className="form-actions">
-								<button type="submit" className="btn btn-form btn-default">Cancel</button>
-								<button type="submit" className="btn btn-form btn-primary">OK</button>
+								<input type="checkbox" /> Use one window size for all apps?
+                                </label>
 							</div>
 						</form>
-
-
-    					<h1>Global settings that are always active</h1>
-
-    		        	<li>
-    						Always float window on top of other windows?
-    	                    <button className="simple-button" onClick={() => {
-    							var holdSettings = this.state.globalSettings;
-    	                    	holdSettings.alwaysOnTop = !holdSettings.alwaysOnTop;
-    	                    	this.setState({
-    								globalSettings: holdSettings
-    							});
-
-    	                    	ipcRenderer.send('temporarily-update-app-setting', {
-    	                    		alwaysOnTop: alwaysOnTop
-    	                    	});
-    	                    }}>
-    		                    {(this.state.globalSettings.alwaysOnTop) ? "true" : "false"}
-    	                    </button>
-    		        	</li>
-
-    		        	<li>
-    						Use one window size for all apps?
-    	                    <button className="simple-button" onClick={() => {
-    							var holdSettings = this.state.globalSettings;
-    	                    	holdSettings.boundsPerApp = !holdSettings.boundsPerApp;
-    	                    	this.setState({
-    								globalSettings: holdSettings
-    							});
-    	                    	ipcRenderer.send('temporarily-update-app-setting', {
-    	                    		boundsPerApp: holdSettings.boundsPerApp
-    	                    	});
-    	                    }}>
-    				        	{(this.state.globalSettings.boundsPerApp) ? "On" : "Off"}
-    	                    </button>
-    		        	</li>
                     </div>
 
-                    <div id="appSettings">
-    					<h1>Specific settings for {this.state.appSettings.name} only</h1>
-
-    					<li>
-    						Reload shortcuts for the current program
-    	                    <button id="reload-button" className="simple-button" onClick={() => {
-    	                        console.log('sending reloadShortcuts from ipcRenderer');
-    	                        ipcRenderer.send('main-parse-shortcuts');
-    	                    }}>Reload</button>
-    					</li>
+                    <div id="appSettings" style={{
+                        padding: '15px',
+                    }}>
+                        Reload the shortcuts for {this.state.appSettings.name}: <button id="reload-button" className="btn btn-primary" onClick={() => {
+                            console.log('sending reloadShortcuts from ipcRenderer');
+                            ipcRenderer.send('main-parse-shortcuts');
+                        }}>Reload</button>
 
             			<div style={{
             				display: 'flex',
@@ -375,7 +308,7 @@ export default class SettingsView extends Component {
                 			}}>
                         		<h3>Item background color</h3>
                 				<SketchPicker
-                					color={this.state.appSettings.itemColor}
+                					color={this.state.appSettings.itemBackgroundColor}
                 					onChangeComplete={this.handleItemBackgroundColorChange}
                 					presetColors={beautifulColors}
                 				/>
@@ -392,14 +325,47 @@ export default class SettingsView extends Component {
                             console.log('sending reloadShortcuts from ipcRenderer');
                             ipcRenderer.send('main-parse-shortcuts');
                         }}><i className="fa fa-1x fa-refresh"></i></button>
-
-                        <button style={{color:"black", float:'left'}} className="simple-button" onClick={() => {
-    						this.saveCurrentSettings();
-                        }}>Save</button>
-                        <button style={{color:"black", float:'right'}} className="simple-button" onClick={() => {
-    						this.cancelCurrentSettings();
-                        }}>Cancel</button>
     	    		</div>
+
+                    <footer className="toolbar toolbar-footer pull-bottom" style={{
+                        bottom: 0,
+                        position: 'fixed',
+                        width: '100%',
+                    }}>
+                      <div className="toolbar-actions">
+                        <button className="btn btn-default" onClick={() => {
+    						this.cancelCurrentSettings();
+                        }}>
+                          Cancel
+                        </button>
+
+                        <button className="btn btn-primary pull-right" onClick={() => {
+    							var holdSettings = this.state.globalSettings;
+    	                    	holdSettings.alwaysOnTop = !holdSettings.alwaysOnTop;
+    	                    	this.setState({
+    								globalSettings: holdSettings
+    							});
+
+    	                    	ipcRenderer.send('temporarily-update-app-setting', {
+    	                    		alwaysOnTop: alwaysOnTop
+    	                    	});
+
+
+    							var holdSettings = this.state.globalSettings;
+    	                    	holdSettings.boundsPerApp = !holdSettings.boundsPerApp;
+    	                    	this.setState({
+    								globalSettings: holdSettings
+    							});
+    	                    	ipcRenderer.send('temporarily-update-app-setting', {
+    	                    		boundsPerApp: holdSettings.boundsPerApp
+    	                    	});
+
+    						this.saveCurrentSettings();
+                        }}>
+                          Save
+                        </button>
+                      </div>
+                    </footer>
                 </div>
 			);
 	  //   	return (
