@@ -70,25 +70,13 @@ export default class SettingsView extends Component {
 
 	saveCurrentSettings() {
 		settings.set(this.state.appSettings, this.state.globalSettings);
-
-		// Send message to main window? it should always be loaded by the settings anyway..
-        var windows = holdRemote.BrowserWindow.getAllWindows();
-        for (var i = 0; i < windows.length; i++) {
-            let holdWindow = windows[i];
-            if (holdWindow) {
-				if (holdWindow.getTitle() == "settingsWindow") {
-					holdWindow.hide();
-				}
-            }
-        }
 	}
 
 	cancelCurrentSettings() {
-		settings.get(this.state.appSettings.name, (newSettings, globalSettings) => {
-			// TODO: apply to main window and then close this settings window
+		settings.get(this.state.appSettings.name, (originalSettings, globalSettings) => {
 			this.setState({
 				globalSettings: globalSettings,
-				appSettings: newSettings
+				appSettings: originalSettings
 			});
 
 	        var windows = holdRemote.BrowserWindow.getAllWindows();
@@ -97,7 +85,10 @@ export default class SettingsView extends Component {
 	            if (holdWindow) {
 					if (holdWindow.getTitle() == "mainWindow") {
 						// TODO: Is this needed when it's already updated?
-						holdWindow.webContents.send('set-background-color', newSettings.backgroundColor);
+						holdWindow.webContents.send('set-background-color', originalSettings.backgroundColor);
+						holdWindow.webContents.send('set-item-color', originalSettings.itemColor);
+						holdWindow.webContents.send('set-item-background-color', originalSettings.itemBackgroundColor);
+						holdWindow.webContents.send('set-text-color', originalSettings.textColor);
 					} else if (holdWindow.getTitle() == "settingsWindow") {
 						holdWindow.hide();
 					}
@@ -197,7 +188,7 @@ export default class SettingsView extends Component {
     	                //     	this.setState({
     					// 			globalSettings: holdSettings
     					// 		});
-    	                //     	ipcRenderer.send('temporarily-update-app-setting', {
+    	                //     	ipcRenderer.send('temporarily-update-app-settings', {
     	                //     		hidePerApp: holdSettings.hidePerApp
     	                //     	});
     	                //     }}>
@@ -212,36 +203,67 @@ export default class SettingsView extends Component {
     	                //     	this.setState({
     					// 			globalSettings: holdSettings
     					// 		});
-    	                //     	ipcRenderer.send('temporarily-update-app-setting', {
+    	                //     	ipcRenderer.send('temporarily-update-app-settings', {
     	                //     		showMenuNames: holdSettings.showMenuNames
     	                //     	});
     	                //     }}>
     				    //     	{(this.state.globalSettings.showMenuNames) ? "On" : "Off"}
     	                //     </button>
     		        	// </li>
+            let GeneralSettingsElement = (
+                <button className="btn btn-default" onClick={() => {
+                    window.document.getElementById("globalSettings").style.display = "block";
+                    window.document.getElementById("appSettings").style.display = "none";
+                }}>
+                    General Settings
+                </button>
+            );
 
+            let AppSettingsElement = (
+                <button className="btn btn-default" onClick={() => {
+                    window.document.getElementById("globalSettings").style.display = "none";
+                    window.document.getElementById("appSettings").style.display = "block";
+                }}>
+                    {this.state.appSettings.name} Settings
+                </button>
+            );
+
+            let AlwaysOnTopElement = (this.state.globalSettings.boundsPerApp) ? (
+                <div className="checkbox">
+                    <label>
+                        <input id="alwaysOnTopCheckbox" type="checkbox" defaultChecked /> Always float window on top of other windows)
+                    </label>
+                </div>
+            ) : (
+                <div className="checkbox">
+                    <label>
+                        <input id="alwaysOnTopCheckbox" type="checkbox"/> Always float window on top of other windows
+                    </label>
+                </div>
+            );
+
+            let BoundsPerAppElement = (this.state.globalSettings.boundsPerApp) ? (
+				<div className="checkbox">
+					<label>
+                        <input id="boundsPerAppCheckbox" type="checkbox" defaultChecked /> Use the same the same size for all apps
+                    </label>
+				</div>
+            ) : (
+				<div className="checkbox">
+					<label>
+                        <input id="boundsPerAppCheckbox" type="checkbox" /> Use the same the same size for all apps
+                    </label>
+				</div>
+            );
 
     		return (
                 <div>
                     <header className="toolbar toolbar-header">
-                      <h1 className="title">ShortcutWizard Settings</h1>
-
-                      <div className="toolbar-actions">
-                        <div className="btn-group">
-                            <button className="btn btn-default" onClick={() => {
-                                window.document.getElementById("globalSettings").style.display = "block";
-                                window.document.getElementById("appSettings").style.display = "none";
-                            }}>
-                              General Settings
-                            </button>
-
-                            <button className="btn btn-default" onClick={() => {
-                                window.document.getElementById("globalSettings").style.display = "none";
-                                window.document.getElementById("appSettings").style.display = "block";
-                            }}>
-                              {this.state.appSettings.name} Settings
-                            </button>
-                          </div>
+                        <div className="toolbar-actions">
+                            <div className="btn-group">
+                                {GeneralSettingsElement}
+                                {AppSettingsElement}
+                            </div>
                         </div>
                     </header>
 
@@ -250,17 +272,8 @@ export default class SettingsView extends Component {
                         padding: '15px',
                     }}>
 						<form>
-							<div className="checkbox">
-								<label>
-								<input type="checkbox" /> Always float window on top of other windows?
-                                </label>
-							</div>
-
-							<div className="checkbox">
-								<label>
-								<input type="checkbox" /> Use one window size for all apps?
-                                </label>
-							</div>
+                            {AlwaysOnTopElement}
+                            {BoundsPerAppElement}
 						</form>
                     </div>
 
@@ -275,16 +288,14 @@ export default class SettingsView extends Component {
             			<div style={{
             				display: 'flex',
             				flexDirection: 'row',
-            				margin: 0,
-            				border: 0,
-            				padding: 0,
+            				// margin: 0,
+            				// border: 0,
+            				// padding: 0,
                             // backgroundColor: this.state.appSettings.backgroundColor,
                             // color: this.state.appSettings.textColor,
                             textAlign: 'center',
             			}}>
                 			<div style={{
-                				display: 'flex',
-                				flexDirection: 'column',
                                 flex: 1,
                 			}}>
                         		<h3>Background color</h3>
@@ -293,6 +304,10 @@ export default class SettingsView extends Component {
                 	    			onChangeComplete={this.handleBackgroundColorChange}
                 					presetColors={beautifulColors}
                     			/>
+                            </div>
+                            <div style={{
+                                flex: 1,
+                			}}>
                         		<h3>Item color</h3>
                 				<SketchPicker
                 					color={this.state.appSettings.itemColor}
@@ -300,10 +315,7 @@ export default class SettingsView extends Component {
                 					presetColors={beautifulColors}
                 				/>
                             </div>
-
                 			<div style={{
-                				display: 'flex',
-                				flexDirection: 'column',
                                 flex: 1,
                 			}}>
                         		<h3>Item background color</h3>
@@ -312,6 +324,10 @@ export default class SettingsView extends Component {
                 					onChangeComplete={this.handleItemBackgroundColorChange}
                 					presetColors={beautifulColors}
                 				/>
+                            </div>
+                			<div style={{
+                                flex: 1,
+                			}}>
                         		<h3>Text color</h3>
                 				<SketchPicker
                 					color={this.state.appSettings.textColor}
@@ -320,11 +336,6 @@ export default class SettingsView extends Component {
                 				/>
                             </div>
             			</div>
-
-                        <button style={{color:"white", float:'left'}} id="reload-button" className="simple-button" onClick={() => {
-                            console.log('sending reloadShortcuts from ipcRenderer');
-                            ipcRenderer.send('main-parse-shortcuts');
-                        }}><i className="fa fa-1x fa-refresh"></i></button>
     	    		</div>
 
                     <footer className="toolbar toolbar-footer pull-bottom" style={{
@@ -340,27 +351,28 @@ export default class SettingsView extends Component {
                         </button>
 
                         <button className="btn btn-primary pull-right" onClick={() => {
-    							var holdSettings = this.state.globalSettings;
-    	                    	holdSettings.alwaysOnTop = !holdSettings.alwaysOnTop;
+							let alwaysOnTop = this.state.globalSettings.alwaysOnTop;
+							let boundsPerApp = this.state.globalSettings.boundsPerApp;
+                            let holdSettings = {
+                                alwaysOnTop: window.document.getElementById("alwaysOnTopCheckbox").checked,
+                                boundsPerApp: window.document.getElementById("boundsPerAppCheckbox").checked,
+                            };
+
+                            if (holdSettings.alwaysOnTop != alwaysOnTop ||
+                                holdSettings.boundsPerApp != boundsPerApp) {
     	                    	this.setState({
     								globalSettings: holdSettings
     							});
 
-    	                    	ipcRenderer.send('temporarily-update-app-setting', {
-    	                    		alwaysOnTop: alwaysOnTop
-    	                    	});
+    	                    	ipcRenderer.send('save-app-settings', holdSettings);
+        						this.saveCurrentSettings();
+                            }
 
-
-    							var holdSettings = this.state.globalSettings;
-    	                    	holdSettings.boundsPerApp = !holdSettings.boundsPerApp;
-    	                    	this.setState({
-    								globalSettings: holdSettings
-    							});
-    	                    	ipcRenderer.send('temporarily-update-app-setting', {
-    	                    		boundsPerApp: holdSettings.boundsPerApp
-    	                    	});
-
-    						this.saveCurrentSettings();
+                            let windows = holdRemote.BrowserWindow.getAllWindows();
+                            for (let i = 0; i < windows.length; i++) {
+                                let holdWindow = windows[i];
+                                if (holdWindow && holdWindow.getTitle() == "settingsWindow") holdWindow.hide();
+                            }
                         }}>
                           Save
                         </button>

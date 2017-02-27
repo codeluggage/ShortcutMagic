@@ -29,7 +29,6 @@ const SortableItem = SortableElement((componentArguments) => {
     }
 
     let listItem = componentArguments.listItem;
-    let doc = componentArguments.contentWindow.document;
 
     let topSection = (
         <p style={{
@@ -319,7 +318,7 @@ const SortableItem = SortableElement((componentArguments) => {
             // justifyContent: 'space-between',
             flexDirection: 'column',
         }} onMouseEnter={(e) => {
-			let buttonSectionElements = doc.getElementsByName(`buttonSection-${componentArguments.index}`);
+			let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
             if (buttonSectionElements) {
 				for (var i = 0; i < buttonSectionElements.length; i++) {
 
@@ -332,7 +331,7 @@ const SortableItem = SortableElement((componentArguments) => {
 				}
 			}
         }} onMouseLeave={(e) => {
-			let buttonSectionElements = doc.getElementsByName(`buttonSection-${componentArguments.index}`);
+			let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
             if (buttonSectionElements) {
 				for (var i = 0; i < buttonSectionElements.length; i++) {
 					if (buttonSectionElements[i].id != "enabled-favorite-button") {
@@ -400,12 +399,35 @@ export default class Home extends Component {
 		//
 
 
-        ipcRenderer.on('temporarily-update-app-setting', (event, newSetting) => {
-            if (Object.keys(newSetting)[0] == "backgroundColor") {
-                window.document.documentElement.style.backgroundColor = newSetting["backgroundColor"];
+        ipcRenderer.on('temporarily-update-app-settings', (event, newSetting) => {
+            let backgroundColor = newSetting["backgroundColor"];
+            if (backgroundColor) {
+                window.document.documentElement.style.backgroundColor = backgroundColor;
+                this.setState({
+                    backgroundColor: backgroundColor
+                });
             }
 
-            this.setState(newSetting);
+            let itemColor = newSetting["itemColor"];
+            if (itemColor) {
+                this.setState({
+                    itemColor: itemColor
+                });
+            }
+
+            let textColor = newSetting["textColor"];
+            if (textColor) {
+                this.setState({
+                    textColor: textColor
+                });
+            }
+
+            let itemBackgroundColor = newSetting["itemBackgroundColor"];
+            if (itemBackgroundColor) {
+                this.setState({
+                    itemBackgroundColor: itemBackgroundColor
+                });
+            }
         });
 
         ipcRenderer.on('start-shortcut-window', (event) => {
@@ -463,6 +485,7 @@ export default class Home extends Component {
             // - randomize the items?
 
             console.log('entered update-shortcuts in Home');
+            console.log(newShortcuts);
             let name = newShortcuts.name;
             if (name == "Electron" || name == "ShortcutWizard" ||
                 name == "ScreenSaverEngine" || name == "loginwindow") {
@@ -729,46 +752,46 @@ export default class Home extends Component {
             window.document.documentElement.style.backgroundColor = hexToRgba(beautifulColors[5], 0.5);
             let randomWelcomeText = "Welcome to ShortcutWizard!";
 
-            switch (Math.floor(Math.random() * 10)) {
+            switch (Math.floor(Math.random() * 8)) {
                 case 0:
                     randomWelcomeText = "Did you know ShortcutWizard was created with the dream to help all humans use computers?";
                     break;
                 case 1:
-                    randomWelcomeText = `Did you know that ShortcutWizard pretends to press the shortcut keys?
-                    That is the only way the computer believes that the shortcut was used.`;
+                    randomWelcomeText = `Did you know that ShortcutWizard pretends to actually press the keyboard?
+                    It is done to make the computer understand us the best.`;
                     break;
                 case 2:
-                    randomWelcomeText = "Did you know that using shortcuts prevents carpal tunnel, and other injuries?";
+                    randomWelcomeText = "Did you know that using shortcuts prevents carpal tunnel and other computer related injuries?";
                     break;
                 case 3:
-                    randomWelcomeText = `Did you know that using a shortcut over and over will create a "muscle memory"
-                    so it is easier for you to remember? The more you do it, the easier it becomes.`;
+                    randomWelcomeText = `Did you know that using a shortcut over and over will make it "muscle memory".
+                    At some point you remember it automatically, so the more you use it, the easier it gets.`;
                     break;
                 case 4:
-                    randomWelcomeText = `Did you know that shortcuts are often the same in many different programs?
-                    Copying and pasting are the most common ones.`;
+                    randomWelcomeText = `Did you know that shortcuts are identical in many different programs?
+                    "Copy", "Paste" and "New file" are the most common ones.`;
                     break;
                 case 5:
-                    randomWelcomeText = `Did you know that ShortcutWizard will remember where you placed it for each program?
-                    This way you can place it just right, and never worry about it again.`;
+                    randomWelcomeText = `Did you know that ShortcutWizard will remember where you want it to be?
+                    Each program gets its own ShortcutWizard position, color, transparency and size.`;
                     break;
+                // case 6:
+                //     randomWelcomeText = `Did you know that ShortcutWizard will remember what color and transparency you set for each program?
+                //     This way you can make it look exactly the way you want to.`;
+                //     break;
+                // case 7:
+                //     randomWelcomeText = `Did you know that you are helping people in need by becoming a ShortcutWizard member?
+                //     Because you contribute with paying for a membership, a person in need will get ShortcutWizard for free.`;
+                //     break;
                 case 6:
-                    randomWelcomeText = `Did you know that ShortcutWizard will remember what color and transparency you set for each program?
-                    This way you can make it look exactly the way you want to.`;
+                    randomWelcomeText = `Did you know that ShortcutWizard has its own shortcuts? You can make the window small,
+                    hide it completely, or show it like normal. ShortcutWizard remembers how you conifgured each mode, too.`;
                     break;
                 case 7:
-                    randomWelcomeText = `Did you know that you are helping people in need by becoming a ShortcutWizard member?
-                    Because you contribute with paying for a membership, a person in need will get ShortcutWizard for free.`;
-                    break;
-                case 8:
-                    randomWelcomeText = `Did you know that ShortcutWizard has its own shortcuts? You can make the window small,
-                    hide it completely, or show it like normal. ShortcutWizard remembers which mode you like for each app.`;
-                    break;
-                case 9:
-                    randomWelcomeText = `Did you know that ShortcutWizard was created as if it was a web page?
+                    randomWelcomeText = `Did you know that the ShortcutWizard program is actually a local website?
                     That way it will work on as many different computers as possible, so it can help as many as possible.`;
                     break;
-                case 10:
+                case 8:
                     randomWelcomeText = `Did you know that ShortcutWizard will work for website shortcuts too?
                     This is more difficult than program shortcuts, because websites don't follow a standard for
                     making shortcuts, so it has to be added individually for each one.`;
@@ -776,11 +799,13 @@ export default class Home extends Component {
             }
 
             return (
-                <div style={{textAlign: 'center'}}>
-                    <h1 style={{color:"white"}}>ShortcutWizard</h1>
-                    <p style={{color:'white'}}>
-                        {randomWelcomeText}
-                    </p>
+                <div style={{
+                    color: 'white',
+                    padding: '40px',
+                    textAlign: 'center',
+                }}>
+                    <h1>ShortcutWizard</h1>
+                    <p>{randomWelcomeText}</p>
                 </div>
             );
         }
@@ -790,7 +815,7 @@ export default class Home extends Component {
 
         // TODO: check for length here instead of nulling it out above?
         if (this.state.loading && !this.state.hiddenLoading) {
-            var loadingLength = this.state.loading.length - 1;
+            let loadingLength = this.state.loading.length - 1;
             return (
                 <div>
                     <h1>Loading shortcuts for {
@@ -829,127 +854,97 @@ export default class Home extends Component {
 
 
 		var SettingsToggle = (
-			<div style={{backgroundColor: this.state.backgroundColor}}>
-				<button style={{
-	                color: this.state.textColor,
-	                borderColor: 'transparent',
-	                backgroundColor: 'transparent',
-					float: 'right',
-					margin: 0,
-	            }} id="toggle-main-buttons" className="simple-button" onClick={() => {
-					var visible = window.document.getElementById('main-buttons').style.display;
-					window.document.getElementById('main-buttons').style.display = (visible == 'flex') ? 'none' : 'flex';
-	            }}>
-	                <i className="fa fa-1x fa-cog"></i>
-	            </button>
+            <div id="settings-button-group" className="toolbar-actions" style={{
+                display: 'none',
+            }} onMouseLeave={(e) => {
+    			let settingsGroupElement = window.document.getElementById("settings-button-group");
+				settingsGroupElement.style.display = "none";
+                console.log("set style of settings to none: ", settingsGroupElement.style.display);
 
-				<div id='main-buttons' style={{
-					// display: 'none',
-					flexDirection: 'row',
-				}}>
-					<i className="fa fa-1x fa-text-height" style={{
-						flex: 1,
-	                    marginTop:'7px',
-						color: this.state.textColor,
-					}}></i>
+    			let titleElement = window.document.getElementById("title");
+				titleElement.style.display = "block";
+                console.log("set style of title to block: ", titleElement.style.display);
+            }}>
 
-					<div style={{
-						display: 'flex',
-						flex: 2,
-						flexDirection: 'column'
-					}}>
-						<button style={{
-		                    color: this.state.textColor,
-		                    backgroundColor: 'transparent',
-							flex: 2,
-							margin: 0,
-		                }} id="increase-font-size-button" className="simple-button" onClick={() => {
-		                    console.log("clicked font size up");
-		                    this.changeFontUp();
-		                }}>
-		                    <i className="fa fa-1x fa-plus"></i>
-		                </button>
-
-		                <button style={{
-		                    color: this.state.textColor,
-		                    backgroundColor: 'transparent',
-							flex: 2,
-							margin: 0,
-		                }} id="decrease-font-size-button" className="simple-button" onClick={() => {
-		                    console.log("clicked font size down");
-		                    this.changeFontDown();
-		                }}>
-		                    <i className="fa fa-1x fa-minus"></i>
-		                </button>
-					</div>
-
-					<i className="fa fa-1x fa-cog" style={{
-						flex: 1,
-	                    marginTop:'7px',
-						color: this.state.textColor,
-					}}></i>
-
-					<div style={{
-						display: 'flex',
-						flex: 2,
-						flexDirection: 'column'
-					}}>
-		                <button style={{
-		                    color: this.state.textColor,
-		                    backgroundColor: 'transparent',
-							flex: 2,
-							margin: 0,
-		                }} id="settings-button" className="simple-button" onClick={() => {
-		                    console.log("clicked settings");
-		                    this.toggleSettings();
-		                }}>
-		                    <i className="fa fa-1x fa-sliders"></i>
-		                </button>
-
-		                <button style={{
-		                    color: this.state.textColor,
-		                    backgroundColor: 'transparent',
-							flex: 2,
-							margin: 0,
-		                }} id="mini-settings-button" className="simple-button" onClick={() => {
-		                    console.log("clicked miniSettings");
-		                    this.toggleMiniSettings();
-		                }}>
-		                    <i className="fa fa-1x fa-eyedropper"></i>
-		                </button>
-					</div>
-
-					<button	id="toggle-full-mode" className="simple-button" style={{
-                        backgroundColor: 'transparent',
-                        borderColor: 'transparent',
+                <div className="btn-group">
+                    <button id="increase-font-size-button" className="btn btn-default" style={{
+    		                    // color: this.state.textColor,
+    		                    // backgroundColor: 'transparent',
+    							// flex: 2,
+    							// margin: 0,
                     }} onClick={() => {
-						ipcRenderer.send('set-full-view-mode');
-						console.log("clicked sw_full_view_icon");
-					}}>
-						<img src="assets/sw_full_view_icon.png" />
-					</button>
-
-					<button id="toggle-bubble-mode" className="simple-button" style={{
-                        backgroundColor: 'transparent',
-                        borderColor: 'transparent',
+                        console.log("clicked font size up");
+                        this.changeFontUp();
+                    }}>
+                        <span className="icon icon-plus-circled"></span>
+                    </button>
+                    <button id="decrease-font-size-button" className="btn btn-default" style={{
+    		                    // color: this.state.textColor,
+    		                    // backgroundColor: 'transparent',
+    							// flex: 2,
+    							// margin: 0,
                     }} onClick={() => {
-						ipcRenderer.send('set-bubble-mode');
-						console.log("clicked sw_bubble_icon");
-					}}>
-						<img src="assets/sw_bubble_icon.png" />
-					</button>
-
-					<button id="toggle-hidden-mode" className="simple-button" style={{
-                        backgroundColor: 'transparent',
-                        borderColor: 'transparent',
+                        console.log("clicked font size down");
+                        this.changeFontDown();
+                    }}>
+                        <span className="icon icon-minus-circled"></span>
+                    </button>
+                    <button id="settings-button" className="btn btn-default" style={{
+    		                    // color: this.state.textColor,
+    		                    // backgroundColor: 'transparent',
+    							// flex: 2,
+    							// margin: 0,
                     }} onClick={() => {
-						ipcRenderer.send('set-hidden-mode');
-						console.log("clicked sw_hidden_icon");
-					}}>
-						<img src="assets/sw_hidden_icon.png" />
-					</button>
-				</div>
-			</div>
+                        console.log("clicked settings");
+                        this.toggleSettings();
+                    }}>
+                        <span className="icon icon-cog"></span>
+                    </button>
+                    <button id="mini-settings-button" className="btn btn-default" style={{
+    		                    // color: this.state.textColor,
+    		                    // backgroundColor: 'transparent',
+    							// flex: 2,
+    							// margin: 0,
+                    }} onClick={() => {
+                        console.log("clicked miniSettings");
+                        this.toggleMiniSettings();
+                    }}>
+                        <span className="icon icon-palette"></span>
+                    </button>
+                    <button id="toggle-bubble-mode" className="btn btn-default" style={{
+    		                    // color: this.state.textColor,
+    		                    backgroundColor: (this.state.windowMode === "bubble") ? '#333' : '#fcfcfc',
+    							// flex: 2,
+    							// margin: 0,
+
+                    }} onClick={() => {
+    					ipcRenderer.send('set-bubble-mode');
+                    }}>
+                        <span className="icon icon-progress-0"></span>
+                    </button>
+                    <button id="toggle-full-mode" className="btn btn-default" style={{
+    		                    // color: this.state.textColor,
+    		                    backgroundColor: (this.state.windowMode === "full") ? '#333' : '#fcfcfc',
+    							// flex: 2,
+    							// margin: 0,
+                    }} onClick={() => {
+    					ipcRenderer.send('set-full-view-mode');
+                    }}>
+                        <span className="icon icon-window"></span>
+                    </button>
+                    <button id="toggle-hidden-mode" className="btn btn-default" style={{
+    		                    // color: this.state.textColor,
+    		                    backgroundColor: (this.state.windowMode === "hidden") ? '#333' : '#fcfcfc',
+    							// flex: 2,
+    							// margin: 0,
+                    }} onClick={() => {
+                        // TODO: Manage state ourselves here? messy..
+    					ipcRenderer.send('set-hidden-mode');
+                    }}>
+                        <span className="icon icon-publish"></span>
+                    </button>
+                </div>
+            </div>
 		);
 
 		var SearchField = (
@@ -1008,12 +1003,26 @@ export default class Home extends Component {
             </div>
 		);
 
-		var Title = (
-            <h1 style={{
+        let displaySettings = null;
+		let Title = (
+            <h1 id="title" style={{
                 color: this.state.textColor,
                 marginTop:'2px',
                 marginBottom:'2px',
-            }}>{this.state.name}</h1>
+            }} onMouseEnter={(e) => {
+    			let settingsGroupElement = window.document.getElementById("settings-button-group");
+				settingsGroupElement.style.display = "block";
+                console.log("set style of title to block: ", settingsGroupElement.style.display);
+
+    			let titleElement = window.document.getElementById("title");
+                titleElement.class = "pull-left";
+                displaySettings = "Settings:";
+                console.log("set style of title to none: ", titleElement.style.display);
+            }} onMouseLeave={(e) => {
+    			let titleElement = window.document.getElementById("title");
+                titleElement.class = "";
+                displaySettings = null;
+            }}>{(displaySettings) ? displaySettings : this.state.name}</h1>
 		);
 
 		if (this.state.mode == "hidden-mode") {
@@ -1024,7 +1033,7 @@ export default class Home extends Component {
             // 3) Show search, focused
 			return (
 				<div>
-					{SearchField} {SettingsToggle}
+					{SearchField}
 					{SearchResults}
 				</div>
 			);
@@ -1032,7 +1041,7 @@ export default class Home extends Component {
 			// Bubble mode:
 			return (
 				<div>
-					{SearchField} {SettingsToggle}
+					{SearchField}
 					{ShortcutList}
 				</div>
 			);
@@ -1040,8 +1049,7 @@ export default class Home extends Component {
 			// Full mode:
 	        return (
 	            <div style={{ textAlign: 'center' }}>
-					{Title}
-					{SettingsToggle}
+					{Title}{SettingsToggle}
 					{SearchField}
 					{ShortcutList}
 	            </div>

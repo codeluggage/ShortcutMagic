@@ -370,8 +370,8 @@ function createSettingsWindow() {
 		alwaysOnTop: true,
 		acceptFirstClick: true,
 		frame: false,
-		height: 700,
-		width: 700,
+		height: 600,
+		width: 1000,
 	});
 
 	var settingsPath = `file://${__dirname}/settings/index.html`;
@@ -894,14 +894,28 @@ ipcMain.on('set-hidden-mode', (event) => {
 	applyWindowMode("hidden");
 });
 
-ipcMain.on('temporarily-update-app-setting', (event, newSetting) => {
-    var settingName = Object.keys(newSetting)[0];
-    var settingValue = Object.values(newSetting)[0];
-    if (settingName == "boundsPerApp") {
-        inMemoryShortcuts[GLOBAL_SETTINGS]["boundsPerApp"] = true;
-    } else if (settingName == "alwaysOnTop") {
-        inMemoryShortcuts[GLOBAL_SETTINGS]["alwaysOnTop"] = settingValue;
-        mainWindow.alwaysOnTop = settingValue;
-    // } else if (settingName == "showMenuNames") {
-    }
+ipcMain.on('save-app-settings', (event, newSetting) => {
+    inMemoryShortcuts[GLOBAL_SETTINGS]["boundsPerApp"] = newSetting["boundsPerApp"];
+    inMemoryShortcuts[GLOBAL_SETTINGS]["alwaysOnTop"] = newSetting["alwaysOnTop"];
+    mainWindow.setAlwaysOnTop(newSetting["alwaysOnTop"]);
+
+    db.update({
+        name: GLOBAL_SETTINGS
+	}, {
+		$set: newSetting
+	}, {
+		upsert: true
+	}, (err, res) => {
+		if (err) {
+			console.log("error when saving global settings", newSetting);
+		} else {
+			console.log("successfully saved global settings: ", res);
+		}
+	});
+});
+
+ipcMain.on('temporarily-update-app-settings', (event, newSetting) => {
+    inMemoryShortcuts[GLOBAL_SETTINGS]["boundsPerApp"] = newSetting["boundsPerApp"];
+    inMemoryShortcuts[GLOBAL_SETTINGS]["alwaysOnTop"] = newSetting["alwaysOnTop"];
+    mainWindow.setAlwaysOnTop(newSetting["alwaysOnTop"]);
 });
