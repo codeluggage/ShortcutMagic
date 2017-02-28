@@ -29,12 +29,11 @@ const SortableItem = SortableElement((componentArguments) => {
     }
 
     let listItem = componentArguments.listItem;
-    let doc = componentArguments.contentWindow.document;
 
     let topSection = (
         <p style={{
             color: globalState.textColor,
-            flex: 4,
+            flex: 2,
             marginRight: '4px',
 			fontSize: globalState.listTitleFontSize,
 			fontWeight: globalState.listTitleFontWeight,
@@ -45,7 +44,7 @@ const SortableItem = SortableElement((componentArguments) => {
         <div style={{
             display: 'flex',
             flexDirection: 'row',
-            flex: 2
+            flex: 2,
         }}>
             <p style={{
                 flex: 2,
@@ -111,18 +110,122 @@ const SortableItem = SortableElement((componentArguments) => {
         </div>
     );
 
+    // 1 big 2 small version:
+    // var mouseOverButtonsSection = (
+    //     <div style={{
+    //         display: 'flex',
+    //         flexDirection: 'row',
+    //         flex: 2,
+    //         marginBottom: '2px',
+    //         // marginTop: '2px',
+    //         // alignContent: 'stretch',
+    //     }}>
+    //         <div name={`buttonSection-${componentArguments.index}`} style={{
+	// 			display: 'none',
+	// 			color: globalState.textColor,
+	// 			flex: 3,
+    //             // height: '100%',
+    //             backgroundColor: globalState.itemColor,
+    //             marginRight: '1px',
+    //             marginLeft: '1px',
+    //             borderRadius: ".25rem",
+    //             borderWidth: ".50rem",
+    //             border: `2px solid ${globalState.itemColor}`,
+	// 			textAlign: 'center',
+    //         }} onClick={() => {
+    //             console.log("clicked execute-list-item with ", listItem);
+    //             ipcRenderer.send('execute-list-item', listItem);
+    //         }}>
+    //             <i className="fa fa-2x fa-play" style={{
+	// 				color: "green",
+	// 			}}></i>
+    //             <br />
+    //             Run
+    //         </div>
+    //
+    //         <div style={{
+    //             display: 'flex',
+    //             flexDirection: 'column',
+    //             flex: 2,
+    //             flexWrap: 'nowrap',
+    //             // alignContent: 'stretch',
+    //         }}>
+    //             <div id={(listItem.isFavorite) ? 'enabled-favorite-button' : ''}
+    // 			name={`buttonSection-${componentArguments.index}`}
+    // 			style={{
+    // 				display: (listItem.isFavorite) ? 'block' : 'none',
+    // 				color: globalState.textColor,
+    //                 backgroundColor: globalState.itemColor,
+    // 				flex: 1,
+    // 				// height: '100%',
+    //                 marginRight: '1px',
+    //                 marginLeft: '1px',
+    //                 borderRadius: ".25rem",
+    //                 borderWidth: ".50rem",
+    //                 border: `2px solid ${globalState.itemColor}`,
+    // 				textAlign: 'center',
+    //             }} onClick={() => {
+    //                 listItem.isFavorite = !listItem.isFavorite;
+    //                 console.log("Updating shortcut item with toggled isFavorite: ", listItem);
+    //                 ipcRenderer.send('update-shortcut-item', listItem);
+    //             }}>
+    //                 {
+    //                     (listItem.isFavorite) ? (
+    //                         <i className="fa fa-2x fa-star" style={{
+    // 							color: "gold",
+    // 						}}></i>
+    //                     ) : (
+    //                         <i className="fa fa-2x fa-star-o" style={{
+    // 							color: "gold",
+    // 						}}></i>
+    //                     )
+    //                 }
+    // 				<br />
+    // 				Favorite
+    //             </div>
+    //
+    //             <div name={`buttonSection-${componentArguments.index}`} style={{
+    // 				display: 'none',
+    // 				color: globalState.textColor,
+    //                 backgroundColor: globalState.itemColor,
+    // 				flex: 1,
+    // 				// height: '100%',
+    //                 marginRight: '1px',
+    //                 marginLeft: '1px',
+    //                 borderRadius: ".25rem",
+    //                 borderWidth: ".50rem",
+    //                 border: `2px solid ${globalState.itemColor}`,
+    // 				textAlign: 'center',
+    //             }} onClick={() => {
+    //                 listItem.isHidden = !listItem.isHidden;
+    //                 console.log("Updating shortcut item with toggled isHidden: ", listItem);
+    //                 ipcRenderer.send('update-shortcut-item', listItem);
+    //             }}>
+    //                 <i className="fa fa-2x fa-eye" style={{
+    // 					color: (listItem.isHidden) ? "grey" : "red",
+    // 				}}></i>
+    // 				<br />
+    // 				Hide
+    //             </div>
+    //         </div>
+    //     </div>
+    // );
+
+    // 3 small ones:
     var mouseOverButtonsSection = (
         <div style={{
+            display: 'flex',
             flexDirection: 'row',
             flex: 2,
-            flexWrap: 'nowrap',
-            alignContent: 'stretch',
+            marginBottom: '2px',
+            // marginTop: '2px',
+            // alignContent: 'stretch',
         }}>
             <div name={`buttonSection-${componentArguments.index}`} style={{
 				display: 'none',
 				color: globalState.textColor,
-				flex: 1,
-                height: '100%',
+				flex: 4,
+                // height: '100%',
                 backgroundColor: globalState.itemColor,
                 marginRight: '1px',
                 marginLeft: '1px',
@@ -146,14 +249,14 @@ const SortableItem = SortableElement((componentArguments) => {
 			style={{
 				display: (listItem.isFavorite) ? 'block' : 'none',
 				color: globalState.textColor,
-                backgroundColor: globalState.itemColor,
-				flex: 1,
-				height: '100%',
+				backgroundColor: (listItem.isFavorite) ? 'transparent' : globalState.itemColor,
+				border: (listItem.isFavorite) ? 'transparent' : `2px solid ${globalState.itemColor}`,
+				flex: 2,
+				// height: '100%',
                 marginRight: '1px',
                 marginLeft: '1px',
                 borderRadius: ".25rem",
                 borderWidth: ".50rem",
-                border: `2px solid ${globalState.itemColor}`,
 				textAlign: 'center',
             }} onClick={() => {
                 listItem.isFavorite = !listItem.isFavorite;
@@ -179,8 +282,8 @@ const SortableItem = SortableElement((componentArguments) => {
 				display: 'none',
 				color: globalState.textColor,
                 backgroundColor: globalState.itemColor,
-				flex: 1,
-				height: '100%',
+				flex: 2,
+				// height: '100%',
                 marginRight: '1px',
                 marginLeft: '1px',
                 borderRadius: ".25rem",
@@ -202,14 +305,7 @@ const SortableItem = SortableElement((componentArguments) => {
     );
 
     // todo add these:
-    // - text size
     // - general list item size
-
-    // TOD: Use this to fill list item correctly?
-
-    // add back in:
-    // margin: 'auto'
-
 
     return (
         <div style={{
@@ -222,25 +318,34 @@ const SortableItem = SortableElement((componentArguments) => {
             // justifyContent: 'space-between',
             flexDirection: 'column',
         }} onMouseEnter={(e) => {
-			let buttonSectionElements = doc.getElementsByName(`buttonSection-${componentArguments.index}`);
+			let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
             if (buttonSectionElements) {
 				for (var i = 0; i < buttonSectionElements.length; i++) {
+
 					buttonSectionElements[i].style.display = "block";
+
+					if (buttonSectionElements[i].id === "enabled-favorite-button") {
+                        buttonSectionElements[i].style.backgroundColor = globalState.itemColor;
+                        buttonSectionElements[i].style.border = `2px solid ${globalState.itemColor}`;
+                    }
 				}
 			}
         }} onMouseLeave={(e) => {
-			let buttonSectionElements = doc.getElementsByName(`buttonSection-${componentArguments.index}`);
+			let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
             if (buttonSectionElements) {
 				for (var i = 0; i < buttonSectionElements.length; i++) {
 					if (buttonSectionElements[i].id != "enabled-favorite-button") {
 						buttonSectionElements[i].style.display = "none";
-					}
+					} else {
+                        buttonSectionElements[i].style.backgroundColor = "transparent";
+                        buttonSectionElements[i].style.border = "transparent";
+                    }
 				}
 			}
         }}>
             <div style={{
                 display: 'flex',
-                flexDirection: 'row',
+                flexDirection: 'column',
                 flex: 2,
             }}>
                 {topSection}
@@ -262,7 +367,7 @@ const SortableList = SortableContainer((componentArguments) => {
     return (!items) ? (
         <p>No items yet</p>
     ) : (
-        <div style={{margin:'15px'}}>
+        <div style={{margin:'5px'}}>
             {
                 items.map((value, index) => {
                     return (
@@ -294,12 +399,35 @@ export default class Home extends Component {
 		//
 
 
-        ipcRenderer.on('temporarily-update-app-setting', (event, newSetting) => {
-            if (Object.keys(newSetting)[0] == "backgroundColor") {
-                window.document.documentElement.style.backgroundColor = newSetting["backgroundColor"];
+        ipcRenderer.on('temporarily-update-app-settings', (event, newSetting) => {
+            let backgroundColor = newSetting["backgroundColor"];
+            if (backgroundColor) {
+                window.document.documentElement.style.backgroundColor = backgroundColor;
+                this.setState({
+                    backgroundColor: backgroundColor
+                });
             }
 
-            this.setState(newSetting);
+            let itemColor = newSetting["itemColor"];
+            if (itemColor) {
+                this.setState({
+                    itemColor: itemColor
+                });
+            }
+
+            let textColor = newSetting["textColor"];
+            if (textColor) {
+                this.setState({
+                    textColor: textColor
+                });
+            }
+
+            let itemBackgroundColor = newSetting["itemBackgroundColor"];
+            if (itemBackgroundColor) {
+                this.setState({
+                    itemBackgroundColor: itemBackgroundColor
+                });
+            }
         });
 
         ipcRenderer.on('start-shortcut-window', (event) => {
@@ -357,6 +485,7 @@ export default class Home extends Component {
             // - randomize the items?
 
             console.log('entered update-shortcuts in Home');
+            console.log(newShortcuts);
             let name = newShortcuts.name;
             if (name == "Electron" || name == "ShortcutWizard" ||
                 name == "ScreenSaverEngine" || name == "loginwindow") {
@@ -389,13 +518,15 @@ export default class Home extends Component {
                 initialItems: shortcutsArray,
                 items: shortcutsArray,
                 loading: loadingList,
+                hiddenLoading: false,
 				listTitleFontWeight: listTitleFontWeight,
 				listTitleFontSize: listTitleFontSize,
 				listItemFontWeight: listItemFontWeight,
 				listItemFontSize: listItemFontSize,
             });
 
-            window.document.getElementById("searchField").value = "";
+            window.document.getElementById("search-field").value = "";
+            // TODO: Scroll to top here
         });
 
         ipcRenderer.on('set-loading', (event, loading) => {
@@ -404,7 +535,8 @@ export default class Home extends Component {
 
             alreadyLoading.push(loading);
             this.setState({
-                loading: alreadyLoading
+                loading: alreadyLoading,
+                hiddenLoading: false,
             });
         });
 
@@ -525,6 +657,12 @@ export default class Home extends Component {
     toggleMiniSettings() {
         // TODO: refer directly to the browser window by id instead of grabbing all windows
         var windows = holdRemote.BrowserWindow.getAllWindows();
+        var mainWindow = null;
+        for (var i = 0; i < windows.length; i++) {
+            mainWindow = windows[i];
+            if (mainWindow && mainWindow.getTitle() == "mainWindow") break;
+        }
+
         for (var i = 0; i < windows.length; i++) {
             let settingsWindow = windows[i];
             if (settingsWindow) {
@@ -534,6 +672,15 @@ export default class Home extends Component {
 						// TODO: Save changes when window is hidden again
 		                settingsWindow.hide();
 					} else {
+                        let originalBounds = settingsWindow.getBounds();
+                        let mainBounds = mainWindow.getBounds();
+                        // Show window left or right of main window depending on screen position:
+                        if (mainBounds.x > 600) {
+                            originalBounds.x = mainBounds.x - originalBounds.width;
+                        } else {
+                            originalBounds.x = mainBounds.x + mainBounds.width;
+                        }
+                        settingsWindow.setBounds(originalBounds);
 		                settingsWindow.show();
 					}
 	            } else if (settingsWindow.getTitle() == "settingsWindow") {
@@ -556,8 +703,7 @@ export default class Home extends Component {
     }
 
     filterListTrigger(event) {
-        console.log('fileterlisttrigger - this', this);
-        this.filterList(event.target.value);
+        this.filterList((event) ? event.target.value : "");
     }
 
     filterList(targetValue) {
@@ -603,23 +749,62 @@ export default class Home extends Component {
         if (!this.state) {
 
             window.document.documentElement.style.backgroundColor = hexToRgba(beautifulColors[5], 0.5);
+            let randomWelcomeText = "Welcome to ShortcutWizard!";
+
+            switch (Math.floor(Math.random() * 8)) {
+                case 0:
+                    randomWelcomeText = "Did you know ShortcutWizard was created with the dream to help all humans use computers?";
+                    break;
+                case 1:
+                    randomWelcomeText = `Did you know that ShortcutWizard pretends to actually press the keyboard?
+                    It is done to make the computer understand us the best.`;
+                    break;
+                case 2:
+                    randomWelcomeText = "Did you know that using shortcuts prevents carpal tunnel and other computer related injuries?";
+                    break;
+                case 3:
+                    randomWelcomeText = `Did you know that using a shortcut over and over will make it "muscle memory".
+                    At some point you remember it automatically, so the more you use it, the easier it gets.`;
+                    break;
+                case 4:
+                    randomWelcomeText = `Did you know that shortcuts are identical in many different programs?
+                    "Copy", "Paste" and "New file" are the most common ones.`;
+                    break;
+                case 5:
+                    randomWelcomeText = `Did you know that ShortcutWizard will remember where you want it to be?
+                    Each program gets its own ShortcutWizard position, color, transparency and size.`;
+                    break;
+                // case 6:
+                //     randomWelcomeText = `Did you know that ShortcutWizard will remember what color and transparency you set for each program?
+                //     This way you can make it look exactly the way you want to.`;
+                //     break;
+                // case 7:
+                //     randomWelcomeText = `Did you know that you are helping people in need by becoming a ShortcutWizard member?
+                //     Because you contribute with paying for a membership, a person in need will get ShortcutWizard for free.`;
+                //     break;
+                case 6:
+                    randomWelcomeText = `Did you know that ShortcutWizard has its own shortcuts? You can make the window small,
+                    hide it completely, or show it like normal. ShortcutWizard remembers how you conifgured each mode, too.`;
+                    break;
+                case 7:
+                    randomWelcomeText = `Did you know that the ShortcutWizard program is actually a local website?
+                    That way it will work on as many different computers as possible, so it can help as many as possible.`;
+                    break;
+                case 8:
+                    randomWelcomeText = `Did you know that ShortcutWizard will work for website shortcuts too?
+                    This is more difficult than program shortcuts, because websites don't follow a standard for
+                    making shortcuts, so it has to be added individually for each one.`;
+                    break;
+            }
 
             return (
-                <div style={{textAlign: 'center'}}>
-                    <button style={{color:"white", backgroundColor:"transparent", float:'left'}} id="reload-button" className="simple-button" onClick={() => {
-                        console.log('sending reloadShortcuts from ipcRenderer');
-                        ipcRenderer.send('main-parse-shortcuts');
-                    }}><i className="fa fa-1x fa-rotate-right"></i></button>
-
-                    <button style={{color:"white", backgroundColor:"transparent", float:'right'}} id="settings-button" className="simple-button" onClick={() => {
-                        console.log("clicked settings");
-                        this.toggleSettings();
-                    }}>
-                        <i className="fa fa-1x fa-cog"></i>
-                    </button>
-
-                    <h1 style={{color:"white"}}>ShortcutWizard</h1>
-                    <p style={{color:'white'}}>When you focus another application, this area will show you shortcuts</p>
+                <div style={{
+                    color: 'white',
+                    padding: '40px',
+                    textAlign: 'center',
+                }}>
+                    <h1>ShortcutWizard</h1>
+                    <p>{randomWelcomeText}</p>
                 </div>
             );
         }
@@ -628,15 +813,27 @@ export default class Home extends Component {
             this.state.backgroundColor : hexToRgba(beautifulColors[5], 0.5);
 
         // TODO: check for length here instead of nulling it out above?
-        if (this.state.loading) {
-            var loadingLength = this.state.loading.length - 1;
+        if (this.state.loading && !this.state.hiddenLoading) {
+            let loadingLength = this.state.loading.length - 1;
             return (
                 <div>
                     <h1>Loading shortcuts for {
                         this.state.loading.map((obj, index) => (index == loadingLength) ? obj : obj + ", ")
                     }...</h1>
 
-                    <i className="fa fa-3x fa-spin fa-fw"></i>
+                    <i className="fa fa-3x fa-spin fa-spinner"></i>
+
+                    <button style={{
+                        color: this.state.textColor,
+                        borderColor: 'transparent',
+                        margin: 0,
+                    }} id="toggle-main-buttons" className="simple-button" onClick={() => {
+                        this.setState({
+                            hiddenLoading: true
+                        });
+                    }}>
+                        Hide
+                    </button>
                 </div>
             );
         }
@@ -655,142 +852,20 @@ export default class Home extends Component {
 */
 
 
-		var SettingsToggle = (
-			<div style={{backgroundColor: this.state.backgroundColor}}>
-				<button style={{
-	                color: this.state.textColor,
-	                borderColor: 'transparent',
-	                backgroundColor: 'transparent',
-					float: 'right',
-					margin: 0,
-	            }} id="toggle-main-buttons" className="simple-button" onClick={() => {
-					var visible = window.document.getElementById('main-buttons').style.display;
-					window.document.getElementById('main-buttons').style.display = (visible == 'flex') ? 'none' : 'flex';
-	            }}>
-	                <i className="fa fa-1x fa-cog"></i>
-	            </button>
-
-				<div id='main-buttons' style={{
-					// display: 'none',
-					flexDirection: 'row',
-				}}>
-					<i className="fa fa-1x fa-text-height" style={{
-						flex: 1,
-	                    marginTop:'7px',
-						color: this.state.textColor,
-					}}></i>
-
-					<div style={{
-						display: 'flex',
-						flex: 2,
-						flexDirection: 'column'
-					}}>
-						<button style={{
-		                    color: this.state.textColor,
-		                    backgroundColor: 'transparent',
-							flex: 2,
-							margin: 0,
-		                }} id="increase-font-size-button" className="simple-button" onClick={() => {
-		                    console.log("clicked font size up");
-		                    this.changeFontUp();
-		                }}>
-		                    <i className="fa fa-1x fa-plus"></i>
-		                </button>
-
-		                <button style={{
-		                    color: this.state.textColor,
-		                    backgroundColor: 'transparent',
-							flex: 2,
-							margin: 0,
-		                }} id="decrease-font-size-button" className="simple-button" onClick={() => {
-		                    console.log("clicked font size down");
-		                    this.changeFontDown();
-		                }}>
-		                    <i className="fa fa-1x fa-minus"></i>
-		                </button>
-					</div>
-
-					<i className="fa fa-1x fa-cog" style={{
-						flex: 1,
-	                    marginTop:'7px',
-						color: this.state.textColor,
-					}}></i>
-
-					<div style={{
-						display: 'flex',
-						flex: 2,
-						flexDirection: 'column'
-					}}>
-		                <button style={{
-		                    color: this.state.textColor,
-		                    backgroundColor: 'transparent',
-							flex: 2,
-							margin: 0,
-		                }} id="settings-button" className="simple-button" onClick={() => {
-		                    console.log("clicked settings");
-		                    this.toggleSettings();
-		                }}>
-		                    <i className="fa fa-1x fa-sliders"></i>
-		                </button>
-
-		                <button style={{
-		                    color: this.state.textColor,
-		                    backgroundColor: 'transparent',
-							flex: 2,
-							margin: 0,
-		                }} id="mini-settings-button" className="simple-button" onClick={() => {
-		                    console.log("clicked miniSettings");
-		                    this.toggleMiniSettings();
-		                }}>
-		                    <i className="fa fa-1x fa-eyedropper"></i>
-		                </button>
-					</div>
-
-					<button	id="toggle-full-mode" className="simple-button" onClick={() => {
-						ipcRenderer.send('set-full-view-mode');
-						console.log("clicked sw_full_view_icon");
-					}}>
-						<i source="../assets/sw_full_view_icon.png"></i>
-					</button>
-
-					<button id="toggle-bubble-mode" className="simple-button" onClick={() => {
-						ipcRenderer.send('set-bubble-mode');
-						console.log("clicked sw_bubble_icon");
-					}}>
-						<i source="../assets/sw_bubble_icon.png"></i>
-					</button>
-
-					<button id="toggle-hidden-mode" className="simple-button" onClick={() => {
-						ipcRenderer.send('set-hidden-mode');
-						console.log("clicked sw_hidden_icon");
-					}}>
-						<i source="../assets/sw_hidden_icon.png"></i>
-					</button>
-				</div>
-			</div>
-		);
-
 		var SearchField = (
-            <input id="searchField" style={{
-				fontSize: 18,
-				width: "20%",
-				color: this.state.textColor,
-				backgroundColor: 'transparent',
-				borderColor: 'transparent',
-				flex: 2,
-			}} type="text"
-			placeholder="&#xF002;"
-			onChange={this.filterListTrigger}
-			onFocus={() => {
-				// TODO: Move this down one line so it has the entire width to show search box
-				window.document.getElementById("searchField").style.width = "100%";
-				window.document.getElementById("searchField").style.flex = 6;
-				window.document.getElementById("searchField").style.backgroundColor = "white";
-			}} onBlur={() => {
-				window.document.getElementById("searchField").style.width = "20%";
-				window.document.getElementById("searchField").style.flex = 2;
-				window.document.getElementById("searchField").style.backgroundColor = "transparent";
-			}}/>
+            <input id="search-field" class="form-control" type="text" placeholder="Search for something"
+            style={{
+                display: 'none',
+                borderRadius: ".25rem",
+                borderWidth: ".50rem",
+                border: `2px solid #737475`,
+            }} onChange={this.filterListTrigger}
+            onKeyDown={(e) => {
+                if (e.keyCode === 27) {
+                    window.document.getElementById("search-field").value = '';
+                    this.filterListTrigger();
+                }
+            }}/>
 		);
 
         let shortcuts = this.state.items;
@@ -826,19 +901,141 @@ export default class Home extends Component {
             </div>
 		);
 
-		var Title = (
-            <h1 style={{
+        let SettingsButtons = (
+            <div id="settings-button-group" className="toolbar-actions" style={{
+                display: 'none',
+            }}>
+                <div className="btn-group">
+                    <button id="increase-font-size-button" className="btn btn-default" style={{
+    		                    // color: this.state.textColor,
+    		                    // backgroundColor: 'transparent',
+    							// flex: 2,
+    							// margin: 0,
+                    }} onClick={() => {
+                        console.log("clicked font size up");
+                        this.changeFontUp();
+                    }}>
+                        <span className="icon icon-plus-circled"></span>
+                    </button>
+                    <button id="decrease-font-size-button" className="btn btn-default" style={{
+    		                    // color: this.state.textColor,
+    		                    // backgroundColor: 'transparent',
+    							// flex: 2,
+    							// margin: 0,
+                    }} onClick={() => {
+                        console.log("clicked font size down");
+                        this.changeFontDown();
+                    }}>
+                        <span className="icon icon-minus-circled"></span>
+                    </button>
+                    <button id="settings-button" className="btn btn-default" style={{
+    		                    // color: this.state.textColor,
+    		                    // backgroundColor: 'transparent',
+    							// flex: 2,
+    							// margin: 0,
+                    }} onClick={() => {
+                        console.log("clicked settings");
+                        this.toggleSettings();
+                    }}>
+                        <span className="icon icon-cog"></span>
+                    </button>
+                    <button id="mini-settings-button" className="btn btn-default" style={{
+    		                    // color: this.state.textColor,
+    		                    // backgroundColor: 'transparent',
+    							// flex: 2,
+    							// margin: 0,
+                    }} onClick={() => {
+                        console.log("clicked miniSettings");
+                        this.toggleMiniSettings();
+                    }}>
+                        <span className="icon icon-palette"></span>
+                    </button>
+                    <button id="toggle-bubble-mode" className="btn btn-default" style={{
+    		                    // color: this.state.textColor,
+    		                    backgroundColor: (this.state.windowMode === "bubble") ? '#333' : '#fcfcfc',
+    							// flex: 2,
+    							// margin: 0,
+
+                    }} onClick={() => {
+    					ipcRenderer.send('set-bubble-mode');
+                    }}>
+                        <span className="icon icon-progress-0"></span>
+                    </button>
+                    <button id="toggle-full-mode" className="btn btn-default" style={{
+    		                    // color: this.state.textColor,
+    		                    backgroundColor: (this.state.windowMode === "full") ? '#333' : '#fcfcfc',
+    							// flex: 2,
+    							// margin: 0,
+                    }} onClick={() => {
+    					ipcRenderer.send('set-full-view-mode');
+                    }}>
+                        <span className="icon icon-window"></span>
+                    </button>
+                    <button id="toggle-hidden-mode" className="btn btn-default" style={{
+    		                    // color: this.state.textColor,
+    		                    backgroundColor: (this.state.windowMode === "hidden") ? '#333' : '#fcfcfc',
+    							// flex: 2,
+    							// margin: 0,
+                    }} onClick={() => {
+                        // TODO: Manage state ourselves here? messy..
+    					ipcRenderer.send('set-hidden-mode');
+                    }}>
+                        <span className="icon icon-publish"></span>
+                    </button>
+                </div>
+            </div>
+        );
+
+        let Title = (
+            <h1 id="title" style={{
                 color: this.state.textColor,
                 marginTop:'2px',
                 marginBottom:'2px',
-            }}>{this.state.name}</h1>
+            }}>{(displaySettings) ? displaySettings : this.state.name}</h1>
+        );
+
+        let displaySettings = null;
+        let hidingSlowly = false;
+		let TitleAndSettings = (
+            <div id="title-and-settings"
+            style={{
+                textAlign: 'center',
+            }} onMouseEnter={(e) => {
+                hidingSlowly = true;
+    			window.document.getElementById("settings-button-group").style.display = "block";
+    			window.document.getElementById("search-field").style.display = "";
+
+                ipcRenderer.send('show-window');
+    			window.document.getElementById("search-field").focus();
+            }} onMouseLeave={(e) => {
+                if (hidingSlowly) {
+                    hidingSlowly = false;
+                    setTimeout(() => {
+                        if (!hidingSlowly) {
+                			window.document.getElementById("settings-button-group").style.display = "none";
+                			window.document.getElementById("search-field").style.display = "none";
+                        }
+                    }, 400);
+                } else {
+        			window.document.getElementById("settings-button-group").style.display = "none";
+        			window.document.getElementById("search-field").style.display = "none";
+                }
+            }}>
+                {Title}
+                {SettingsButtons}
+                {SearchField}
+            </div>
 		);
 
 		if (this.state.mode == "hidden-mode") {
 			// Hidden mode:
+            // TODO:
+            // 1) listen to some kind of click on the tray
+            // 2) Show mini window with 1 random favorite
+            // 3) Show search, focused
 			return (
 				<div>
-					{SearchField} {SettingsToggle}
+					{SearchField}
 					{SearchResults}
 				</div>
 			);
@@ -846,7 +1043,7 @@ export default class Home extends Component {
 			// Bubble mode:
 			return (
 				<div>
-					{SearchField} {SettingsToggle}
+					{SearchField}
 					{ShortcutList}
 				</div>
 			);
@@ -854,9 +1051,7 @@ export default class Home extends Component {
 			// Full mode:
 	        return (
 	            <div style={{ textAlign: 'center' }}>
-					{Title}
-					{SettingsToggle}
-					{SearchField}
+					{TitleAndSettings}
 					{ShortcutList}
 	            </div>
 	        );

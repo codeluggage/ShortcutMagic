@@ -9,13 +9,20 @@ var beautifulColors = ["#ffffff", "#000000", "#2c7bb6",  "#00a6ca", "#00ccbc",
 
 var holdRemote = remote;
 
-
 export default class MiniSettingsView extends Component {
     componentWillMount() {
+        ipcRenderer.on('send-app-settings', (event, newSettings) => {
+            console.log("HIT send-app-settings!! with new settings: ", newSettings);
+            this.setState({
+                appSettings: newSettings
+            });
+        });
+
         this.handleBackgroundColorChange = this.handleBackgroundColorChange.bind(this);
         this.handleItemColorChange = this.handleItemColorChange.bind(this);
         this.handleTextColorChange = this.handleTextColorChange.bind(this);
         this.handleItemBackgroundColorChange = this.handleItemBackgroundColorChange.bind(this);
+        this.reloadSettings = this.reloadSettings.bind(this);
     }
 
 	handleItemBackgroundColorChange(color) {
@@ -62,64 +69,87 @@ export default class MiniSettingsView extends Component {
         }
     }
 
-    render() {
-        var appSettings = undefined;
+    // TODO: Handle a "show" event here to read the settings again, instead of this stupid recurring system
+    reloadSettings(recur) {
         var windows = holdRemote.BrowserWindow.getAllWindows();
-
         for (var i = 0; i < windows.length; i++) {
             let holdWindow = windows[i];
             if (holdWindow && holdWindow.getTitle() == "settingsWindow") {
-				appSettings = holdWindow.webContents.send('get-app-settings');
+                console.log("sending from miniSettingsWindow to settingsWindow");
+                holdWindow.webContents.send('get-app-settings');
             }
         }
 
-        console.log("about to render minisettings: ", appSettings);
+        if (recur && (!this.state || !this.state.appSettings)) {
+            setTimeout(() => {
+                this.reloadSettings(true);
+            }, 200);
+        }
+    }
 
-        if (!appSettings) {
+    render() {
+        this.reloadSettings();
+        if (!this.state || !this.state.appSettings) {
+            this.reloadSettings(true);
             return (
-                <div>
+                <div style={{
+                    backgroundColor: 'white'
+                }}>
                     Could not find app settings
                 </div>
             );
         }
 
+        console.log("about to render minisettings: ", this.state.appSettings);
+
 		return (
 			<div style={{
 				display: 'flex',
-				flexDirection: 'column',
+				flexDirection: 'row',
 				margin: 0,
-                color: 'white',
+				border: 0,
+				padding: 0,
+                backgroundColor: this.state.appSettings.backgroundColor,
+                color: this.state.appSettings.textColor,
+                textAlign: 'center',
 			}}>
-	        		<p>Background color</p>
-	    			<SketchPicker
-	    				color={appSettings.backgroundColor}
-		    			onChangeComplete={this.handleBackgroundColorChange}
-						presetColors={beautifulColors}
-	    			/>
-                    <br />
+    			<div style={{
+    				display: 'flex',
+    				flexDirection: 'column',
+                    flex: 1,
+    			}}>
+            		<h3>Background color</h3>
+        			<SketchPicker
+        				color={this.state.appSettings.backgroundColor}
+    	    			onChangeComplete={this.handleBackgroundColorChange}
+    					presetColors={beautifulColors}
+        			/>
+            		<h3>Item color</h3>
+    				<SketchPicker
+    					color={this.state.appSettings.itemColor}
+    					onChangeComplete={this.handleItemColorChange}
+    					presetColors={beautifulColors}
+    				/>
+                </div>
 
-	        		<p>Item color</p>
-					<SketchPicker
-						color={appSettings.itemColor}
-						onChangeComplete={this.handleItemColorChange}
-						presetColors={beautifulColors}
-					/>
-                    <br />
-
-	        		<p>Item background color</p>
-					<SketchPicker
-						color={appSettings.itemColor}
-						onChangeComplete={this.handleItemBackgroundColorChange}
-						presetColors={beautifulColors}
-					/>
-                    <br />
-
-	        		<p>Text color</p>
-					<SketchPicker
-						color={appSettings.textColor}
-						onChangeComplete={this.handleTextColorChange}
-						presetColors={beautifulColors}
-					/>
+    			<div style={{
+    				display: 'flex',
+    				flexDirection: 'column',
+                    flex: 1,
+    			}}>
+            		<h3>Item background color</h3>
+    				<SketchPicker
+    					color={this.state.appSettings.itemColor}
+    					onChangeComplete={this.handleItemBackgroundColorChange}
+    					presetColors={beautifulColors}
+    				/>
+            		<h3>Text color</h3>
+    				<SketchPicker
+    					color={this.state.appSettings.textColor}
+    					onChangeComplete={this.handleTextColorChange}
+    					presetColors={beautifulColors}
+    				/>
+                </div>
 			</div>
 		);
 	}

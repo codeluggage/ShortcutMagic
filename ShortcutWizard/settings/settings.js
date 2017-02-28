@@ -27,6 +27,7 @@ defaultSettings = {
 	name: GLOBAL_SETTINGS,
 	acceptFirstClick: true,
 	alwaysOnTop: true,
+    boundsPerApp: false,
 	showMenuNames: false,
 	frame: false,
 	show: true,
@@ -305,7 +306,7 @@ export class Settings {
 		// 	cb(holdSettings);
 		// });
 
-		// ipcRenderer.on('temporarily-update-app-setting', (event, newSettings) => {
+		// ipcRenderer.on('temporarily-update-app-settings', (event, newSettings) => {
 		// 	// TODO: don't save settings here, just pass them on to the shortcut window
 		// 	if (this.shortcutsWindow) {
 		// 		// TODO: test this shortcutsWindow reference properly

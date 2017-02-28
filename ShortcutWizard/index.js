@@ -23,7 +23,7 @@ const Datastore = require('nedb');
 // db is an instance of nedb and lets us store things on disk in pure text, and treat it like mongodb. this stores the shortcut information
 var db = new Datastore({
 	filename: `${__dirname}/db/shortcuts.db`,
-	autoload: true
+	autoload: true,
 });
 
 // The field for "name" is the one we want to keep unique, so anything we write to the db for another running program is
@@ -58,6 +58,8 @@ var hackyStopSavePos = false;
 // The default bounds are appliend when no other bounds are found, typically for new running programs we open and parse
 var defaultFullBounds = {x: 1100, y: 100, width: 350, height: 800};
 var defaultBubbleBounds = {x: 800, y: 10, width: 250, height: 200};
+// These global settings are stored together with the shortcuts, and this is the "name":
+var GLOBAL_SETTINGS = "all programs";
 
 app.setName("ShortcutWizard");
 // The dock icon is hidden because we are trying to be an overlay application that is just "always there"
@@ -87,11 +89,10 @@ let inMemoryShortcuts = [];
 let currentAppName = "Electron";
 // TODO: Save to settings db
 
-
 // Functions
 
 // Sets bounds for the current window mode, saves it in the db
-const setAndSaveBounds = (newMode) => {
+function setAndSaveBounds(newMode) {
     var newBounds = mainWindow.getBounds();
 
     // Take the existing window mode and prepare it for saving to the db
@@ -130,103 +131,104 @@ const setAndSaveBounds = (newMode) => {
 			console.log('finished upserting bounds in applywindowmode');
 		}
 	});
-};
+}
 
-// Changes the window mode, either by just calling it or calling it with the argument
-const applyWindowMode = (newWindowMode) => {
-	var setAndSaveWindowMode = (newWindowMode) => {
-		if (newWindowMode == "bubble") {
-			setAndSaveBounds(newWindowMode);
-			inMemoryShortcuts[currentAppName].windowMode = "bubble";
 
-			mainWindow.show();
-			console.log("In bubble-mode in applyWindowMode, sending to mainWindow");
-			mainWindow.webContents.send('bubble-mode');
+function setAndSaveWindowMode(newWindowMode) {
+	if (newWindowMode == "bubble") {
+		setAndSaveBounds(newWindowMode);
+		inMemoryShortcuts[currentAppName].windowMode = "bubble";
 
-			var bubbleBounds = undefined;
-			var currentApp = inMemoryShortcuts[currentAppName];
+		mainWindow.show();
+		console.log("In bubble-mode in applyWindowMode, sending to mainWindow");
+		mainWindow.webContents.send('bubble-mode');
 
-			if (currentApp) {
-				bubbleBounds = (currentApp) ? currentApp.lastBubbleBounds : undefined;
+		var bubbleBounds = undefined;
+		var currentApp = inMemoryShortcuts[currentAppName];
+
+		if (currentApp) {
+			bubbleBounds = (currentApp) ? currentApp.lastBubbleBounds : undefined;
+			hackyStopSavePos = true;
+			mainWindow.setBounds((bubbleBounds) ? bubbleBounds : defaultBubbleBounds);
+			hackyStopSavePos = false;
+		} else {
+			db.find({
+				name: currentAppName
+			}, function(err, res) {
+				console.log('loaded shortcuts: ');
+				if (err) {
+					console.log('errored during db find: ', err);
+					return;
+				}
+
+				if (res != [] && res.length > 0) {
+					inMemoryShortcuts[currentAppName] = currentApp = res[0];
+					bubbleBounds = currentApp.lastFullBounds;
+				}
+
 				hackyStopSavePos = true;
 				mainWindow.setBounds((bubbleBounds) ? bubbleBounds : defaultBubbleBounds);
 				hackyStopSavePos = false;
-			} else {
-				db.find({
-					name: currentAppName
-				}, function(err, res) {
-					console.log('loaded shortcuts: ');
-					if (err) {
-						console.log('errored during db find: ', err);
-						return;
-					}
+			});
+		}
+	} else if (newWindowMode == "full") {
+		setAndSaveBounds(newWindowMode);
+		inMemoryShortcuts[currentAppName].windowMode = "full";
 
-					if (res != [] && res.length > 0) {
-						inMemoryShortcuts[currentAppName] = currentApp = res[0];
-						bubbleBounds = currentApp.lastFullBounds;
-					}
+		// TODO: load from full settings or use default
+		mainWindow.show();
+		console.log("In full-mode in applyWindowMode, sending to mainWindow");
+		mainWindow.webContents.send('full-mode');
 
-					hackyStopSavePos = true;
-					mainWindow.setBounds((bubbleBounds) ? bubbleBounds : defaultBubbleBounds);
-					hackyStopSavePos = false;
-				});
-			}
-		} else if (newWindowMode == "full") {
-			setAndSaveBounds(newWindowMode);
-			inMemoryShortcuts[currentAppName].windowMode = "full";
+		var fullBounds = undefined;
+		var currentApp = inMemoryShortcuts[currentAppName];
 
-			// TODO: load from full settings or use default
-			mainWindow.show();
-			console.log("In full-mode in applyWindowMode, sending to mainWindow");
-			mainWindow.webContents.send('full-mode');
+		if (currentApp) {
+			fullBounds = (currentApp) ? currentApp.lastFullBounds : undefined;
+			hackyStopSavePos = true;
+			mainWindow.setBounds((fullBounds) ? fullBounds : defaultFullBounds);
+			hackyStopSavePos = false;
+		} else {
+			db.find({
+				name: currentAppName
+			}, function(err, res) {
+				console.log('loaded shortcuts: ');
+				if (err) {
+					console.log('errored during db find: ', err);
+					return;
+				}
 
-			var fullBounds = undefined;
-			var currentApp = inMemoryShortcuts[currentAppName];
+				if (res != [] && res.length > 0) {
+					inMemoryShortcuts[currentAppName] = currentApp = res[0];
+					fullBounds = currentApp.lastFullBounds;
+				}
 
-			if (currentApp) {
-				fullBounds = (currentApp) ? currentApp.lastFullBounds : undefined;
 				hackyStopSavePos = true;
 				mainWindow.setBounds((fullBounds) ? fullBounds : defaultFullBounds);
 				hackyStopSavePos = false;
-			} else {
-				db.find({
-					name: currentAppName
-				}, function(err, res) {
-					console.log('loaded shortcuts: ');
-					if (err) {
-						console.log('errored during db find: ', err);
-						return;
-					}
-
-					if (res != [] && res.length > 0) {
-						inMemoryShortcuts[currentAppName] = currentApp = res[0];
-						fullBounds = currentApp.lastFullBounds;
-					}
-
-					hackyStopSavePos = true;
-					mainWindow.setBounds((fullBounds) ? fullBounds : defaultFullBounds);
-					hackyStopSavePos = false;
-				});
-			}
-		} else if (newWindowMode == "hidden") {
-            setAndSaveBounds(newWindowMode);
-			inMemoryShortcuts[currentAppName].windowMode = "hidden";
-
-			mainWindow.hide();
-			console.log("In hidden-mode in applyWindowMode, sending to mainWindow");
-			mainWindow.webContents.send('hidden-mode');
-		} else {
-			console.log("in setAndSaveWindowMode() ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
-			console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
-			console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
-			console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+			});
 		}
-	};
+	} else if (newWindowMode == "hidden") {
+        setAndSaveBounds(newWindowMode);
+		inMemoryShortcuts[currentAppName].windowMode = "hidden";
 
+		mainWindow.hide();
+		console.log("In hidden-mode in applyWindowMode, sending to mainWindow");
+		mainWindow.webContents.send('hidden-mode');
+	} else {
+		console.log("in setAndSaveWindowMode() ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+		console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+		console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+		console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+	}
+}
 
+// Changes the window mode, either by just calling it or calling it with the argument
+function applyWindowMode(newWindowMode) {
     // Bail out if we are already on this window mode
     // TODO: handle this better, what does the user expect when arriving here? First click, misclick?
 	if (newWindowMode && newWindowMode == inMemoryShortcuts[currentAppName].windowMode) return;
+
 	console.log(`_________ newWindowMode:${newWindowMode}, in memory window mode: ${inMemoryShortcuts[currentAppName].windowMode}`);
 
 	if (newWindowMode) {
@@ -256,25 +258,16 @@ const applyWindowMode = (newWindowMode) => {
 			setAndSaveWindowMode("bubble");
 		}
 	}
-};
-
-const showWindow = () => {
-	mainWindow.show()
-	mainWindow.focus()
 }
 
-const toggleWindow = () => {
+function toggleWindow() {
 	console.log('togglewindow with isVisible: ', mainWindow.isVisible());
 	if (mainWindow.isVisible()) {
-		mainWindow.hide();
+		mainWindow.blur();
 	} else {
-		showWindow();
+        mainWindow.show();
 	}
 }
-
-ipcMain.on('show-window', () => {
-    showWindow();
-});
 
 function quitShortcutWizard() {
     trayObject.destroy();
@@ -285,8 +278,7 @@ function quitShortcutWizard() {
     backgroundListenerWindow.destroy(); // This holds on to objective c code, so we force destroy it
     backgroundListenerWindow = null;
     mainWindow = null;
-};
-
+}
 
 function savePosition(appName) {
 	if (!appName || !mainWindow) return;
@@ -359,7 +351,7 @@ function createMiniSettingsWindow() {
 		acceptFirstClick: true,
 		transparent: true,
 		frame: false,
-		x: 800, y: 50, width: 300, height: 800,
+		x: 800, y: 50, width: 500, height: 700,
 	});
 
 	var settingsPath = `file://${__dirname}/settings/miniIndex.html`;
@@ -373,8 +365,8 @@ function createSettingsWindow() {
 		alwaysOnTop: true,
 		acceptFirstClick: true,
 		frame: false,
-		height: 700,
-		width: 700,
+		height: 600,
+		width: 1000,
 	});
 
 	var settingsPath = `file://${__dirname}/settings/index.html`;
@@ -395,65 +387,93 @@ function createWindows() {
 }
 
 function createMainWindow() {
-	mainWindow = new BrowserWindow({
-		name: "ShortcutWizard",
-		acceptFirstClick: true,
-		alwaysOnTop: true,
-		frame: false,
-		show: false, // Don't show until we have the information of the app that is running
-		transparent: true,
-		x: 1100, y: 100, width: 350, height: 800,
-		title: "mainWindow"
-	});
+    // db.find({
+    //     name: GLOBAL_SETTINGS
+    // }, function(err, res) {
+    //
+	// 	if (err || !res) {
+	// 		console.log('error finding in savePosition: ', err);
+	// 		return;
+	// 	}
+    //
+	// 	if (res != [] && res.length > 0) {
+            // res["boundsPerApp"]
+            // res["showMenuNames"]
+            // res["alwaysOnTop"]
 
-	// TODO: make experimental settings:
-	// 0 - NSVisualEffectMaterialAppearanceBased 10.10+
-	// 1 - NSVisualEffectMaterialLight 10.10+
-	// 2 - NSVisualEffectMaterialDark 10.10+
-	// 3 - NSVisualEffectMaterialTitlebar 10.10+
-	// 4 - NSVisualEffectMaterialSelection 10.11+
-	// 5 - NSVisualEffectMaterialMenu 10.11+
-	// 6 - NSVisualEffectMaterialPopover 10.11+
-	// 7 - NSVisualEffectMaterialSidebar 10.11+
-	// 8 - NSVisualEffectMaterialMediumLight 10.11+
-	// 9 - NSVisualEffectMaterialUltraDark 10.11+
+            if (!inMemoryShortcuts[GLOBAL_SETTINGS]) {
+                inMemoryShortcuts[GLOBAL_SETTINGS] = {
+                    boundsPerApp: true,
+                    alwaysOnTop: true,
+                };
+            }
 
-	// Whole window vibrancy with Material 0 and auto resize
-	// mainWindow.on('ready-to-show', () => {
-	// 	console.log('loaded window, vibrancy: ', electronVibrancy);
-	//     // electronVibrancy.SetVibrancy(true, browserWindowInstance.getNativeWindowHandle());
-	// 	electronVibrancy.SetVibrancy(mainWindow, 0);
-	// });
+            // temp
+            var res = [];
+            inMemoryShortcuts[GLOBAL_SETTINGS]["boundsPerApp"] = (res["boundsPerApp"]) ? res["boundsPerApp"] : true;
+            inMemoryShortcuts[GLOBAL_SETTINGS]["alwaysOnTop"] = (res["alwaysOnTop"]) ? res["alwaysOnTop"] : true;
 
-	mainWindow.loadURL(`file://${__dirname}/index.html`);
+        	mainWindow = new BrowserWindow({
+        		name: "ShortcutWizard",
+        		acceptFirstClick: true,
+        		alwaysOnTop: inMemoryShortcuts[GLOBAL_SETTINGS]["alwaysOnTop"],
+        		frame: false,
+        		show: false, // Don't show until we have the information of the app that is running
+        		transparent: true,
+                x: 334, y: 153, width: 826, height: 568,
+        		title: "mainWindow"
+        	});
 
-	mainWindow.on('resize', (event) => {
-		// TODO: Set up a limit here to not save too often, or queue it up
-		if (!hackyStopSavePos) {
-			console.log("//////////////////////////////////////// on.resize");
-			savePosition(currentAppName);
-		}
-	});
+        	// TODO: make experimental settings:
+        	// 0 - NSVisualEffectMaterialAppearanceBased 10.10+
+        	// 1 - NSVisualEffectMaterialLight 10.10+
+        	// 2 - NSVisualEffectMaterialDark 10.10+
+        	// 3 - NSVisualEffectMaterialTitlebar 10.10+
+        	// 4 - NSVisualEffectMaterialSelection 10.11+
+        	// 5 - NSVisualEffectMaterialMenu 10.11+
+        	// 6 - NSVisualEffectMaterialPopover 10.11+
+        	// 7 - NSVisualEffectMaterialSidebar 10.11+
+        	// 8 - NSVisualEffectMaterialMediumLight 10.11+
+        	// 9 - NSVisualEffectMaterialUltraDark 10.11+
 
-	mainWindow.on('moved', (event) => {
-		if (!hackyStopSavePos) {
-			console.log("//////////////////////////////////////// on.moved");
-			savePosition(currentAppName);
-		}
-	});
+        	// Whole window vibrancy with Material 0 and auto resize
+        	// mainWindow.on('ready-to-show', () => {
+        	// 	console.log('loaded window, vibrancy: ', electronVibrancy);
+        	//     // electronVibrancy.SetVibrancy(true, browserWindowInstance.getNativeWindowHandle());
+        	// 	electronVibrancy.SetVibrancy(mainWindow, 0);
+        	// });
+
+        	mainWindow.loadURL(`file://${__dirname}/index.html`);
+
+        	mainWindow.on('resize', (event) => {
+        		// TODO: Set up a limit here to not save too often, or queue it up
+        		if (!hackyStopSavePos) {
+        			console.log("//////////////////////////////////////// on.resize");
+        			savePosition(currentAppName);
+        		}
+        	});
+
+        	mainWindow.on('moved', (event) => {
+        		if (!hackyStopSavePos) {
+        			console.log("//////////////////////////////////////// on.moved");
+        			savePosition(currentAppName);
+        		}
+        	});
 
 
 
-	mainWindow.setHasShadow(false);
+        	mainWindow.setHasShadow(false);
 
-	// applyWindowMode(inMemoryShortcuts[currentAppName].windowMode);
-	mainWindow.show();
+        	// applyWindowMode(inMemoryShortcuts[currentAppName].windowMode);
+        	mainWindow.show();
 
-	// All windows are created, collect all their window id's and let each of them
-	// know what is available to send messages to:
+        	// All windows are created, collect all their window id's and let each of them
+        	// know what is available to send messages to:
 
-	// TODO: Run applescript to select previous app and set that as the current app,
-	// in order to correctly load the state of that app for the main window settings
+        	// TODO: Run applescript to select previous app and set that as the current app,
+        	// in order to correctly load the state of that app for the main window settings
+    //     }
+    // });
 }
 
 function createTray() {
@@ -465,42 +485,42 @@ function createTray() {
 	trayObject.setToolTip('ShortcutWizard!');
 	trayObject.on('right-click', (event) => {
 		if (mainWindow) {
-			mainWindow.show();
+			// mainWindow.show();
 			mainWindow.openDevTools();
 		} else {
 			console.log("cant find mainwindow to show");
 		}
 
 		if (settingsWindow) {
-			settingsWindow.show();
+			// settingsWindow.show();
 			settingsWindow.openDevTools();
 		} else {
 			console.log("cant find settingswindow to show");
 		}
 
 		if (backgroundTaskRunnerWindow) {
-			backgroundTaskRunnerWindow.show();
+			// backgroundTaskRunnerWindow.show();
 			backgroundTaskRunnerWindow.openDevTools();
 		} else {
 			console.log("cant find backgroundTaskRunnerWindow to show");
 		}
 
 		if (backgroundListenerWindow) {
-			backgroundListenerWindow.show();
+			// backgroundListenerWindow.show();
 			backgroundListenerWindow.openDevTools();
 		} else {
 			console.log("cant find backgroundListenerWindow to show");
 		}
 
 		if (welcomeWindow) {
-			welcomeWindow.show();
+			// welcomeWindow.show();
 			welcomeWindow.openDevTools();
 		} else {
 			console.log("cant find backgroundListenerWindow to show");
 		}
 
 		if (miniSettingsWindow) {
-			miniSettingsWindow.show();
+			// miniSettingsWindow.show();
 			miniSettingsWindow.openDevTools();
 		} else {
 			console.log("cant find backgroundListenerWindow to show");
@@ -674,13 +694,27 @@ function loadWithPeriods(appName) {
 				console.log("CANT FIND MAIN WINDOW WHEN LOADING SHORTCUTS");
 			}
 		} else {
-			mainWindow.webContents.send('set-loading', appName);
-			console.log('sending webview-parse-shortcuts with appName', appName);
-			backgroundTaskRunnerWindow.webContents.send('webview-parse-shortcuts', appName);
+            if (mainWindow && mainWindow.webContents) {
+    			mainWindow.webContents.send('set-loading', appName);
+    			console.log('sending webview-parse-shortcuts with appName', appName);
+    			backgroundTaskRunnerWindow.webContents.send('webview-parse-shortcuts', appName);
+            }
 		}
 	});
 }
 
+
+ipcMain.on('toggle-window', () => {
+    toggleWindow();
+});
+
+ipcMain.on('show-window', () => {
+    mainWindow.show();
+});
+
+ipcMain.on('blur-window', () => {
+    mainWindow.blur();
+});
 
 // Events
 app.on('window-all-closed', function() {
@@ -710,7 +744,9 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 	// TODO: Make this list editable somewhere to avoid people having problems?
 	if (appName == "Electron" || appName == "ShortcutWizard" ||
 		appName == "ScreenSaverEngine" || appName == "loginwindow" ||
-		appName == "Dock") {
+		appName == "Dock" ||
+        appName == "Google Software Update..." ||
+        appName == "Google Software Update") {
 		console.log("Not switching to this app: ", appName);
 		return;
 	}
@@ -773,70 +809,9 @@ ipcMain.on('update-shortcut-order', function(event, appName, shortcuts) {
 	});
 });
 
-// ipcMain.on('main-parse-shortcuts', function(event, ) {
-// });
-//
-// ipcMain.on('change-window-mode', function(event, ) {
-// });
-
 ipcMain.on('open-settings', function(event) {
 	ipcMain.send('open-settings');
 });
-
-// ipcMain.on('toggle-favorite-list-item', (event, listItemName) => {
-// 	var holdShortcuts = inMemoryShortcuts[currentAppName];
-// 	if (!holdShortcuts) {
-// 		// how did we end up here??
-// 		console.log("Could not find shortcuts in memory, needs loaded data");
-// 		// loadWithPeriods(appName); // TODO: load shortcuts and do remaining work in callback here
-// 	}
-//
-// 	var holdIndex = 0;
-// 	var shortcuts = holdShortcuts.shortcuts;
-// 	if (!shortcuts) {
-// 		console.log("cant find shortcuts for ", listItemName);
-// 		return;
-// 	}
-//
-// 	var shortcut = undefined;
-//
-// 	var i;
-// 	for (i = 0; i < shortcuts.length; i++) {
-// 		if (shortcuts[i] && shortcuts[i].name == listItemName) {
-// 			shortcut = shortcuts[i];
-// 			console.log("found and set shortcut for favorite, breaking out: ", shortcut);
-// 			break;
-// 		}
-// 	}
-//
-// 	if (!shortcut) {
-// 		console.log("cant find shortcut in ", shortcuts);
-// 		return;
-// 	}
-//
-// 	shortcut.isFavorite = (shortcut.isFavorite) ? false : true;
-// 	shortcuts[i] = shortcut;
-// 	holdShortcuts.shortcuts = shortcuts;
-// 	console.log("saving shortcutObject", shortcuts);
-//
-// 	db.update({
-// 		name: currentAppName
-// 	}, {
-// 		$set: holdShortcuts
-// 	}, {
-// 		upsert: true
-// 	}, (err, res) => {
-// 		if (err) {
-// 			console.log("error when updating favorite for list item ", listItemName);
-// 		} else {
-// 			console.log("succeeded toggling favorite: ", res);
-// 			inMemoryShortcuts[currentAppName] = holdShortcuts;
-//
-// 			mainWindow.webContent.send('update-shortcuts', holdShortcuts);
-// 		}
-// 	});
-// });
-
 
 ipcMain.on('update-shortcut-item', (event, shortcutItem) => {
 	var shortcutObject = {};
@@ -920,4 +895,30 @@ ipcMain.on('set-bubble-mode', (event) => {
 ipcMain.on('set-hidden-mode', (event) => {
 	console.log("entrypoint for set-hidden-mode");
 	applyWindowMode("hidden");
+});
+
+ipcMain.on('save-app-settings', (event, newSetting) => {
+    inMemoryShortcuts[GLOBAL_SETTINGS]["boundsPerApp"] = newSetting["boundsPerApp"];
+    inMemoryShortcuts[GLOBAL_SETTINGS]["alwaysOnTop"] = newSetting["alwaysOnTop"];
+    mainWindow.setAlwaysOnTop(newSetting["alwaysOnTop"]);
+
+    db.update({
+        name: GLOBAL_SETTINGS
+	}, {
+		$set: newSetting
+	}, {
+		upsert: true
+	}, (err, res) => {
+		if (err) {
+			console.log("error when saving global settings", newSetting);
+		} else {
+			console.log("successfully saved global settings: ", res);
+		}
+	});
+});
+
+ipcMain.on('temporarily-update-app-settings', (event, newSetting) => {
+    inMemoryShortcuts[GLOBAL_SETTINGS]["boundsPerApp"] = newSetting["boundsPerApp"];
+    inMemoryShortcuts[GLOBAL_SETTINGS]["alwaysOnTop"] = newSetting["alwaysOnTop"];
+    mainWindow.setAlwaysOnTop(newSetting["alwaysOnTop"]);
 });
