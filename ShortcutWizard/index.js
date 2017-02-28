@@ -260,17 +260,12 @@ function applyWindowMode(newWindowMode) {
 	}
 }
 
-function showWindow() {
-	mainWindow.show()
-	mainWindow.focus()
-}
-
 function toggleWindow() {
 	console.log('togglewindow with isVisible: ', mainWindow.isVisible());
 	if (mainWindow.isVisible()) {
-		mainWindow.hide();
+		mainWindow.blur();
 	} else {
-		showWindow();
+        mainWindow.show();
 	}
 }
 
@@ -356,7 +351,7 @@ function createMiniSettingsWindow() {
 		acceptFirstClick: true,
 		transparent: true,
 		frame: false,
-		x: 800, y: 50, width: 400, height: 700,
+		x: 800, y: 50, width: 500, height: 700,
 	});
 
 	var settingsPath = `file://${__dirname}/settings/miniIndex.html`;
@@ -709,11 +704,19 @@ function loadWithPeriods(appName) {
 }
 
 
-// Events
-ipcMain.on('show-window', () => {
-    showWindow();
+ipcMain.on('toggle-window', () => {
+    toggleWindow();
 });
 
+ipcMain.on('show-window', () => {
+    mainWindow.show();
+});
+
+ipcMain.on('blur-window', () => {
+    mainWindow.blur();
+});
+
+// Events
 app.on('window-all-closed', function() {
 	app.quit();
 });

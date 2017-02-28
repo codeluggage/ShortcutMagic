@@ -525,7 +525,7 @@ export default class Home extends Component {
 				listItemFontSize: listItemFontSize,
             });
 
-            window.document.getElementById("searchField").value = "";
+            window.document.getElementById("search-field").value = "";
             // TODO: Scroll to top here
         });
 
@@ -703,8 +703,7 @@ export default class Home extends Component {
     }
 
     filterListTrigger(event) {
-        console.log('fileterlisttrigger - this', this);
-        this.filterList(event.target.value);
+        this.filterList((event) ? event.target.value : "");
     }
 
     filterList(targetValue) {
@@ -853,19 +852,59 @@ export default class Home extends Component {
 */
 
 
-		var SettingsToggle = (
+		var SearchField = (
+            <input id="search-field" class="form-control" type="text" placeholder="Search for something"
+            style={{
+                display: 'none',
+                borderRadius: ".25rem",
+                borderWidth: ".50rem",
+                border: `2px solid #737475`,
+            }} onChange={this.filterListTrigger}
+            onKeyDown={(e) => {
+                if (e.keyCode === 27) {
+                    window.document.getElementById("search-field").value = '';
+                    this.filterListTrigger();
+                }
+            }}/>
+		);
+
+        let shortcuts = this.state.items;
+        if (!this.previousShortcuts || this.previousShortcuts != shortcuts) {
+            shortcuts.sort((a, b) => {
+                if (a.isHidden) {
+                    if (b.isHidden) return 0; // a <> b
+
+                    return 1; // b > a
+                }
+                if (a.isFavorite) {
+                    if (b.isFavorite) return 0; // a <> b
+
+                    return -1; // a > b
+                }
+
+                return 0; // a <> b
+            });
+
+            this.previousShortcuts = shortcuts;
+        }
+
+		var ShortcutList = (
+            <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
+                <div style={{textAlign: 'left'}}>
+                    <SortableList
+                        items={shortcuts}
+                        onSortEnd={this.onSortEnd}
+                        useDragHandle={true}
+                        lockAxis='y'
+                    />
+                </div>
+            </div>
+		);
+
+        let SettingsButtons = (
             <div id="settings-button-group" className="toolbar-actions" style={{
                 display: 'none',
-            }} onMouseLeave={(e) => {
-    			let settingsGroupElement = window.document.getElementById("settings-button-group");
-				settingsGroupElement.style.display = "none";
-                console.log("set style of settings to none: ", settingsGroupElement.style.display);
-
-    			let titleElement = window.document.getElementById("title");
-				titleElement.style.display = "block";
-                console.log("set style of title to block: ", titleElement.style.display);
             }}>
-
                 <div className="btn-group">
                     <button id="increase-font-size-button" className="btn btn-default" style={{
     		                    // color: this.state.textColor,
@@ -945,84 +984,47 @@ export default class Home extends Component {
                     </button>
                 </div>
             </div>
-		);
+        );
 
-		var SearchField = (
-            <input id="searchField" style={{
-				fontSize: 18,
-				width: "20%",
-				color: this.state.textColor,
-				backgroundColor: 'transparent',
-				borderColor: 'transparent',
-				flex: 2,
-			}} type="text"
-			placeholder="&#xF002;"
-			onChange={this.filterListTrigger}
-			onFocus={() => {
-				// TODO: Move this down one line so it has the entire width to show search box
-				window.document.getElementById("searchField").style.width = "100%";
-				window.document.getElementById("searchField").style.flex = 6;
-				window.document.getElementById("searchField").style.backgroundColor = "white";
-			}} onBlur={() => {
-				window.document.getElementById("searchField").style.width = "20%";
-				window.document.getElementById("searchField").style.flex = 2;
-				window.document.getElementById("searchField").style.backgroundColor = "transparent";
-			}}/>
-		);
-
-        let shortcuts = this.state.items;
-        if (!this.previousShortcuts || this.previousShortcuts != shortcuts) {
-            shortcuts.sort((a, b) => {
-                if (a.isHidden) {
-                    if (b.isHidden) return 0; // a <> b
-
-                    return 1; // b > a
-                }
-                if (a.isFavorite) {
-                    if (b.isFavorite) return 0; // a <> b
-
-                    return -1; // a > b
-                }
-
-                return 0; // a <> b
-            });
-
-            this.previousShortcuts = shortcuts;
-        }
-
-		var ShortcutList = (
-            <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
-                <div style={{textAlign: 'left'}}>
-                    <SortableList
-                        items={shortcuts}
-                        onSortEnd={this.onSortEnd}
-                        useDragHandle={true}
-                        lockAxis='y'
-                    />
-                </div>
-            </div>
-		);
-
-        let displaySettings = null;
-		let Title = (
+        let Title = (
             <h1 id="title" style={{
                 color: this.state.textColor,
                 marginTop:'2px',
                 marginBottom:'2px',
-            }} onMouseEnter={(e) => {
-    			let settingsGroupElement = window.document.getElementById("settings-button-group");
-				settingsGroupElement.style.display = "block";
-                console.log("set style of title to block: ", settingsGroupElement.style.display);
-
-    			let titleElement = window.document.getElementById("title");
-                titleElement.class = "pull-left";
-                displaySettings = "Settings:";
-                console.log("set style of title to none: ", titleElement.style.display);
-            }} onMouseLeave={(e) => {
-    			let titleElement = window.document.getElementById("title");
-                titleElement.class = "";
-                displaySettings = null;
             }}>{(displaySettings) ? displaySettings : this.state.name}</h1>
+        );
+
+        let displaySettings = null;
+        let hidingSlowly = false;
+		let TitleAndSettings = (
+            <div id="title-and-settings"
+            style={{
+                textAlign: 'center',
+            }} onMouseEnter={(e) => {
+                hidingSlowly = true;
+    			window.document.getElementById("settings-button-group").style.display = "block";
+    			window.document.getElementById("search-field").style.display = "";
+
+                ipcRenderer.send('show-window');
+    			window.document.getElementById("search-field").focus();
+            }} onMouseLeave={(e) => {
+                if (hidingSlowly) {
+                    hidingSlowly = false;
+                    setTimeout(() => {
+                        if (!hidingSlowly) {
+                			window.document.getElementById("settings-button-group").style.display = "none";
+                			window.document.getElementById("search-field").style.display = "none";
+                        }
+                    }, 400);
+                } else {
+        			window.document.getElementById("settings-button-group").style.display = "none";
+        			window.document.getElementById("search-field").style.display = "none";
+                }
+            }}>
+                {Title}
+                {SettingsButtons}
+                {SearchField}
+            </div>
 		);
 
 		if (this.state.mode == "hidden-mode") {
@@ -1049,8 +1051,7 @@ export default class Home extends Component {
 			// Full mode:
 	        return (
 	            <div style={{ textAlign: 'center' }}>
-					{Title}{SettingsToggle}
-					{SearchField}
+					{TitleAndSettings}
 					{ShortcutList}
 	            </div>
 	        );
