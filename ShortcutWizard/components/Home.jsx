@@ -270,7 +270,55 @@ const SortableItem = SortableElement((componentArguments) => {
                         }
                     </button>
 
-                    <button id={(listItem.isFavorite) ? 'enabled-favorite-button' : ''} className="btn btn-default" style={{
+                    <button className="btn btn-default" style={{
+    		                    // color: this.state.textColor,
+    		                    // backgroundColor: 'transparent',
+    							// flex: 2,
+    							// margin: 0,
+                                // flex: 4,
+                    }} onClick={() => {
+                        ipcRenderer.send('vote-up', listItem);
+                    }}>
+                        <span className="icon icon-up-open-big"></span>
+                    </button>
+
+                    <button className="btn btn-default" style={{
+    		                    // color: this.state.textColor,
+    		                    // backgroundColor: 'transparent',
+    							// flex: 2,
+    							// margin: 0,
+                                // flex: 4,
+                    }} onClick={() => {
+                        ipcRenderer.send('vote-down', listItem);
+                    }}>
+                        <span className="icon icon-down-open-big"></span>
+                    </button>
+
+
+                    <button className="btn btn-default" style={{
+    		                    // color: this.state.textColor,
+    		                    // backgroundColor: 'transparent',
+    							// flex: 2,
+    							// margin: 0,
+
+                                // flex: 4,
+                    }}>
+                        {
+                            (listItem.vote > 0) ? (
+                                <p  style={{
+        							color: "green",
+        						}}>{listItem.vote}</p>
+                            ) : (listItem < 0) ? (
+                                <p style={{
+        							color: "red",
+        						}}>{listItem.vote}</p>
+                            ) : (
+                                <p>0</p>
+                            )
+                        }
+                    </button>
+
+                    <button className="btn btn-default" style={{
     		                    // color: this.state.textColor,
     		                    // backgroundColor: 'transparent',
     							// flex: 2,

@@ -910,7 +910,7 @@ ipcMain.on('save-app-settings', (event, newSetting) => {
 		upsert: true
 	}, (err, res) => {
 		if (err) {
-			console.log("error when saving global settings", newSetting);
+			console.log("error when saving global settings", newSetting, err);
 		} else {
 			console.log("successfully saved global settings: ", res);
 		}
@@ -921,4 +921,54 @@ ipcMain.on('temporarily-update-app-settings', (event, newSetting) => {
     inMemoryShortcuts[GLOBAL_SETTINGS]["boundsPerApp"] = newSetting["boundsPerApp"];
     inMemoryShortcuts[GLOBAL_SETTINGS]["alwaysOnTop"] = newSetting["alwaysOnTop"];
     mainWindow.setAlwaysOnTop(newSetting["alwaysOnTop"]);
+});
+
+
+// TODO: Refactor this saving of list item
+ipcMain.on('vote-up', (event, listItem) => {
+    if (listItem.vote) {
+        listItem.vote += 1;
+    } else {
+        listItem.vote = 1;
+    }
+    let updateListItem = {};
+    updateListItem[listItem.name] = listItem;
+
+    db.update({
+        name: currentAppName
+	}, {
+		$set: updateListItem
+	}, {
+		upsert: true
+	}, (err, res) => {
+		if (err) {
+			console.log("error when saving up-voted list item", updateListItem, err);
+		} else {
+			console.log("successfully saved up-voted list item: ", res);
+		}
+	});
+});
+
+ipcMain.on('vote-down', (event, listItem) => {
+    if (listItem.vote) {
+        listItem.vote -= 1;
+    } else {
+        listItem.vote = -1;
+    }
+    let updateListItem = {};
+    updateListItem[listItem.name] = listItem;
+
+    db.update({
+        name: currentAppName
+	}, {
+		$set: updateListItem
+	}, {
+		upsert: true
+	}, (err, res) => {
+		if (err) {
+			console.log("error when saving down-voted list item", updateListItem, err);
+		} else {
+			console.log("successfully saved down-voted list item: ", res);
+		}
+	});
 });
