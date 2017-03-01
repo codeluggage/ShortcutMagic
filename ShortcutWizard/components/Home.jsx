@@ -72,7 +72,7 @@ const SortableItem = SortableElement((componentArguments) => {
                     marginRight: '5px',
                     marginLeft: '5px',
 					marginTop: 0,
-					marginBottom: 0,
+                    marginBottom: '5px',
                     color: globalState.textColor,
                     borderRadius: ".25rem",
                     borderWidth: ".50rem",
@@ -87,7 +87,7 @@ const SortableItem = SortableElement((componentArguments) => {
                     marginRight: '5px',
                     marginLeft: '5px',
 					marginTop: 0,
-					marginBottom: 0,
+					marginBottom: '5px',
                     color: globalState.textColor,
                     borderRadius: ".25rem",
                     borderWidth: ".50rem",
@@ -1014,6 +1014,41 @@ export default class Home extends Component {
             </div>
 		);
 
+		let HiddenSettings = (
+            <div id="hidden-settings"
+            style={{
+                height: '20px',
+                width: '100%',
+                textAlign: 'center',
+            }} onMouseEnter={(e) => {
+                hidingSlowly = true;
+    			window.document.getElementById("settings-button-group").style.display = "block";
+    			window.document.getElementById("search-field").style.display = "";
+    			window.document.getElementById("hidden-settings").style.height = '60px';
+
+                ipcRenderer.send('show-window');
+    			window.document.getElementById("search-field").focus();
+            }} onMouseLeave={(e) => {
+                if (hidingSlowly) {
+                    hidingSlowly = false;
+                    setTimeout(() => {
+                        if (!hidingSlowly) {
+                			window.document.getElementById("settings-button-group").style.display = "none";
+                			window.document.getElementById("search-field").style.display = "none";
+                            window.document.getElementById("hidden-settings").style.height = '20px';
+                        }
+                    }, 400);
+                } else {
+        			window.document.getElementById("settings-button-group").style.display = "none";
+        			window.document.getElementById("search-field").style.display = "none";
+                    window.document.getElementById("hidden-settings").style.height = '20px';
+                }
+            }}>
+                {SearchField}{SettingsButtons}
+            </div>
+		);
+
+
 		if (this.state.mode == "hidden-mode") {
 			// Hidden mode:
             // TODO:
@@ -1030,7 +1065,7 @@ export default class Home extends Component {
 			// Bubble mode:
 			return (
 				<div>
-					{SearchField}
+                    {HiddenSettings}
 					{ShortcutList}
 				</div>
 			);
