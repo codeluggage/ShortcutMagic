@@ -35,6 +35,7 @@ const SortableItem = SortableElement((componentArguments) => {
             color: globalState.textColor,
             flex: 2,
             marginRight: '4px',
+            marginLeft: '10px',
 			fontSize: globalState.listTitleFontSize,
 			fontWeight: globalState.listTitleFontWeight,
         }}>{listItem.name}</p>
@@ -51,7 +52,7 @@ const SortableItem = SortableElement((componentArguments) => {
                 marginRight: '5px',
                 marginLeft: '5px',
 				marginTop: 0,
-				marginBottom: 0,
+				marginBottom: '5px',
                 color: globalState.textColor,
                 borderRadius: ".25rem",
                 borderWidth: ".50rem",
@@ -221,85 +222,71 @@ const SortableItem = SortableElement((componentArguments) => {
             // marginTop: '2px',
             // alignContent: 'stretch',
         }}>
-            <div name={`buttonSection-${componentArguments.index}`} style={{
-				display: 'none',
-				color: globalState.textColor,
-				flex: 4,
-                // height: '100%',
-                backgroundColor: globalState.itemColor,
-                marginRight: '1px',
-                marginLeft: '1px',
-                borderRadius: ".25rem",
-                borderWidth: ".50rem",
-                border: `2px solid ${globalState.itemColor}`,
-				textAlign: 'center',
-            }} onClick={() => {
-                console.log("clicked execute-list-item with ", listItem);
-                ipcRenderer.send('execute-list-item', listItem);
+            <div name={`buttonSection-${componentArguments.index}`} className="toolbar-actions pull-right" style={{
+                display: 'none',
             }}>
-                <i className="fa fa-2x fa-play" style={{
-					color: "green",
-				}}></i>
-                <br />
-                Run
-            </div>
+                <div  className="btn-group">
+                    <button className="btn btn-default" style={{
+    		                    // color: this.state.textColor,
+    		                    // backgroundColor: 'transparent',
+    							// flex: 2,
+    							// margin: 0,
 
-            <div id={(listItem.isFavorite) ? 'enabled-favorite-button' : ''}
-			name={`buttonSection-${componentArguments.index}`}
-			style={{
-				display: (listItem.isFavorite) ? 'block' : 'none',
-				color: globalState.textColor,
-				backgroundColor: (listItem.isFavorite) ? 'transparent' : globalState.itemColor,
-				border: (listItem.isFavorite) ? 'transparent' : `2px solid ${globalState.itemColor}`,
-				flex: 2,
-				// height: '100%',
-                marginRight: '1px',
-                marginLeft: '1px',
-                borderRadius: ".25rem",
-                borderWidth: ".50rem",
-				textAlign: 'center',
-            }} onClick={() => {
-                listItem.isFavorite = !listItem.isFavorite;
-                console.log("Updating shortcut item with toggled isFavorite: ", listItem);
-                ipcRenderer.send('update-shortcut-item', listItem);
-            }}>
-                {
-                    (listItem.isFavorite) ? (
-                        <i className="fa fa-2x fa-star" style={{
-							color: "gold",
-						}}></i>
-                    ) : (
-                        <i className="fa fa-2x fa-star-o" style={{
-							color: "gold",
-						}}></i>
-                    )
-                }
-				<br />
-				Favorite
-            </div>
+                                // flex: 4,
+                    }} onClick={() => {
+                        console.log("clicked execute-list-item with ", listItem);
+                        ipcRenderer.send('execute-list-item', listItem);
+                    }}>
+                        <span className="fa fa-play"style={{
+        					color: "green",
+        				}}></span>
+                    </button>
 
-            <div name={`buttonSection-${componentArguments.index}`} style={{
-				display: 'none',
-				color: globalState.textColor,
-                backgroundColor: globalState.itemColor,
-				flex: 2,
-				// height: '100%',
-                marginRight: '1px',
-                marginLeft: '1px',
-                borderRadius: ".25rem",
-                borderWidth: ".50rem",
-                border: `2px solid ${globalState.itemColor}`,
-				textAlign: 'center',
-            }} onClick={() => {
-                listItem.isHidden = !listItem.isHidden;
-                console.log("Updating shortcut item with toggled isHidden: ", listItem);
-                ipcRenderer.send('update-shortcut-item', listItem);
-            }}>
-                <i className="fa fa-2x fa-eye" style={{
-					color: (listItem.isHidden) ? "grey" : "red",
-				}}></i>
-				<br />
-				Hide
+                    <button id={(listItem.isFavorite) ? 'enabled-favorite-button' : ''} className="btn btn-default" style={{
+    		                    // color: this.state.textColor,
+    		                    // backgroundColor: 'transparent',
+    							// flex: 2,
+    							// margin: 0,
+
+                                // flex: 4,
+                        // display: (listItem.isFavorite) ? 'block' : 'none',
+                        color: globalState.textColor,
+                        backgroundColor: (listItem.isFavorite) ? 'transparent' : globalState.itemColor,
+                    }} onClick={() => {
+                        listItem.isFavorite = !listItem.isFavorite;
+                        console.log("Updating shortcut item with toggled isFavorite: ", listItem);
+                        ipcRenderer.send('update-shortcut-item', listItem);
+                    }}>
+                        {
+                            (listItem.isFavorite) ? (
+                                <span  className="fa fa-star" style={{
+        							color: "gold",
+        						}}></span>
+                            ) : (
+                                <span  className="fa fa-star-o" style={{
+        							color: "gold",
+        						}}></span>
+                            )
+                        }
+                    </button>
+
+                    <button id={(listItem.isFavorite) ? 'enabled-favorite-button' : ''} className="btn btn-default" style={{
+    		                    // color: this.state.textColor,
+    		                    // backgroundColor: 'transparent',
+    							// flex: 2,
+    							// margin: 0,
+
+                                // flex: 4,
+                    }} onClick={() => {
+                        listItem.isHidden = !listItem.isHidden;
+                        console.log("Updating shortcut item with toggled isHidden: ", listItem);
+                        ipcRenderer.send('update-shortcut-item', listItem);
+                    }}>
+                        <span className="fa fa-eye" style={{
+        					color: (listItem.isHidden) ? "grey" : "red",
+        				}}></span>
+                    </button>
+                </div>
             </div>
         </div>
     );
@@ -345,7 +332,7 @@ const SortableItem = SortableElement((componentArguments) => {
         }}>
             <div style={{
                 display: 'flex',
-                flexDirection: 'column',
+                flexDirection: 'row',
                 flex: 2,
             }}>
                 {topSection}
