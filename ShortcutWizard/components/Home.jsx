@@ -989,6 +989,7 @@ export default class Home extends Component {
                 textAlign: 'center',
             }} onMouseEnter={(e) => {
                 hidingSlowly = true;
+    			window.document.getElementById("title").style.display = "none";
     			window.document.getElementById("settings-button-group").style.display = "block";
     			window.document.getElementById("search-field").style.display = "";
 
@@ -999,11 +1000,13 @@ export default class Home extends Component {
                     hidingSlowly = false;
                     setTimeout(() => {
                         if (!hidingSlowly) {
+                            window.document.getElementById("title").style.display = "block";
                 			window.document.getElementById("settings-button-group").style.display = "none";
                 			window.document.getElementById("search-field").style.display = "none";
                         }
                     }, 400);
                 } else {
+                    window.document.getElementById("title").style.display = "block";
         			window.document.getElementById("settings-button-group").style.display = "none";
         			window.document.getElementById("search-field").style.display = "none";
                 }
