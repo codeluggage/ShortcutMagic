@@ -29,18 +29,6 @@ export default class SettingsView extends Component {
     componentWillMount() {
 		settings.create(this);
 
-		ipcRenderer.on('set-background-color', (event, color) => {
-			this.handleBackgroundColorChange(color);
-		});
-		ipcRenderer.on('set-item-color', (event, color) => {
-			this.handleItemColorChange(color);
-		});
-		ipcRenderer.on('set-text-color', (event, color) => {
-			this.handleTextColorChange(color);
-		});
-		ipcRenderer.on('set-item-background-color', (event, color) => {
-			this.handleItemBackgroundColorChange(color);
-		});
 		ipcRenderer.on('save', (event) => {
 			this.saveCurrentSettings();
 		});
@@ -60,10 +48,6 @@ export default class SettingsView extends Component {
 	    //     this.setState(newSettings);
     	// };
 
-        this.handleBackgroundColorChange = this.handleBackgroundColorChange.bind(this);
-        this.handleItemColorChange = this.handleItemColorChange.bind(this);
-        this.handleTextColorChange = this.handleTextColorChange.bind(this);
-        this.handleItemBackgroundColorChange = this.handleItemBackgroundColorChange.bind(this);
 		this.saveCurrentSettings = this.saveCurrentSettings.bind(this);
 		this.cancelCurrentSettings = this.cancelCurrentSettings.bind(this);
     }
@@ -96,77 +80,6 @@ export default class SettingsView extends Component {
 	        }
 		});
 	}
-
-    handleBackgroundColorChange(color) {
-    	console.log('hit handleChangeComplete with color ', color);
-    	var colorString = makeColorString(color);
-		var holdSettings = this.state.appSettings;
-		holdSettings.backgroundColor = colorString;
-    	this.setState({
-			appSettings: holdSettings
-		});
-
-    	// window.document.documentElement.style.backgroundColor = colorString;
-
-        var windows = holdRemote.BrowserWindow.getAllWindows();
-        for (var i = 0; i < windows.length; i++) {
-            let holdWindow = windows[i];
-            if (holdWindow && holdWindow.getTitle() == "mainWindow") {
-				holdWindow.webContents.send('set-background-color', colorString);
-            }
-        }
-    }
-
-	handleItemBackgroundColorChange(color) {
-    	var colorString = makeColorString(color);
-		var holdSettings = this.state.appSettings;
-		holdSettings.itemBackgroundColor = colorString;
-    	this.setState({
-			appSettings: holdSettings
-		});
-
-        var windows = holdRemote.BrowserWindow.getAllWindows();
-        for (var i = 0; i < windows.length; i++) {
-            let holdWindow = windows[i];
-            if (holdWindow && holdWindow.getTitle() == "mainWindow") {
-				holdWindow.webContents.send('set-item-background-color', colorString);
-            }
-        }
-	}
-
-    handleTextColorChange(color) {
-    	var colorString = makeColorString(color);
-		var holdSettings = this.state.appSettings;
-		holdSettings.textColor = colorString;
-    	this.setState({
-			appSettings: holdSettings
-		});
-
-        var windows = holdRemote.BrowserWindow.getAllWindows();
-        for (var i = 0; i < windows.length; i++) {
-            let holdWindow = windows[i];
-            if (holdWindow && holdWindow.getTitle() == "mainWindow") {
-				holdWindow.webContents.send('set-text-color', colorString);
-            }
-        }
-    }
-
-    handleItemColorChange(color) {
-    	var colorString = makeColorString(color);
-		var holdSettings = this.state.appSettings;
-		holdSettings.itemColor = colorString;
-    	this.setState({
-			appSettings: holdSettings
-		});
-
-        var windows = holdRemote.BrowserWindow.getAllWindows();
-        for (var i = 0; i < windows.length; i++) {
-            let holdWindow = windows[i];
-            if (holdWindow && holdWindow.getTitle() == "mainWindow") {
-				holdWindow.webContents.send('set-item-color', colorString);
-            }
-        }
-    }
 
     render() {
     	if (this.state && this.state.appSettings && this.state.globalSettings) {
@@ -285,58 +198,11 @@ export default class SettingsView extends Component {
                             ipcRenderer.send('main-parse-shortcuts');
                         }}>Reload</button>
 
-            			<div style={{
-            				display: 'flex',
-            				flexDirection: 'row',
-            				// margin: 0,
-            				// border: 0,
-            				// padding: 0,
-                            // backgroundColor: this.state.appSettings.backgroundColor,
-                            // color: this.state.appSettings.textColor,
-                            textAlign: 'center',
-            			}}>
-                			<div style={{
-                                flex: 1,
-                			}}>
-                        		<h3>Background color</h3>
-                    			<SketchPicker
-                    				color={this.state.appSettings.backgroundColor}
-                	    			onChangeComplete={this.handleBackgroundColorChange}
-                					presetColors={beautifulColors}
-                    			/>
-                            </div>
-                            <div style={{
-                                flex: 1,
-                			}}>
-                        		<h3>Item color</h3>
-                				<SketchPicker
-                					color={this.state.appSettings.itemColor}
-                					onChangeComplete={this.handleItemColorChange}
-                					presetColors={beautifulColors}
-                				/>
-                            </div>
-                			<div style={{
-                                flex: 1,
-                			}}>
-                        		<h3>Item background color</h3>
-                				<SketchPicker
-                					color={this.state.appSettings.itemBackgroundColor}
-                					onChangeComplete={this.handleItemBackgroundColorChange}
-                					presetColors={beautifulColors}
-                				/>
-                            </div>
-                			<div style={{
-                                flex: 1,
-                			}}>
-                        		<h3>Text color</h3>
-                				<SketchPicker
-                					color={this.state.appSettings.textColor}
-                					onChangeComplete={this.handleTextColorChange}
-                					presetColors={beautifulColors}
-                				/>
-                            </div>
-            			</div>
-    	    		</div>
+                        Open styling for {this.state.appSettings.name}: <button className="btn btn-primary" onClick={() => {
+                            ipcRenderer.send('show-mini-settings');
+                        }}>Reload</button>
+                    </div>
+
 
                     <footer className="toolbar toolbar-footer pull-bottom" style={{
                         bottom: 0,

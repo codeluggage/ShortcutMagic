@@ -34,7 +34,7 @@ db.ensureIndex({
 	unique: true // Setting unique value constraint on name
 }, function (err) {
 	if (err) {
-		console.log('ERROR: db.ensureIndex failed to set unique constraint', err);
+		console.log('ERROR: db.ensureIndex failed to set unique constraint for shortcut db', err);
 	}
 });
 
@@ -714,6 +714,10 @@ ipcMain.on('show-window', () => {
 
 ipcMain.on('blur-window', () => {
     mainWindow.blur();
+});
+
+ipcMain.on('show-mini-settings', (e) => {
+    miniSettingsWindow.show();
 });
 
 // Events

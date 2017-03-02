@@ -4,20 +4,33 @@ import { ipcRenderer, remote } from 'electron';
 import ReactDOM from 'react-dom';
 import { SketchPicker } from 'react-color';
 
-var beautifulColors = ["#ffffff", "#000000", "#2c7bb6",  "#00a6ca", "#00ccbc",
+const path = require('path');
+let db = new require('nedb')({
+	filename: `${__dirname}/db/styling.db`,
+	autoload: true,
+});
+
+// The field for "name" is the one we want to keep unique, so anything we write to the db for another running program is
+// updated, and not duplicated.
+// TODO: this is not always been unique and needs to be improved
+db.ensureIndex({
+	fieldName: 'name',
+	unique: true // Setting unique value constraint on name
+}, function (err) {
+	if (err) {
+		console.log('ERROR: db.ensureIndex failed to set unique constraint for style db', err);
+	}
+});
+
+let beautifulColors = ["#ffffff", "#000000", "#2c7bb6",  "#00a6ca", "#00ccbc",
 	"#90eb9d", "#ffff8c", "#f9d057", "#f29e2e", "#e76818", "#d7191c"];
 
-var holdRemote = remote;
+let holdRemote = remote;
+
+let inMemoryShortcuts = [];
 
 export default class MiniSettingsView extends Component {
     componentWillMount() {
-        ipcRenderer.on('send-app-settings', (event, newSettings) => {
-            console.log("HIT send-app-settings!! with new settings: ", newSettings);
-            this.setState({
-                appSettings: newSettings
-            });
-        });
-
         this.handleBackgroundColorChange = this.handleBackgroundColorChange.bind(this);
         this.handleItemColorChange = this.handleItemColorChange.bind(this);
         this.handleTextColorChange = this.handleTextColorChange.bind(this);
@@ -25,72 +38,128 @@ export default class MiniSettingsView extends Component {
         this.reloadSettings = this.reloadSettings.bind(this);
     }
 
-	handleItemBackgroundColorChange(color) {
-        var windows = holdRemote.BrowserWindow.getAllWindows();
-        for (var i = 0; i < windows.length; i++) {
-            let holdWindow = windows[i];
-            if (holdWindow && holdWindow.getTitle() == "settingsWindow") {
-				holdWindow.webContents.send('set-item-background-color', color);
-				holdWindow.webContents.send('save');
-            }
-        }
-	}
-
     handleBackgroundColorChange(color) {
+    	console.log('hit handleChangeComplete with color ', color);
+    	var colorString = makeColorString(color);
+		var holdSettings = this.state.appSettings;
+		holdSettings.backgroundColor = colorString;
+    	this.setState({
+			appSettings: holdSettings
+		});
+
+    	// window.document.documentElement.style.backgroundColor = colorString;
+
         var windows = holdRemote.BrowserWindow.getAllWindows();
         for (var i = 0; i < windows.length; i++) {
             let holdWindow = windows[i];
-            if (holdWindow && holdWindow.getTitle() == "settingsWindow") {
-				holdWindow.webContents.send('set-background-color', color);
-				holdWindow.webContents.send('save');
+            if (holdWindow && holdWindow.getTitle() == "mainWindow") {
+				holdWindow.webContents.send('set-background-color', colorString);
             }
         }
     }
 
-    handleTextColorChange(color) {
+	handleItemBackgroundColorChange(color) {
+    	var colorString = makeColorString(color);
+		var holdSettings = this.state.appSettings;
+		holdSettings.itemBackgroundColor = colorString;
+    	this.setState({
+			appSettings: holdSettings
+		});
+
         var windows = holdRemote.BrowserWindow.getAllWindows();
         for (var i = 0; i < windows.length; i++) {
             let holdWindow = windows[i];
-            if (holdWindow && holdWindow.getTitle() == "settingsWindow") {
-				holdWindow.webContents.send('set-text-color', color);
-				holdWindow.webContents.send('save');
+            if (holdWindow && holdWindow.getTitle() == "mainWindow") {
+				holdWindow.webContents.send('set-item-background-color', colorString);
+            }
+        }
+	}
+
+    handleTextColorChange(color) {
+    	var colorString = makeColorString(color);
+		var holdSettings = this.state.appSettings;
+		holdSettings.textColor = colorString;
+    	this.setState({
+			appSettings: holdSettings
+		});
+
+        var windows = holdRemote.BrowserWindow.getAllWindows();
+        for (var i = 0; i < windows.length; i++) {
+            let holdWindow = windows[i];
+            if (holdWindow && holdWindow.getTitle() == "mainWindow") {
+				holdWindow.webContents.send('set-text-color', colorString);
             }
         }
     }
 
     handleItemColorChange(color) {
+    	var colorString = makeColorString(color);
+		var holdSettings = this.state.appSettings;
+		holdSettings.itemColor = colorString;
+    	this.setState({
+			appSettings: holdSettings
+		});
+
+        var windows = holdRemote.BrowserWindow.getAllWindows();
+        for (var i = 0; i < windows.length; i++) {
+            let holdWindow = windows[i];
+            if (holdWindow && holdWindow.getTitle() == "mainWindow") {
+				holdWindow.webContents.send('set-item-color', colorString);
+            }
+        }
+    }
+
+
+	handleItemBackgroundColorChange(color) {
+        // TODO: Save to db
+
+        var windows = holdRemote.BrowserWindow.getAllWindows();
+        for (var i = 0; i < windows.length; i++) {
+            let holdWindow = windows[i];
+            if (holdWindow && holdWindow.getTitle() == "settingsWindow") {
+				holdWindow.webContents.send('set-item-background-color', color);
+            }
+        }
+	}
+
+    handleBackgroundColorChange(color) {
+        // TODO: Save to db
+
+        var windows = holdRemote.BrowserWindow.getAllWindows();
+        for (var i = 0; i < windows.length; i++) {
+            let holdWindow = windows[i];
+            if (holdWindow && holdWindow.getTitle() == "settingsWindow") {
+				holdWindow.webContents.send('set-background-color', color);
+            }
+        }
+    }
+
+    handleTextColorChange(color) {
+        // TODO: Save to db
+
+        var windows = holdRemote.BrowserWindow.getAllWindows();
+        for (var i = 0; i < windows.length; i++) {
+            let holdWindow = windows[i];
+            if (holdWindow && holdWindow.getTitle() == "settingsWindow") {
+				holdWindow.webContents.send('set-text-color', color);
+            }
+        }
+    }
+
+    handleItemColorChange(color) {
+        // TODO: Save to db
+
         var windows = holdRemote.BrowserWindow.getAllWindows();
         for (var i = 0; i < windows.length; i++) {
             let holdWindow = windows[i];
             if (holdWindow && holdWindow.getTitle() == "settingsWindow") {
 				holdWindow.webContents.send('set-item-color', color);
-				holdWindow.webContents.send('save');
             }
-        }
-    }
-
-    // TODO: Handle a "show" event here to read the settings again, instead of this stupid recurring system
-    reloadSettings(recur) {
-        var windows = holdRemote.BrowserWindow.getAllWindows();
-        for (var i = 0; i < windows.length; i++) {
-            let holdWindow = windows[i];
-            if (holdWindow && holdWindow.getTitle() == "settingsWindow") {
-                console.log("sending from miniSettingsWindow to settingsWindow");
-                holdWindow.webContents.send('get-app-settings');
-            }
-        }
-
-        if (recur && (!this.state || !this.state.appSettings)) {
-            setTimeout(() => {
-                this.reloadSettings(true);
-            }, 200);
         }
     }
 
     render() {
-        this.reloadSettings();
         if (!this.state || !this.state.appSettings) {
-            this.reloadSettings(true);
             return (
                 <div style={{
                     backgroundColor: 'white'
