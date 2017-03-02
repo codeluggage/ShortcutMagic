@@ -1,14 +1,14 @@
 {
-  "name": "ShortcutWizard",
-  "productName": "ShortcutWizard",
+  "name": "ShortcutMagic",
+  "productName": "ShortcutMagic",
   "description": "A helper program for for humans, on computers",
   "version": "0.0.1",
   "main": "bootstrapper.js",
   "license": "UNLICENSED",
   "private": true,
-  "repository": "bitbucket.org:codeluggage/shortcutwizard.git",
+  "repository": "bitbucket.org:codeluggage/shortcutmagic.git",
   "scripts": {
-    "start": "NODE_ENV=development ./node_modules/.bin/electron shortcutwizard.js"
+    "start": "NODE_ENV=development ./node_modules/.bin/electron shortcutmagic.js"
   },
   "dependencies": {
     "babel-preset-es2015": "^6.3.13",

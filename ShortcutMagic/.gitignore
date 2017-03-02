@@ -23,7 +23,7 @@ coverage
 build/Release
 
 # Electron build folder
-ShortcutWizard-darwin-x64
+ShortcutMagic-darwin-x64
 
 # Dependency directory
 # https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git

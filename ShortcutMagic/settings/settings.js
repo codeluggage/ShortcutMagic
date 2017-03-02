@@ -89,7 +89,7 @@ settingsDb.find({
 
 // make sure all of these are set ok for main window:
 // 'mainWindowSettings': {
-// 	title: "ShortcutWizard",
+// 	title: "ShortcutMagic",
 // 	alwaysOnTop: useSettings.alwaysOnTop,
 // 	acceptFirstClick: useSettings.acceptFirstClick,
 // 	frame: useSettings.frame,

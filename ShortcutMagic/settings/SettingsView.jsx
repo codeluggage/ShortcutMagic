@@ -392,7 +392,7 @@ export default class SettingsView extends Component {
 	    } else {
 	    	return (
 				<div>
-					<h1>ShortcutWizard can't show the settings for some reason...</h1>
+					<h1>ShortcutMagic can't show the settings for some reason...</h1>
 					<button onClick={() => {
 				        var windows = holdRemote.BrowserWindow.getAllWindows();
 				        for (var i = 0; i < windows.length; i++) {

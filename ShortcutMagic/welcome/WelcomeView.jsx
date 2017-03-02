@@ -72,9 +72,9 @@ export default class WelcomeView extends Component {
             </div>
 
                   <h2>Welcome!</h2>
-                  <h4>ShortcutWizard is a simple app that lives along side your other apps.</h4>
-                  <h4>Everything about ShortcutWizard can be changed to suit each of your apps - super easy.</h4>
-                  <h5>ShortcutWizard does require assistive access in order to run correctly. <a onClick={() => {
+                  <h4>ShortcutMagic is a simple app that lives along side your other apps.</h4>
+                  <h4>Everything about ShortcutMagic can be changed to suit each of your apps - super easy.</h4>
+                  <h5>ShortcutMagic does require assistive access in order to run correctly. <a onClick={() => {
                       console.log("todo: request access with some simple script, call to ipcMain");
                   }}>Click here to allow that access.</a></h5>
                   <button onClick={() => {

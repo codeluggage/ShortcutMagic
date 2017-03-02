@@ -61,7 +61,7 @@ var defaultBubbleBounds = {x: 800, y: 10, width: 250, height: 200};
 // These global settings are stored together with the shortcuts, and this is the "name":
 var GLOBAL_SETTINGS = "all programs";
 
-app.setName("ShortcutWizard");
+app.setName("ShortcutMagic");
 // The dock icon is hidden because we are trying to be an overlay application that is just "always there"
 // TODO: Set this in the settings, in case someone wants a full running program
 app.dock.hide();
@@ -269,7 +269,7 @@ function toggleWindow() {
 	}
 }
 
-function quitShortcutWizard() {
+function quitShortcutMagic() {
     trayObject.destroy();
     trayObject = null;
     settingsWindow = null; // TODO: double check that the settings window isn't destroyed elsewhere
@@ -414,7 +414,7 @@ function createMainWindow() {
             inMemoryShortcuts[GLOBAL_SETTINGS]["alwaysOnTop"] = (res["alwaysOnTop"]) ? res["alwaysOnTop"] : true;
 
         	mainWindow = new BrowserWindow({
-        		name: "ShortcutWizard",
+        		name: "ShortcutMagic",
         		acceptFirstClick: true,
         		alwaysOnTop: inMemoryShortcuts[GLOBAL_SETTINGS]["alwaysOnTop"],
         		frame: false,
@@ -482,7 +482,7 @@ function createTray() {
 	trayObject = new Tray(iconPath);
 
 	console.log('created trayObject: ', trayObject);
-	trayObject.setToolTip('ShortcutWizard!');
+	trayObject.setToolTip('ShortcutMagic!');
 	trayObject.on('right-click', (event) => {
 		if (mainWindow) {
 			// mainWindow.show();
@@ -733,7 +733,7 @@ app.on('ready', () => {
 });
 
 app.on('before-quit', (event) => {
-	quitShortcutWizard();
+	quitShortcutMagic();
 });
 
 ipcMain.on('get-app-name-sync', function(event) {
@@ -742,7 +742,7 @@ ipcMain.on('get-app-name-sync', function(event) {
 
 ipcMain.on('main-app-switched-notification', function(event, appName) {
 	// TODO: Make this list editable somewhere to avoid people having problems?
-	if (appName == "Electron" || appName == "ShortcutWizard" ||
+	if (appName == "Electron" || appName == "ShortcutMagic" ||
 		appName == "ScreenSaverEngine" || appName == "loginwindow" ||
 		appName == "Dock" ||
         appName == "Google Software Update..." ||

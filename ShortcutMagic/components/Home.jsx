@@ -474,7 +474,7 @@ export default class Home extends Component {
             console.log('entered update-shortcuts in Home');
             console.log(newShortcuts);
             let name = newShortcuts.name;
-            if (name == "Electron" || name == "ShortcutWizard" ||
+            if (name == "Electron" || name == "ShortcutMagic" ||
                 name == "ScreenSaverEngine" || name == "loginwindow") {
                 return; // TODO: Could this mess with other electron starter projects?
             }
@@ -557,7 +557,7 @@ export default class Home extends Component {
 
         console.log('home constructor called');
         // this.setState({
-        //     name: "ShortcutWizard",
+        //     name: "ShortcutMagic",
         //     initialItems: [{
         //         name: "",
         //         menuName: "" ,
@@ -736,14 +736,14 @@ export default class Home extends Component {
         if (!this.state) {
 
             window.document.documentElement.style.backgroundColor = hexToRgba(beautifulColors[5], 0.5);
-            let randomWelcomeText = "Welcome to ShortcutWizard!";
+            let randomWelcomeText = "Welcome to ShortcutMagic!";
 
             switch (Math.floor(Math.random() * 8)) {
                 case 0:
-                    randomWelcomeText = "Did you know ShortcutWizard was created with the dream to help all humans use computers?";
+                    randomWelcomeText = "Did you know ShortcutMagic was created with the dream to help all humans use computers?";
                     break;
                 case 1:
-                    randomWelcomeText = `Did you know that ShortcutWizard pretends to actually press the keyboard?
+                    randomWelcomeText = `Did you know that ShortcutMagic pretends to actually press the keyboard?
                     It is done to make the computer understand us the best.`;
                     break;
                 case 2:
@@ -758,27 +758,27 @@ export default class Home extends Component {
                     "Copy", "Paste" and "New file" are the most common ones.`;
                     break;
                 case 5:
-                    randomWelcomeText = `Did you know that ShortcutWizard will remember where you want it to be?
-                    Each program gets its own ShortcutWizard position, color, transparency and size.`;
+                    randomWelcomeText = `Did you know that ShortcutMagic will remember where you want it to be?
+                    Each program gets its own ShortcutMagic position, color, transparency and size.`;
                     break;
                 // case 6:
-                //     randomWelcomeText = `Did you know that ShortcutWizard will remember what color and transparency you set for each program?
+                //     randomWelcomeText = `Did you know that ShortcutMagic will remember what color and transparency you set for each program?
                 //     This way you can make it look exactly the way you want to.`;
                 //     break;
                 // case 7:
-                //     randomWelcomeText = `Did you know that you are helping people in need by becoming a ShortcutWizard member?
-                //     Because you contribute with paying for a membership, a person in need will get ShortcutWizard for free.`;
+                //     randomWelcomeText = `Did you know that you are helping people in need by becoming a ShortcutMagic member?
+                //     Because you contribute with paying for a membership, a person in need will get ShortcutMagic for free.`;
                 //     break;
                 case 6:
-                    randomWelcomeText = `Did you know that ShortcutWizard has its own shortcuts? You can make the window small,
-                    hide it completely, or show it like normal. ShortcutWizard remembers how you conifgured each mode, too.`;
+                    randomWelcomeText = `Did you know that ShortcutMagic has its own shortcuts? You can make the window small,
+                    hide it completely, or show it like normal. ShortcutMagic remembers how you conifgured each mode, too.`;
                     break;
                 case 7:
-                    randomWelcomeText = `Did you know that the ShortcutWizard program is actually a local website?
+                    randomWelcomeText = `Did you know that the ShortcutMagic program is actually a local website?
                     That way it will work on as many different computers as possible, so it can help as many as possible.`;
                     break;
                 case 8:
-                    randomWelcomeText = `Did you know that ShortcutWizard will work for website shortcuts too?
+                    randomWelcomeText = `Did you know that ShortcutMagic will work for website shortcuts too?
                     This is more difficult than program shortcuts, because websites don't follow a standard for
                     making shortcuts, so it has to be added individually for each one.`;
                     break;
@@ -790,7 +790,7 @@ export default class Home extends Component {
                     padding: '40px',
                     textAlign: 'center',
                 }}>
-                    <h1>ShortcutWizard</h1>
+                    <h1>ShortcutMagic</h1>
                     <p>{randomWelcomeText}</p>
                 </div>
             );
