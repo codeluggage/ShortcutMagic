@@ -2,9 +2,9 @@
   "name": "ShortcutMagic",
   "productName": "ShortcutMagic",
   "description": "A helper program for for humans, on computers",
-  "version": "0.0.1",
-  "main": "bootstrapper.js",
-  "license": "UNLICENSED",
+  "version": "1.0.0",
+  "main": "shortcutmagic.js",
+  "license": "MIT",
   "private": true,
   "repository": "bitbucket.org:codeluggage/shortcutmagic.git",
   "scripts": {
