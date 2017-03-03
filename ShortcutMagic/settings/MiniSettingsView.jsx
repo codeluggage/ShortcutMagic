@@ -20,7 +20,7 @@ let defaultSettings = {
 	itemBackgroundColor: beautifulColors[4],
 };
 let styleDb = new Datastore({
-	filename: `${__dirname}/db/styles.db`,
+	filename: `${__dirname}/../db/styles.db`,
 	autoload: true,
 });
 
