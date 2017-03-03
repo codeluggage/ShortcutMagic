@@ -1,12 +1,11 @@
 {
   "name": "ShortcutMagic",
   "productName": "ShortcutMagic",
-  "description": "A helper program for for humans, on computers",
+  "description": "ShortcutMagic is a simple tool to see every action in any program, and master them.",
   "version": "1.0.0",
   "main": "shortcutmagic.js",
   "license": "MIT",
-  "private": true,
-  "repository": "bitbucket.org:codeluggage/shortcutmagic.git",
+  "repository": "git@github.com:codeluggage/ShortcutMagic.git",
   "scripts": {
     "start": "NODE_ENV=development ./node_modules/.bin/electron shortcutmagic.js"
   },
