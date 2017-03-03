@@ -60,14 +60,9 @@ export default class SettingsView extends Component {
 	        for (var i = 0; i < windows.length; i++) {
 	            let holdWindow = windows[i];
 	            if (holdWindow) {
-					if (holdWindow.getTitle() == "mainWindow") {
-						// TODO: Is this needed when it's already updated?
-						holdWindow.webContents.send('set-background-color', originalSettings.backgroundColor);
-						holdWindow.webContents.send('set-item-color', originalSettings.itemColor);
-						holdWindow.webContents.send('set-item-background-color', originalSettings.itemBackgroundColor);
-						holdWindow.webContents.send('set-text-color', originalSettings.textColor);
-					} else if (holdWindow.getTitle() == "settingsWindow") {
+					if (holdWindow.getTitle() == "settingsWindow") {
 						holdWindow.hide();
+                        break;
 					}
 	            }
 	        }
@@ -134,7 +129,7 @@ export default class SettingsView extends Component {
                 </button>
             );
 
-            let AlwaysOnTopElement = (this.state.globalSettings.boundsPerApp) ? (
+            let AlwaysOnTopElement = (this.state.globalSettings.alwaysOnTop) ? (
                 <div className="checkbox">
                     <label>
                         <input id="alwaysOnTopCheckbox" type="checkbox" defaultChecked /> Always float window on top of other windows)
