@@ -16,5 +16,8 @@ Several programming languages are used, but the majority of the code is in Javas
 
 ## Can I contribute to this repo? Can I use the code? 
 
-ShortcutMagic is MIT licensed, and freely available. Head over to the issues page to see what's going on. There are no contribution guidelines yet. 
+Yes you can! Head over to the [issues](https://github.com/codeluggage/ShortcutMagic/issues) page to see what's going on. There are no contribution guidelines yet. 
 
+## License
+
+[MIT](https://github.com/codeluggage/ShortcutMagic/blob/master/LICENSE)
