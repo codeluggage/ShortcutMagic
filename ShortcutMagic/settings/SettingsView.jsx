@@ -8,6 +8,7 @@ import { Settings } from './settings';
 // console.log("first settings: ", Settings);
 var GLOBAL_SETTINGS = "all programs";
 var settings = new Settings();
+var holdRemote = remote;
 // const Settings = require('./settings/settings');
 // console.log('imported settings: ', settings, JSON.stringify(settings) );
 // console.log('>>> ', Settings());
@@ -15,14 +16,6 @@ var settings = new Settings();
 // 	console.log(val);
 // }
 
-var beautifulColors = ["#ffffff", "#000000", "#2c7bb6",  "#00a6ca", "#00ccbc",
-	"#90eb9d", "#ffff8c", "#f9d057", "#f29e2e", "#e76818", "#d7191c"];
-
-function makeColorString(color) {
-	return `rgba(${ color.rgb.r }, ${ color.rgb.g }, ${ color.rgb.b }, ${ color.rgb.a })`;
-}
-
-var holdRemote = remote;
 
 
 export default class SettingsView extends Component {

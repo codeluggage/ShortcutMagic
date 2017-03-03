@@ -840,7 +840,7 @@ export default class Home extends Component {
 
 
 		var SearchField = (
-            <input id="search-field" class="form-control" type="text" placeholder="Search for something"
+            <input id="search-field" className="form-control" type="text" placeholder="Search for something"
             style={{
                 display: 'none',
                 borderRadius: ".25rem",

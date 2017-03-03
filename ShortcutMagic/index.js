@@ -781,6 +781,7 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 	currentAppName = appName;
 
 	settingsWindow.webContents.send('app-changed', currentAppName);
+	miniSettingsWindow.webContents.send('app-changed', currentAppName);
 });
 
 ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {

@@ -16,10 +16,6 @@ var cachedSettings = {};
 var defaultSettings = {};
 // TODO: Split startup settings from saved settings?
 
-// From http://www.visualcinnamon.com/2016/05/smooth-color-legend-d3-svg-gradient.html
-var beautifulColors = ["#ffffff", "#000000", "#2c7bb6",  "#00a6ca", "#00ccbc",
-	"#90eb9d", "#ffff8c", "#f9d057", "#f29e2e", "#e76818", "#d7191c"];
-
 var defaultFullBounds = {x: 1100, y: 100, width: 350, height: 800};
 var defaultBubbleBounds = {x: 800, y: 10, width: 250, height: 200};
 
@@ -35,10 +31,6 @@ defaultSettings = {
 	// bounds: defaultFullBounds,
 	lastFullBounds: defaultFullBounds,
 	lastBubbleBounds: defaultBubbleBounds,
-	backgroundColor: beautifulColors[5],
-	itemColor:beautifulColors[2],
-	textColor:beautifulColors[1],
-	itemBackgroundColor:beautifulColors[4],
 	title: "mainWindow",
 };
 
@@ -110,7 +102,6 @@ export class Settings {
 		});
 
 		this.registerListeners();
-		this.beautifulColors = beautifulColors;
 	}
 
 	// Return settings for appName, as well as global settings
@@ -257,18 +248,6 @@ export class Settings {
 		// changes done to the app settings (not for global)
 		ipcRenderer.on('app-changed', (event, newName) => {
 			var changeSettings = (newSettings, globalSettings) => {
-				var windows = holdRemote.BrowserWindow.getAllWindows();
-				for (var i = 0; i < windows.length; i++) {
-					let holdWindow = windows[i];
-					if (holdWindow && holdWindow.getTitle() == "mainWindow") {
-						// TODO: Perform more updates based on the settings...?
-						holdWindow.webContents.send('set-background-color', newSettings["backgroundColor"]);
-						holdWindow.webContents.send('set-text-color', newSettings["textColor"]);
-						holdWindow.webContents.send('set-item-color', newSettings["itemColor"]);
-						holdWindow.webContents.send('set-item-background-color', newSettings["itemBackgroundColor"]);
-					}
-				}
-
 				this.settingsWindow.setState({
 					globalSettings: globalSettings,
 					appSettings: newSettings
