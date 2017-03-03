@@ -34,7 +34,7 @@ db.ensureIndex({
 	unique: true // Setting unique value constraint on name
 }, function (err) {
 	if (err) {
-		console.log('ERROR: db.ensureIndex failed to set unique constraint', err);
+		console.log('ERROR: db.ensureIndex failed to set unique constraint for shortcut db', err);
 	}
 });
 
@@ -716,6 +716,10 @@ ipcMain.on('blur-window', () => {
     mainWindow.blur();
 });
 
+ipcMain.on('show-mini-settings', (e) => {
+    miniSettingsWindow.show();
+});
+
 // Events
 app.on('window-all-closed', function() {
 	app.quit();
@@ -777,6 +781,7 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 	currentAppName = appName;
 
 	settingsWindow.webContents.send('app-changed', currentAppName);
+	miniSettingsWindow.webContents.send('app-changed', currentAppName);
 });
 
 ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
