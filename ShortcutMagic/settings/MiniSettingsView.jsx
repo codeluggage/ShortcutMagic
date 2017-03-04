@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { ipcRenderer, remote } from 'electron';
 import ReactDOM from 'react-dom';
 import { SketchPicker } from 'react-color';
-var Datastore = require('nedb');
+let Datastore = require('nedb');
 const path = require('path');
 
 let holdRemote = remote;
@@ -208,9 +208,10 @@ export default class MiniSettingsView extends Component {
         if (!this.state) {
             return (
                 <div style={{
-                    backgroundColor: 'white'
+                    backgroundColor: 'white',
+                    color: 'black',
                 }}>
-                    Could not find app settings
+                Something is not right here... Sorry! If you click in this window, you can try reloading (command + R) or quit (command + Q) and start ShortcutMagic again.
                 </div>
             );
         }

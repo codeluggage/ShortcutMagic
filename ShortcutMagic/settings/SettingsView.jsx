@@ -245,8 +245,11 @@ export default class SettingsView extends Component {
 			// );
 	    } else {
 	    	return (
-				<div>
-					<h1>ShortcutMagic can't show the settings for some reason...</h1>
+                <div style={{
+                    backgroundColor: 'white',
+                    color: 'black',
+                }}>
+                    Something is not right here... Sorry! If you click in this window, you can try reloading (command + R) or quit (command + Q) and start ShortcutMagic again.
 					<button onClick={() => {
 				        var windows = holdRemote.BrowserWindow.getAllWindows();
 				        for (var i = 0; i < windows.length; i++) {

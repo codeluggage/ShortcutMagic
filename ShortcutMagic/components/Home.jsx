@@ -3,9 +3,9 @@ import React, { Component } from 'react';
 import {SortableContainer, SortableElement, SortableHandle, arrayMove} from 'react-sortable-hoc';
 import Electron, { ipcRenderer, remote } from 'electron';
 
-var globalState;
+let globalState;
 // From http://www.visualcinnamon.com/2016/05/smooth-color-legend-d3-svg-gradient.html
-var beautifulColors = ["#ffffff", "#000000", "#2c7bb6",  "#00a6ca", "#00ccbc",
+let beautifulColors = ["#ffffff", "#000000", "#2c7bb6",  "#00a6ca", "#00ccbc",
 	"#90eb9d", "#ffff8c", "#f9d057", "#f29e2e", "#e76818", "#d7191c"];
 
 function hexToRgba(hex, alpha) {
@@ -213,7 +213,7 @@ const SortableItem = SortableElement((componentArguments) => {
     // );
 
     // 3 small ones:
-    var mouseOverButtonsSection = (
+    let mouseOverButtonsSection = (
         <div style={{
             display: 'flex',
             flexDirection: 'row',
@@ -349,7 +349,7 @@ const SortableItem = SortableElement((componentArguments) => {
 const SortableList = SortableContainer((componentArguments) => {
     // console.log("entered SortableContainer with props: ", this.props);
 
-    var items = componentArguments.items;
+    let items = componentArguments.items;
 
     return (!items) ? (
         <p>No items yet</p>
@@ -482,7 +482,7 @@ export default class Home extends Component {
             let loadingList = null;
             if (this.state && this.state.loading) {
                 loadingList = this.state.loading;
-                var loadingIndex = loadingList.indexOf(name);
+                let loadingIndex = loadingList.indexOf(name);
                 if (loadingIndex < 0) return; // Stop any new rendering if we are not about to show shortcuts for an app that is loading
 
                 loadingList.splice(loadingIndex, 1);
@@ -495,10 +495,10 @@ export default class Home extends Component {
             const shortcutsArray = Object.keys(shortcuts).map(key => shortcuts[key]);
             console.log('ipcRenderer callback, raw, name, new array: ', newShortcuts, name, shortcutsArray);
 
-			var listTitleFontWeight = (newShortcuts.listTitleFontWeight) ? newShortcuts.listTitleFontWeight : 800;
-			var listTitleFontSize = (newShortcuts.listTitleFontSize) ? newShortcuts.listTitleFontSize : 24;
-			var listItemFontWeight = (newShortcuts.listItemFontWeight) ? newShortcuts.listItemFontWeight : 600;
-			var listItemFontSize = (newShortcuts.listItemFontSize) ? newShortcuts.listItemFontSize : 14;
+			let listTitleFontWeight = (newShortcuts.listTitleFontWeight) ? newShortcuts.listTitleFontWeight : 800;
+			let listTitleFontSize = (newShortcuts.listTitleFontSize) ? newShortcuts.listTitleFontSize : 24;
+			let listItemFontWeight = (newShortcuts.listItemFontWeight) ? newShortcuts.listItemFontWeight : 600;
+			let listItemFontSize = (newShortcuts.listItemFontSize) ? newShortcuts.listItemFontSize : 14;
 
             this.setState({
                 name: name,
@@ -606,7 +606,7 @@ export default class Home extends Component {
 		console.log(this.state.listItemFontSize);
 		console.log(this.state.listItemFontWeight);
 
-		var newFontValues = {
+		let newFontValues = {
 			listTitleFontSize: this.state.listTitleFontSize - 2,
 			listTitleFontWeight: this.state.listTitleFontWeight - 100,
 			listItemFontSize: this.state.listItemFontSize - 2,
@@ -620,8 +620,8 @@ export default class Home extends Component {
 
     toggleSettings() {
         // TODO: refer directly to the browser window by id instead of grabbing all windows
-        var windows = holdRemote.BrowserWindow.getAllWindows();
-        for (var i = 0; i < windows.length; i++) {
+        let windows = holdRemote.BrowserWindow.getAllWindows();
+        for (let i = 0; i < windows.length; i++) {
             let settingsWindow = windows[i];
             if (settingsWindow) {
 				if (settingsWindow.getTitle() == "settingsWindow") {
@@ -643,14 +643,14 @@ export default class Home extends Component {
 
     toggleMiniSettings() {
         // TODO: refer directly to the browser window by id instead of grabbing all windows
-        var windows = holdRemote.BrowserWindow.getAllWindows();
-        var mainWindow = null;
-        for (var i = 0; i < windows.length; i++) {
+        let windows = holdRemote.BrowserWindow.getAllWindows();
+        let mainWindow = null;
+        for (let i = 0; i < windows.length; i++) {
             mainWindow = windows[i];
             if (mainWindow && mainWindow.getTitle() == "mainWindow") break;
         }
 
-        for (var i = 0; i < windows.length; i++) {
+        for (let i = 0; i < windows.length; i++) {
             let settingsWindow = windows[i];
             if (settingsWindow) {
 				if (settingsWindow.getTitle() == "miniSettingsWindow") {
@@ -694,7 +694,7 @@ export default class Home extends Component {
     }
 
     filterList(targetValue) {
-        var updatedList = this.state.initialItems;
+        let updatedList = this.state.initialItems;
 
         if (targetValue) {
             updatedList = updatedList.filter(function(item){
@@ -839,8 +839,8 @@ export default class Home extends Component {
 */
 
 
-		var SearchField = (
-            <input id="search-field" className="form-control" type="text" placeholder="Search for something"
+		let SearchField = (
+            <input id="search-field" className="form-control" type="text" placeholder="Search actions and shortcuts"
             style={{
                 display: 'none',
                 borderRadius: ".25rem",
@@ -875,7 +875,7 @@ export default class Home extends Component {
             this.previousShortcuts = shortcuts;
         }
 
-		var ShortcutList = (
+		let ShortcutList = (
             <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
                 <div style={{textAlign: 'left'}}>
                     <SortableList
