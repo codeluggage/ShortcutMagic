@@ -1,7 +1,5 @@
 'use strict';
 
-// Vibrancy changes how the window transparency looks. Blurred, foggy, dim, etc.
-const electronVibrancy = require('electron-vibrancy');
 const {
     // app lets us access global things about the whole running application, like the application name, the dock state,
     // and events that trigger for the whole application, like app.on('before-quit', ...
@@ -429,27 +427,38 @@ function createMainWindow() {
         		show: false, // Don't show until we have the information of the app that is running
         		transparent: true,
                 x: 334, y: 153, width: 826, height: 568,
-        		title: "mainWindow"
+        		title: "mainWindow",
+                webPreferences: {
+                    vibrancy: 'appearance-based',
+                },
+
+                //   if (type == "appearance-based") {
+                //     vibrancyType = NSVisualEffectMaterialAppearanceBased;
+                //   } else if (type == "light") {
+                //     vibrancyType = NSVisualEffectMaterialLight;
+                //   } else if (type == "dark") {
+                //     vibrancyType = NSVisualEffectMaterialDark;
+                //   } else if (type == "titlebar") {
+                //     vibrancyType = NSVisualEffectMaterialTitlebar;
+                //   }
+                //
+                //   if (base::mac::IsOSYosemiteOrLater()) {
+                //     if (type == "selection") {
+                //       vibrancyType = NSVisualEffectMaterialSelection;
+                //     } else if (type == "menu") {
+                //       vibrancyType = NSVisualEffectMaterialMenu;
+                //     } else if (type == "popover") {
+                //       vibrancyType = NSVisualEffectMaterialPopover;
+                //     } else if (type == "sidebar") {
+                //       vibrancyType = NSVisualEffectMaterialSidebar;
+                //     } else if (type == "medium-light") {
+                //       vibrancyType = NSVisualEffectMaterialMediumLight;
+                //     } else if (type == "ultra-dark") {
+                //       vibrancyType = NSVisualEffectMaterialUltraDark;
+                  //
+
+
         	});
-
-        	// TODO: make experimental settings:
-        	// 0 - NSVisualEffectMaterialAppearanceBased 10.10+
-        	// 1 - NSVisualEffectMaterialLight 10.10+
-        	// 2 - NSVisualEffectMaterialDark 10.10+
-        	// 3 - NSVisualEffectMaterialTitlebar 10.10+
-        	// 4 - NSVisualEffectMaterialSelection 10.11+
-        	// 5 - NSVisualEffectMaterialMenu 10.11+
-        	// 6 - NSVisualEffectMaterialPopover 10.11+
-        	// 7 - NSVisualEffectMaterialSidebar 10.11+
-        	// 8 - NSVisualEffectMaterialMediumLight 10.11+
-        	// 9 - NSVisualEffectMaterialUltraDark 10.11+
-
-        	// Whole window vibrancy with Material 0 and auto resize
-        	// mainWindow.on('ready-to-show', () => {
-        	// 	console.log('loaded window, vibrancy: ', electronVibrancy);
-        	//     // electronVibrancy.SetVibrancy(true, browserWindowInstance.getNativeWindowHandle());
-        	// 	electronVibrancy.SetVibrancy(mainWindow, 0);
-        	// });
 
         	mainWindow.loadURL(`file://${__dirname}/index.html`);
 
