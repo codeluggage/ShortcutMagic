@@ -10,10 +10,10 @@ const {
     ipcMain,
     // Tray is used for the icon in the menu bar on mac, where we show the wizard hat
     Tray,
-    // systemPreferences let us access things like if the operating system is in dark mode
-    systemPreferences
 } = require('electron');
 
+// these prefs let us determine if the menu bar is dark or light
+const osxPrefs = require('electron-osx-appearance');
 // path lets us work with the file path of the running application
 const path = require('path');
 // nedb is a simple javascript database, smilar to mongodb, where we store the shortcuts and other things about another program
@@ -495,7 +495,7 @@ function createMainWindow() {
 
 function createTray() {
 	// TODO: read if menu is dark or not, load white/black hat icon as response:
-	const iconPath = path.join(__dirname, systemPreferences.isDarkMode() ? 'wizard-white.png' : 'wizard.png');
+	const iconPath = path.join(__dirname, osxPrefs.isDarkMode() ? 'wizard-white.png' : 'wizard.png');
 	trayObject = new Tray(iconPath);
 
 	console.log('created trayObject: ', trayObject);
