@@ -5,8 +5,7 @@ import Electron, { ipcRenderer, remote } from 'electron';
 
 let globalState;
 // From http://www.visualcinnamon.com/2016/05/smooth-color-legend-d3-svg-gradient.html
-let beautifulColors = ["#ffffff", "#000000", "#2c7bb6",  "#00a6ca", "#00ccbc",
-	"#90eb9d", "#ffff8c", "#f9d057", "#f29e2e", "#e76818", "#d7191c"];
+let beautifulColors = ["#2c7bb6",  "#00a6ca", "#00ccbc", "#90eb9d", "#ffff8c", "#f9d057", "#f29e2e", "#e76818", "#d7191c"];
 
 function hexToRgba(hex, alpha) {
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -734,8 +733,7 @@ export default class Home extends Component {
         globalState = this.state;
         console.log('render() called');
         if (!this.state) {
-
-            window.document.documentElement.style.backgroundColor = hexToRgba(beautifulColors[5], 0.5);
+            window.document.documentElement.style.backgroundColor = hexToRgba(Math.floor(Math.random() * beautifulColors.length), 0.5);
             let randomWelcomeText = "Welcome to ShortcutMagic!";
 
             switch (Math.floor(Math.random() * 8)) {
@@ -797,7 +795,7 @@ export default class Home extends Component {
         }
 
         window.document.documentElement.style.backgroundColor = (this.state.backgroundColor) ?
-            this.state.backgroundColor : hexToRgba(beautifulColors[5], 0.5);
+            this.state.backgroundColor : hexToRgba(beautifulColors[Math.floor(Math.random() * beautifulColors.length)], 0.5);
 
         // TODO: check for length here instead of nulling it out above?
         if (this.state.loading && !this.state.hiddenLoading) {
@@ -845,10 +843,11 @@ export default class Home extends Component {
                 display: 'none',
                 borderRadius: ".25rem",
                 borderWidth: ".50rem",
-                border: `2px solid #737475`,
+                border: `2px solid #737475`, // #737475 is the color from Photon mac css
             }} onChange={this.filterListTrigger}
             onKeyDown={(e) => {
-                if (e.keyCode === 27) {
+                if (e.keyCode === 27) { // key code 27 == escape
+                    // Clear search field and trigger list filter on empty search filter
                     window.document.getElementById("search-field").value = '';
                     this.filterListTrigger();
                 }
