@@ -20,37 +20,45 @@ const {
 const path = require('path');
 // nedb is a simple javascript database, smilar to mongodb, where we store the shortcuts and other things about another program
 const Datastore = require('nedb');
-// db is an instance of nedb and lets us store things on disk in pure text, and treat it like mongodb. this stores the shortcut information
-var db = new Datastore({
-	filename: `${__dirname}/db/shortcuts.db`,
-	autoload: true,
-});
+// db is an instance of nedb and lets us store things on disk in pure text, and treat it like mongogetDb(). this stores the shortcut information
+let db;
 
-// The field for "name" is the one we want to keep unique, so anything we write to the db for another running program is
-// updated, and not duplicated.
-// TODO: this is not always been unique and needs to be improved
-db.ensureIndex({
-	fieldName: 'name',
-	unique: true // Setting unique value constraint on name
-}, function (err) {
-	if (err) {
-		console.log('ERROR: db.ensureIndex failed to set unique constraint for shortcut db', err);
-	}
-});
+function getDb() {
+    if (!db) {
+        db = new Datastore({
+            filename: `${__dirname}/db/shortcuts.db`,
+            autoload: true,
+        });
 
-
-// For testing, we need to check parsing of shortcuts sometimes. These applications are simple and have few shortcuts,
-// so they are quick to test with.
-// TODO: Make this only run in debug/dev mode
-console.log("temporary removal of PomoDoneApp and mysms shortcuts for testing, TODO: hard remove instead");
-db.remove({
-	name: "PomoDoneApp"
-});
-db.remove({
-	name: "mysms"
-});
+        // The field for "name" is the one we want to keep unique, so anything we write to the db for another running program is
+        // updated, and not duplicated.
+        // TODO: this is not always been unique and needs to be improved
+        getDb().ensureIndex({
+            fieldName: 'name',
+            unique: true // Setting unique value constraint on name
+        }, function (err) {
+            if (err) {
+                console.log('ERROR: getDb().ensureIndex failed to set unique constraint for shortcut db', err);
+            }
+        });
 
 
+        // For testing, we need to check parsing of shortcuts sometimes. These applications are simple and have few shortcuts,
+        // so they are quick to test with.
+        // TODO: Make this only run in debug/dev mode
+        console.log("temporary removal of PomoDoneApp and mysms shortcuts for testing, TODO: hard remove instead");
+        getDb().remove({
+            name: "PomoDoneApp"
+        });
+        getDb().remove({
+            name: "mysms"
+        });
+
+
+    }
+
+    return db;
+}
 
 // hackyStopSavePos needs to be replaced with a better system. right now it just stops the size and position of the application
 // from being saved. this is typically set when we are loading a position or moving between window modes
@@ -118,7 +126,7 @@ function setAndSaveBounds(newMode) {
 	console.log("_________________________________________ SAVING ____________________________________");
 
     // Store the payload in the db for the current app
-	db.update({
+	getDb().update({
 		name: currentAppName
 	}, {
 		$set: payload
@@ -152,7 +160,7 @@ function setAndSaveWindowMode(newWindowMode) {
 			mainWindow.setBounds((bubbleBounds) ? bubbleBounds : defaultBubbleBounds);
 			hackyStopSavePos = false;
 		} else {
-			db.find({
+			getDb().find({
 				name: currentAppName
 			}, function(err, res) {
 				console.log('loaded shortcuts: ');
@@ -189,7 +197,7 @@ function setAndSaveWindowMode(newWindowMode) {
 			mainWindow.setBounds((fullBounds) ? fullBounds : defaultFullBounds);
 			hackyStopSavePos = false;
 		} else {
-			db.find({
+			getDb().find({
 				name: currentAppName
 			}, function(err, res) {
 				console.log('loaded shortcuts: ');
@@ -285,7 +293,7 @@ function savePosition(appName) {
 
 	var newBounds = mainWindow.getBounds();
 
-	db.find({
+	getDb().find({
 		name: appName
 	}, function(err, doc) {
 		if (err) {
@@ -327,7 +335,7 @@ function savePosition(appName) {
 				inMemoryShortcuts[appName] = newShortcuts;
 
 				// ...then in storage:
-				db.update({
+				getDb().update({
 					name: appName
 				}, {
 					$set: saveSet
@@ -387,7 +395,7 @@ function createWindows() {
 }
 
 function createMainWindow() {
-    // db.find({
+    // getDb().find({
     //     name: GLOBAL_SETTINGS
     // }, function(err, res) {
     //
@@ -590,7 +598,7 @@ function saveWithoutPeriods(payload) {
 	stringified = stringified.replace(/\./g, 'u002e');
 	payload.shortcuts = JSON.parse(stringified);
 
-	db.update({
+	getDb().update({
 		name: payload.name
 	}, {
 		$set: payload
@@ -642,7 +650,7 @@ function loadWithPeriods(appName) {
 	}
 
 
-	db.find({
+	getDb().find({
 		name: appName
 	}, function(err, res) {
 		console.log('loaded shortcuts, err? ', err);
@@ -799,7 +807,7 @@ ipcMain.on('main-parse-shortcuts', function(event, appName) {
 
 ipcMain.on('update-shortcut-order', function(event, appName, shortcuts) {
 	console.log('entered update-shortcut-order', appName);
-	db.update({
+	getDb().update({
 		name: appName
 	}, {
 		$set: {
@@ -828,7 +836,7 @@ ipcMain.on('update-shortcut-item', (event, shortcutItem) => {
 		inMemoryShortcuts[currentAppName].shortcuts[shortcutItem.name] = shortcutItem;
 	}
 
-	db.update({
+	getDb().update({
 		name: currentAppName
 	}, {
 		$set: shortcutObject
@@ -874,7 +882,7 @@ ipcMain.on('execute-list-item', (event, listItem) => {
 ipcMain.on('update-current-app-value', function(event, newAppValue) {
 	console.log('on update-current-app-value with ', newAppValue);
 
-	db.update({
+	getDb().update({
 		name: currentAppName
 	}, {
 		$set: newAppValue
@@ -907,7 +915,7 @@ ipcMain.on('save-app-settings', (event, newSetting) => {
     inMemoryShortcuts[GLOBAL_SETTINGS]["alwaysOnTop"] = newSetting["alwaysOnTop"];
     mainWindow.setAlwaysOnTop(newSetting["alwaysOnTop"]);
 
-    db.update({
+    getDb().update({
         name: GLOBAL_SETTINGS
 	}, {
 		$set: newSetting

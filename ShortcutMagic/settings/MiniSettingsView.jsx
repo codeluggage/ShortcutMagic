@@ -19,44 +19,53 @@ let defaultSettings = {
 	textColor: beautifulColors[1],
 	itemBackgroundColor: beautifulColors[4],
 };
-let styleDb = new Datastore({
-	filename: `${__dirname}/../db/styles.db`,
-	autoload: true,
-});
+
+let styleDb;
+
+function getDb() {
+    if (!styleDb) {
+        styleDb = new Datastore({
+            filename: `${__dirname}/../db/styles.db`,
+            autoload: true,
+        });
 
 
 
-// The field for "name" is the one we want to keep unique, so anything we write to the db for another running program is
-// updated, and not duplicated.
-// TODO: this is not always been unique and needs to be improved
-styleDb.ensureIndex({
-	fieldName: 'name',
-	unique: true // Setting unique value constraint on name
-}, function (err) {
-	if (err) {
-		console.log('ERROR: ensureIndex failed to set unique constraint for style db', err);
-	}
-});
+        // The field for "name" is the one we want to keep unique, so anything we write to the db for another running program is
+        // updated, and not duplicated.
+        // TODO: this is not always been unique and needs to be improved
+        styleDb.ensureIndex({
+            fieldName: 'name',
+            unique: true // Setting unique value constraint on name
+        }, function (err) {
+            if (err) {
+                console.log('ERROR: ensureIndex failed to set unique constraint for style db', err);
+            }
+        });
 
-// TODO: send to worker?
-styleDb.find({
-	name: GLOBAL_SETTINGS
-}, function(err, doc) {
-	if (err) {
-		console.log('Tried to find default style, got error: ', err);
-		return;
-	}
+        // TODO: send to worker?
+        styleDb.find({
+            name: GLOBAL_SETTINGS
+        }, function(err, doc) {
+            if (err) {
+                console.log('Tried to find default style, got error: ', err);
+                return;
+            }
 
-	if (!doc || (doc == [] || doc.length == 0)) {
-		styleDb.insert(defaultSettings, function(err, doc) {
-			if (err) {
-				console.log('ERROR: inserting default settings into styles db failed with err', err);
-			}
-		});
-	} else {
-		cachedStyles[GLOBAL_SETTINGS] = defaultSettings = doc[0];
-	}
-});
+            if (!doc || (doc == [] || doc.length == 0)) {
+                styleDb.insert(defaultSettings, function(err, doc) {
+                    if (err) {
+                        console.log('ERROR: inserting default settings into styles db failed with err', err);
+                    }
+                });
+            } else {
+                cachedStyles[GLOBAL_SETTINGS] = defaultSettings = doc[0];
+            }
+        });
+    }
+
+    return styleDb;
+}
 
 
 function makeColorString(color) {
@@ -73,7 +82,7 @@ export default class MiniSettingsView extends Component {
             if (newStyles) {
                 this.applyAllStyles(newStyles);
             } else {
-                styleDb.find({
+                getDb().find({
                 	name: newName
                 }, (err, doc) => {
                 	if (err) {
@@ -121,7 +130,7 @@ export default class MiniSettingsView extends Component {
 
         let currentAppName = ipcRenderer.sendSync('get-app-name-sync');
 
-		styleDb.update({
+		getDb().update({
 			name: currentAppName
 		}, {
 			$set: this.state
