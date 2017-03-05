@@ -733,7 +733,7 @@ export default class Home extends Component {
         globalState = this.state;
         console.log('render() called');
         if (!this.state) {
-            window.document.documentElement.style.backgroundColor = hexToRgba(Math.floor(Math.random() * beautifulColors.length), 0.5);
+            window.document.documentElement.style.backgroundColor = hexToRgba(beautifulColors[Math.floor(Math.random() * beautifulColors.length)], 0.5);
             let randomWelcomeText = "Welcome to ShortcutMagic!";
 
             switch (Math.floor(Math.random() * 8)) {
