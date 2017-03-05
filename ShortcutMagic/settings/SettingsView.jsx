@@ -5,18 +5,8 @@ import ReactDOM from 'react-dom';
 import { SketchPicker } from 'react-color';
 
 import { Settings } from './settings';
-// console.log("first settings: ", Settings);
-var GLOBAL_SETTINGS = "all programs";
-var settings = new Settings();
-var holdRemote = remote;
-// const Settings = require('./settings/settings');
-// console.log('imported settings: ', settings, JSON.stringify(settings) );
-// console.log('>>> ', Settings());
-// for (val in settings) {
-// 	console.log(val);
-// }
-
-
+let settings = new Settings();
+let holdRemote = remote;
 
 export default class SettingsView extends Component {
     componentWillMount() {
@@ -26,8 +16,8 @@ export default class SettingsView extends Component {
 			this.saveCurrentSettings();
 		});
 		ipcRenderer.on('get-app-settings', (event) => {
-            var windows = holdRemote.BrowserWindow.getAllWindows();
-            for (var i = 0; i < windows.length; i++) {
+            let windows = holdRemote.BrowserWindow.getAllWindows();
+            for (let i = 0; i < windows.length; i++) {
                 let holdWindow = windows[i];
                 if (holdWindow && holdWindow.getTitle() == "miniSettingsWindow") {
                     console.log("inside settingsWindow sending to miniSettingsWindow: ", this.state.appSettings);
