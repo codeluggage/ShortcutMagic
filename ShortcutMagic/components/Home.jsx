@@ -988,7 +988,7 @@ export default class Home extends Component {
                 textAlign: 'center',
             }} onMouseEnter={(e) => {
                 hidingSlowly = true;
-    			window.document.getElementById("title").style.display = "none";
+    			// window.document.getElementById("title").style.display = "none";
     			window.document.getElementById("settings-button-group").style.display = "block";
     			window.document.getElementById("search-field").style.display = "";
 
