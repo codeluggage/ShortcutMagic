@@ -7,7 +7,15 @@
   "license": "MIT",
   "repository": "git@github.com:codeluggage/ShortcutMagic.git",
   "scripts": {
-    "start": "NODE_ENV=development ./node_modules/.bin/electron shortcutmagic.js"
+    "start": "NODE_ENV=development ./node_modules/.bin/electron shortcutmagic.js",
+    "pack": "build --dir",
+    "dist": "build"
+  },
+  "build": {
+      "appId": "com.thankivity.shortcutmagic",
+      "mac": {
+          "category": "Productivity"
+      }
   },
   "dependencies": {
     "babel-preset-es2015": "^6.3.13",
@@ -25,7 +33,8 @@
   },
   "devDependencies": {
     "devtron": "^1.4.0",
-    "electron": "^1.4.3",
+    "electron": "^1.6.5",
+    "electron-packager": "^8.6.0",
     "electron-rebuild": "^1.4.0"
   }
 }
