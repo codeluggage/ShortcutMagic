@@ -3,13 +3,13 @@
   "productName": "ShortcutMagic",
   "description": "ShortcutMagic is a simple tool to see every action in any program, and master them.",
   "version": "1.0.0",
-  "main": "shortcutmagic.js",
   "license": "MIT",
+  "private": true,
+  "main": "shortcutmagic.js",
   "repository": "git@github.com:codeluggage/ShortcutMagic.git",
   "scripts": {
-    "start": "NODE_ENV=development ./node_modules/.bin/electron shortcutmagic.js",
-    "pack": "build --dir",
-    "dist": "build",
+    "start": "NODE_ENV=production ./node_modules/.bin/electron shortcutmagic.js",
+    "dev": "NODE_ENV=development ./node_modules/.bin/electron shortcutmagic.js",
     "pack-mac": "electron-packager . --asar=false --overwrite --platform=darwin --arch=x64 --icon=assets/wizard.icns --prune=true --osx-sign.identity='Developer ID Application: Matias Forbord (A9ADPQA768)'"
   },
   "build": {
