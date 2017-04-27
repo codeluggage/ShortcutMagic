@@ -495,7 +495,12 @@ function createMainWindow() {
 
 function createTray() {
 	// TODO: read if menu is dark or not, load white/black hat icon as response:
+<<<<<<< HEAD
 	const iconPath = path.join(__dirname, osxPrefs.isDarkMode() ? 'wizard-white.png' : 'wizard.png');
+=======
+	// const iconPath = path.join(__dirname, osxPrefs.isDarkMode() ? 'assets/wizard-white.png' : 'wizard.png');
+	const iconPath = path.join(__dirname, 'assets/wizard_16x16.png');
+>>>>>>> 76b8382... Change icon, with attribution
 	trayObject = new Tray(iconPath);
 
 	console.log('created trayObject: ', trayObject);
