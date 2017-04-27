@@ -7,7 +7,16 @@
   "license": "MIT",
   "repository": "git@github.com:codeluggage/ShortcutMagic.git",
   "scripts": {
-    "start": "NODE_ENV=development ./node_modules/.bin/electron shortcutmagic.js"
+    "start": "NODE_ENV=development ./node_modules/.bin/electron shortcutmagic.js",
+    "pack": "build --dir",
+    "dist": "build",
+    "pack-mac": "electron-packager . --asar=false --overwrite --platform=darwin --arch=x64 --icon=assets/wizard.icns --prune=true --osx-sign.identity='Developer ID Application: Matias Forbord (A9ADPQA768)'"
+  },
+  "build": {
+      "appId": "com.thankivity.shortcutmagic",
+      "mac": {
+          "category": "Productivity"
+      }
   },
   "dependencies": {
     "babel-preset-es2015": "^6.3.13",
