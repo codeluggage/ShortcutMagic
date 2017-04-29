@@ -40,7 +40,6 @@ function getDb() {
             }
         });
 
-
         // For testing, we need to check parsing of shortcuts sometimes. These applications are simple and have few shortcuts,
         // so they are quick to test with.
         // TODO: Make this only run in debug/dev mode
@@ -51,8 +50,6 @@ function getDb() {
         getDb().remove({
             name: "mysms"
         });
-
-
     }
 
     return db;
@@ -63,7 +60,7 @@ function getDb() {
 var hackyStopSavePos = false;
 // The default bounds are appliend when no other bounds are found, typically for new running programs we open and parse
 var defaultFullBounds = {x: 1100, y: 100, width: 350, height: 800};
-var defaultBubbleBounds = {x: 800, y: 10, width: 250, height: 200};
+var defaultBubbleBounds = {x: 1100, y: 100, width: 250, height: 300};
 // These global settings are stored together with the shortcuts, and this is the "name":
 var GLOBAL_SETTINGS = "all programs";
 
@@ -139,13 +136,16 @@ function setAndSaveBounds(newMode) {
 	});
 }
 
+function showMainWindowFade() {
+    mainWindow.webContents.send('fade-in');
+}
 
 function setAndSaveWindowMode(newWindowMode) {
 	if (newWindowMode == "bubble") {
 		setAndSaveBounds(newWindowMode);
 		inMemoryShortcuts[currentAppName].windowMode = "bubble";
 
-		mainWindow.show();
+		showMainWindowFade();
 		console.log("In bubble-mode in applyWindowMode, sending to mainWindow");
 		mainWindow.webContents.send('bubble-mode');
 
@@ -182,7 +182,7 @@ function setAndSaveWindowMode(newWindowMode) {
 		inMemoryShortcuts[currentAppName].windowMode = "full";
 
 		// TODO: load from full settings or use default
-		mainWindow.show();
+		showMainWindowFade();
 		console.log("In full-mode in applyWindowMode, sending to mainWindow");
 		mainWindow.webContents.send('full-mode');
 
@@ -222,10 +222,7 @@ function setAndSaveWindowMode(newWindowMode) {
 		console.log("In hidden-mode in applyWindowMode, sending to mainWindow");
 		mainWindow.webContents.send('hidden-mode');
 	} else {
-		console.log("in setAndSaveWindowMode() ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
-		console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
-		console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
-		console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+		console.error("ERROR: NO windowmode in setAndSaveWindowMode()");
 	}
 }
 
@@ -271,7 +268,7 @@ function toggleWindow() {
 	if (mainWindow.isVisible()) {
 		mainWindow.blur();
 	} else {
-        mainWindow.show();
+        showMainWindowFade();
 	}
 }
 
@@ -355,7 +352,6 @@ function createMiniSettingsWindow() {
 		title: "miniSettingsWindow",
 		alwaysOnTop: true,
 		acceptFirstClick: true,
-		transparent: true,
 		frame: false,
 		x: 800, y: 50, width: 500, height: 700,
 	});
@@ -477,12 +473,9 @@ function createMainWindow() {
         		}
         	});
 
-
-
         	mainWindow.setHasShadow(false);
 
         	// applyWindowMode(inMemoryShortcuts[currentAppName].windowMode);
-        	mainWindow.show();
 
         	// All windows are created, collect all their window id's and let each of them
         	// know what is available to send messages to:
@@ -503,7 +496,7 @@ function createTray() {
 	trayObject.setToolTip('ShortcutMagic!');
 	trayObject.on('right-click', (event) => {
 		if (mainWindow) {
-			// mainWindow.show();
+			// showMainWindowFade();
 			mainWindow.openDevTools();
 		} else {
 			console.log("cant find mainwindow to show");
@@ -635,15 +628,15 @@ function loadWithPeriods(appName) {
             success = true;
 			mainWindow.setBounds(holdShortcuts.lastBubbleBounds);
             if (!mainWindow.isVisible()) {
-                // TODO: Fix this issue - when using alt+` as shortcut for iTerm the window does not get focus because mainWindow.show() takes focus here
-                setTimeout(() => { mainWindow.show() }, 100);
+                // TODO: Fix this issue - when using alt+` as shortcut for iTerm the window does not get focus because showMainWindowFade() takes focus here
+                setTimeout(() => { showMainWindowFade() }, 100);
             }
 		} else if (holdShortcuts.windowMode == "full" && holdShortcuts.lastFullBounds) {
             success = true;
 			mainWindow.setBounds(holdShortcuts.lastFullBounds);
             if (!mainWindow.isVisible()) {
-                // TODO: Fix this issue - when using alt+` as shortcut for iTerm the window does not get focus because mainWindow.show() takes focus here
-                setTimeout(() => { mainWindow.show() }, 100);
+                // TODO: Fix this issue - when using alt+` as shortcut for iTerm the window does not get focus because showMainWindowFade() takes focus here
+                setTimeout(() => { showMainWindowFade() }, 100);
             }
 		} else if (holdShortcuts.windowMode == "hidden") {
             success = true;
@@ -691,14 +684,14 @@ function loadWithPeriods(appName) {
         		if (newShortcuts.windowMode == "bubble" && newShortcuts.lastBubbleBounds) {
         			mainWindow.setBounds(newShortcuts.lastBubbleBounds);
                     if (!mainWindow.isVisible()) {
-                        // TODO: Fix this issue - when using alt+` as shortcut for iTerm the window does not get focus because mainWindow.show() takes focus here
-                        setTimeout(() => { mainWindow.show() }, 100);
+                        // TODO: Fix this issue - when using alt+` as shortcut for iTerm the window does not get focus because showMainWindowFade() takes focus here
+                        setTimeout(() => { showMainWindowFade() }, 100);
                     }
         		} else if (newShortcuts.windowMode == "full" && newShortcuts.lastFullBounds) {
         			mainWindow.setBounds(newShortcuts.lastFullBounds);
                     if (!mainWindow.isVisible()) {
-                        // TODO: Fix this issue - when using alt+` as shortcut for iTerm the window does not get focus because mainWindow.show() takes focus here
-                        setTimeout(() => { mainWindow.show() }, 100);
+                        // TODO: Fix this issue - when using alt+` as shortcut for iTerm the window does not get focus because showMainWindowFade() takes focus here
+                        setTimeout(() => { showMainWindowFade() }, 100);
                     }
         		} else if (newShortcuts.windowMode == "hidden") {
                     if (mainWindow.isVisible()) {
@@ -727,7 +720,7 @@ ipcMain.on('toggle-window', () => {
 });
 
 ipcMain.on('show-window', () => {
-    mainWindow.show();
+    showMainWindowFade();
 });
 
 ipcMain.on('blur-window', () => {
@@ -751,7 +744,8 @@ app.on('activate-with-no-open-windows', () => {
 
 app.on('ready', () => {
 	createWindows();
-	loadWithPeriods(backgroundTaskRunnerWindow.webContents.send('read-last-app-name'));
+    mainWindow.show();
+    showMainWindowFade();
 });
 
 app.on('before-quit', (event) => {
@@ -783,6 +777,11 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 		return;
 	}
 
+    mainWindow.webContents.send('fade-out', appName);
+});
+
+ipcMain.on('fade-out-done', (event, appName) => {
+
 	console.log(`${currentAppName} -> ${appName}`);
 
 
@@ -800,7 +799,7 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 
 	settingsWindow.webContents.send('app-changed', currentAppName);
 	miniSettingsWindow.webContents.send('app-changed', currentAppName);
-});
+})
 
 ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
 	console.log("main-parse-shortcuts-callback");
