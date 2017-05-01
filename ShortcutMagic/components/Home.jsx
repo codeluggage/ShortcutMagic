@@ -543,8 +543,15 @@ export default class Home extends Component {
             console.log('entered update-shortcuts in Home');
             console.log(newShortcuts);
             let name = newShortcuts.name;
-            if (name == "Electron" || name == "ShortcutMagic" ||
-                name == "ScreenSaverEngine" || name == "loginwindow") {
+
+        	if (name === "Electron" ||
+                name == "ShortcutMagic" ||
+                name === "ScreenSaverEngine" ||
+                name == "loginwindow" ||
+                name === "Dock" ||
+                name === "Google Software Update..." ||
+                name === "Google Software Update" ||
+                name === "Dropbox Finder Integration") {
                 return; // TODO: Could this mess with other electron starter projects?
             }
 
