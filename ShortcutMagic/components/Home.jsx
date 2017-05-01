@@ -372,52 +372,6 @@ const SortableList = SortableContainer((componentArguments) => {
 
 var holdRemote = remote;
 
-let fadeStep = 0.01;
-let fadeTime = 25;
-
-function fadeOutStep(originalAlpha, window, appName) {
-    let previousAlpha = Number(/[\d\.]+\)$/.exec(window.document.documentElement.style.backgroundColor)[0].slice(0, -1));
-    console.log("inside fadeOutStep ------------------- ", previousAlpha);
-    previousAlpha -= fadeStep
-    console.log(`${previousAlpha} < ${originalAlpha} == ${previousAlpha < originalAlpha}`);
-    console.log(window.document.documentElement.style.backgroundColor);
-
-    // window.document.documentElement.style.backgroundColor = window.document.documentElement.style.backgroundColor.slice(0, -2) + Math.floor(255 * previousAlpha).toString(16).toUpperCase();
-    window.document.documentElement.style.backgroundColor = window.document.documentElement.style.backgroundColor.replace(/[\d\.]+\)$/g, `${previousAlpha})`);
-
-    if (previousAlpha > originalAlpha) {
-        console.log(">>>>>> recursive fadeout start");
-        setTimeout(() => {
-            console.log(">>>>>> recursive fadeout trigger");
-            fadeOutStep(originalAlpha, window, appName);
-        }, fadeTime);
-    } else {
-        console.log(`$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ SUCCESS ${previousAlpha} < ${originalAlpha}`);
-        ipcRenderer.send('fade-out-done', appName);
-    }
-}
-
-function fadeInStep(originalAlpha, window) {
-    let previousAlpha = Number(/[\d\.]+\)$/.exec(window.document.documentElement.style.backgroundColor)[0].slice(0, -1));
-    console.log("inside fadeInStep ------------------- ", previousAlpha);
-    previousAlpha += fadeStep
-    console.log(`${previousAlpha} < ${originalAlpha} == ${previousAlpha < originalAlpha}`);
-    console.log(window.document.documentElement.style.backgroundColor);
-
-    // window.document.documentElement.style.backgroundColor = window.document.documentElement.style.backgroundColor.slice(0, -2) + Math.floor(255 * previousAlpha).toString(16).toUpperCase();
-    window.document.documentElement.style.backgroundColor = window.document.documentElement.style.backgroundColor.replace(/[\d\.]+\)$/g, `${previousAlpha})`);
-
-    if (previousAlpha < originalAlpha) {
-        console.log(">>>>>> recursive fadein start");
-        setTimeout(() => {
-            console.log(">>>>>> recursive fadein trigger");
-            fadeInStep(originalAlpha, window);
-        }, fadeTime);
-    } else {
-        console.log(`$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ SUCCESS ${previousAlpha} >= ${originalAlpha}`);
-    }
-}
-
 export default class Home extends Component {
     componentWillMount() {
 		//
@@ -430,30 +384,6 @@ export default class Home extends Component {
 		// };
 		//
 
-        ipcRenderer.on('fade-out', (event, appName) => {
-            let backgroundColor = (this.state) ? this.state.backgroundColor : window.document.documentElement.style.backgroundColor;
-            // let originalAlpha = Number(backgroundColor.slice(0, -2)).toString(10);
-            // let originalAlpha = backgroundColor.replace(/[\d\.]+\)$/g, 'A)');
-            // console.log(`ipcRenderer -> fade-OUT, name: ${appName} backgroundColor: ${backgroundColor} originalAlpha: ${originalAlpha}`);
-
-            // fadeOutStep(0, originalAlpha, window, appName);
-            // fadeOutStep(Number(/[\d\.]+\)$/.exec(backgroundColor)[0].slice(0, -1)), window, appName);
-            fadeOutStep(0, window, appName);
-        });
-
-        ipcRenderer.on('fade-in', (event) => {
-            let backgroundColor = (this.state) ? this.state.backgroundColor : window.document.documentElement.style.backgroundColor;
-            // let originalAlpha = Number(backgroundColor.slice(0, -2)).toString(10);
-            // let originalAlpha = backgroundColor.replace(/[\d\.]+\)$/g, 'A)');
-            // console.log(`ipcRenderer -> fade-IN,  backgroundColor: ${backgroundColor} originalAlpha: ${originalAlpha}`);
-
-            // fadeInStep(originalAlpha, 0, window);
-            // fadeInStep(Number(/[\d\.]+\)$/.exec(backgroundColor)[0].slice(0, -1)), window);
-            let originalAlpha = Number(/[\d\.]+\)$/.exec(window.document.documentElement.style.backgroundColor)[0].slice(0, -1));
-            window.document.documentElement.style.backgroundColor = window.document.documentElement.style.backgroundColor.replace(/[\d\.]+\)$/g, `0)`);
-
-            fadeInStep(originalAlpha, window);
-        });
 
         ipcRenderer.on('temporarily-update-app-settings', (event, newSetting) => {
             let backgroundColor = newSetting["backgroundColor"];
@@ -872,7 +802,7 @@ export default class Home extends Component {
         }
 
         window.document.documentElement.style.backgroundColor = (this.state.backgroundColor) ?
-            this.state.backgroundColor : hexToRgba(beautifulColors[Math.floor(Math.random() * beautifulColors.length)], 0.1);
+            this.state.backgroundColor : hexToRgba(beautifulColors[Math.floor(Math.random() * beautifulColors.length)], 0.5);
 
         // TODO: check for length here instead of nulling it out above?
         if (this.state.loading && !this.state.hiddenLoading) {
@@ -1065,7 +995,7 @@ export default class Home extends Component {
                 textAlign: 'center',
             }} onMouseEnter={(e) => {
                 hidingSlowly = true;
-    			// window.document.getElementById("title").style.display = "none";
+    			window.document.getElementById("title").style.display = "none";
     			window.document.getElementById("settings-button-group").style.display = "block";
     			window.document.getElementById("search-field").style.display = "";
 
