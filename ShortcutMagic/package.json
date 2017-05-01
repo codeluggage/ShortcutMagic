@@ -24,6 +24,7 @@
     "babel-register": "^6.3.13",
     "electron-osx-appearance": "^0.1.1",
     "font-awesome": "^4.7.0",
+    "image-size": "^0.5.1",
     "nedb": "^1.8.0",
     "nodobjc": "^2.1.0",
     "react": "^15.3.2",

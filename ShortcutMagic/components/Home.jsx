@@ -304,6 +304,9 @@ const SortableItem = SortableElement((componentArguments) => {
             // justifyContent: 'space-between',
             flexDirection: 'column',
         }} onMouseEnter={(e) => {
+            console.log(`sending hide-tooltip with ${componentArguments.listItem}`);
+            ipcRenderer.send('show-tooltip-for-list-item', componentArguments.listItem);
+
 			let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
             if (buttonSectionElements) {
 				for (var i = 0; i < buttonSectionElements.length; i++) {
@@ -317,6 +320,9 @@ const SortableItem = SortableElement((componentArguments) => {
 				}
 			}
         }} onMouseLeave={(e) => {
+            console.log(`sending hide-tooltip with ${componentArguments.listItem}`);
+            ipcRenderer.send('hide-tooltip');
+
 			let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
             if (buttonSectionElements) {
 				for (var i = 0; i < buttonSectionElements.length; i++) {

@@ -90,6 +90,8 @@ let backgroundListenerWindow;
 // the front window when the application opens, introduction and explanation of how to run correctly with security settings
 // TODO: make hideable with a setting
 let welcomeWindow;
+// the gif-displaying tool tip window:
+let tooltipWindow;
 // a hacky bad construct holding the shortcuts from the db in memory
 // TODO: merge into a class that encapsulates the db and functionality, and caches things in memory without checking this array everywhere :|
 let inMemoryShortcuts = [];
@@ -392,6 +394,19 @@ function createWindows() {
 	createMiniSettingsWindow();
 	// createWelcomeWindow();
 	createMainWindow();
+    createTooltipWindow();
+}
+
+function createTooltipWindow() {
+    tooltipWindow = new BrowserWindow({
+		name: "tooltipWindow",
+        show: false,
+        frame: false,
+        x: 334, y: 153, width: 826, height: 568,
+    });
+
+
+    tooltipWindow.loadURL(`file://${__dirname}/tooltip/tooltip.html`);
 }
 
 function createMainWindow() {
@@ -510,6 +525,14 @@ function createTray() {
 		} else {
 			console.log("cant find mainwindow to show");
 		}
+
+		if (tooltipWindow) {
+			tooltipWindow.show();
+			tooltipWindow.openDevTools();
+		} else {
+			console.log("cant find tooltipWindow to show");
+		}
+
 
 		if (settingsWindow) {
 			// settingsWindow.show();
@@ -949,4 +972,15 @@ ipcMain.on('temporarily-update-app-settings', (event, newSetting) => {
     inMemoryShortcuts[GLOBAL_SETTINGS]["boundsPerApp"] = newSetting["boundsPerApp"];
     inMemoryShortcuts[GLOBAL_SETTINGS]["alwaysOnTop"] = newSetting["alwaysOnTop"];
     mainWindow.setAlwaysOnTop(newSetting["alwaysOnTop"]);
+});
+
+ipcMain.on('show-tooltip-for-list-item', (event, listItem) => {
+    console.log(`in show-tooltip-for-list-item with ${listItem}`);
+    tooltipWindow.webContents.send('set-gif', listItem);
+    tooltipWindow.show();
+});
+
+ipcMain.on('hide-tooltip', (event) => {
+    tooltipWindow.webContents.send('reset');
+    tooltipWindow.hide();
 });
