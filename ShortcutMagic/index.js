@@ -767,13 +767,14 @@ ipcMain.on('get-app-name-sync', function(event) {
 ipcMain.on('main-app-switched-notification', function(event, appName) {
 	// TODO: Make this list editable somewhere to avoid people having problems?
 	if (appName === "Electron" ||
-        appName == "ShortcutMagic" ||
+        appName === "ShortcutMagic" ||
         appName === "ScreenSaverEngine" ||
-        appName == "loginwindow" ||
+        appName === "loginwindow" ||
         appName === "Dock" ||
         appName === "Google Software Update..." ||
         appName === "Google Software Update" ||
-        appName === "Dropbox Finder Integration") {
+        appName === "Dropbox Finder Integration" ||
+        appName === "AirPlayUIAgent") {
 		console.log("Not switching to this app: ", appName);
 		return;
 	}

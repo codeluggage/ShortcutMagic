@@ -475,13 +475,14 @@ export default class Home extends Component {
             let name = newShortcuts.name;
 
         	if (name === "Electron" ||
-                name == "ShortcutMagic" ||
+                name === "ShortcutMagic" ||
                 name === "ScreenSaverEngine" ||
-                name == "loginwindow" ||
+                name === "loginwindow" ||
                 name === "Dock" ||
                 name === "Google Software Update..." ||
                 name === "Google Software Update" ||
-                name === "Dropbox Finder Integration") {
+                name === "Dropbox Finder Integration" ||
+                name === "AirPlayUIAgent") {
                 return; // TODO: Could this mess with other electron starter projects?
             }
 
