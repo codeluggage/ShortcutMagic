@@ -10,7 +10,9 @@ const {
     ipcMain,
     // Tray is used for the icon in the menu bar on mac, where we show the wizard hat
     Tray,
+    globalShortcut
 } = require('electron');
+
 
 // TODO: Fix preference crash when building release version
 // these prefs let us determine if the menu bar is dark or light
@@ -495,6 +497,50 @@ function createMainWindow() {
     // });
 }
 
+function debugEverything() {
+    if (mainWindow) {
+        // mainWindow.show();
+        mainWindow.openDevTools();
+    } else {
+        console.log("cant find mainwindow to show");
+    }
+
+    if (settingsWindow) {
+        // settingsWindow.show();
+        settingsWindow.openDevTools();
+    } else {
+        console.log("cant find settingswindow to show");
+    }
+
+    if (backgroundTaskRunnerWindow) {
+        // backgroundTaskRunnerWindow.show();
+        backgroundTaskRunnerWindow.openDevTools();
+    } else {
+        console.log("cant find backgroundTaskRunnerWindow to show");
+    }
+
+    if (backgroundListenerWindow) {
+        // backgroundListenerWindow.show();
+        backgroundListenerWindow.openDevTools();
+    } else {
+        console.log("cant find backgroundListenerWindow to show");
+    }
+
+    if (welcomeWindow) {
+        // welcomeWindow.show();
+        welcomeWindow.openDevTools();
+    } else {
+        console.log("cant find backgroundListenerWindow to show");
+    }
+
+    if (miniSettingsWindow) {
+        // miniSettingsWindow.show();
+        miniSettingsWindow.openDevTools();
+    } else {
+        console.log("cant find backgroundListenerWindow to show");
+    }
+}
+
 function createTray() {
 	// TODO: read if menu is dark or not, load white/black hat icon as response:
 	// const iconPath = path.join(__dirname, osxPrefs.isDarkMode() ? 'assets/wizard-white.png' : 'wizard.png');
@@ -503,49 +549,7 @@ function createTray() {
 
 	console.log('created trayObject: ', trayObject);
 	trayObject.setToolTip('ShortcutMagic!');
-	trayObject.on('right-click', (event) => {
-		if (mainWindow) {
-			// mainWindow.show();
-			mainWindow.openDevTools();
-		} else {
-			console.log("cant find mainwindow to show");
-		}
-
-		if (settingsWindow) {
-			// settingsWindow.show();
-			settingsWindow.openDevTools();
-		} else {
-			console.log("cant find settingswindow to show");
-		}
-
-		if (backgroundTaskRunnerWindow) {
-			// backgroundTaskRunnerWindow.show();
-			backgroundTaskRunnerWindow.openDevTools();
-		} else {
-			console.log("cant find backgroundTaskRunnerWindow to show");
-		}
-
-		if (backgroundListenerWindow) {
-			// backgroundListenerWindow.show();
-			backgroundListenerWindow.openDevTools();
-		} else {
-			console.log("cant find backgroundListenerWindow to show");
-		}
-
-		if (welcomeWindow) {
-			// welcomeWindow.show();
-			welcomeWindow.openDevTools();
-		} else {
-			console.log("cant find backgroundListenerWindow to show");
-		}
-
-		if (miniSettingsWindow) {
-			// miniSettingsWindow.show();
-			miniSettingsWindow.openDevTools();
-		} else {
-			console.log("cant find backgroundListenerWindow to show");
-		}
-	});
+	trayObject.on('right-click', debugEverything);
 
 	// trayObject.on('double-click', applyWindowMode);
 	trayObject.on('click', (event) => {
@@ -752,11 +756,47 @@ app.on('activate-with-no-open-windows', () => {
 });
 
 app.on('ready', () => {
+    globalShortcut.register('Command+Shift+Alt+Space', function () {
+        applyWindowMode();
+    });
+
+    globalShortcut.register('Command+Shift+Alt+Up', function () {
+        let currentBounds = mainWindow.getBounds();
+        currentBounds.y -= 25;
+        mainWindow.setBounds(currentBounds);
+    });
+
+    globalShortcut.register('Command+Shift+Alt+Left', function () {
+        let currentBounds = mainWindow.getBounds();
+        currentBounds.x -= 25;
+        mainWindow.setBounds(currentBounds);
+
+    });
+
+    globalShortcut.register('Command+Shift+Alt+Down', function () {
+        let currentBounds = mainWindow.getBounds();
+        currentBounds.y += 25;
+        mainWindow.setBounds(currentBounds);
+
+    });
+
+    globalShortcut.register('Command+Shift+Alt+Right', function () {
+        let currentBounds = mainWindow.getBounds();
+        currentBounds.x += 25;
+        mainWindow.setBounds(currentBounds);
+    });
+
+    globalShortcut.register('Command+Shift+Alt+S', function () {
+        // TODO: Implement escape to drop focus and return to previous app
+        mainWindow.webContents.send('focus-search-field');
+    });
+
 	createWindows();
 	loadWithPeriods(backgroundTaskRunnerWindow.webContents.send('read-last-app-name'));
 });
 
 app.on('before-quit', (event) => {
+    globalShortcut.unregisterAll()
 	quitShortcutMagic();
 });
 
@@ -950,4 +990,9 @@ ipcMain.on('temporarily-update-app-settings', (event, newSetting) => {
     inMemoryShortcuts[GLOBAL_SETTINGS]["boundsPerApp"] = newSetting["boundsPerApp"];
     inMemoryShortcuts[GLOBAL_SETTINGS]["alwaysOnTop"] = newSetting["alwaysOnTop"];
     mainWindow.setAlwaysOnTop(newSetting["alwaysOnTop"]);
+});
+
+ipcMain.on('unfocus-main-window', (event) => {
+    // TODO: Fix unfocusing window properly
+    mainWindow.blur();
 });

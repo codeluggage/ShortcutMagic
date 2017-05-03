@@ -384,6 +384,14 @@ export default class Home extends Component {
 		// };
 		//
 
+        ipcRenderer.on('focus-search-field', (event) => {
+            window.document.getElementById("title").style.display = "none";
+            window.document.getElementById("settings-button-group").style.display = "block";
+            window.document.getElementById("search-field").style.display = "";
+
+            ipcRenderer.send('show-window');
+            window.document.getElementById("search-field").focus();
+        });
 
         ipcRenderer.on('temporarily-update-app-settings', (event, newSetting) => {
             let backgroundColor = newSetting["backgroundColor"];
@@ -855,9 +863,17 @@ export default class Home extends Component {
             }} onChange={this.filterListTrigger}
             onKeyDown={(e) => {
                 if (e.keyCode === 27) { // key code 27 == escape
+                    ipcRenderer.send('unfocus-main-window');
+
                     // Clear search field and trigger list filter on empty search filter
                     window.document.getElementById("search-field").value = '';
                     this.filterListTrigger();
+
+                    // Reset looks of title/search area
+                    // TODO: DRY this up in a function
+                    window.document.getElementById("title").style.display = "block";
+                    window.document.getElementById("settings-button-group").style.display = "none";
+                    window.document.getElementById("search-field").style.display = "none";
                 }
             }}/>
 		);
