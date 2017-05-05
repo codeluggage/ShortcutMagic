@@ -13,15 +13,16 @@
     "pack-mac": "electron-packager . --asar=false --overwrite --platform=darwin --arch=x64 --icon=assets/wizard.icns --prune=true --osx-sign.identity='Developer ID Application: Matias Forbord (A9ADPQA768)'"
   },
   "build": {
-      "appId": "com.thankivity.shortcutmagic",
-      "mac": {
-          "category": "Productivity"
-      }
+    "appId": "com.thankivity.shortcutmagic",
+    "mac": {
+      "category": "Productivity"
+    }
   },
   "dependencies": {
     "babel-preset-es2015": "^6.3.13",
     "babel-preset-react": "^6.3.13",
     "babel-register": "^6.3.13",
+    "electron-localshortcut": "^1.1.1",
     "electron-osx-appearance": "^0.1.1",
     "font-awesome": "^4.7.0",
     "nedb": "^1.8.0",
