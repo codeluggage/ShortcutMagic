@@ -334,15 +334,19 @@ const SortableItem = SortableElement((componentArguments) => {
                 flexDirection: 'row',
                 flex: 2,
             }}>
-                {topSection} - {(componentArguments.index < 5) ? (
+                {topSection}   {(componentArguments.index < 5) ? (
                     <p style={{
                         color: globalState.textColor,
-                        flex: 2,
-                        marginRight: '4px',
-                        marginLeft: '4px',
+                        flex: 1,
+                        marginBottom: "30px",
+                        paddingLeft: "5px",
+                        paddingRight: "5px",
+                        borderRadius: ".25rem",
+                        borderWidth: ".50rem",
+                        border: `2px solid ${globalState.textColor}`,
             			fontSize: globalState.listTitleFontSize,
             			fontWeight: globalState.listTitleFontWeight,
-                    }}>Cmd+{componentArguments.index + 1}</p>
+                    }}>Cmd {componentArguments.index + 1}</p>
                 ) : ""}
 
                 {mouseOverButtonsSection}
