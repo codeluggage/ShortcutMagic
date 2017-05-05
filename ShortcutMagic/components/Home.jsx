@@ -334,7 +334,17 @@ const SortableItem = SortableElement((componentArguments) => {
                 flexDirection: 'row',
                 flex: 2,
             }}>
-                {topSection}
+                {topSection} - {(componentArguments.index < 5) ? (
+                    <p style={{
+                        color: globalState.textColor,
+                        flex: 2,
+                        marginRight: '4px',
+                        marginLeft: '4px',
+            			fontSize: globalState.listTitleFontSize,
+            			fontWeight: globalState.listTitleFontWeight,
+                    }}>Cmd+{componentArguments.index + 1}</p>
+                ) : ""}
+
                 {mouseOverButtonsSection}
             </div>
 
@@ -383,6 +393,10 @@ export default class Home extends Component {
 		// 	listItemFontWeight: 500,
 		// };
 		//
+
+        ipcRenderer.on('execute-list-item', (event, itemNumber) => {
+            ipcRenderer.send('execute-list-item', this.previousShortcuts[itemNumber]);
+        });
 
         ipcRenderer.on('focus-search-field', (event) => {
             window.document.getElementById("title").style.display = "none";

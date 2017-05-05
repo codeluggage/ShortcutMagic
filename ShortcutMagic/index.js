@@ -13,6 +13,7 @@ const {
     globalShortcut
 } = require('electron');
 
+const electronLocalshortcut = require('electron-localshortcut');
 
 // TODO: Fix preference crash when building release version
 // these prefs let us determine if the menu bar is dark or light
@@ -394,6 +395,31 @@ function createWindows() {
 	createMiniSettingsWindow();
 	// createWelcomeWindow();
 	createMainWindow();
+
+    electronLocalshortcut.register(mainWindow, 'Cmd+1', () => {
+        console.log("hit execute");
+        mainWindow.webContents.send('execute-list-item', 1);
+    });
+
+    electronLocalshortcut.register(mainWindow, 'Cmd+2', () => {
+        console.log("hit execute");
+        mainWindow.webContents.send('execute-list-item', 2);
+    });
+
+    electronLocalshortcut.register(mainWindow, 'Cmd+3', () => {
+        console.log("hit execute");
+        mainWindow.webContents.send('execute-list-item', 3);
+    });
+
+    electronLocalshortcut.register(mainWindow, 'Cmd+4', () => {
+        console.log("hit execute");
+        mainWindow.webContents.send('execute-list-item', 4);
+    });
+
+    electronLocalshortcut.register(mainWindow, 'Cmd+5', () => {
+        console.log("hit execute");
+        mainWindow.webContents.send('execute-list-item', 5);
+    });
 }
 
 function createMainWindow() {
@@ -770,14 +796,12 @@ app.on('ready', () => {
         let currentBounds = mainWindow.getBounds();
         currentBounds.x -= 25;
         mainWindow.setBounds(currentBounds);
-
     });
 
     globalShortcut.register('Command+Shift+Alt+Down', function () {
         let currentBounds = mainWindow.getBounds();
         currentBounds.y += 25;
         mainWindow.setBounds(currentBounds);
-
     });
 
     globalShortcut.register('Command+Shift+Alt+Right', function () {
