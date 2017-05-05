@@ -482,6 +482,7 @@ export default class Home extends Component {
                 name === "Google Software Update..." ||
                 name === "Google Software Update" ||
                 name === "Dropbox Finder Integration" ||
+                name === "SecurityAgent" ||
                 name === "AirPlayUIAgent") {
                 return; // TODO: Could this mess with other electron starter projects?
             }

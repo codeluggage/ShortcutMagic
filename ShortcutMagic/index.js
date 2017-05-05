@@ -774,6 +774,7 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
         appName === "Google Software Update..." ||
         appName === "Google Software Update" ||
         appName === "Dropbox Finder Integration" ||
+        appName === "SecurityAgent" ||
         appName === "AirPlayUIAgent") {
 		console.log("Not switching to this app: ", appName);
 		return;
