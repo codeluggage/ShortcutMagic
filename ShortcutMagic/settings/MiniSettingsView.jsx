@@ -75,8 +75,6 @@ function makeColorString(color) {
 
 export default class MiniSettingsView extends Component {
     componentWillMount() {
-        this.setState(cachedStyles);
-
         ipcRenderer.on('set-style', (event, style) => {
             console.log('set-style from MiniSettingsView.jsx', this.state, style);
 
@@ -108,6 +106,7 @@ export default class MiniSettingsView extends Component {
 
             		cachedStyles[newName] = doc[0];
                     this.applyAllStyles(cachedStyles[newName]);
+                    this.setState(cachedStyles[newName]);
                 });
             }
 
@@ -131,6 +130,7 @@ export default class MiniSettingsView extends Component {
 				holdWindow.webContents.send('set-text-color', newStyles["textColor"]);
 				holdWindow.webContents.send('set-item-color', newStyles["itemColor"]);
 				holdWindow.webContents.send('set-item-background-color', newStyles["itemBackgroundColor"]);
+                break;
 			}
 		}
     }
@@ -149,10 +149,11 @@ export default class MiniSettingsView extends Component {
 			$set: this.state
 		}, {
 			upsert: true
-		}, function(err, doc) {
+		}, (err, doc) => {
 			if (err) {
 				console.log("Error upserting in minisettingsview set", err, this.state);
 			} else {
+                cachedStyles[currentAppName] = this.state;
 				console.log("Succeeded in saving minisettingsview style to db: ", this.state);
 			}
 		});
@@ -169,6 +170,7 @@ export default class MiniSettingsView extends Component {
             let holdWindow = windows[i];
             if (holdWindow && holdWindow.getTitle() == "mainWindow") {
 				holdWindow.webContents.send('set-background-color', colorString);
+                break;
             }
         }
 
@@ -186,6 +188,7 @@ export default class MiniSettingsView extends Component {
             let holdWindow = windows[i];
             if (holdWindow && holdWindow.getTitle() == "mainWindow") {
 				holdWindow.webContents.send('set-item-background-color', colorString);
+                break;
             }
         }
 
@@ -203,6 +206,7 @@ export default class MiniSettingsView extends Component {
             let holdWindow = windows[i];
             if (holdWindow && holdWindow.getTitle() == "mainWindow") {
 				holdWindow.webContents.send('set-text-color', colorString);
+                break;
             }
         }
 
@@ -220,6 +224,7 @@ export default class MiniSettingsView extends Component {
             let holdWindow = windows[i];
             if (holdWindow && holdWindow.getTitle() == "mainWindow") {
 				holdWindow.webContents.send('set-item-color', colorString);
+                break;
             }
         }
 
@@ -233,11 +238,14 @@ export default class MiniSettingsView extends Component {
                     backgroundColor: 'white',
                     color: 'black',
                 }}>
-                Something is not right here... Sorry! If you click in this window, you can try reloading (command + R) or quit (command + Q) and start ShortcutMagic again.
+                Error: No state.
+                <br />
+                If you click in this window, you can try reloading (command + R) or quit (command + Q) and start ShortcutMagic again.
                 </div>
             );
         }
 
+        // TODO: Make look more like mac with photon
 		return (
 			<div style={{
 				display: 'flex',
@@ -245,8 +253,8 @@ export default class MiniSettingsView extends Component {
 				margin: 0,
 				border: 0,
 				padding: 0,
-                backgroundColor: this.state.backgroundColor,
-                color: this.state.textColor,
+                backgroundColor: 'white',
+                color: 'black',
                 textAlign: 'center',
 			}}>
     			<div style={{
