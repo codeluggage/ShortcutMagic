@@ -77,6 +77,17 @@ export default class MiniSettingsView extends Component {
     componentWillMount() {
         this.setState(cachedStyles);
 
+        ipcRenderer.on('set-style', (event, style) => {
+            console.log('set-style from MiniSettingsView.jsx', this.state, style);
+
+            this.setState({
+                backgroundColor: style.backgroundColor,
+                itemColor: style.itemColor,
+                textColor: style.textColor,
+                itemBackgroundColor: style.itemBackgroundColor,
+            });
+        });
+
 		ipcRenderer.on('app-changed', (event, newName) => {
             let newStyles = cachedStyles[newName];
             if (newStyles) {
@@ -99,6 +110,8 @@ export default class MiniSettingsView extends Component {
                     this.applyAllStyles(cachedStyles[newName]);
                 });
             }
+
+
         });
 
         this.handleBackgroundColorChange = this.handleBackgroundColorChange.bind(this);

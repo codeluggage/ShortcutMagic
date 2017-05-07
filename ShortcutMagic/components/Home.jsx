@@ -701,6 +701,8 @@ export default class Home extends Component {
                         } else {
                             originalBounds.x = mainBounds.x + mainBounds.width;
                         }
+
+                        settingsWindow.webContents.send('set-style', this.state);
                         settingsWindow.setBounds(originalBounds);
 		                settingsWindow.show();
 					}
