@@ -39,12 +39,12 @@ autoUpdater.on('error', (event, error) => {
     log.info('AUTOUPDATER: error ', error);
     //log.info('arguments', arguments);
 });
-autoUpdater.on('update-downloaded', (event, info) => {
+autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName, releaseDate, updateURL) => {
     log.info('AUTOUPDATER: update-downloaded ', event, releaseNotes, releaseName, releaseDate, updateURL);
     //log.info('arguments', arguments);
 
     setTimeout(function() {
-        log.info("running autoUpdater.quitAndInstall();");
+        log.info("AUTOUPDATER:  autoUpdater.quitAndInstall();");
         autoUpdater.quitAndInstall();
     }, 2000)
 });
@@ -882,6 +882,7 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 	// TODO: Make this list editable somewhere to avoid people having problems?
 	if (appName === "Electron" ||
         appName === "ShortcutMagic" ||
+        appName === "ShortcutMagic-mac" ||
         appName === "ScreenSaverEngine" ||
         appName === "loginwindow" ||
         appName === "Dock" ||

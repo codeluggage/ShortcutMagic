@@ -502,6 +502,7 @@ export default class Home extends Component {
 
         	if (name === "Electron" ||
                 name === "ShortcutMagic" ||
+                name === "ShortcutMagic-mac" ||
                 name === "ScreenSaverEngine" ||
                 name === "loginwindow" ||
                 name === "Dock" ||
