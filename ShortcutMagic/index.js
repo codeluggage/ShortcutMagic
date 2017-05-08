@@ -10,10 +10,50 @@ const {
     ipcMain,
     // Tray is used for the icon in the menu bar on mac, where we show the wizard hat
     Tray,
-    globalShortcut
+    globalShortcut,
+    autoUpdater
 } = require('electron');
 
+const log = require('electron-log');
+log.transports.console.level = 'info';
+
+//-------------------------------------------------------------------
+// Logging
+//
+// This logging setup is not required for auto-updates to work,
+// but it sure makes debugging easier :)
+//-------------------------------------------------------------------
+autoUpdater.logger = log;
+autoUpdater.logger.transports.file.level = 'info';
+log.info('App starting...');
+
+
 const electronLocalshortcut = require('electron-localshortcut');
+
+autoUpdater.on('checking-for-update', () => {
+});
+autoUpdater.on('update-available', (event, info) => {
+    log.info('AUTOUPDATER: update-available', info);
+    //log.info('arguments', arguments);
+});
+autoUpdater.on('update-not-available', (event, info) => {
+    log.info('AUTOUPDATER: update-not-available', info);
+    //log.info('arguments', arguments);
+});
+autoUpdater.on('error', (event, error) => {
+    log.info('AUTOUPDATER: error ', error);
+    //log.info('arguments', arguments);
+});
+autoUpdater.on('update-downloaded', (event, info) => {
+    log.info('AUTOUPDATER: update-downloaded ', event, releaseNotes, releaseName, releaseDate, updateURL);
+    //log.info('arguments', arguments);
+
+    setTimeout(function() {
+        log.info("running autoUpdater.quitAndInstall();");
+        autoUpdater.quitAndInstall();
+    }, 2000)
+});
+
 
 // TODO: Fix preference crash when building release version
 // these prefs let us determine if the menu bar is dark or light
@@ -41,7 +81,7 @@ function getDb() {
             unique: true // Setting unique value constraint on name
         }, function (err) {
             if (err) {
-                console.log('ERROR: getDb().ensureIndex failed to set unique constraint for shortcut db', err);
+                log.info('ERROR: getDb().ensureIndex failed to set unique constraint for shortcut db', err);
             }
         });
 
@@ -49,7 +89,7 @@ function getDb() {
         // For testing, we need to check parsing of shortcuts sometimes. These applications are simple and have few shortcuts,
         // so they are quick to test with.
         // TODO: Make this only run in debug/dev mode
-        console.log("temporary removal of PomoDoneApp and mysms shortcuts for testing, TODO: hard remove instead");
+        log.info("temporary removal of PomoDoneApp and mysms shortcuts for testing, TODO: hard remove instead");
         getDb().remove({
             name: "PomoDoneApp"
         });
@@ -120,13 +160,13 @@ function setAndSaveBounds(newMode) {
         // No bounds need to be stored for hidden mode
 	}
 
-	console.log("_________________________________________ SAVING ____________________________________");
-	console.log(`---------oldMode: ${oldMode}------------`);
-	console.log(`---------newMode: ${newMode}------------`);
-	console.log(`---------bounds (should be nothing): ${JSON.stringify(inMemoryShortcuts[currentAppName].bounds)}------------`);
-	console.log(`---------lastFullBounds: ${JSON.stringify(inMemoryShortcuts[currentAppName].lastFullBounds)}------------`);
-	console.log(`---------lastBubbleBounds: ${JSON.stringify(inMemoryShortcuts[currentAppName].lastBubbleBounds)}------------`);
-	console.log("_________________________________________ SAVING ____________________________________");
+	log.info("_________________________________________ SAVING ____________________________________");
+	log.info(`---------oldMode: ${oldMode}------------`);
+	log.info(`---------newMode: ${newMode}------------`);
+	log.info(`---------bounds (should be nothing): ${JSON.stringify(inMemoryShortcuts[currentAppName].bounds)}------------`);
+	log.info(`---------lastFullBounds: ${JSON.stringify(inMemoryShortcuts[currentAppName].lastFullBounds)}------------`);
+	log.info(`---------lastBubbleBounds: ${JSON.stringify(inMemoryShortcuts[currentAppName].lastBubbleBounds)}------------`);
+	log.info("_________________________________________ SAVING ____________________________________");
 
     // Store the payload in the db for the current app
 	getDb().update({
@@ -137,9 +177,9 @@ function setAndSaveBounds(newMode) {
 		upsert: true
 	}, function(err, res) {
 		if (err) {
-			console.log('ERROR: upserting bounds in applywindowmode in db got error: ', err);
+			log.info('ERROR: upserting bounds in applywindowmode in db got error: ', err);
 		} else {
-			console.log('finished upserting bounds in applywindowmode');
+			log.info('finished upserting bounds in applywindowmode');
 		}
 	});
 }
@@ -151,7 +191,7 @@ function setAndSaveWindowMode(newWindowMode) {
 		inMemoryShortcuts[currentAppName].windowMode = "bubble";
 
 		mainWindow.show();
-		console.log("In bubble-mode in applyWindowMode, sending to mainWindow");
+		log.info("In bubble-mode in applyWindowMode, sending to mainWindow");
 		mainWindow.webContents.send('bubble-mode');
 
 		var bubbleBounds = undefined;
@@ -166,9 +206,9 @@ function setAndSaveWindowMode(newWindowMode) {
 			getDb().find({
 				name: currentAppName
 			}, function(err, res) {
-				console.log('loaded shortcuts: ');
+				log.info('loaded shortcuts: ');
 				if (err) {
-					console.log('errored during db find: ', err);
+					log.info('errored during db find: ', err);
 					return;
 				}
 
@@ -188,7 +228,7 @@ function setAndSaveWindowMode(newWindowMode) {
 
 		// TODO: load from full settings or use default
 		mainWindow.show();
-		console.log("In full-mode in applyWindowMode, sending to mainWindow");
+		log.info("In full-mode in applyWindowMode, sending to mainWindow");
 		mainWindow.webContents.send('full-mode');
 
 		var fullBounds = undefined;
@@ -203,9 +243,9 @@ function setAndSaveWindowMode(newWindowMode) {
 			getDb().find({
 				name: currentAppName
 			}, function(err, res) {
-				console.log('loaded shortcuts: ');
+				log.info('loaded shortcuts: ');
 				if (err) {
-					console.log('errored during db find: ', err);
+					log.info('errored during db find: ', err);
 					return;
 				}
 
@@ -224,13 +264,13 @@ function setAndSaveWindowMode(newWindowMode) {
 		inMemoryShortcuts[currentAppName].windowMode = "hidden";
 
 		mainWindow.hide();
-		console.log("In hidden-mode in applyWindowMode, sending to mainWindow");
+		log.info("In hidden-mode in applyWindowMode, sending to mainWindow");
 		mainWindow.webContents.send('hidden-mode');
 	} else {
-		console.log("in setAndSaveWindowMode() ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
-		console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
-		console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
-		console.log("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+		log.info("in setAndSaveWindowMode() ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+		log.info("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+		log.info("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
+		log.info("ERROR ERROR ERROR ERROR ERROR ERROR ERROR ");
 	}
 }
 
@@ -240,7 +280,7 @@ function applyWindowMode(newWindowMode) {
     // TODO: handle this better, what does the user expect when arriving here? First click, misclick?
 	if (newWindowMode && newWindowMode == inMemoryShortcuts[currentAppName].windowMode) return;
 
-	console.log(`_________ newWindowMode:${newWindowMode}, in memory window mode: ${inMemoryShortcuts[currentAppName].windowMode}`);
+	log.info(`_________ newWindowMode:${newWindowMode}, in memory window mode: ${inMemoryShortcuts[currentAppName].windowMode}`);
 
 	if (newWindowMode) {
 		if (newWindowMode == "hidden") {
@@ -254,25 +294,25 @@ function applyWindowMode(newWindowMode) {
 		// Without a new specific window mode, we toggle through each mode
 		if (inMemoryShortcuts[currentAppName].windowMode == "hidden") {
 			setAndSaveWindowMode("full");
-			console.log(`setAndSaveWindowMode("full") done `);
+			log.info(`setAndSaveWindowMode("full") done `);
 		} else if (inMemoryShortcuts[currentAppName].windowMode == "bubble") {
 			setAndSaveWindowMode("hidden");
-			console.log(`setAndSaveWindowMode("hidden") done `);
+			log.info(`setAndSaveWindowMode("hidden") done `);
 		} else if (inMemoryShortcuts[currentAppName].windowMode == "full") {
 			setAndSaveWindowMode("bubble");
-			console.log(`setAndSaveWindowMode("bubble") done `);
+			log.info(`setAndSaveWindowMode("bubble") done `);
 		}
 
         // This should not happen, but if it does it's probably from a new app so go to the next natural mode; bubble
 		if (!inMemoryShortcuts[currentAppName].windowMode) {
-			console.log("Error: no window mode found, setting bubble as fallback");
+			log.info("Error: no window mode found, setting bubble as fallback");
 			setAndSaveWindowMode("bubble");
 		}
 	}
 }
 
 function toggleWindow() {
-	console.log('togglewindow with isVisible: ', mainWindow.isVisible());
+	log.info('togglewindow with isVisible: ', mainWindow.isVisible());
 	if (mainWindow.isVisible()) {
 		mainWindow.blur();
 	} else {
@@ -300,25 +340,25 @@ function savePosition(appName) {
 		name: appName
 	}, function(err, doc) {
 		if (err) {
-			console.log('error finding in savePosition: ', err);
+			log.info('error finding in savePosition: ', err);
 			return;
 		}
 
 		if (doc != [] && doc.length > 0) {
 			var newShortcuts = doc[0];
 			var positionsNotEqual = false;
-            console.log(`================ comparing positions for window mode: ${newShortcuts.windowMode}`);
+            log.info(`================ comparing positions for window mode: ${newShortcuts.windowMode}`);
 
 			if (newShortcuts.windowMode == "full") {
-				console.log(`comparing old ${JSON.stringify(newBounds)} with loaded ${JSON.stringify(newShortcuts.lastFullBounds)}`);
+				log.info(`comparing old ${JSON.stringify(newBounds)} with loaded ${JSON.stringify(newShortcuts.lastFullBounds)}`);
 				positionsNotEqual = JSON.stringify(newShortcuts.lastFullBounds) != JSON.stringify(newBounds);
 			} else if (newShortcuts.windowMode == "bubble") {
-				console.log(`comparing old ${JSON.stringify(newBounds)} with loaded ${JSON.stringify(newShortcuts.lastBubbleBounds)}`);
+				log.info(`comparing old ${JSON.stringify(newBounds)} with loaded ${JSON.stringify(newShortcuts.lastBubbleBounds)}`);
 				positionsNotEqual = JSON.stringify(newShortcuts.lastBubbleBounds) != JSON.stringify(newBounds);
             }
 
 			if (positionsNotEqual) {
-				console.log("========== compare found differences, updating db ");
+				log.info("========== compare found differences, updating db ");
 
 				var saveSet = {};
 
@@ -343,10 +383,10 @@ function savePosition(appName) {
 				}, {
 					$set: saveSet
 				}, function(err, res) {
-					console.log('finished updating bounds with err res doc', err, res, newBounds);
+					log.info('finished updating bounds with err res doc', err, res, newBounds);
 				});
 			} else {
-				console.log(`========== compare success between these bounds
+				log.info(`========== compare success between these bounds
                     [${JSON.stringify(newShortcuts.lastBubbleBounds)}, ${JSON.stringify(newShortcuts.lastFullBounds)}]
                     and [${JSON.stringify(inMemoryShortcuts[appName].lastBubbleBounds)}, ${JSON.stringify(inMemoryShortcuts[appName].lastFullBounds)}]`);
 			}
@@ -381,9 +421,9 @@ function createSettingsWindow() {
 	});
 
 	var settingsPath = `file://${__dirname}/settings/index.html`;
-	console.log('settings path trying to load index: ', settingsPath);
+	log.info('settings path trying to load index: ', settingsPath);
 	settingsWindow.loadURL(settingsPath);
-	console.log("after loading url");
+	log.info("after loading url");
 }
 
 function createWindows() {
@@ -397,27 +437,27 @@ function createWindows() {
 	createMainWindow();
 
     electronLocalshortcut.register(mainWindow, 'Cmd+1', () => {
-        console.log("hit execute");
+        log.info("hit execute");
         mainWindow.webContents.send('execute-list-item', 1);
     });
 
     electronLocalshortcut.register(mainWindow, 'Cmd+2', () => {
-        console.log("hit execute");
+        log.info("hit execute");
         mainWindow.webContents.send('execute-list-item', 2);
     });
 
     electronLocalshortcut.register(mainWindow, 'Cmd+3', () => {
-        console.log("hit execute");
+        log.info("hit execute");
         mainWindow.webContents.send('execute-list-item', 3);
     });
 
     electronLocalshortcut.register(mainWindow, 'Cmd+4', () => {
-        console.log("hit execute");
+        log.info("hit execute");
         mainWindow.webContents.send('execute-list-item', 4);
     });
 
     electronLocalshortcut.register(mainWindow, 'Cmd+5', () => {
-        console.log("hit execute");
+        log.info("hit execute");
         mainWindow.webContents.send('execute-list-item', 5);
     });
 }
@@ -428,7 +468,7 @@ function createMainWindow() {
     // }, function(err, res) {
     //
 	// 	if (err || !res) {
-	// 		console.log('error finding in savePosition: ', err);
+	// 		log.info('error finding in savePosition: ', err);
 	// 		return;
 	// 	}
     //
@@ -495,14 +535,14 @@ function createMainWindow() {
         	mainWindow.on('resize', (event) => {
         		// TODO: Set up a limit here to not save too often, or queue it up
         		if (!hackyStopSavePos) {
-        			console.log("//////////////////////////////////////// on.resize");
+        			log.info("//////////////////////////////////////// on.resize");
         			savePosition(currentAppName);
         		}
         	});
 
         	mainWindow.on('moved', (event) => {
         		if (!hackyStopSavePos) {
-        			console.log("//////////////////////////////////////// on.moved");
+        			log.info("//////////////////////////////////////// on.moved");
         			savePosition(currentAppName);
         		}
         	});
@@ -528,42 +568,42 @@ function debugEverything() {
         // mainWindow.show();
         mainWindow.openDevTools();
     } else {
-        console.log("cant find mainwindow to show");
+        log.info("cant find mainwindow to show");
     }
 
     if (settingsWindow) {
         // settingsWindow.show();
         settingsWindow.openDevTools();
     } else {
-        console.log("cant find settingswindow to show");
+        log.info("cant find settingswindow to show");
     }
 
     if (backgroundTaskRunnerWindow) {
         // backgroundTaskRunnerWindow.show();
         backgroundTaskRunnerWindow.openDevTools();
     } else {
-        console.log("cant find backgroundTaskRunnerWindow to show");
+        log.info("cant find backgroundTaskRunnerWindow to show");
     }
 
     if (backgroundListenerWindow) {
         // backgroundListenerWindow.show();
         backgroundListenerWindow.openDevTools();
     } else {
-        console.log("cant find backgroundListenerWindow to show");
+        log.info("cant find backgroundListenerWindow to show");
     }
 
     if (welcomeWindow) {
         // welcomeWindow.show();
         welcomeWindow.openDevTools();
     } else {
-        console.log("cant find backgroundListenerWindow to show");
+        log.info("cant find backgroundListenerWindow to show");
     }
 
     if (miniSettingsWindow) {
         // miniSettingsWindow.show();
         miniSettingsWindow.openDevTools();
     } else {
-        console.log("cant find backgroundListenerWindow to show");
+        log.info("cant find backgroundListenerWindow to show");
     }
 }
 
@@ -573,7 +613,7 @@ function createTray() {
 	const iconPath = path.join(__dirname, 'assets/wizard_16x16.png');
 	trayObject = new Tray(iconPath);
 
-	console.log('created trayObject: ', trayObject);
+	log.info('created trayObject: ', trayObject);
 	trayObject.setToolTip('ShortcutMagic!');
 	trayObject.on('right-click', debugEverything);
 
@@ -600,7 +640,7 @@ function createBackgroundTaskRunnerWindow() {
 		title: "backgroundTaskRunnerWindow"
 	});
 
-	console.log('#1 load window:');
+	log.info('#1 load window:');
 	backgroundTaskRunnerWindow.loadURL(`file://${__dirname}/background/index.html`);
 }
 
@@ -610,7 +650,7 @@ function createBackgroundListenerWindow() {
 		title: "backgroundListenerWindow"
 	});
 
-	console.log('loaded listener window');
+	log.info('loaded listener window');
 	backgroundListenerWindow.loadURL(`file://${__dirname}/background/listener.html`);
 }
 
@@ -648,18 +688,18 @@ function saveWithoutPeriods(payload) {
 		upsert: true
 	}, function(err, res) {
 		if (err) {
-			console.log('ERROR: upserting in db got error: ', err);
+			log.info('ERROR: upserting in db got error: ', err);
 		} else {
-			console.log('finished upserting shortcuts for ' + payload.name + ' in db');
+			log.info('finished upserting shortcuts for ' + payload.name + ' in db');
 		}
 	});
 }
 
 function loadWithPeriods(appName) {
-	console.log(`entering loadWithPeriods for appname ${appName}`);
+	log.info(`entering loadWithPeriods for appname ${appName}`);
 	var holdShortcuts = inMemoryShortcuts[appName];
 	if (holdShortcuts) {
-		console.log(`found and loaded in-memory shortcuts and window mode ${inMemoryShortcuts[appName].windowMode}`);
+		log.info(`found and loaded in-memory shortcuts and window mode ${inMemoryShortcuts[appName].windowMode}`);
         var success = false;
 
 		hackyStopSavePos = true;
@@ -695,9 +735,9 @@ function loadWithPeriods(appName) {
 	getDb().find({
 		name: appName
 	}, function(err, res) {
-		console.log('loaded shortcuts, err? ', err);
+		log.info('loaded shortcuts, err? ', err);
 		if (err) {
-			console.log('errored during db find: ', err);
+			log.info('errored during db find: ', err);
 			return;
 		}
 
@@ -741,12 +781,12 @@ function loadWithPeriods(appName) {
 
 				mainWindow.webContents.send('update-shortcuts', newShortcuts);
 			} else {
-				console.log("CANT FIND MAIN WINDOW WHEN LOADING SHORTCUTS");
+				log.info("CANT FIND MAIN WINDOW WHEN LOADING SHORTCUTS");
 			}
 		} else {
             if (mainWindow && mainWindow.webContents) {
     			mainWindow.webContents.send('set-loading', appName);
-    			console.log('sending webview-parse-shortcuts with appName', appName);
+    			log.info('sending webview-parse-shortcuts with appName', appName);
     			backgroundTaskRunnerWindow.webContents.send('webview-parse-shortcuts', appName);
             }
 		}
@@ -782,6 +822,21 @@ app.on('activate-with-no-open-windows', () => {
 });
 
 app.on('ready', () => {
+    const checkForUpdates = () => {
+        log.info("before AUTOUPDATER setFeedUrl");
+        // const appVersion = app.getVersion();
+        var platform = `${os.platform()}_${os.arch()}`;
+        var version = app.getVersion();
+        autoUpdater.setFeedURL(`https://shortcutmagic-updater.herokuapp.com/update/${platform}/${version}`);
+        log.info("after AUTOUPDATER setFeedUrl");
+        log.info("before AUTOUPDATER checkForUpdates");
+        autoUpdater.checkForUpdates();
+        // setTimeout(checkForUpdates, 3600000);
+    };
+
+    setTimeout(checkForUpdates, 100);
+
+
     globalShortcut.register('Command+Shift+Alt+Space', function () {
         applyWindowMode();
     });
@@ -840,33 +895,33 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
         appName === "Dropbox Finder Integration" ||
         appName === "SecurityAgent" ||
         appName === "AirPlayUIAgent") {
-		console.log("Not switching to this app: ", appName);
+		log.info("Not switching to this app: ", appName);
 		return;
 	}
 
 	if (appName == currentAppName) {
-		console.log("cannot switch to same app again");
+		log.info("cannot switch to same app again");
 		return;
 	}
 
 	if (!mainWindow) {
-		console.log("cannot switch app without main window");
+		log.info("cannot switch app without main window");
 		return;
 	}
 
-	console.log(`${currentAppName} -> ${appName}`);
+	log.info(`${currentAppName} -> ${appName}`);
 
 
 	// if (currentAppName) {
 	// 	savePosition(currentAppName);
 	// }
-	// console.log('finished updating pos of app: ', currentAppName);
-	// console.log("before loadWithPeriods, bounds was: ", mainWindow.getBounds());
+	// log.info('finished updating pos of app: ', currentAppName);
+	// log.info("before loadWithPeriods, bounds was: ", mainWindow.getBounds());
 
 	// TODO: add css spinner when this is running
 	// TODO: load in background render thread
 	loadWithPeriods(appName);
-	console.log("finished loading pos for app: ", mainWindow.getBounds(), appName);
+	log.info("finished loading pos for app: ", mainWindow.getBounds(), appName);
 	currentAppName = appName;
 
 	settingsWindow.webContents.send('app-changed', currentAppName);
@@ -874,7 +929,7 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 });
 
 ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
-	console.log("main-parse-shortcuts-callback");
+	log.info("main-parse-shortcuts-callback");
 	if (payload) {
 		updateRenderedShortcuts(payload);
 		saveWithoutPeriods(payload);
@@ -882,12 +937,12 @@ ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
 });
 
 ipcMain.on('main-parse-shortcuts', function(event, appName) {
-	console.log('#2 - root index.js, triggered main-parse-shortcuts, with appName: ', appName, typeof appName);
+	log.info('#2 - root index.js, triggered main-parse-shortcuts, with appName: ', appName, typeof appName);
 	loadWithPeriods(appName);
 });
 
 ipcMain.on('update-shortcut-order', function(event, appName, shortcuts) {
-	console.log('entered update-shortcut-order', appName);
+	log.info('entered update-shortcut-order', appName);
 	getDb().update({
 		name: appName
 	}, {
@@ -896,9 +951,9 @@ ipcMain.on('update-shortcut-order', function(event, appName, shortcuts) {
 		}
 	}, function(err, doc) {
 		if (err) {
-			console.log('failed to upsert shortcuts in "update-shortcut-order"', err);
+			log.info('failed to upsert shortcuts in "update-shortcut-order"', err);
 		} else {
-			console.log('succeeded in updating order of shortcuts');
+			log.info('succeeded in updating order of shortcuts');
 		}
 	});
 });
@@ -912,7 +967,7 @@ ipcMain.on('update-shortcut-item', (event, shortcutItem) => {
 	shortcutObject[`shortcuts.${shortcutItem.name}`] = shortcutItem;
 
 	if (!inMemoryShortcuts || !inMemoryShortcuts[currentAppName]) {
-		console.log("error: no loaded shortcuts when updating with update-shortcut-item");
+		log.info("error: no loaded shortcuts when updating with update-shortcut-item");
 	} else {
 		inMemoryShortcuts[currentAppName].shortcuts[shortcutItem.name] = shortcutItem;
 	}
@@ -925,9 +980,9 @@ ipcMain.on('update-shortcut-item', (event, shortcutItem) => {
 		upsert: true
 	}, (err, res) => {
 		if (err) {
-			console.log("error when updating favorite for list item ", listItemName);
+			log.info("error when updating favorite for list item ", listItemName);
 		} else {
-			console.log("succeeded favoriting item: ", res);
+			log.info("succeeded favoriting item: ", res);
 			loadWithPeriods(currentAppName); // TODO: Is this really needed? Double rendering
 		}
 	});
@@ -936,7 +991,7 @@ ipcMain.on('update-shortcut-item', (event, shortcutItem) => {
 ipcMain.on('execute-list-item', (event, listItem) => {
 	if (!listItem) {
 		// how did we end up here??
-		console.log("tried to execute non existent stuff");
+		log.info("tried to execute non existent stuff");
 		return;
 		// loadWithPeriods(appName); // TODO: load shortcuts and do remaining work in callback here
 	}
@@ -945,7 +1000,7 @@ ipcMain.on('execute-list-item', (event, listItem) => {
 	var menu = listItem.menu;
 	// TODO: Run applescript for opening menu here
 	// - perhaps have a toggled state here, where first click sets state and shows the list item, and the second click executes
-	console.log("calling execute-list-item with ", listItem);
+	log.info("calling execute-list-item with ", listItem);
 
 
 	// Only check for shortcut values that can stand alone, and defines if the list item has
@@ -961,7 +1016,7 @@ ipcMain.on('execute-list-item', (event, listItem) => {
 });
 
 ipcMain.on('update-current-app-value', function(event, newAppValue) {
-	console.log('on update-current-app-value with ', newAppValue);
+	log.info('on update-current-app-value with ', newAppValue);
 
 	getDb().update({
 		name: currentAppName
@@ -969,25 +1024,25 @@ ipcMain.on('update-current-app-value', function(event, newAppValue) {
 		$set: newAppValue
 	}, function(err, doc) {
 		if (err) {
-			console.log('failed to update current app value in "update-current-app-value"', err);
+			log.info('failed to update current app value in "update-current-app-value"', err);
 		} else {
-			console.log('successfully updated app value');
+			log.info('successfully updated app value');
 		}
 	});
 });
 
 ipcMain.on('set-full-view-mode', (event) => {
-	console.log("entrypoint for set-full-view-mode");
+	log.info("entrypoint for set-full-view-mode");
 	applyWindowMode("full");
 });
 
 ipcMain.on('set-bubble-mode', (event) => {
-	console.log("entrypoint for set-bubble-mode");
+	log.info("entrypoint for set-bubble-mode");
 	applyWindowMode("bubble");
 });
 
 ipcMain.on('set-hidden-mode', (event) => {
-	console.log("entrypoint for set-hidden-mode");
+	log.info("entrypoint for set-hidden-mode");
 	applyWindowMode("hidden");
 });
 
@@ -1004,9 +1059,9 @@ ipcMain.on('save-app-settings', (event, newSetting) => {
 		upsert: true
 	}, (err, res) => {
 		if (err) {
-			console.log("error when saving global settings", newSetting);
+			log.info("error when saving global settings", newSetting);
 		} else {
-			console.log("successfully saved global settings: ", res);
+			log.info("successfully saved global settings: ", res);
 		}
 	});
 });

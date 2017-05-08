@@ -23,6 +23,7 @@
     "babel-preset-react": "^6.3.13",
     "babel-register": "^6.3.13",
     "electron-localshortcut": "^1.1.1",
+    "electron-log": "^2.2.4",
     "electron-osx-appearance": "^0.1.1",
     "font-awesome": "^4.7.0",
     "nedb": "^1.8.0",
