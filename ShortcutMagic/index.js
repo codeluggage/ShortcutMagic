@@ -16,6 +16,8 @@ const {
 // these prefs let us determine if the menu bar is dark or light
 // const osxPrefs = require('electron-osx-appearance');
 
+import sizeOf from 'image-size';
+
 // path lets us work with the file path of the running application
 const path = require('path');
 // nedb is a simple javascript database, smilar to mongodb, where we store the shortcuts and other things about another program
@@ -975,12 +977,40 @@ ipcMain.on('temporarily-update-app-settings', (event, newSetting) => {
 });
 
 ipcMain.on('show-tooltip-for-list-item', (event, listItem) => {
-    console.log(`in show-tooltip-for-list-item with ${listItem}`);
+    console.log(`in show-tooltip-for-list-item with ${JSON.stringify(listItem)}`);
+    if (!listItem.gif) {
+        console.log("no gif");
+        return;
+    }
+
+    // '/Users/mf/OpenSource/ShortcutMagic/ShortcutMagic/file:/Users/mf/Documents/move-backwards.gif'
+
+    var dimensions = sizeOf(listItem.gif);
+    console.log("dimensions for gif: ", dimensions);
+
+    if (!dimensions || !dimensions.height || !dimensions.width) {
+        console.log("invalid dimensions: ", dimensions);
+        return;
+    }
+
+    let originalBounds = tooltipWindow.getBounds();
+    originalBounds.height = dimensions.height;
+    originalBounds.width = dimensions.width;
+
+    let mainBounds = mainWindow.getBounds();
+    // Show window left or right of main window depending on screen position:
+    if (mainBounds.x > 600) {
+        originalBounds.x = mainBounds.x - originalBounds.width;
+    } else {
+        originalBounds.x = mainBounds.x + mainBounds.width;
+    }
+    tooltipWindow.setBounds(originalBounds);
+
     tooltipWindow.webContents.send('set-gif', listItem);
     tooltipWindow.show();
-});
+})
 
 ipcMain.on('hide-tooltip', (event) => {
-    tooltipWindow.webContents.send('reset');
+    // tooltipWindow.webContents.send('reset');
     tooltipWindow.hide();
 });
