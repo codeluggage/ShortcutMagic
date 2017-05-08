@@ -317,6 +317,8 @@ function toggleWindow() {
 }
 
 function quitShortcutMagic() {
+    // loop over browserwindows and destroy + null all?
+
     settingsWindow = null; // TODO: double check that the settings window isn't destroyed elsewhere
     miniSettingsWindow = null;
     backgroundTaskRunnerWindow = null;
