@@ -43,8 +43,9 @@ autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName, releaseDa
     log.info('AUTOUPDATER: update-downloaded ', event, releaseNotes, releaseName, releaseDate, updateURL);
     //log.info('arguments', arguments);
 
-    setTimeout(function() {
+    setTimeout(() => {
         log.info("AUTOUPDATER:  autoUpdater.quitAndInstall();");
+        quitShortcutMagic();
         autoUpdater.quitAndInstall();
     }, 2000)
 });
