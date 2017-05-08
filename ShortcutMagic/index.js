@@ -317,14 +317,19 @@ function toggleWindow() {
 }
 
 function quitShortcutMagic() {
-    trayObject.destroy();
-    trayObject = null;
     settingsWindow = null; // TODO: double check that the settings window isn't destroyed elsewhere
     miniSettingsWindow = null;
     backgroundTaskRunnerWindow = null;
-    backgroundListenerWindow.destroy(); // This holds on to objective c code, so we force destroy it
-    backgroundListenerWindow = null;
     mainWindow = null;
+
+    if (trayObject) {
+        trayObject.destroy();
+        trayObject = null;
+    }
+    if (backgroundListenerWindow) {
+        backgroundListenerWindow.destroy(); // This holds on to objective c code, so we force destroy it
+        backgroundListenerWindow = null;
+    }
 }
 
 function savePosition(appName) {
