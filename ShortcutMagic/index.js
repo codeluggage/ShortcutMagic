@@ -13,16 +13,11 @@ const {
     globalShortcut,
     autoUpdater
 } = require('electron');
-
+const os = require('os');
 const log = require('electron-log');
-log.transports.console.level = 'info';
 
-//-------------------------------------------------------------------
-// Logging
-//
-// This logging setup is not required for auto-updates to work,
-// but it sure makes debugging easier :)
-//-------------------------------------------------------------------
+
+log.transports.console.level = 'info';
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
 log.info('App starting...');
