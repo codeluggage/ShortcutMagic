@@ -17,6 +17,9 @@ const {
 // const osxPrefs = require('electron-osx-appearance');
 
 import sizeOf from 'image-size';
+let exec = require('child-process-promise').exec;
+
+
 
 // path lets us work with the file path of the running application
 const path = require('path');
@@ -1013,4 +1016,35 @@ ipcMain.on('show-tooltip-for-list-item', (event, listItem) => {
 ipcMain.on('hide-tooltip', (event) => {
     // tooltipWindow.webContents.send('reset');
     tooltipWindow.hide();
+});
+
+let recursiveCount = 0;
+function recursiveLs() {
+    console.log("inside recursiveLs", ++recursiveCount);
+
+    exec("ls -c ~/Movies/Kaptures | grep gif").then((result) => {
+        var stdout = result.stdout;
+        var stderr = result.stderr;
+
+        stdout = stdout.substr(0, stdout.length - 1);
+        console.log(stdout.substr(stdout.lastIndexOf("\n") + 1, stdout.length));
+
+        setTimeout(recursiveLs, 2000);
+    }) .catch((err) => {
+        console.log("errored when running ls: ", err);
+    });
+}
+
+ipcMain.on('record-gif', (event, listItem) => {
+    exec('open /Applications/Kap.app').then((result) => {
+        var stdout = result.stdout;
+        var stderr = result.stderr;
+
+        console.log('stdout: ', stdout);
+        console.log('stderr: ', stderr);
+        console.log("starting recursive ls");
+        recursiveLs();
+    }) .catch((err) => {
+        console.log("errored when opening Kap.app: ", err);
+    });
 });

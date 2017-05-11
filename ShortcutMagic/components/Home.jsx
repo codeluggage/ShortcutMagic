@@ -285,6 +285,14 @@ const SortableItem = SortableElement((componentArguments) => {
         					color: (listItem.isHidden) ? "grey" : "red",
         				}}></span>
                     </button>
+
+                    <button className="btn btn-default" style={{ }} onClick={() => {
+
+                        ipcRenderer.send('record-gif', listItem);
+
+                    }}>
+                        <span className="fa fa-film" style={{ }}></span>
+                    </button>
                 </div>
             </div>
         </div>
