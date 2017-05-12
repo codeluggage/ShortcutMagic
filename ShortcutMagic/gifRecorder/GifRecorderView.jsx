@@ -13,12 +13,13 @@ export default class GifRecorderView extends Component {
                 listItem: listItem,
                 shortcut: listItem.name,
                 recordPath: gifPath,
+                gif: null,
             });
         });
 
         ipcRenderer.on('file-detected', (event, path) => {
             this.setState({
-                newGif: path
+                gif: path
             });
         });
     }
@@ -28,7 +29,7 @@ export default class GifRecorderView extends Component {
             return <div> Opening Kap - a neat gif recording app </div>
         }
 
-        if (!this.state.newGif) {
+        if (!this.state.gif) {
             return (
                 <div style={{ textAlign: 'center' }}>
                     Waiting for new {this.state.shortcut} gifs in {this.state.recordPath}
@@ -41,15 +42,13 @@ export default class GifRecorderView extends Component {
                 Found gif! Is this the one you want to add to {this.state.shortcut}?
                 <br />
                 <button className="btn btn-default" onClick={() => {
-                    ipcRenderer.send('save-gif', this.state.newGif, this.state.listItem, this.state.appName);
-
-                    this.setState({});
+                    ipcRenderer.send('save-gif', this.state.gif, this.state.listItem, this.state.appName);
                 }}>
                     Save
                 </button>
                 <button className="btn btn-cancel" onClick={() => {
                     this.setState({
-                        newGif: undefined
+                        gif: undefined
                     });
 
                     var windows = holdRemote.BrowserWindow.getAllWindows();
@@ -64,9 +63,8 @@ export default class GifRecorderView extends Component {
                     Cancel
                 </button>
                 <br />
-                <br />
 
-                <img src={`${this.state.newGif}`} height="250" width="250"></img>
+                <img src={`${this.state.gif}`} height="300" width="300"></img>
             </div>
         );
     }

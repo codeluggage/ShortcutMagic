@@ -1015,6 +1015,7 @@ ipcMain.on('show-tooltip-for-list-item', (event, listItem) => {
 
     // '/Users/mf/OpenSource/ShortcutMagic/ShortcutMagic/file:/Users/mf/Documents/move-backwards.gif'
 
+    console.log("trying to call sizeOf with gif ", listItem.gif);
     var dimensions = sizeOf(listItem.gif);
     console.log("dimensions for gif: ", dimensions);
 
@@ -1091,7 +1092,7 @@ ipcMain.on('record-gif', (event, listItem) => {
 
 ipcMain.on('save-gif', (event, newGif, listItem, appName) => {
     gifRecorderWindow.hide();
-    listItem.gif = `file://${newGif}`;
+    listItem.gif = newGif;
 	let shortcutObject = {};
     shortcutObject[`shortcuts.${listItem.name}`] = listItem;
     console.log("updating shortcut with gif: ", listItem);
@@ -1112,6 +1113,9 @@ ipcMain.on('save-gif', (event, newGif, listItem, appName) => {
 		if (err) {
 			console.log("error saving new gif", err, newGif);
 		} else {
+            // This might update the window with other shortcuts than the one we just recorded a gif for. That is ok
+            // because the gif will be visible when they switch back to that app again.
+            mainWindow.webContents.send('update-shortcuts', inMemoryShortcuts[currentAppName]);
 			console.log("successfuly saved new gif", res);
 		}
 	});

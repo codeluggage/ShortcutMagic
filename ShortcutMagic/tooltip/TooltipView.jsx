@@ -33,7 +33,7 @@ export default class TooltipView extends Component {
 
         return (
             <div style={{ textAlign: 'center' }}>
-                <img src={`${__dirname}/../${this.state.gif}`} height="auto" width="auto"></img>
+                <img src={`${this.state.gif}`} height="auto" width="auto"></img>
             </div>
         );
     }
