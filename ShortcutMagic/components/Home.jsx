@@ -495,6 +495,7 @@ export default class Home extends Component {
                 name === "Dock" ||
                 name === "Google Software Update..." ||
                 name === "Google Software Update" ||
+                name === "Kap" ||
                 name === "Dropbox Finder Integration") {
                 return; // TODO: Could this mess with other electron starter projects?
             }

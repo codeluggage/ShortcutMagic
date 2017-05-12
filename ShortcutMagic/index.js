@@ -58,8 +58,6 @@ function getDb() {
         getDb().remove({
             name: "mysms"
         });
-
-
     }
 
     return db;
@@ -97,6 +95,8 @@ let backgroundListenerWindow;
 let welcomeWindow;
 // the gif-displaying tool tip window:
 let tooltipWindow;
+// the gif recording/saving window:
+let gifRecorderWindow;
 // a hacky bad construct holding the shortcuts from the db in memory
 // TODO: merge into a class that encapsulates the db and functionality, and caches things in memory without checking this array everywhere :|
 let inMemoryShortcuts = [];
@@ -400,6 +400,18 @@ function createWindows() {
 	// createWelcomeWindow();
 	createMainWindow();
     createTooltipWindow();
+    createGifRecorderWindow();
+}
+
+function createGifRecorderWindow() {
+    gifRecorderWindow = new BrowserWindow({
+		name: "gifRecorderWindow",
+        show: false,
+        frame: false,
+        x: 750, y: 153, width: 400, height: 400,
+    });
+
+    gifRecorderWindow.loadURL(`file://${__dirname}/gifRecorder/gifRecorder.html`);
 }
 
 function createTooltipWindow() {
@@ -564,14 +576,28 @@ function createTray() {
 			// welcomeWindow.show();
 			welcomeWindow.openDevTools();
 		} else {
-			console.log("cant find backgroundListenerWindow to show");
+			console.log("cant find welcomeWindow to show");
 		}
 
 		if (miniSettingsWindow) {
 			// miniSettingsWindow.show();
 			miniSettingsWindow.openDevTools();
 		} else {
-			console.log("cant find backgroundListenerWindow to show");
+			console.log("cant find miniSettingsWindow to show");
+		}
+
+		if (tooltipWindow) {
+			// tooltipWindow.show();
+			tooltipWindow.openDevTools();
+		} else {
+			console.log("cant find tooltipWindow to show");
+		}
+
+		if (gifRecorderWindow) {
+			// gifRecorderWindow.show();
+			gifRecorderWindow.openDevTools();
+		} else {
+			console.log("cant find gifRecorderWindow to show");
 		}
 	});
 
@@ -801,6 +827,7 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
         appName === "Dock" ||
         appName === "Google Software Update..." ||
         appName === "Google Software Update" ||
+        appName === "Kap" ||
         appName === "Dropbox Finder Integration") {
 		console.log("Not switching to this app: ", appName);
 		return;
@@ -1018,33 +1045,74 @@ ipcMain.on('hide-tooltip', (event) => {
     tooltipWindow.hide();
 });
 
+let gifDirectory = "~/Movies/Kaptures";
 let recursiveCount = 0;
+let recursiveLastFile;
 function recursiveLs() {
     console.log("inside recursiveLs", ++recursiveCount);
 
-    exec("ls -c ~/Movies/Kaptures | grep gif").then((result) => {
+    exec(`ls -lrtc -d -1 ${gifDirectory}/* | grep .gif`).then((result) => {
         var stdout = result.stdout;
         var stderr = result.stderr;
 
-        stdout = stdout.substr(0, stdout.length - 1);
-        console.log(stdout.substr(stdout.lastIndexOf("\n") + 1, stdout.length));
+        stdout = stdout.substr(0, stdout.length - 1); // Cut last newline from ls command
+        let newFile = stdout.substr(stdout.lastIndexOf("\n") + 1, stdout.length); // Extract last filename, ordered by time
 
-        setTimeout(recursiveLs, 2000);
+        if (recursiveLastFile && newFile != recursiveLastFile) {
+            gifRecorderWindow.webContents.send('file-detected', `${newFile}`);
+        } else {
+            recursiveLastFile = newFile;
+            setTimeout(recursiveLs, 2000);
+        }
     }) .catch((err) => {
         console.log("errored when running ls: ", err);
     });
 }
 
+
 ipcMain.on('record-gif', (event, listItem) => {
     exec('open /Applications/Kap.app').then((result) => {
-        var stdout = result.stdout;
-        var stderr = result.stderr;
+        if (result.stderr) {
+            console.log('Opened Kap gif recording app with error:  ', result.stderr);
+            // TODO: Report error in gifRecorderWindow, ask to install Kap?
+            return;
+        }
 
-        console.log('stdout: ', stdout);
-        console.log('stderr: ', stderr);
-        console.log("starting recursive ls");
+        // TODO: Customize from gifRecorderWindow
+        let gifPath = "~/Movies/Kaptures";
+        gifRecorderWindow.webContents.send('recording-for-shortcut-in-path', listItem, gifPath, currentAppName);
+        gifRecorderWindow.show();
+
         recursiveLs();
     }) .catch((err) => {
         console.log("errored when opening Kap.app: ", err);
     });
+});
+
+ipcMain.on('save-gif', (event, newGif, listItem, appName) => {
+    gifRecorderWindow.hide();
+    listItem.gif = `file://${newGif}`;
+	let shortcutObject = {};
+    shortcutObject[`shortcuts.${listItem.name}`] = listItem;
+    console.log("updating shortcut with gif: ", listItem);
+
+	if (!inMemoryShortcuts || !inMemoryShortcuts[appName]) {
+		console.log("error: no loaded shortcuts when saving with save-gif");
+	} else {
+		inMemoryShortcuts[appName].shortcuts[listItem.name] = listItem;
+	}
+
+    getDb().update({
+        name: appName
+	}, {
+		$set: shortcutObject
+	}, {
+		upsert: true
+	}, (err, res) => {
+		if (err) {
+			console.log("error saving new gif", err, newGif);
+		} else {
+			console.log("successfuly saved new gif", res);
+		}
+	});
 });
