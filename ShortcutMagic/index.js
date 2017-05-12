@@ -408,6 +408,8 @@ function createGifRecorderWindow() {
 		name: "gifRecorderWindow",
         show: false,
         frame: false,
+        acceptFirstClick: true,
+        alwaysOnTop: true,
         x: 750, y: 153, width: 400, height: 400,
     });
 
@@ -419,6 +421,7 @@ function createTooltipWindow() {
 		name: "tooltipWindow",
         show: false,
         frame: false,
+        alwaysOnTop: true,
         x: 334, y: 153, width: 826, height: 568,
     });
 
