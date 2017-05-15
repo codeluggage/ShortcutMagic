@@ -285,6 +285,21 @@ const SortableItem = SortableElement((componentArguments) => {
         					color: (listItem.isHidden) ? "grey" : "red",
         				}}></span>
                     </button>
+
+                    <button className="btn btn-default"
+                    onMouseEnter={(e) => {
+                        console.log(`sending show-tooltip-for-list-item with ${componentArguments.listItem}`);
+                        ipcRenderer.send('show-tooltip-for-list-item', componentArguments.listItem);
+                    }} onMouseLeave={(e) => {
+                        console.log(`sending hide-tooltip with ${componentArguments.listItem}`);
+                        ipcRenderer.send('hide-tooltip');
+                    }} onClick={() => {
+                        console.log(`sending hide-tooltip with ${componentArguments.listItem}`);
+                        ipcRenderer.send('hide-tooltip');
+                        ipcRenderer.send('record-gif', listItem);
+                    }}>
+                        <span className="fa fa-film" style={{ }}></span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -304,6 +319,7 @@ const SortableItem = SortableElement((componentArguments) => {
             // justifyContent: 'space-between',
             flexDirection: 'column',
         }} onMouseEnter={(e) => {
+
 			let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
             if (buttonSectionElements) {
 				for (var i = 0; i < buttonSectionElements.length; i++) {
@@ -317,6 +333,10 @@ const SortableItem = SortableElement((componentArguments) => {
 				}
 			}
         }} onMouseLeave={(e) => {
+            // Ensure tooltip is hidden
+            console.log(`in onMouseLeave sending hide-tooltip with ${JSON.stringify(componentArguments.listItem)}`);
+            ipcRenderer.send('hide-tooltip');
+
 			let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
             if (buttonSectionElements) {
 				for (var i = 0; i < buttonSectionElements.length; i++) {
@@ -509,6 +529,7 @@ export default class Home extends Component {
                 name === "Google Software Update..." ||
                 name === "Google Software Update" ||
                 name === "Dropbox Finder Integration" ||
+                name === "Kap" ||
                 name === "SecurityAgent" ||
                 name === "AirPlayUIAgent") {
                 return; // TODO: Could this mess with other electron starter projects?
