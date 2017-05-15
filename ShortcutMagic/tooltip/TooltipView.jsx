@@ -10,7 +10,7 @@ export default class TooltipView extends Component {
         ipcRenderer.on('set-gif', (event, listItem) => {
             console.log(`setting listItem.gif: ${listItem}`);
             this.setState({
-                gif: listItem.gif
+                gif: (listItem) ? listItem.gif : null
             });
         });
 
@@ -27,12 +27,16 @@ export default class TooltipView extends Component {
     render() {
         // console.log('render() called');
         //
-        if (!this.state) {
-            return <div> No state </div>
+        if (this.state && this.state.gif) {
+            return (
+                <img src={`${this.state.gif}`} height="auto" width="auto"></img>
+            );
         }
 
         return (
-            <img src={`${this.state.gif}`} height="auto" width="auto"></img>
+            <div>
+                No recorded gifs for this shortcut... Why not make one? Click to start!
+            </div>
         );
     }
 }

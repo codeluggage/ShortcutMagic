@@ -26,29 +26,90 @@ export default class GifRecorderView extends Component {
 
     render() {
         if (!this.state) {
-            return <div> Opening Kap - a neat gif recording app </div>
-        }
-
-        if (!this.state.gif) {
             return (
-                <div style={{ textAlign: 'center' }}>
-                    Waiting for new {this.state.shortcut} gifs in {this.state.recordPath}
+                <div style={{
+                    textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                    height: '100%',
+                }}>
+                    <h2>Opening Kap - a neat gif recording app</h2>
                 </div>
             );
         }
 
+        if (!this.state.gif) {
+            return (
+                <div style={{
+                    textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                    height: '100%',
+                }}>
+                    <h2>Waiting for new {this.state.shortcut} gifs in {this.state.recordPath}</h2>
+                </div>
+            );
+        }
+
+        // html, body {
+        //   height: 100%;
+        //   margin: 0;
+        // }
+        //
+        // div {
+        //   display: flex;
+        //   flex-direction: column;
+        //   justify-content: center;
+        //   align-items: center;
+        //   height: 100%;
+        // }
+        // <div>
+        //   <h2>
+        //     David
+        //   </h2>
+        // </div>
+
+
         return (
-            <div style={{ textAlign: 'center' }}>
-                Found gif! Is this the one you want to add to {this.state.shortcut}?
+            <div style={{
+                height: '100%',
+            }}>
+                <div style={{
+                    textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                }}>
+                    <h2>Found gif! Is this the one you want to add to {this.state.shortcut}?</h2>
+                </div>
                 <br />
                 <button className="btn btn-default" onClick={() => {
                     ipcRenderer.send('save-gif', this.state.gif, this.state.listItem, this.state.appName);
                 }}>
                     Save
                 </button>
+
                 <button className="btn btn-cancel" onClick={() => {
                     this.setState({
-                        gif: undefined
+                        gif: null
+                    });
+
+                    ipcRenderer.send('keep-recording-gif');
+                }}>
+                    Keep looking
+                </button>
+
+                <button className="btn btn-cancel" onClick={() => {
+                    this.setState({
+                        gif: null
                     });
 
                     var windows = holdRemote.BrowserWindow.getAllWindows();
@@ -59,9 +120,12 @@ export default class GifRecorderView extends Component {
                             break;
                         }
                     }
+
+                    ipcRenderer.send('cancel-gif-recording');
                 }}>
-                    Cancel
+                    Cancel recording
                 </button>
+
                 <br />
 
                 <img src={`${this.state.gif}`} height="300" width="300"></img>

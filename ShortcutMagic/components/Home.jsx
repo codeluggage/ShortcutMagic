@@ -286,10 +286,17 @@ const SortableItem = SortableElement((componentArguments) => {
         				}}></span>
                     </button>
 
-                    <button className="btn btn-default" style={{ }} onClick={() => {
-
+                    <button className="btn btn-default"
+                    onMouseEnter={(e) => {
+                        console.log(`sending show-tooltip-for-list-item with ${componentArguments.listItem}`);
+                        ipcRenderer.send('show-tooltip-for-list-item', componentArguments.listItem);
+                    }} onMouseLeave={(e) => {
+                        console.log(`sending hide-tooltip with ${componentArguments.listItem}`);
+                        ipcRenderer.send('hide-tooltip');
+                    }} onClick={() => {
+                        console.log(`sending hide-tooltip with ${componentArguments.listItem}`);
+                        ipcRenderer.send('hide-tooltip');
                         ipcRenderer.send('record-gif', listItem);
-
                     }}>
                         <span className="fa fa-film" style={{ }}></span>
                     </button>
@@ -312,8 +319,6 @@ const SortableItem = SortableElement((componentArguments) => {
             // justifyContent: 'space-between',
             flexDirection: 'column',
         }} onMouseEnter={(e) => {
-            console.log(`sending hide-tooltip with ${componentArguments.listItem}`);
-            ipcRenderer.send('show-tooltip-for-list-item', componentArguments.listItem);
 
 			let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
             if (buttonSectionElements) {
@@ -328,7 +333,8 @@ const SortableItem = SortableElement((componentArguments) => {
 				}
 			}
         }} onMouseLeave={(e) => {
-            console.log(`sending hide-tooltip with ${componentArguments.listItem}`);
+            // Ensure tooltip is hidden
+            console.log(`in onMouseLeave sending hide-tooltip with ${JSON.stringify(componentArguments.listItem)}`);
             ipcRenderer.send('hide-tooltip');
 
 			let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);

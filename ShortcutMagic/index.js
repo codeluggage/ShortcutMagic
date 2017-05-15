@@ -1011,35 +1011,31 @@ ipcMain.on('temporarily-update-app-settings', (event, newSetting) => {
 
 ipcMain.on('show-tooltip-for-list-item', (event, listItem) => {
     console.log(`in show-tooltip-for-list-item with ${JSON.stringify(listItem)}`);
-    if (!listItem.gif) {
-        console.log("no gif");
-        return;
-    }
-
-    // '/Users/mf/OpenSource/ShortcutMagic/ShortcutMagic/file:/Users/mf/Documents/move-backwards.gif'
-
-    console.log("trying to call sizeOf with gif ", listItem.gif);
-    var dimensions = sizeOf(listItem.gif);
-    console.log("dimensions for gif: ", dimensions);
-
-    if (!dimensions || !dimensions.height || !dimensions.width) {
-        console.log("invalid dimensions: ", dimensions);
-        return;
-    }
-
     let originalBounds = tooltipWindow.getBounds();
-    originalBounds.height = dimensions.height;
-    originalBounds.width = dimensions.width;
-
     let mainBounds = mainWindow.getBounds();
+
+    if (listItem.gif) {
+        console.log("trying to call sizeOf with gif ", listItem.gif);
+        var dimensions = sizeOf(listItem.gif);
+        console.log("dimensions for gif: ", dimensions);
+
+        if (!dimensions || !dimensions.height || !dimensions.width) {
+            console.log("invalid dimensions: ", dimensions);
+            return;
+        }
+
+        originalBounds.height = dimensions.height;
+        originalBounds.width = dimensions.width;
+    }
+
     // Show window left or right of main window depending on screen position:
     if (mainBounds.x > 600) {
         originalBounds.x = mainBounds.x - originalBounds.width;
     } else {
         originalBounds.x = mainBounds.x + mainBounds.width;
     }
-    tooltipWindow.setBounds(originalBounds);
 
+    tooltipWindow.setBounds(originalBounds);
     tooltipWindow.webContents.send('set-gif', listItem);
     tooltipWindow.show();
 })
@@ -1052,6 +1048,7 @@ ipcMain.on('hide-tooltip', (event) => {
 let gifDirectory = "~/Movies/Kaptures";
 let recursiveCount = 0;
 let recursiveLastFile;
+let stopRecursiveLs = false;
 function recursiveLs() {
     console.log("inside recursiveLs", ++recursiveCount);
 
@@ -1066,7 +1063,12 @@ function recursiveLs() {
             gifRecorderWindow.webContents.send('file-detected', `${newFile}`);
         } else {
             recursiveLastFile = newFile;
+        }
+
+        if (!stopRecursiveLs) {
             setTimeout(recursiveLs, 2000);
+        } else {
+            stopRecursiveLs = false;
         }
     }) .catch((err) => {
         console.log("errored when running ls: ", err);
@@ -1090,10 +1092,24 @@ ipcMain.on('record-gif', (event, listItem) => {
         recursiveLs();
     }) .catch((err) => {
         console.log("errored when opening Kap.app: ", err);
+        recursiveLastFile = undefined;
+        stopRecursiveLs = true;
     });
 });
 
+ipcMain.on('cancel-gif-recording', (event) => {
+    stopRecursiveLs = true;
+    recursiveLastFile = undefined;
+});
+
+ipcMain.on('keep-recording-gif', (event) => {
+    recursiveLastFile = undefined;
+});
+
 ipcMain.on('save-gif', (event, newGif, listItem, appName) => {
+    recursiveLastFile = undefined;
+    stopRecursiveLs = true;
+
     gifRecorderWindow.hide();
     listItem.gif = newGif;
 	let shortcutObject = {};
