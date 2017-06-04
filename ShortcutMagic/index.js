@@ -136,6 +136,8 @@ let welcomeWindow;
 let tooltipWindow;
 // the gif recording/saving window:
 let gifRecorderWindow;
+// the gifCommunity window:
+let gifCommunityWindow
 // a hacky bad construct holding the shortcuts from the db in memory
 // TODO: merge into a class that encapsulates the db and functionality, and caches things in memory without checking this array everywhere :|
 let inMemoryShortcuts = [];
@@ -447,6 +449,7 @@ function createWindows() {
 	createMainWindow();
     createTooltipWindow();
     createGifRecorderWindow();
+    createGifCommunityWindow();
 
     electronLocalshortcut.register(mainWindow, 'Cmd+1', () => {
         log.info("hit execute");
@@ -472,6 +475,18 @@ function createWindows() {
         log.info("hit execute");
         mainWindow.webContents.send('execute-list-item', 5);
     });
+}
+
+function createGifCommunityWindow() {
+    gifCommunityWindow = new BrowserWindow({
+        name: "gifCommunityWindow",
+        show: true,
+        frame: true,
+        x: 334, y: 153, width: 900, height: 600,
+        nodeIntegration: false,
+    });
+
+    gifCommunityWindow.loadURL('http://localhost:3000');
 }
 
 function createGifRecorderWindow() {
