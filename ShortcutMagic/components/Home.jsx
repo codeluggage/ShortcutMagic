@@ -2,6 +2,8 @@
 import React, { Component } from 'react';
 import {SortableContainer, SortableElement, SortableHandle, arrayMove} from 'react-sortable-hoc';
 import Electron, { ipcRenderer, remote } from 'electron';
+import ReactTooltip from 'react-tooltip'
+
 
 let globalState;
 // From http://www.visualcinnamon.com/2016/05/smooth-color-legend-d3-svg-gradient.html
@@ -954,11 +956,34 @@ export default class Home extends Component {
             </div>
 		);
 
+        let tooltipEffect = {
+            place: "bottom",
+            type: "light",
+            effect: "solid",
+        };
+
         let SettingsButtons = (
             <div id="settings-button-group" className="toolbar-actions" style={{
                 display: 'none',
             }}>
                 <div className="btn-group">
+                    <button className="btn btn-default"
+                    onClick={() => {
+                        console.log(`opening community window `);
+                        ipcRenderer.send('toggle-gif-community');
+                    }}>
+                        <ReactTooltip id='gifcommunity-tooltip'
+                            place={tooltipEffect.place}
+                            type={tooltipEffect.type}
+                            effect={tooltipEffect.effect}
+                            multiline={true}/>
+
+                        <span data-for='gifcommunity-tooltip'
+                            data-iscapture="true"
+                            data-tip="Open community window<br />with gif overview" className="fa fa-film" style={{}}>
+                        </span>
+                    </button>
+
                     <button id="increase-font-size-button" className="btn btn-default" style={{
     		                    // color: this.state.textColor,
     		                    // backgroundColor: 'transparent',
@@ -1055,7 +1080,6 @@ export default class Home extends Component {
                 textAlign: 'center',
             }} onMouseEnter={(e) => {
                 hidingSlowly = true;
-    			window.document.getElementById("title").style.display = "none";
     			window.document.getElementById("settings-button-group").style.display = "block";
     			window.document.getElementById("search-field").style.display = "";
 
@@ -1066,13 +1090,11 @@ export default class Home extends Component {
                     hidingSlowly = false;
                     setTimeout(() => {
                         if (!hidingSlowly) {
-                            window.document.getElementById("title").style.display = "block";
                 			window.document.getElementById("settings-button-group").style.display = "none";
                 			window.document.getElementById("search-field").style.display = "none";
                         }
                     }, 400);
                 } else {
-                    window.document.getElementById("title").style.display = "block";
         			window.document.getElementById("settings-button-group").style.display = "none";
         			window.document.getElementById("search-field").style.display = "none";
                 }

@@ -480,7 +480,7 @@ function createWindows() {
 function createGifCommunityWindow() {
     gifCommunityWindow = new BrowserWindow({
         name: "gifCommunityWindow",
-        show: true,
+        show: false,
         frame: true,
         x: 334, y: 153, width: 900, height: 600,
         nodeIntegration: false,
@@ -1275,4 +1275,14 @@ ipcMain.on('save-gif', (event, newGif, listItem, appName) => {
 			console.log("successfuly saved new gif", res);
 		}
 	});
+});
+
+
+ipcMain.on('toggle-gif-community', (event) => {
+	if (gifCommunityWindow.isVisible()) {
+		gifCommunityWindow.blur();
+	} else {
+        gifCommunityWindow.show();
+        gifCommunityWindow.focus();
+	}
 });
