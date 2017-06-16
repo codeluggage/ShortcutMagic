@@ -901,7 +901,7 @@ app.on('ready', () => {
         // setTimeout(checkForUpdates, 3600000);
     };
 
-    setTimeout(checkForUpdates, 100);
+    setTimeout(checkForUpdates, 1000);
 
 
     globalShortcut.register('Command+Shift+Alt+Space', function () {
@@ -1284,5 +1284,9 @@ ipcMain.on('toggle-gif-community', (event) => {
 	} else {
         gifCommunityWindow.show();
         gifCommunityWindow.focus();
-	}
+    }
+});
+
+ipcMain.on('create-windows', (event) => {
+    createWindows();
 });
