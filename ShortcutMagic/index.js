@@ -446,7 +446,7 @@ function createWindows() {
 	createSettingsWindow();
 	createMiniSettingsWindow();
 	// createWelcomeWindow();
-	createMainWindow();
+	// createMainWindow();
     createTooltipWindow();
     createGifRecorderWindow();
     createGifCommunityWindow();
@@ -605,7 +605,7 @@ function createMainWindow() {
         	mainWindow.setHasShadow(false);
 
         	// applyWindowMode(inMemoryShortcuts[currentAppName].windowMode);
-        	mainWindow.show();
+        	// mainWindow.show();
 
         	// All windows are created, collect all their window id's and let each of them
         	// know what is available to send messages to:
@@ -724,10 +724,21 @@ function createBackgroundListenerWindow() {
 function createWelcomeWindow() {
 	welcomeWindow = new BrowserWindow({
 		show: true,
-		title: "welcomeWindow"
+		title: "welcomeWindow",
+        nodeIntegration: true,
 	});
 
+    // welcomeWindow.on('quit', (event) => {
+    //     createWindows();
+    // });
+    // welcomeWindow.on('close', (event) => {
+    //     createWindows();
+    // });
+
 	welcomeWindow.loadURL(`file://${__dirname}/welcome/index.html`);
+    welcomeWindow.on('closed', event => {
+        createWindows();
+    });
 }
 
 function updateRenderedShortcuts(shortcuts) {
@@ -937,8 +948,10 @@ app.on('ready', () => {
         mainWindow.webContents.send('focus-search-field');
     });
 
-	createWindows();
-	loadWithPeriods(backgroundTaskRunnerWindow.webContents.send('read-last-app-name'));
+	// createWindows();
+	// loadWithPeriods(backgroundTaskRunnerWindow.webContents.send('read-last-app-name'));
+    createWelcomeWindow();
+    createMainWindow();
 });
 
 app.on('before-quit', (event) => {
@@ -1289,4 +1302,10 @@ ipcMain.on('toggle-gif-community', (event) => {
 
 ipcMain.on('create-windows', (event) => {
     createWindows();
+    mainWindow.show();
+});
+
+ipcMain.on('log', (event) => {
+    console.log('logging from ipcMain.on "log" ');
+    console.log(event);
 });

@@ -1,37 +1,16 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>ShortcutMagic</title>
-
     <link rel="stylesheet" href="../dist/css/photon.css">
-
     <script>
-        require('babel-register');
-        var ipcRenderer = require('electron').ipcRenderer;
-        // welcomeWindow.webContents.send('ipc-message', 'heiiiiii');
-
-        onload = () => {
-          const webview = window.document.querySelector('webview');
-
-          webview.addEventListener('ipc-message', event => {
-            console.log('got message for ipc-message');
-            console.log(event.channel)
-          });
-
-          const loadstart = () => {
-            console.log('loadstart');
-          }
-
-          const loadstop = () => {
-            console.log('loadstop');
-          }
-
-          webview.addEventListener('did-start-loading', loadstart)
-          webview.addEventListener('did-stop-loading', loadstop)
-        }
+      require('babel-register');
+      require('./WelcomeView');
     </script>
+
   </head>
   <body>
-      <webview id="welcome-window" src="http://localhost:3000" style="display:inline-flex; width:640px; height:480px"></webview>
+    <div className="window-content">
+      <div id="welcome-root"></div>
+    </div>
   </body>
 </html>
