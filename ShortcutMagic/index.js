@@ -737,6 +737,7 @@ function createWelcomeWindow() {
 
 	welcomeWindow.loadURL(`file://${__dirname}/welcome/index.html`);
     welcomeWindow.on('closed', event => {
+        // TODO: Fix bug where quit creates these windows
         createWindows();
     });
 }
