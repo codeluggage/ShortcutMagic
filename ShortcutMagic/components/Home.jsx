@@ -2,6 +2,8 @@
 import React, { Component } from 'react';
 import {SortableContainer, SortableElement, SortableHandle, arrayMove} from 'react-sortable-hoc';
 import Electron, { ipcRenderer, remote } from 'electron';
+import ReactTooltip from 'react-tooltip'
+
 
 let globalState;
 // From http://www.visualcinnamon.com/2016/05/smooth-color-legend-d3-svg-gradient.html
@@ -309,12 +311,12 @@ const SortableItem = SortableElement((componentArguments) => {
     // - general list item size
 
     return (
-        <div style={{
-            borderRadius: ".25rem",
-            borderWidth: ".50rem",
-            border: `2px solid ${globalState.itemBackgroundColor}`,
-            backgroundColor: globalState.itemBackgroundColor,
-            marginBottom: "8px",
+        <td style={{
+            // borderRadius: ".25rem",
+            // borderWidth: ".50rem",
+            // border: `2px solid ${globalState.itemBackgroundColor}`,
+            // backgroundColor: globalState.itemBackgroundColor,
+            // marginBottom: "8px",
             display: 'flex',
             // justifyContent: 'space-between',
             flexDirection: 'column',
@@ -373,7 +375,7 @@ const SortableItem = SortableElement((componentArguments) => {
             </div>
 
             {bottomSection}
-        </div>
+        </td>
     );
 });
 
@@ -954,11 +956,34 @@ export default class Home extends Component {
             </div>
 		);
 
+        let tooltipEffect = {
+            place: "bottom",
+            type: "light",
+            effect: "solid",
+        };
+
         let SettingsButtons = (
             <div id="settings-button-group" className="toolbar-actions" style={{
                 display: 'none',
             }}>
                 <div className="btn-group">
+                    <button className="btn btn-default"
+                    onClick={() => {
+                        console.log(`opening community window `);
+                        ipcRenderer.send('toggle-gif-community');
+                    }}>
+                        <ReactTooltip id='gifcommunity-tooltip'
+                            place={tooltipEffect.place}
+                            type={tooltipEffect.type}
+                            effect={tooltipEffect.effect}
+                            multiline={true}/>
+
+                        <span data-for='gifcommunity-tooltip'
+                            data-iscapture="true"
+                            data-tip="Open community window<br />with gif overview" className="fa fa-film" style={{}}>
+                        </span>
+                    </button>
+
                     <button id="increase-font-size-button" className="btn btn-default" style={{
     		                    // color: this.state.textColor,
     		                    // backgroundColor: 'transparent',
@@ -968,7 +993,16 @@ export default class Home extends Component {
                         console.log("clicked font size up");
                         this.changeFontUp();
                     }}>
-                        <span className="icon icon-plus-circled"></span>
+                        <ReactTooltip id='increase-font-size-tooltip'
+                            place={tooltipEffect.place}
+                            type={tooltipEffect.type}
+                            effect={tooltipEffect.effect}
+                            multiline={true}/>
+
+                        <span data-for='increase-font-size-tooltip'
+                            data-iscapture="true"
+                            data-tip="Open community window<br />with gif overview" className="icon icon-plus-circled">
+                        </span>
                     </button>
                     <button id="decrease-font-size-button" className="btn btn-default" style={{
     		                    // color: this.state.textColor,
@@ -979,7 +1013,16 @@ export default class Home extends Component {
                         console.log("clicked font size down");
                         this.changeFontDown();
                     }}>
-                        <span className="icon icon-minus-circled"></span>
+                        <ReactTooltip id='decrease-font-size-tooltip'
+                            place={tooltipEffect.place}
+                            type={tooltipEffect.type}
+                            effect={tooltipEffect.effect}
+                            multiline={true}/>
+
+                        <span data-for='decrease-font-size-tooltip'
+                            data-iscapture="true"
+                            data-tip="Smaller text" className="icon icon-minus-circled">
+                        </span>
                     </button>
                     <button id="settings-button" className="btn btn-default" style={{
     		                    // color: this.state.textColor,
@@ -990,7 +1033,16 @@ export default class Home extends Component {
                         console.log("clicked settings");
                         this.toggleSettings();
                     }}>
-                        <span className="icon icon-cog"></span>
+                        <ReactTooltip id='toggle-settings-tooltip'
+                            place={tooltipEffect.place}
+                            type={tooltipEffect.type}
+                            effect={tooltipEffect.effect}
+                            multiline={true}/>
+
+                        <span data-for='toggle-settings-tooltip'
+                            data-iscapture="true"
+                            data-tip="Settings" className="icon icon-cog">
+                        </span>
                     </button>
                     <button id="mini-settings-button" className="btn btn-default" style={{
     		                    // color: this.state.textColor,
@@ -1001,7 +1053,18 @@ export default class Home extends Component {
                         console.log("clicked miniSettings");
                         this.toggleMiniSettings();
                     }}>
-                        <span className="icon icon-palette"></span>
+                        <ReactTooltip id='toggle-mini-settings-tooltip'
+                            place={tooltipEffect.place}
+                            type={tooltipEffect.type}
+                            effect={tooltipEffect.effect}
+                            multiline={true}/>
+
+                        <span data-for='toggle-mini-settings-tooltip'
+                            data-iscapture="true"
+                            data-tip=`Colors and themes.
+                                \n\nThis is where you can customize ShortcutMagic
+                                \nto look exactly like you want.` className="icon icon-palette">
+                        </span>
                     </button>
                     <button id="toggle-bubble-mode" className="btn btn-default" style={{
     		                    // color: this.state.textColor,
@@ -1012,7 +1075,20 @@ export default class Home extends Component {
                     }} onClick={() => {
     					ipcRenderer.send('set-bubble-mode');
                     }}>
-                        <span className="icon icon-progress-0"></span>
+                        <ReactTooltip id='toggle-bubble-mode-tooltip'
+                            place={tooltipEffect.place}
+                            type={tooltipEffect.type}
+                            effect={tooltipEffect.effect}
+                            multiline={true}/>
+
+                        <span data-for='toggle-bubble-mode-tooltip'
+                            data-iscapture="true"
+                            data-tip=`Mini mode
+                            \n\nUse this mode when you want
+                            \nas much space as possible for other things.
+                            \nThe mode will be remembered and stay the same
+                            \neach time {this.state.name} is focused.` className="icon icon-progress-0">
+                        </span>
                     </button>
                     <button id="toggle-full-mode" className="btn btn-default" style={{
     		                    // color: this.state.textColor,
@@ -1022,7 +1098,19 @@ export default class Home extends Component {
                     }} onClick={() => {
     					ipcRenderer.send('set-full-view-mode');
                     }}>
-                        <span className="icon icon-window"></span>
+                        <ReactTooltip id='toggle-full-mode-tooltip'
+                            place={tooltipEffect.place}
+                            type={tooltipEffect.type}
+                            effect={tooltipEffect.effect}
+                            multiline={true}/>
+
+                        <span data-for='toggle-full-mode-tooltip'
+                            data-iscapture="true"
+                            data-tip=`Regular mode
+                                \n\nThis mode is good for learning and
+                                \nexploring a program. Drag the edges of
+                                \nthe windows to resize.` className="icon icon-window">
+                        </span>
                     </button>
                     <button id="toggle-hidden-mode" className="btn btn-default" style={{
     		                    // color: this.state.textColor,
@@ -1033,7 +1121,19 @@ export default class Home extends Component {
                         // TODO: Manage state ourselves here? messy..
     					ipcRenderer.send('set-hidden-mode');
                     }}>
-                        <span className="icon icon-publish"></span>
+                        <ReactTooltip id='toggle-hidden-mode-tooltip'
+                            place={tooltipEffect.place}
+                            type={tooltipEffect.type}
+                            effect={tooltipEffect.effect}
+                            multiline={true}/>
+
+                        <span data-for='toggle-hidden-mode-tooltip'
+                            data-iscapture="true"
+                            data-tip=`Hide
+                                \n\nThis hides the window completely
+                                \nfor {this.state.name}. You have to click the hat
+                                \nicon to show it again.` className="icon icon-publish">
+                        </span>
                     </button>
                 </div>
             </div>
@@ -1055,7 +1155,6 @@ export default class Home extends Component {
                 textAlign: 'center',
             }} onMouseEnter={(e) => {
                 hidingSlowly = true;
-    			window.document.getElementById("title").style.display = "none";
     			window.document.getElementById("settings-button-group").style.display = "block";
     			window.document.getElementById("search-field").style.display = "";
 
@@ -1066,13 +1165,11 @@ export default class Home extends Component {
                     hidingSlowly = false;
                     setTimeout(() => {
                         if (!hidingSlowly) {
-                            window.document.getElementById("title").style.display = "block";
                 			window.document.getElementById("settings-button-group").style.display = "none";
                 			window.document.getElementById("search-field").style.display = "none";
                         }
                     }, 400);
                 } else {
-                    window.document.getElementById("title").style.display = "block";
         			window.document.getElementById("settings-button-group").style.display = "none";
         			window.document.getElementById("search-field").style.display = "none";
                 }
@@ -1124,30 +1221,254 @@ export default class Home extends Component {
             // 1) listen to some kind of click on the tray
             // 2) Show mini window with 1 random favorite
             // 3) Show search, focused
+
 			return (
-				<div>
-					{SearchField}
-					{SearchResults}
-				</div>
+                <div className="window">
+                  <header className="toolbar toolbar-header">
+                    <h1 className="title">Photon</h1>
+                  </header>
+
+                  <div className="window-content">
+                      <div className="pane">
+                        <table className="table-striped">
+                          <tbody>
+                            <tr className="file_arq">
+                              <td>{SearchField}</td>
+                            </tr>
+                            <tr className="file_arq">
+                              <td>{SearchResults}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                </div>
 			);
 		} else if (this.state.mode == "bubble-mode") {
 			// Bubble mode:
 			return (
-				<div>
-                    {HiddenSettings}
-					{ShortcutList}
-				</div>
+
+                <div className="window">
+
+                  <header className="toolbar toolbar-header">
+                    <h1 className="title">Photon</h1>
+                  </header>
+
+                  <div className="window-content">
+                      <div className="pane">
+                        <table className="table-striped">
+                          <tbody>
+                            <tr className="file_arq">
+                                <td>{HiddenSettings}</td>
+                            </tr>
+                            <tr className="file_arq">
+                              {ShortcutList}
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
 			);
 		} else {
-			// Full mode:
-	        return (
-	            <div style={{ textAlign: 'center' }}>
-					{TitleAndSettings}
-					{ShortcutList}
-	            </div>
+            // Full mode:
+            return (
+                <div className="window">
+
+                  <header className="toolbar toolbar-header">
+                    <h1 className="title">Photon</h1>
+                  </header>
+
+                  <div className="window-content">
+                      <div className="pane">
+                        <table className="table-striped">
+                          <thead>
+                            <tr>
+                              <th>{TitleAndSettings}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr className="file_arq">
+                              {ShortcutList}
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                    
+                  </div>
 	        );
 			// previous sortablelist itemstyle
 			//   itemStyle={{backgroundColor: (this.state.itemColor) ? this.state.itemColor : '#FFFFFF'}}
 		}
     }
 }
+
+
+
+
+
+
+
+
+
+    //     <div className="pane-group">
+    //       <div className="pane pane-sm sidebar">
+    //         <nav className="nav-group">
+    //           <h5 className="nav-group-title">Favorites</h5>
+    //           <span className="nav-group-item">
+    //             <span className="icon icon-home"></span>
+    //             connors
+    //           </span>
+    //           <span className="nav-group-item active">
+    //             <span className="icon icon-light-up"></span>
+    //             Photon
+    //           </span>
+    //           <span className="nav-group-item">
+    //             <span className="icon icon-download"></span>
+    //             Downloads
+    //           </span>
+    //           <span className="nav-group-item">
+    //             <span className="icon icon-folder"></span>
+    //             Documents
+    //           </span>
+    //           <span className="nav-group-item">
+    //             <span className="icon icon-window"></span>
+    //             Applications
+    //           </span>
+    //           <span className="nav-group-item">
+    //             <span className="icon icon-signal"></span>
+    //             AirDrop
+    //           </span>
+    //           <span className="nav-group-item">
+    //             <span className="icon icon-monitor"></span>
+    //             Desktop
+    //           </span>
+    //         </nav>
+    //       </div>
+
+    //       <div className="pane">
+    //         <table className="table-striped">
+    //           <thead>
+    //             <tr>
+    //               <th>Name</th>
+    //               <th>Kind</th>
+    //               <th>Date Modified</th>
+    //               <th>Author</th>
+    //             </tr>
+    //           </thead>
+    //           <tbody>
+    //             <tr className="file_arq">
+    //               <td>bars.scss</td>
+    //               <td>Document</td>
+    //               <td>Oct 13, 2015</td>
+    //               <td>connors</td>
+    //             </tr>
+    //             <tr className="file_arq">
+    //               <td>base.scss</td>
+    //               <td>Document</td>
+    //               <td>Oct 13, 2015</td>
+    //               <td>connors</td>
+    //             </tr>
+    //             <tr className="file_arq">
+    //               <td>button-groups.scss</td>
+    //               <td>Document</td>
+    //               <td>Oct 13, 2015</td>
+    //               <td>connors</td>
+    //             </tr>
+    //             <tr className="file_arq">
+    //               <td>buttons.scss</td>
+    //               <td>Document</td>
+    //               <td>Oct 13, 2015</td>
+    //               <td>connors</td>
+    //             </tr>
+    //             <tr className="file_arq">
+    //               <td>docs.scss</td>
+    //               <td>Document</td>
+    //               <td>Oct 13, 2015</td>
+    //               <td>connors</td>
+    //             </tr>
+    //             <tr className="file_arq">
+    //               <td>forms.scss</td>
+    //               <td>Document</td>
+    //               <td>Oct 13, 2015</td>
+    //               <td>connors</td>
+    //             </tr>
+    //             <tr className="file_arq">
+    //               <td>grid.scss</td>
+    //               <td>Document</td>
+    //               <td>Oct 13, 2015</td>
+    //               <td>connors</td>
+    //             </tr>
+    //             <tr className="file_arq">
+    //               <td>icons.scss</td>
+    //               <td>Document</td>
+    //               <td>Oct 13, 2015</td>
+    //               <td>connors</td>
+    //             </tr>
+    //             <tr className="file_arq">
+    //               <td>images.scss</td>
+    //               <td>Document</td>
+    //               <td>Oct 13, 2015</td>
+    //               <td>connors</td>
+    //             </tr>
+    //             <tr className="file_arq">
+    //               <td>lists.scss</td>
+    //               <td>Document</td>
+    //               <td>Oct 13, 2015</td>
+    //               <td>connors</td>
+    //             </tr>
+    //             <tr className="file_arq">
+    //               <td>mixins.scss</td>
+    //               <td>Document</td>
+    //               <td>Oct 13, 2015</td>
+    //               <td>connors</td>
+    //             </tr>
+    //             <tr className="file_arq">
+    //               <td>navs.scss</td>
+    //               <td>Document</td>
+    //               <td>Oct 13, 2015</td>
+    //               <td>connors</td>
+    //             </tr>
+    //             <tr className="file_arq">
+    //               <td>normalize.scss</td>
+    //               <td>Document</td>
+    //               <td>Oct 13, 2015</td>
+    //               <td>connors</td>
+    //             </tr>
+    //             <tr className="file_arq">
+    //               <td>photon.scss</td>
+    //               <td>Document</td>
+    //               <td>Oct 13, 2015</td>
+    //               <td>connors</td>
+    //             </tr>
+    //             <tr className="file_arq">
+    //               <td>tables.scss</td>
+    //               <td>Document</td>
+    //               <td>Oct 13, 2015</td>
+    //               <td>connors</td>
+    //             </tr>
+    //             <tr className="file_arq">
+    //               <td>tabs.scss</td>
+    //               <td>Document</td>
+    //               <td>Oct 13, 2015</td>
+    //               <td>connors</td>
+    //             </tr>
+    //             <tr className="file_arq">
+    //               <td>utilities.scss</td>
+    //               <td>Document</td>
+    //               <td>Oct 13, 2015</td>
+    //               <td>connors</td>
+    //             </tr>
+    //             <tr className="file_arq">
+    //               <td>variables.scss</td>
+    //               <td>Document</td>
+    //               <td>Oct 13, 2015</td>
+    //               <td>connors</td>
+    //             </tr>
+    //           </tbody>
+    //         </table>
+    //       </div>
+    //     </div>
+    //   </div>
+    // </div>

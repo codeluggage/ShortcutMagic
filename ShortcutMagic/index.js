@@ -136,6 +136,8 @@ let welcomeWindow;
 let tooltipWindow;
 // the gif recording/saving window:
 let gifRecorderWindow;
+// the gifCommunity window:
+let gifCommunityWindow
 // a hacky bad construct holding the shortcuts from the db in memory
 // TODO: merge into a class that encapsulates the db and functionality, and caches things in memory without checking this array everywhere :|
 let inMemoryShortcuts = [];
@@ -444,9 +446,10 @@ function createWindows() {
 	createSettingsWindow();
 	createMiniSettingsWindow();
 	// createWelcomeWindow();
-	createMainWindow();
+	// createMainWindow();
     createTooltipWindow();
     createGifRecorderWindow();
+    createGifCommunityWindow();
 
     electronLocalshortcut.register(mainWindow, 'Cmd+1', () => {
         log.info("hit execute");
@@ -472,6 +475,18 @@ function createWindows() {
         log.info("hit execute");
         mainWindow.webContents.send('execute-list-item', 5);
     });
+}
+
+function createGifCommunityWindow() {
+    gifCommunityWindow = new BrowserWindow({
+        name: "gifCommunityWindow",
+        show: false,
+        frame: true,
+        x: 334, y: 153, width: 900, height: 600,
+        nodeIntegration: false,
+    });
+
+    gifCommunityWindow.loadURL('http://localhost:3000');
 }
 
 function createGifRecorderWindow() {
@@ -590,7 +605,7 @@ function createMainWindow() {
         	mainWindow.setHasShadow(false);
 
         	// applyWindowMode(inMemoryShortcuts[currentAppName].windowMode);
-        	mainWindow.show();
+        	// mainWindow.show();
 
         	// All windows are created, collect all their window id's and let each of them
         	// know what is available to send messages to:
@@ -709,10 +724,22 @@ function createBackgroundListenerWindow() {
 function createWelcomeWindow() {
 	welcomeWindow = new BrowserWindow({
 		show: true,
-		title: "welcomeWindow"
+		title: "welcomeWindow",
+        nodeIntegration: true,
 	});
 
+    // welcomeWindow.on('quit', (event) => {
+    //     createWindows();
+    // });
+    // welcomeWindow.on('close', (event) => {
+    //     createWindows();
+    // });
+
 	welcomeWindow.loadURL(`file://${__dirname}/welcome/index.html`);
+    welcomeWindow.on('closed', event => {
+        // TODO: Fix bug where quit creates these windows
+        createWindows();
+    });
 }
 
 function updateRenderedShortcuts(shortcuts) {
@@ -886,7 +913,7 @@ app.on('ready', () => {
         // setTimeout(checkForUpdates, 3600000);
     };
 
-    setTimeout(checkForUpdates, 100);
+    setTimeout(checkForUpdates, 1000);
 
 
     globalShortcut.register('Command+Shift+Alt+Space', function () {
@@ -922,8 +949,10 @@ app.on('ready', () => {
         mainWindow.webContents.send('focus-search-field');
     });
 
-	createWindows();
-	loadWithPeriods(backgroundTaskRunnerWindow.webContents.send('read-last-app-name'));
+	// createWindows();
+	// loadWithPeriods(backgroundTaskRunnerWindow.webContents.send('read-last-app-name'));
+    createWelcomeWindow();
+    createMainWindow();
 });
 
 app.on('before-quit', (event) => {
@@ -1260,4 +1289,24 @@ ipcMain.on('save-gif', (event, newGif, listItem, appName) => {
 			console.log("successfuly saved new gif", res);
 		}
 	});
+});
+
+
+ipcMain.on('toggle-gif-community', (event) => {
+	if (gifCommunityWindow.isVisible()) {
+		gifCommunityWindow.blur();
+	} else {
+        gifCommunityWindow.show();
+        gifCommunityWindow.focus();
+    }
+});
+
+ipcMain.on('create-windows', (event) => {
+    createWindows();
+    mainWindow.show();
+});
+
+ipcMain.on('log', (event) => {
+    console.log('logging from ipcMain.on "log" ');
+    console.log(event);
 });

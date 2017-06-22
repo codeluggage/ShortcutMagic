@@ -9,7 +9,7 @@
   "repository": "git@github.com:codeluggage/ShortcutMagic.git",
   "scripts": {
     "start": "NODE_ENV=production ./node_modules/.bin/electron shortcutmagic.js",
-    "dev": "NODE_ENV=development ./node_modules/.bin/electron shortcutmagic.js --verbose",
+    "debug": "NODE_ENV=development ./node_modules/.bin/electron shortcutmagic.js --verbose --debug",
     "pack-mac": "electron-packager . ShortcutMagic-mac --asar=false --overwrite --platform=darwin --arch=x64 --icon=assets/wizard.icns --prune=true --osx-sign.identity='Developer ID Application: Matias Forbord (A9ADPQA768)'"
   },
   "build": {
@@ -33,6 +33,7 @@
     "react-color": "^2.4.3",
     "react-dom": "^15.3.2",
     "react-sortable-hoc": "^0.1.1",
+    "react-tooltip": "^3.3.0",
     "robotjs": "^0.4.5"
   },
   "devDependencies": {
