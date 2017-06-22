@@ -33,7 +33,7 @@ const SortableItem = SortableElement((componentArguments) => {
 
     let topSection = (
         <p style={{
-            color: globalState.textColor,
+            // color: globalState.textColor,
             flex: 2,
             marginRight: '4px',
             marginLeft: '10px',
@@ -54,11 +54,11 @@ const SortableItem = SortableElement((componentArguments) => {
                 marginLeft: '5px',
 				marginTop: 0,
 				marginBottom: '5px',
-                color: globalState.textColor,
+                // color: globalState.textColor,
                 borderRadius: ".25rem",
                 borderWidth: ".50rem",
-                border: `2px solid ${globalState.itemColor}`,
-                backgroundColor: globalState.itemColor,
+                // border: `2px solid ${globalState.itemColor}`,
+                // backgroundColor: globalState.itemColor,
 				fontWeight: globalState.listItemFontWeight,
             }}>{
                 // Always show ⌘ if there are no mods or glyphs
@@ -74,11 +74,11 @@ const SortableItem = SortableElement((componentArguments) => {
                     marginLeft: '5px',
 					marginTop: 0,
                     marginBottom: '5px',
-                    color: globalState.textColor,
+                    // color: globalState.textColor,
                     borderRadius: ".25rem",
                     borderWidth: ".50rem",
-                    border: `2px solid ${globalState.itemColor}`,
-                    backgroundColor: globalState.itemColor,
+                    // border: `2px solid ${globalState.itemColor}`,
+                    // backgroundColor: globalState.itemColor,
                 }}>{listItem["glyph"]}</p>
             ): ""}
 
@@ -89,11 +89,11 @@ const SortableItem = SortableElement((componentArguments) => {
                     marginLeft: '5px',
 					marginTop: 0,
 					marginBottom: '5px',
-                    color: globalState.textColor,
+                    // color: globalState.textColor,
                     borderRadius: ".25rem",
                     borderWidth: ".50rem",
-                    border: `2px solid ${globalState.itemColor}`,
-                    backgroundColor: globalState.itemColor,
+                    // border: `2px solid ${globalState.itemColor}`,
+                    // backgroundColor: globalState.itemColor,
                 }}>{listItem["char"]}</p>
             ): ""}
 
@@ -102,10 +102,10 @@ const SortableItem = SortableElement((componentArguments) => {
                     flex: 2,
                     marginRight: '5px',
                     marginLeft: '5px',
-                    color: globalState.textColor,
+                    // color: globalState.textColor,
                     borderRadius: ".25rem",
                     borderWidth: ".50rem",
-                    border: `2px solid ${globalState.itemColor}`,
+                    // border: `2px solid ${globalState.itemColor}`,
                     // backgroundColor: globalState.itemColor,
                 }}>{listItem.menuName}</p>
             ) : ""}
@@ -251,7 +251,7 @@ const SortableItem = SortableElement((componentArguments) => {
 
                                 // flex: 4,
                         // display: (listItem.isFavorite) ? 'block' : 'none',
-                        color: globalState.textColor,
+                        // color: globalState.textColor,
                         backgroundColor: (listItem.isFavorite) ? 'transparent' : globalState.itemColor,
                     }} onClick={() => {
                         listItem.isFavorite = !listItem.isFavorite;
@@ -358,14 +358,14 @@ const SortableItem = SortableElement((componentArguments) => {
             }}>
                 {topSection}   {(componentArguments.index < 5) ? (
                     <p style={{
-                        color: globalState.textColor,
+                        // color: globalState.textColor,
                         flex: 1,
                         marginBottom: "30px",
                         paddingLeft: "5px",
                         paddingRight: "5px",
                         borderRadius: ".25rem",
                         borderWidth: ".50rem",
-                        border: `2px solid ${globalState.textColor}`,
+                        // border: `2px solid ${globalState.textColor}`,
             			fontSize: globalState.listTitleFontSize,
             			fontWeight: globalState.listTitleFontWeight,
                     }}>Cmd {componentArguments.index + 1}</p>
@@ -434,34 +434,34 @@ export default class Home extends Component {
         });
 
         ipcRenderer.on('temporarily-update-app-settings', (event, newSetting) => {
-            let backgroundColor = newSetting["backgroundColor"];
-            if (backgroundColor) {
-                window.document.documentElement.style.backgroundColor = backgroundColor;
-                this.setState({
-                    backgroundColor: backgroundColor
-                });
-            }
+            // let backgroundColor = newSetting["backgroundColor"];
+            // if (backgroundColor) {
+            //     window.document.documentElement.style.backgroundColor = backgroundColor;
+            //     this.setState({
+            //         backgroundColor: backgroundColor
+            //     });
+            // }
 
-            let itemColor = newSetting["itemColor"];
-            if (itemColor) {
-                this.setState({
-                    itemColor: itemColor
-                });
-            }
+            // let itemColor = newSetting["itemColor"];
+            // if (itemColor) {
+            //     this.setState({
+            //         itemColor: itemColor
+            //     });
+            // }
 
-            let textColor = newSetting["textColor"];
-            if (textColor) {
-                this.setState({
-                    textColor: textColor
-                });
-            }
+            // let textColor = newSetting["textColor"];
+            // if (textColor) {
+            //     this.setState({
+            //         textColor: textColor
+            //     });
+            // }
 
-            let itemBackgroundColor = newSetting["itemBackgroundColor"];
-            if (itemBackgroundColor) {
-                this.setState({
-                    itemBackgroundColor: itemBackgroundColor
-                });
-            }
+            // let itemBackgroundColor = newSetting["itemBackgroundColor"];
+            // if (itemBackgroundColor) {
+            //     this.setState({
+            //         itemBackgroundColor: itemBackgroundColor
+            //     });
+            // }
         });
 
         ipcRenderer.on('start-shortcut-window', (event) => {
@@ -475,43 +475,43 @@ export default class Home extends Component {
         });
 
         ipcRenderer.on('set-background-color', (event, backgroundColor) => {
-            console.log('inside Home.jsx set-background-color with ', backgroundColor);
+            // console.log('inside Home.jsx set-background-color with ', backgroundColor);
 
-            window.document.documentElement.style.backgroundColor = backgroundColor;
-            this.setState({
-                backgroundColor: backgroundColor
-            });
+            // window.document.documentElement.style.backgroundColor = backgroundColor;
+            // this.setState({
+            //     backgroundColor: backgroundColor
+            // });
         });
 
         ipcRenderer.on('set-item-color', (event, itemColor) => {
-            console.log('inside Home.jsx set-item-color with ', itemColor);
-            this.setState({
-                itemColor: itemColor
-            });
+            // console.log('inside Home.jsx set-item-color with ', itemColor);
+            // this.setState({
+            //     itemColor: itemColor
+            // });
         });
 
         ipcRenderer.on('set-text-color', (event, textColor) => {
-            console.log('inside Home.jsx set-text-color with ', textColor);
-            this.setState({
-                textColor: textColor
-            });
+            // console.log('inside Home.jsx set-text-color with ', textColor);
+            // this.setState({
+            //     textColor: textColor
+            // });
         });
 
         ipcRenderer.on('set-item-background-color', (event, itemBackgroundColor) => {
-            console.log('inside Home.jsx set-item-background-color with ', itemBackgroundColor);
-            this.setState({
-                itemBackgroundColor: itemBackgroundColor
-            });
+            // console.log('inside Home.jsx set-item-background-color with ', itemBackgroundColor);
+            // this.setState({
+            //     itemBackgroundColor: itemBackgroundColor
+            // });
         });
 
         ipcRenderer.on('set-all-colors', (event, colors) => {
-            console.log('inside Home.jsx set-all-colors with ', colors);
-            this.setState({
-                backgroundColor: colors.backgroundColor,
-                itemColor: colors.itemColor,
-                textColor: colors.textColor,
-                itemBackgroundColor: colors.itemBackgroundColor,
-            });
+            // console.log('inside Home.jsx set-all-colors with ', colors);
+            // this.setState({
+            //     backgroundColor: colors.backgroundColor,
+            //     itemColor: colors.itemColor,
+            //     textColor: colors.textColor,
+            //     itemBackgroundColor: colors.itemBackgroundColor,
+            // });
         });
 
         ipcRenderer.on('update-shortcuts', (event, newShortcuts) => {
@@ -794,7 +794,7 @@ export default class Home extends Component {
         globalState = this.state;
         console.log('render() called');
         if (!this.state) {
-            window.document.documentElement.style.backgroundColor = hexToRgba(beautifulColors[Math.floor(Math.random() * beautifulColors.length)], 0.5);
+            // window.document.documentElement.style.backgroundColor = hexToRgba(beautifulColors[Math.floor(Math.random() * beautifulColors.length)], 0.5);
             let randomWelcomeText = "Welcome to ShortcutMagic!";
 
             switch (Math.floor(Math.random() * 8)) {
@@ -855,8 +855,8 @@ export default class Home extends Component {
             );
         }
 
-        window.document.documentElement.style.backgroundColor = (this.state.backgroundColor) ?
-            this.state.backgroundColor : hexToRgba(beautifulColors[Math.floor(Math.random() * beautifulColors.length)], 0.5);
+        // window.document.documentElement.style.backgroundColor = (this.state.backgroundColor) ?
+        //     this.state.backgroundColor : hexToRgba(beautifulColors[Math.floor(Math.random() * beautifulColors.length)], 0.5);
 
         // TODO: check for length here instead of nulling it out above?
         if (this.state.loading && !this.state.hiddenLoading) {
@@ -870,7 +870,7 @@ export default class Home extends Component {
                     <i className="fa fa-3x fa-spin fa-spinner"></i>
 
                     <button style={{
-                        color: this.state.textColor,
+                        // color: this.state.textColor,
                         borderColor: 'transparent',
                         margin: 0,
                     }} id="toggle-main-buttons" className="simple-button" onClick={() => {
@@ -980,7 +980,7 @@ export default class Home extends Component {
 
                         <span data-for='gifcommunity-tooltip'
                             data-iscapture="true"
-                            data-tip="Open community window<br />with gif overview" className="fa fa-film" style={{}}>
+                            data-tip="Open community window\nwith gif overview" className="fa fa-film" style={{}}>
                         </span>
                     </button>
 
@@ -1044,28 +1044,6 @@ export default class Home extends Component {
                             data-tip="Settings" className="icon icon-cog">
                         </span>
                     </button>
-                    <button id="mini-settings-button" className="btn btn-default" style={{
-    		                    // color: this.state.textColor,
-    		                    // backgroundColor: 'transparent',
-    							// flex: 2,
-    							// margin: 0,
-                    }} onClick={() => {
-                        console.log("clicked miniSettings");
-                        this.toggleMiniSettings();
-                    }}>
-                        <ReactTooltip id='toggle-mini-settings-tooltip'
-                            place={tooltipEffect.place}
-                            type={tooltipEffect.type}
-                            effect={tooltipEffect.effect}
-                            multiline={true}/>
-
-                        <span data-for='toggle-mini-settings-tooltip'
-                            data-iscapture="true"
-                            data-tip=`Colors and themes.
-                                \n\nThis is where you can customize ShortcutMagic
-                                \nto look exactly like you want.` className="icon icon-palette">
-                        </span>
-                    </button>
                     <button id="toggle-bubble-mode" className="btn btn-default" style={{
     		                    // color: this.state.textColor,
     		                    backgroundColor: (this.state.windowMode === "bubble") ? '#333' : '#fcfcfc',
@@ -1083,11 +1061,11 @@ export default class Home extends Component {
 
                         <span data-for='toggle-bubble-mode-tooltip'
                             data-iscapture="true"
-                            data-tip=`Mini mode
+                            data-tip={`Mini mode
                             \n\nUse this mode when you want
                             \nas much space as possible for other things.
                             \nThe mode will be remembered and stay the same
-                            \neach time {this.state.name} is focused.` className="icon icon-progress-0">
+                            \neach time {this.state.name} is focused.`} className="icon icon-progress-0">
                         </span>
                     </button>
                     <button id="toggle-full-mode" className="btn btn-default" style={{
@@ -1106,10 +1084,10 @@ export default class Home extends Component {
 
                         <span data-for='toggle-full-mode-tooltip'
                             data-iscapture="true"
-                            data-tip=`Regular mode
+                            data-tip={`Regular mode
                                 \n\nThis mode is good for learning and
                                 \nexploring a program. Drag the edges of
-                                \nthe windows to resize.` className="icon icon-window">
+                                \nthe windows to resize.`} className="icon icon-window">
                         </span>
                     </button>
                     <button id="toggle-hidden-mode" className="btn btn-default" style={{
@@ -1129,19 +1107,48 @@ export default class Home extends Component {
 
                         <span data-for='toggle-hidden-mode-tooltip'
                             data-iscapture="true"
-                            data-tip=`Hide
+                            data-tip={`Hide
                                 \n\nThis hides the window completely
                                 \nfor {this.state.name}. You have to click the hat
-                                \nicon to show it again.` className="icon icon-publish">
+                                \nicon to show it again.`} className="icon icon-publish">
                         </span>
                     </button>
                 </div>
             </div>
         );
 
+        // TODO: Add colors back in at some point: 
+       //          <button id="mini-settings-button" className="btn btn-default" style={{
+             //                // color: this.state.textColor,
+             //                // backgroundColor: 'transparent',
+                            // // flex: 2,
+                            // // margin: 0,
+       //          }} onClick={() => {
+       //              console.log("clicked miniSettings");
+       //              this.toggleMiniSettings();
+       //          }}>
+       //              <ReactTooltip id='toggle-mini-settings-tooltip'
+       //                  place={tooltipEffect.place}
+       //                  type={tooltipEffect.type}
+       //                  effect={tooltipEffect.effect}
+       //                  multiline={true}/>
+
+       //              <span data-for='toggle-mini-settings-tooltip'
+       //                  data-iscapture="true"
+       //                  data-tip={`Colors and themes.
+       //                      \n\nThis is where you can customize ShortcutMagic
+       //                      \nto look exactly like you want.`} className="icon icon-palette">
+       //              </span>
+       //          </button>
+
+
+
+
+
+
         let Title = (
             <h1 id="title" style={{
-                color: this.state.textColor,
+                // color: this.state.textColor,
                 marginTop:'2px',
                 marginBottom:'2px',
             }}>{(displaySettings) ? displaySettings : this.state.name}</h1>

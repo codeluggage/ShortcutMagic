@@ -116,11 +116,24 @@ export default class WelcomeView extends Component {
     // preload="./test.js"
 
     return (
-      <webview id="welcome-window" src={remoteUrl} style={{
-        display: "inline-flex",
-        width: "800px",
-        height: "640px"
-      }}></webview>
+      <div>
+        <button onClick={e => {
+
+            var windows = holdRemote.BrowserWindow.getAllWindows();
+            for (var i = 0; i < windows.length; i++) {
+                const w = windows[i];
+                if (w && w.getTitle() == "welcomeWindow") {
+                    w.close();
+                }
+            }
+
+        }}>Close window</button>
+        <webview id="welcome-window" src={remoteUrl} style={{
+          display: "inline-flex",
+          width: "800px",
+          height: "640px"
+        }}></webview>
+      </div>
     );
   }
 };
