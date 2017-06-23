@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import {SortableContainer, SortableElement, SortableHandle, arrayMove} from 'react-sortable-hoc';
 import Electron, { ipcRenderer, remote } from 'electron';
 import ReactTooltip from 'react-tooltip'
+import ReactDOM from 'react-dom';
 
 
 let globalState;
@@ -57,8 +58,8 @@ const SortableItem = SortableElement((componentArguments) => {
                 // color: globalState.textColor,
                 borderRadius: ".25rem",
                 borderWidth: ".50rem",
-                // border: `2px solid ${globalState.itemColor}`,
-                // backgroundColor: globalState.itemColor,
+                border: `2px solid #ddd`,
+                backgroundColor: '#f5f5f4',
 				fontWeight: globalState.listItemFontWeight,
             }}>{
                 // Always show ⌘ if there are no mods or glyphs
@@ -77,8 +78,8 @@ const SortableItem = SortableElement((componentArguments) => {
                     // color: globalState.textColor,
                     borderRadius: ".25rem",
                     borderWidth: ".50rem",
-                    // border: `2px solid ${globalState.itemColor}`,
-                    // backgroundColor: globalState.itemColor,
+                    border: `2px solid #ddd`,
+                    backgroundColor: '#f5f5f4',
                 }}>{listItem["glyph"]}</p>
             ): ""}
 
@@ -92,8 +93,8 @@ const SortableItem = SortableElement((componentArguments) => {
                     // color: globalState.textColor,
                     borderRadius: ".25rem",
                     borderWidth: ".50rem",
-                    // border: `2px solid ${globalState.itemColor}`,
-                    // backgroundColor: globalState.itemColor,
+                    border: `2px solid #ddd`,
+                    backgroundColor: '#f5f5f4',
                 }}>{listItem["char"]}</p>
             ): ""}
 
@@ -105,8 +106,8 @@ const SortableItem = SortableElement((componentArguments) => {
                     // color: globalState.textColor,
                     borderRadius: ".25rem",
                     borderWidth: ".50rem",
-                    // border: `2px solid ${globalState.itemColor}`,
-                    // backgroundColor: globalState.itemColor,
+                    border: `2px solid #ddd`,
+                    backgroundColor: '#f5f5f4',
                 }}>{listItem.menuName}</p>
             ) : ""}
         </div>
@@ -312,14 +313,18 @@ const SortableItem = SortableElement((componentArguments) => {
 
     return (
         <td style={{
-            // borderRadius: ".25rem",
-            // borderWidth: ".50rem",
-            // border: `2px solid ${globalState.itemBackgroundColor}`,
+            borderRadius: ".25rem",
+            borderWidth: ".50rem",
+            borderLeft: `2px solid #f5f5f4`,
+            borderRight: `2px solid #f5f5f4`,
+            borderTop: `2px solid #f5f5f4`,
+            borderBottom: `2px solid #ddd`,
             // backgroundColor: globalState.itemBackgroundColor,
             // marginBottom: "8px",
             display: 'flex',
             // justifyContent: 'space-between',
             flexDirection: 'column',
+            padding: 0,
         }} onMouseEnter={(e) => {
 
 			let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
@@ -389,16 +394,16 @@ const SortableList = SortableContainer((componentArguments) => {
     return (!items) ? (
         <p>No items yet</p>
     ) : (
-        <div style={{margin:'5px'}}>
+        <div>
             {
                 items.map((value, index) => {
                     return (
-                        <SortableItem
-                            key={`item-${index}`}
-                            index={index}
-                            listItem={value}
-                            contentWindow={componentArguments.contentWindow}
-                        />
+                            <SortableItem
+                                key={`item-${index}`}
+                                index={index}
+                                listItem={value}
+                                contentWindow={componentArguments.contentWindow}
+                            />
                     );
                 })
             }
@@ -1231,10 +1236,6 @@ export default class Home extends Component {
 
 			return (
                 <div className="window">
-                  <header className="toolbar toolbar-header">
-                    <h1 className="title">Photon</h1>
-                  </header>
-
                   <div className="window-content">
                       <div className="pane">
                         <table className="table-striped">
@@ -1254,12 +1255,7 @@ export default class Home extends Component {
 		} else if (this.state.mode == "bubble-mode") {
 			// Bubble mode:
 			return (
-
                 <div className="window">
-
-                  <header className="toolbar toolbar-header">
-                    <h1 className="title">Photon</h1>
-                  </header>
 
                   <div className="window-content">
                       <div className="pane">
@@ -1282,12 +1278,7 @@ export default class Home extends Component {
             return (
                 <div className="window">
 
-                  <header className="toolbar toolbar-header">
-                    <h1 className="title">Photon</h1>
-                  </header>
-
                   <div className="window-content">
-                      <div className="pane">
                         <table className="table-striped">
                           <thead>
                             <tr>
@@ -1295,12 +1286,9 @@ export default class Home extends Component {
                             </tr>
                           </thead>
                           <tbody>
-                            <tr className="file_arq">
-                              {ShortcutList}
-                            </tr>
+                            {ShortcutList}
                           </tbody>
                         </table>
-                      </div>
                     </div>
                     
                   </div>
@@ -1311,171 +1299,6 @@ export default class Home extends Component {
     }
 }
 
-
-
-
-
-
-
-
-
-    //     <div className="pane-group">
-    //       <div className="pane pane-sm sidebar">
-    //         <nav className="nav-group">
-    //           <h5 className="nav-group-title">Favorites</h5>
-    //           <span className="nav-group-item">
-    //             <span className="icon icon-home"></span>
-    //             connors
-    //           </span>
-    //           <span className="nav-group-item active">
-    //             <span className="icon icon-light-up"></span>
-    //             Photon
-    //           </span>
-    //           <span className="nav-group-item">
-    //             <span className="icon icon-download"></span>
-    //             Downloads
-    //           </span>
-    //           <span className="nav-group-item">
-    //             <span className="icon icon-folder"></span>
-    //             Documents
-    //           </span>
-    //           <span className="nav-group-item">
-    //             <span className="icon icon-window"></span>
-    //             Applications
-    //           </span>
-    //           <span className="nav-group-item">
-    //             <span className="icon icon-signal"></span>
-    //             AirDrop
-    //           </span>
-    //           <span className="nav-group-item">
-    //             <span className="icon icon-monitor"></span>
-    //             Desktop
-    //           </span>
-    //         </nav>
-    //       </div>
-
-    //       <div className="pane">
-    //         <table className="table-striped">
-    //           <thead>
-    //             <tr>
-    //               <th>Name</th>
-    //               <th>Kind</th>
-    //               <th>Date Modified</th>
-    //               <th>Author</th>
-    //             </tr>
-    //           </thead>
-    //           <tbody>
-    //             <tr className="file_arq">
-    //               <td>bars.scss</td>
-    //               <td>Document</td>
-    //               <td>Oct 13, 2015</td>
-    //               <td>connors</td>
-    //             </tr>
-    //             <tr className="file_arq">
-    //               <td>base.scss</td>
-    //               <td>Document</td>
-    //               <td>Oct 13, 2015</td>
-    //               <td>connors</td>
-    //             </tr>
-    //             <tr className="file_arq">
-    //               <td>button-groups.scss</td>
-    //               <td>Document</td>
-    //               <td>Oct 13, 2015</td>
-    //               <td>connors</td>
-    //             </tr>
-    //             <tr className="file_arq">
-    //               <td>buttons.scss</td>
-    //               <td>Document</td>
-    //               <td>Oct 13, 2015</td>
-    //               <td>connors</td>
-    //             </tr>
-    //             <tr className="file_arq">
-    //               <td>docs.scss</td>
-    //               <td>Document</td>
-    //               <td>Oct 13, 2015</td>
-    //               <td>connors</td>
-    //             </tr>
-    //             <tr className="file_arq">
-    //               <td>forms.scss</td>
-    //               <td>Document</td>
-    //               <td>Oct 13, 2015</td>
-    //               <td>connors</td>
-    //             </tr>
-    //             <tr className="file_arq">
-    //               <td>grid.scss</td>
-    //               <td>Document</td>
-    //               <td>Oct 13, 2015</td>
-    //               <td>connors</td>
-    //             </tr>
-    //             <tr className="file_arq">
-    //               <td>icons.scss</td>
-    //               <td>Document</td>
-    //               <td>Oct 13, 2015</td>
-    //               <td>connors</td>
-    //             </tr>
-    //             <tr className="file_arq">
-    //               <td>images.scss</td>
-    //               <td>Document</td>
-    //               <td>Oct 13, 2015</td>
-    //               <td>connors</td>
-    //             </tr>
-    //             <tr className="file_arq">
-    //               <td>lists.scss</td>
-    //               <td>Document</td>
-    //               <td>Oct 13, 2015</td>
-    //               <td>connors</td>
-    //             </tr>
-    //             <tr className="file_arq">
-    //               <td>mixins.scss</td>
-    //               <td>Document</td>
-    //               <td>Oct 13, 2015</td>
-    //               <td>connors</td>
-    //             </tr>
-    //             <tr className="file_arq">
-    //               <td>navs.scss</td>
-    //               <td>Document</td>
-    //               <td>Oct 13, 2015</td>
-    //               <td>connors</td>
-    //             </tr>
-    //             <tr className="file_arq">
-    //               <td>normalize.scss</td>
-    //               <td>Document</td>
-    //               <td>Oct 13, 2015</td>
-    //               <td>connors</td>
-    //             </tr>
-    //             <tr className="file_arq">
-    //               <td>photon.scss</td>
-    //               <td>Document</td>
-    //               <td>Oct 13, 2015</td>
-    //               <td>connors</td>
-    //             </tr>
-    //             <tr className="file_arq">
-    //               <td>tables.scss</td>
-    //               <td>Document</td>
-    //               <td>Oct 13, 2015</td>
-    //               <td>connors</td>
-    //             </tr>
-    //             <tr className="file_arq">
-    //               <td>tabs.scss</td>
-    //               <td>Document</td>
-    //               <td>Oct 13, 2015</td>
-    //               <td>connors</td>
-    //             </tr>
-    //             <tr className="file_arq">
-    //               <td>utilities.scss</td>
-    //               <td>Document</td>
-    //               <td>Oct 13, 2015</td>
-    //               <td>connors</td>
-    //             </tr>
-    //             <tr className="file_arq">
-    //               <td>variables.scss</td>
-    //               <td>Document</td>
-    //               <td>Oct 13, 2015</td>
-    //               <td>connors</td>
-    //             </tr>
-    //           </tbody>
-    //         </table>
-    //       </div>
-    //     </div>
-    //   </div>
-    // </div>
+window.onload = function(){
+    ReactDOM.render(<Home />, document.getElementById("app"));
+}
