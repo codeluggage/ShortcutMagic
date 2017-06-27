@@ -359,9 +359,22 @@ const SortableItem = SortableElement((componentArguments) => {
             <div style={{
                 display: 'flex',
                 flexDirection: 'row',
-                flex: 2,
+                flex: 3,
+                justifyContent: 'space-between',
+                borderRadius: ".25rem",
+                borderWidth: ".50rem",
+                border: `2px solid #f5f5f4`,
             }}>
-                {topSection}   {(componentArguments.index < 5) ? (
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    flex: 2,
+                }}>
+                    {topSection}
+                    {mouseOverButtonsSection}
+                </div>
+
+                {(componentArguments.index < 5) ? (
                     <p style={{
                         // color: globalState.textColor,
                         flex: 1,
@@ -371,12 +384,10 @@ const SortableItem = SortableElement((componentArguments) => {
                         borderRadius: ".25rem",
                         borderWidth: ".50rem",
                         // border: `2px solid ${globalState.textColor}`,
-            			fontSize: globalState.listTitleFontSize,
-            			fontWeight: globalState.listTitleFontWeight,
+                        fontSize: globalState.listTitleFontSize,
+                        fontWeight: globalState.listTitleFontWeight,
                     }}>Cmd {componentArguments.index + 1}</p>
                 ) : ""}
-
-                {mouseOverButtonsSection}
             </div>
 
             {bottomSection}

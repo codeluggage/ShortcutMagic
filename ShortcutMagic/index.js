@@ -15,6 +15,7 @@ const {
 } = require('electron');
 const os = require('os');
 const log = require('electron-log');
+let isQuitting = false; // TODO: find a better way to do this
 
 
 log.transports.console.level = 'info';
@@ -724,6 +725,8 @@ function createBackgroundListenerWindow() {
 function createWelcomeWindow() {
 	welcomeWindow = new BrowserWindow({
 		show: true,
+        width: "800",
+        height: "640",
 		title: "welcomeWindow",
         nodeIntegration: true,
 	});
@@ -737,8 +740,11 @@ function createWelcomeWindow() {
 
 	welcomeWindow.loadURL(`file://${__dirname}/welcome/index.html`);
     welcomeWindow.on('closed', event => {
+        log.info('in welcomewindow closed, isQuitting: ', isQuitting);
         // TODO: Fix bug where quit creates these windows
-        createWindows();
+        if (!isQuitting) {
+            createWindows();
+        }
     });
 }
 
@@ -956,6 +962,8 @@ app.on('ready', () => {
 });
 
 app.on('before-quit', (event) => {
+    log.info('in before-quit');
+    isQuitting = true;
     globalShortcut.unregisterAll()
 	quitShortcutMagic();
 });

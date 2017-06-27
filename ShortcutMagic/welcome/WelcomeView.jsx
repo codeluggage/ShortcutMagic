@@ -88,52 +88,76 @@ export default class WelcomeView extends Component {
   }
 
   componentDidMount() {
-    // const webview = window.document.querySelector('webview');
+        const webview = window.document.querySelector('webview');
 
-    // webview.addEventListener('ipc-message', event => {
-    //   console.log('got message for ipc-message');
-    //   console.log(event.channel)
-    // });
+        // webview.addEventListener('ipc-message', event => {
+        //   console.log('got message for ipc-message');
+        //   console.log(event.channel)
+        // });
 
-    // const loadstart = () => {
-    //   console.log('loadstart');
-    // }
+        // const loadstart = () => {
+        //   console.log('loadstart');
+        // }
 
-    // const loadstop = () => {
-    //   console.log('loadstop');
-    // }
+        // const loadstop = () => {
+        //   console.log('loadstop');
+        // }
 
-    // webview.addEventListener('did-start-loading', loadstart)
-    // webview.addEventListener('did-stop-loading', loadstop)
-  }
+        // webview.addEventListener('did-start-loading', loadstart)
+        // webview.addEventListener('did-stop-loading', loadstop)
+
+        webview.addEventListener('did-navigate', (e) => {
+            // TODO: regex
+            if (e.url === 'http://localhost:3000/welcome-permissions' || e.url === 'https://shortcutmagic.meteorapp.com/welcome-permissions') {
+                this.setState({
+                    showCloseButton: true
+                });
+            }
+        })
+    }
 
   render() {
     // TODO: Load based on environment
-    // const remoteUrl = "http://localhost:3000";
-    const remoteUrl = "https://shortcutmagic.meteorapp.com";
+    // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> gif-community running lcoally');
+    // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> gif-community running lcoally');
+    // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> gif-community running lcoally');
+    // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> gif-community running lcoally');
+    // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> gif-community running lcoally');
+    // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> gif-community running lcoally');
+    // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> gif-community running lcoally');
+    // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> gif-community running lcoally');
+    // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> gif-community running lcoally');
+    // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> gif-community running lcoally');
+
+    // const remoteUrl = "http://localhost:3000/welcome";
+    const remoteUrl = "https://shortcutmagic.meteorapp.com/welcome";
 
     // autosize minwidth="576" minheight="432"
     // preload="./test.js"
 
     return (
-      <div>
-        <button onClick={e => {
-
-            var windows = holdRemote.BrowserWindow.getAllWindows();
-            for (var i = 0; i < windows.length; i++) {
-                const w = windows[i];
-                if (w && w.getTitle() == "welcomeWindow") {
-                    w.close();
-                }
+        <div>
+            {(this.state && this.state.showCloseButton) ? 
+                <button style={{
+                    width: '100%',
+                    backgroundColor: 'green',
+                }} onClick={e => {
+                    var windows = holdRemote.BrowserWindow.getAllWindows();
+                    for (var i = 0; i < windows.length; i++) {
+                        const w = windows[i];
+                        if (w && w.getTitle() == "welcomeWindow") {
+                            w.close();
+                        }
+                    }
+                }}>Start ShortcutMagic</button> : null
             }
-
-        }}>Close window</button>
-        <webview id="welcome-window" src={remoteUrl} style={{
-          display: "inline-flex",
-          width: "800px",
-          height: "640px"
-        }}></webview>
-      </div>
+            
+            <webview id="welcome-window" src={remoteUrl} style={{
+                display: "inline-flex",
+                width: "800px",
+                height: "640px",
+            }}></webview>
+        </div>
     );
   }
 };
