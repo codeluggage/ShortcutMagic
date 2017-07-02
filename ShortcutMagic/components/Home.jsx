@@ -131,6 +131,7 @@ const SortableItem = SortableElement((componentArguments) => {
             flexDirection: 'row',
             marginBottom: '2px',
             // marginTop: '2px',
+            justifyContent: 'center',
             alignContent: 'stretch',
             textAlign: 'center',
             height: '100%',
@@ -184,12 +185,13 @@ const SortableItem = SortableElement((componentArguments) => {
                     Favorite
                 </button>
 
-                <button id={(listItem.isFavorite) ? 'enabled-favorite-button' : ''} className="btn btn-default" style={{
+                <button id={(listItem.isHidden) ? 'enabled-hidden-button' : ''} className="btn btn-default" style={{
                     // color: this.state.textColor,
                     // backgroundColor: 'transparent',
                     // flex: 2,
                     // margin: 0,
                     // flex: 4,
+                    backgroundColor: (listItem.isHidden) ? 'transparent' : globalState.itemColor,
                 }} onClick={() => {
                     listItem.isHidden = !listItem.isHidden;
                     console.log("Updating shortcut item with toggled isHidden: ", listItem);
@@ -216,7 +218,7 @@ const SortableItem = SortableElement((componentArguments) => {
                 }}>
                     <span className="fa fa-3x fa-film" style={{ }}></span>
                     <br />
-                    Record
+                    GIF
                 </button>
             </div>
         </div>
@@ -240,7 +242,7 @@ const SortableItem = SortableElement((componentArguments) => {
             flexDirection: 'column',
             padding: 0,
         }} onMouseEnter={(e) => {
-            componentArguments.contentWindow.document.getElementById(`topSection-${componentArguments.index}`).style.display = "none";
+            // componentArguments.contentWindow.document.getElementById(`topSection-${componentArguments.index}`).style.display = "none";
 
 			let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
             if (buttonSectionElements) {
@@ -248,7 +250,8 @@ const SortableItem = SortableElement((componentArguments) => {
 
 					buttonSectionElements[i].style.display = "block";
 
-					if (buttonSectionElements[i].id === "enabled-favorite-button") {
+					if (buttonSectionElements[i].id === "enabled-favorite-button" || 
+                        buttonSectionElements[i].id === "enabled-hidden-button") {
                         buttonSectionElements[i].style.backgroundColor = globalState.itemColor;
                         buttonSectionElements[i].style.border = `2px solid ${globalState.itemColor}`;
                     }
@@ -259,12 +262,13 @@ const SortableItem = SortableElement((componentArguments) => {
             console.log(`in onMouseLeave sending hide-tooltip with ${JSON.stringify(componentArguments.listItem)}`);
             ipcRenderer.send('hide-tooltip');
 
-            componentArguments.contentWindow.document.getElementById(`topSection-${componentArguments.index}`).style.display = "block";
+            // componentArguments.contentWindow.document.getElementById(`topSection-${componentArguments.index}`).style.display = "block";
 
 			let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
             if (buttonSectionElements) {
 				for (var i = 0; i < buttonSectionElements.length; i++) {
-					if (buttonSectionElements[i].id != "enabled-favorite-button") {
+					if (buttonSectionElements[i].id != "enabled-favorite-button" && 
+                        buttonSectionElements[i].id != "enabled-hidden-button") {
 						buttonSectionElements[i].style.display = "none";
 					} else {
                         buttonSectionElements[i].style.backgroundColor = "transparent";
@@ -274,15 +278,13 @@ const SortableItem = SortableElement((componentArguments) => {
 			}
         }}>
             <div style={{
-                display: 'flex',
-                flexDirection: 'row',
                 flex: 3,
-                justifyContent: 'center',
                 borderRadius: ".25rem",
                 borderWidth: ".50rem",
                 border: `2px solid #f5f5f4`,
             }}>
-                {topSection}{mouseOverButtonsSection}
+                {topSection}
+                {mouseOverButtonsSection}
             </div>
 
             {bottomSection}
@@ -338,7 +340,9 @@ export default class Home extends Component {
         });
 
         ipcRenderer.on('execute-list-item', (event, itemNumber) => {
-            ipcRenderer.send('execute-list-item', this.previousShortcuts[itemNumber]);
+            if (this.state && this.state.items && this.state.items.length >= itemNumber) {
+                ipcRenderer.send('execute-list-item', this.state.items[itemNumber]);
+            }
         });
 
         ipcRenderer.on('focus-search-field', (event) => {
@@ -898,7 +902,7 @@ export default class Home extends Component {
                         <span data-for='gifcommunity-tooltip'
                             data-iscapture="true"
                             data-tip={`Open community window
-                                \nwith gif overview`} className="fa fa-3x fa-film" style={{}}>
+                                \nwith gif overview`} className="fa fa-film" style={{}}>
                         </span>
                     </button>
 
