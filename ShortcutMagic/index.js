@@ -974,10 +974,15 @@ ipcMain.on('get-app-name-sync', function(event) {
 
 ipcMain.on('main-app-switched-notification', function(event, appName) {
 	// TODO: Make this list editable somewhere to avoid people having problems?
-	if (appName === "Electron" ||
+    if (appName === "Electron" ||
         appName === "ShortcutMagic" ||
-        appName === "ShortcutMagic-mac" ||
-        appName === "ScreenSaverEngine" ||
+        appName === "ShortcutMagic-mac") {
+        log.info("Not switching to ourselves, but sending 'focus-self' to main window");
+        mainWindow.webContents.send('focus', true);
+        return;
+    }
+
+    if (appName === "ScreenSaverEngine" ||
         appName === "loginwindow" ||
         appName === "Dock" ||
         appName === "Google Software Update..." ||
@@ -1017,6 +1022,7 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 
 	settingsWindow.webContents.send('app-changed', currentAppName);
 	miniSettingsWindow.webContents.send('app-changed', currentAppName);
+    mainWindow.webContents.send('focus', false);
 });
 
 ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {

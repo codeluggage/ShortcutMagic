@@ -33,7 +33,7 @@ const SortableItem = SortableElement((componentArguments) => {
     let listItem = componentArguments.listItem;
 
     let topSection = (
-        <p style={{
+        <p id={`topSection-${componentArguments.index}`} style={{
             // color: globalState.textColor,
             flex: 2,
             marginRight: '4px',
@@ -48,19 +48,18 @@ const SortableItem = SortableElement((componentArguments) => {
             display: 'flex',
             flexDirection: 'row',
             flex: 2,
+            fontWeight: globalState.listItemFontWeight,
         }}>
             <p style={{
                 flex: 2,
                 marginRight: '5px',
                 marginLeft: '5px',
-				marginTop: 0,
-				marginBottom: '5px',
                 // color: globalState.textColor,
                 borderRadius: ".25rem",
                 borderWidth: ".50rem",
                 border: `2px solid #ddd`,
                 backgroundColor: '#f5f5f4',
-				fontWeight: globalState.listItemFontWeight,
+                textAlign: 'center',
             }}>{
                 // Always show ⌘ if there are no mods or glyphs
                 (listItem["mod"]) ? listItem["mod"] :
@@ -73,13 +72,12 @@ const SortableItem = SortableElement((componentArguments) => {
                     flex: 2,
                     marginRight: '5px',
                     marginLeft: '5px',
-					marginTop: 0,
-                    marginBottom: '5px',
                     // color: globalState.textColor,
                     borderRadius: ".25rem",
                     borderWidth: ".50rem",
                     border: `2px solid #ddd`,
                     backgroundColor: '#f5f5f4',
+                    textAlign: 'center',
                 }}>{listItem["glyph"]}</p>
             ): ""}
 
@@ -88,13 +86,12 @@ const SortableItem = SortableElement((componentArguments) => {
                     flex: 2,
                     marginRight: '5px',
                     marginLeft: '5px',
-					marginTop: 0,
-					marginBottom: '5px',
                     // color: globalState.textColor,
                     borderRadius: ".25rem",
                     borderWidth: ".50rem",
                     border: `2px solid #ddd`,
                     backgroundColor: '#f5f5f4',
+                    textAlign: 'center',
                 }}>{listItem["char"]}</p>
             ): ""}
 
@@ -108,202 +105,119 @@ const SortableItem = SortableElement((componentArguments) => {
                     borderWidth: ".50rem",
                     border: `2px solid #ddd`,
                     backgroundColor: '#f5f5f4',
+                    textAlign: 'center',
                 }}>{listItem.menuName}</p>
+            ) : ""}
+
+            {(globalState.focused && componentArguments.index < 5) ? (
+                <p style={{
+                    // color: globalState.textColor,
+                    flex: 1,
+                    paddingLeft: "5px",
+                    paddingRight: "5px",
+                    borderRadius: ".25rem",
+                    borderWidth: ".50rem",
+                    border: `2px solid #ddd`,
+                    backgroundColor: '#f5f5f4',
+                    textAlign: 'center',
+                }}>⌘ {componentArguments.index + 1}</p>
             ) : ""}
         </div>
     );
 
-    // 1 big 2 small version:
-    // var mouseOverButtonsSection = (
-    //     <div style={{
-    //         display: 'flex',
-    //         flexDirection: 'row',
-    //         flex: 2,
-    //         marginBottom: '2px',
-    //         // marginTop: '2px',
-    //         // alignContent: 'stretch',
-    //     }}>
-    //         <div name={`buttonSection-${componentArguments.index}`} style={{
-	// 			display: 'none',
-	// 			color: globalState.textColor,
-	// 			flex: 3,
-    //             // height: '100%',
-    //             backgroundColor: globalState.itemColor,
-    //             marginRight: '1px',
-    //             marginLeft: '1px',
-    //             borderRadius: ".25rem",
-    //             borderWidth: ".50rem",
-    //             border: `2px solid ${globalState.itemColor}`,
-	// 			textAlign: 'center',
-    //         }} onClick={() => {
-    //             console.log("clicked execute-list-item with ", listItem);
-    //             ipcRenderer.send('execute-list-item', listItem);
-    //         }}>
-    //             <i className="fa fa-2x fa-play" style={{
-	// 				color: "green",
-	// 			}}></i>
-    //             <br />
-    //             Run
-    //         </div>
-    //
-    //         <div style={{
-    //             display: 'flex',
-    //             flexDirection: 'column',
-    //             flex: 2,
-    //             flexWrap: 'nowrap',
-    //             // alignContent: 'stretch',
-    //         }}>
-    //             <div id={(listItem.isFavorite) ? 'enabled-favorite-button' : ''}
-    // 			name={`buttonSection-${componentArguments.index}`}
-    // 			style={{
-    // 				display: (listItem.isFavorite) ? 'block' : 'none',
-    // 				color: globalState.textColor,
-    //                 backgroundColor: globalState.itemColor,
-    // 				flex: 1,
-    // 				// height: '100%',
-    //                 marginRight: '1px',
-    //                 marginLeft: '1px',
-    //                 borderRadius: ".25rem",
-    //                 borderWidth: ".50rem",
-    //                 border: `2px solid ${globalState.itemColor}`,
-    // 				textAlign: 'center',
-    //             }} onClick={() => {
-    //                 listItem.isFavorite = !listItem.isFavorite;
-    //                 console.log("Updating shortcut item with toggled isFavorite: ", listItem);
-    //                 ipcRenderer.send('update-shortcut-item', listItem);
-    //             }}>
-    //                 {
-    //                     (listItem.isFavorite) ? (
-    //                         <i className="fa fa-2x fa-star" style={{
-    // 							color: "gold",
-    // 						}}></i>
-    //                     ) : (
-    //                         <i className="fa fa-2x fa-star-o" style={{
-    // 							color: "gold",
-    // 						}}></i>
-    //                     )
-    //                 }
-    // 				<br />
-    // 				Favorite
-    //             </div>
-    //
-    //             <div name={`buttonSection-${componentArguments.index}`} style={{
-    // 				display: 'none',
-    // 				color: globalState.textColor,
-    //                 backgroundColor: globalState.itemColor,
-    // 				flex: 1,
-    // 				// height: '100%',
-    //                 marginRight: '1px',
-    //                 marginLeft: '1px',
-    //                 borderRadius: ".25rem",
-    //                 borderWidth: ".50rem",
-    //                 border: `2px solid ${globalState.itemColor}`,
-    // 				textAlign: 'center',
-    //             }} onClick={() => {
-    //                 listItem.isHidden = !listItem.isHidden;
-    //                 console.log("Updating shortcut item with toggled isHidden: ", listItem);
-    //                 ipcRenderer.send('update-shortcut-item', listItem);
-    //             }}>
-    //                 <i className="fa fa-2x fa-eye" style={{
-    // 					color: (listItem.isHidden) ? "grey" : "red",
-    // 				}}></i>
-    // 				<br />
-    // 				Hide
-    //             </div>
-    //         </div>
-    //     </div>
-    // );
-
-    // 3 small ones:
     let mouseOverButtonsSection = (
         <div style={{
             display: 'flex',
             flexDirection: 'row',
-            flex: 2,
             marginBottom: '2px',
             // marginTop: '2px',
-            // alignContent: 'stretch',
+            alignContent: 'stretch',
+            textAlign: 'center',
+            height: '100%',
         }}>
-            <div name={`buttonSection-${componentArguments.index}`} className="toolbar-actions pull-right" style={{
+            <div name={`buttonSection-${componentArguments.index}`} className="btn-group toolbar-actions" style={{
                 display: 'none',
             }}>
-                <div  className="btn-group">
-                    <button className="btn btn-default" style={{
-    		                    // color: this.state.textColor,
-    		                    // backgroundColor: 'transparent',
-    							// flex: 2,
-    							// margin: 0,
+                <button className="btn btn-default" style={{
+                    // color: this.state.textColor,
+                    // backgroundColor: 'transparent',
+                    // flex: 2,
+                    // margin: 0,
+                    // flex: 4,
+                }} onClick={() => {
+                    console.log("clicked execute-list-item with ", listItem);
+                    ipcRenderer.send('execute-list-item', listItem);
+                }}>
+                    <span className="fa fa-3x fa-play"style={{
+                        color: "green",
+                    }}></span>
+                    <br />
+                    Execute
+                </button>
 
-                                // flex: 4,
-                    }} onClick={() => {
-                        console.log("clicked execute-list-item with ", listItem);
-                        ipcRenderer.send('execute-list-item', listItem);
-                    }}>
-                        <span className="fa fa-play"style={{
-        					color: "green",
-        				}}></span>
-                    </button>
+                <button id={(listItem.isFavorite) ? 'enabled-favorite-button' : ''} className="btn btn-default" style={{
+                    // color: this.state.textColor,
+                    // backgroundColor: 'transparent',
+                    // flex: 2,
+                    // margin: 0,
+                    // flex: 4,
+                    // display: (listItem.isFavorite) ? 'block' : 'none',
+                    // color: globalState.textColor,
+                    backgroundColor: (listItem.isFavorite) ? 'transparent' : globalState.itemColor,
+                }} onClick={() => {
+                    listItem.isFavorite = !listItem.isFavorite;
+                    console.log("Updating shortcut item with toggled isFavorite: ", listItem);
+                    ipcRenderer.send('update-shortcut-item', listItem);
+                }}>
+                    {
+                        (listItem.isFavorite) ? (
+                            <span className="fa fa-3x fa-star" style={{
+                                color: "gold",
+                            }}></span>
+                        ) : (
+                            <span className="fa fa-3x fa-star-o" style={{
+                                color: "gold",
+                            }}></span>
+                        )
+                    }
+                    <br />
+                    Favorite
+                </button>
 
-                    <button id={(listItem.isFavorite) ? 'enabled-favorite-button' : ''} className="btn btn-default" style={{
-    		                    // color: this.state.textColor,
-    		                    // backgroundColor: 'transparent',
-    							// flex: 2,
-    							// margin: 0,
+                <button id={(listItem.isFavorite) ? 'enabled-favorite-button' : ''} className="btn btn-default" style={{
+                    // color: this.state.textColor,
+                    // backgroundColor: 'transparent',
+                    // flex: 2,
+                    // margin: 0,
+                    // flex: 4,
+                }} onClick={() => {
+                    listItem.isHidden = !listItem.isHidden;
+                    console.log("Updating shortcut item with toggled isHidden: ", listItem);
+                    ipcRenderer.send('update-shortcut-item', listItem);
+                }}>
+                    <span className="fa fa-3x fa-eye" style={{
+                        color: (listItem.isHidden) ? "grey" : "red",
+                    }}></span>
+                    <br />
+                    Hide
+                </button>
 
-                                // flex: 4,
-                        // display: (listItem.isFavorite) ? 'block' : 'none',
-                        // color: globalState.textColor,
-                        backgroundColor: (listItem.isFavorite) ? 'transparent' : globalState.itemColor,
-                    }} onClick={() => {
-                        listItem.isFavorite = !listItem.isFavorite;
-                        console.log("Updating shortcut item with toggled isFavorite: ", listItem);
-                        ipcRenderer.send('update-shortcut-item', listItem);
-                    }}>
-                        {
-                            (listItem.isFavorite) ? (
-                                <span  className="fa fa-star" style={{
-        							color: "gold",
-        						}}></span>
-                            ) : (
-                                <span  className="fa fa-star-o" style={{
-        							color: "gold",
-        						}}></span>
-                            )
-                        }
-                    </button>
-
-                    <button id={(listItem.isFavorite) ? 'enabled-favorite-button' : ''} className="btn btn-default" style={{
-    		                    // color: this.state.textColor,
-    		                    // backgroundColor: 'transparent',
-    							// flex: 2,
-    							// margin: 0,
-
-                                // flex: 4,
-                    }} onClick={() => {
-                        listItem.isHidden = !listItem.isHidden;
-                        console.log("Updating shortcut item with toggled isHidden: ", listItem);
-                        ipcRenderer.send('update-shortcut-item', listItem);
-                    }}>
-                        <span className="fa fa-eye" style={{
-        					color: (listItem.isHidden) ? "grey" : "red",
-        				}}></span>
-                    </button>
-
-                    <button className="btn btn-default"
-                    onMouseEnter={(e) => {
-                        console.log(`sending show-tooltip-for-list-item with ${componentArguments.listItem}`);
-                        ipcRenderer.send('show-tooltip-for-list-item', componentArguments.listItem);
-                    }} onMouseLeave={(e) => {
-                        console.log(`sending hide-tooltip with ${componentArguments.listItem}`);
-                        ipcRenderer.send('hide-tooltip');
-                    }} onClick={() => {
-                        console.log(`sending hide-tooltip with ${componentArguments.listItem}`);
-                        ipcRenderer.send('hide-tooltip');
-                        ipcRenderer.send('record-gif', listItem);
-                    }}>
-                        <span className="fa fa-film" style={{ }}></span>
-                    </button>
-                </div>
+                <button className="btn btn-default"
+                onMouseEnter={(e) => {
+                    console.log(`sending show-tooltip-for-list-item with ${componentArguments.listItem}`);
+                    ipcRenderer.send('show-tooltip-for-list-item', componentArguments.listItem);
+                }} onMouseLeave={(e) => {
+                    console.log(`sending hide-tooltip with ${componentArguments.listItem}`);
+                    ipcRenderer.send('hide-tooltip');
+                }} onClick={() => {
+                    console.log(`sending hide-tooltip with ${componentArguments.listItem}`);
+                    ipcRenderer.send('hide-tooltip');
+                    ipcRenderer.send('record-gif', listItem);
+                }}>
+                    <span className="fa fa-3x fa-film" style={{ }}></span>
+                    <br />
+                    Record
+                </button>
             </div>
         </div>
     );
@@ -313,7 +227,7 @@ const SortableItem = SortableElement((componentArguments) => {
 
     return (
         <td style={{
-            borderRadius: ".25rem",
+            borderRadius: ".35rem",
             borderWidth: ".50rem",
             borderLeft: `2px solid #f5f5f4`,
             borderRight: `2px solid #f5f5f4`,
@@ -326,6 +240,7 @@ const SortableItem = SortableElement((componentArguments) => {
             flexDirection: 'column',
             padding: 0,
         }} onMouseEnter={(e) => {
+            componentArguments.contentWindow.document.getElementById(`topSection-${componentArguments.index}`).style.display = "none";
 
 			let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
             if (buttonSectionElements) {
@@ -344,6 +259,8 @@ const SortableItem = SortableElement((componentArguments) => {
             console.log(`in onMouseLeave sending hide-tooltip with ${JSON.stringify(componentArguments.listItem)}`);
             ipcRenderer.send('hide-tooltip');
 
+            componentArguments.contentWindow.document.getElementById(`topSection-${componentArguments.index}`).style.display = "block";
+
 			let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
             if (buttonSectionElements) {
 				for (var i = 0; i < buttonSectionElements.length; i++) {
@@ -360,34 +277,12 @@ const SortableItem = SortableElement((componentArguments) => {
                 display: 'flex',
                 flexDirection: 'row',
                 flex: 3,
-                justifyContent: 'space-between',
+                justifyContent: 'center',
                 borderRadius: ".25rem",
                 borderWidth: ".50rem",
                 border: `2px solid #f5f5f4`,
             }}>
-                <div style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    flex: 2,
-                }}>
-                    {topSection}
-                    {mouseOverButtonsSection}
-                </div>
-
-                {(componentArguments.index < 5) ? (
-                    <p style={{
-                        // color: globalState.textColor,
-                        flex: 1,
-                        marginBottom: "30px",
-                        paddingLeft: "5px",
-                        paddingRight: "5px",
-                        borderRadius: ".25rem",
-                        borderWidth: ".50rem",
-                        // border: `2px solid ${globalState.textColor}`,
-                        fontSize: globalState.listTitleFontSize,
-                        fontWeight: globalState.listTitleFontWeight,
-                    }}>Cmd {componentArguments.index + 1}</p>
-                ) : ""}
+                {topSection}{mouseOverButtonsSection}
             </div>
 
             {bottomSection}
@@ -435,6 +330,12 @@ export default class Home extends Component {
 		// 	listItemFontWeight: 500,
 		// };
 		//
+
+        ipcRenderer.on('focus', (event, focus) => {
+            this.setState({
+                focused: focus,
+            });
+        });
 
         ipcRenderer.on('execute-list-item', (event, itemNumber) => {
             ipcRenderer.send('execute-list-item', this.previousShortcuts[itemNumber]);
@@ -996,7 +897,8 @@ export default class Home extends Component {
 
                         <span data-for='gifcommunity-tooltip'
                             data-iscapture="true"
-                            data-tip="Open community window\nwith gif overview" className="fa fa-film" style={{}}>
+                            data-tip={`Open community window
+                                \nwith gif overview`} className="fa fa-3x fa-film" style={{}}>
                         </span>
                     </button>
 
@@ -1125,7 +1027,7 @@ export default class Home extends Component {
                             data-iscapture="true"
                             data-tip={`Hide
                                 \n\nThis hides the window completely
-                                \nfor {this.state.name}. You have to click the hat
+                                \nfor ${this.state.name}. You have to click the hat
                                 \nicon to show it again.`} className="icon icon-publish">
                         </span>
                     </button>
