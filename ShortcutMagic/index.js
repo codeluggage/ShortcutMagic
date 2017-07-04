@@ -780,6 +780,8 @@ function createWelcomeWindow() {
 		width: "800",
 		height: "640",
 		title: "welcomeWindow",
+		alwaysOnTop: true,
+		frame: false,
 		nodeIntegration: true,
 	});
 

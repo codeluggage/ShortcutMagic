@@ -1,6 +1,6 @@
 'use babel';
 import React, { Component } from 'react';
-import Electron, { ipcRenderer, remote } from 'electron';
+import Electron, { ipcRenderer, remote, shell } from 'electron';
 import ReactDOM from 'react-dom';
 
 var holdRemote = remote;
@@ -94,9 +94,24 @@ export default class WelcomeView extends Component {
                         ipcRenderer.send('welcome-window-ready');
                         window.document.getElementById("start").text = clickedStart;
                     }} style={{
+                        paddingLeft: '40px',
+                        paddingRight: '40px',
                         flex: 1,
                     }}>Start</a> : null
                 }
+
+                <br />
+                <i>
+                Optional (advanced): 
+                <br />
+                The code for ShortcutMagic is open and freely available. Want to take a look, or maybe even help make it better? 
+                <br />
+                <a style={{color: 'blue'}} onClick={(event) => {
+                    event.preventDefault();
+                    shell.openExternal('https://github.com/codeluggage/ShortcutMagic');
+                }}>Check out the code for ShortcutMagic!</a>
+                </i>
+                <br />
             </div>
         </div>
     );
