@@ -208,6 +208,12 @@ export default class SettingsView extends Component {
     								globalSettings: holdSettings
     							});
 
+                                if (holdSettings.alwaysOnTop) {
+                                    app.dock.show();
+                                } else {
+                                    app.dock.hide();
+                                }
+
     	                    	ipcRenderer.send('save-app-settings', holdSettings);
         						this.saveCurrentSettings();
                             }
