@@ -761,8 +761,8 @@ export default class Home extends Component {
 
             return (
                 <div style={{
-                    color: 'white',
-                    padding: '40px',
+                    backgroundColor: '#fff',
+                    padding: '20px',
                     textAlign: 'center',
                 }}>
                     <h1>ShortcutMagic</h1>
