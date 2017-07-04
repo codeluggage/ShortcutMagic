@@ -798,6 +798,8 @@ function createWelcomeWindow() {
 		if (!isQuitting) {
 			app.dock.hide(); // TODO: Read from settings instead
 		}
+
+		welcomeWindow = null;
 	});
 }
 

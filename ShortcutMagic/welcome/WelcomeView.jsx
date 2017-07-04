@@ -56,7 +56,8 @@ export default class WelcomeView extends Component {
     }
 
   render() {
-    const remoteUrl = (process.env.NODE_ENV === "production") ? "https://shortcutmagic.meteorapp.com/welcome" : "http://localhost:3000/welcome";
+    // const remoteUrl = (process.env.NODE_ENV === "development") ? "http://localhost:3000/welcome" : "https://shortcutmagic.meteorapp.com/welcome";
+    const remoteUrl = "https://shortcutmagic.meteorapp.com/welcome";
 
     // autosize minwidth="576" minheight="432"
     // preload="./test.js"
