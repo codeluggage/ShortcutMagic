@@ -10,7 +10,7 @@
   "scripts": {
     "start": "NODE_ENV=production ./node_modules/.bin/electron shortcutmagic.js",
     "debug": "NODE_ENV=development ./node_modules/.bin/electron shortcutmagic.js --verbose --debug",
-    "pack-mac": "electron-packager . ShortcutMagic-mac --asar=false --overwrite --platform=darwin --arch=x64 --icon=assets/wizard.icns --prune=true --osx-sign.identity='Developer ID Application: Matias Forbord (A9ADPQA768)'"
+    "pack-sign-mac": "electron-packager . ShortcutMagic-mac --asar=false --overwrite --platform=darwin --arch=x64 --icon=assets/wizard.icns --prune=true --osx-sign.identity='Developer ID Application: Matias Forbord (A9ADPQA768)' && mv ShortcutMagic-mac-darwin-x64/ShortcutMagic-mac.app ShortcutMagic-mac-darwin-x64/ShortcutMagic.app && ./sign_app.sh ShortcutMagic-mac-darwin-x64/ShortcutMagic.app"
   },
   "build": {
     "appId": "com.thankivity.shortcutmagic",
@@ -22,6 +22,7 @@
     "babel-preset-es2015": "^6.3.13",
     "babel-preset-react": "^6.3.13",
     "babel-register": "^6.3.13",
+    "child-process-promise": "^2.2.1",
     "electron-localshortcut": "^1.1.1",
     "electron-log": "^2.2.4",
     "electron-osx-appearance": "^0.1.1",

@@ -33,7 +33,7 @@ const SortableItem = SortableElement((componentArguments) => {
     let listItem = componentArguments.listItem;
 
     let topSection = (
-        <p id={`topSection-${componentArguments.index}`} style={{
+        <p style={{
             // color: globalState.textColor,
             flex: 2,
             marginRight: '4px',
@@ -242,8 +242,6 @@ const SortableItem = SortableElement((componentArguments) => {
             flexDirection: 'column',
             padding: 0,
         }} onMouseEnter={(e) => {
-            // componentArguments.contentWindow.document.getElementById(`topSection-${componentArguments.index}`).style.display = "none";
-
 			let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
             if (buttonSectionElements) {
 				for (var i = 0; i < buttonSectionElements.length; i++) {
@@ -258,11 +256,8 @@ const SortableItem = SortableElement((componentArguments) => {
 				}
 			}
         }} onMouseLeave={(e) => {
-            // Ensure tooltip is hidden
-            console.log(`in onMouseLeave sending hide-tooltip with ${JSON.stringify(componentArguments.listItem)}`);
+            // Call this to be doubly sure tooltip is hidden
             ipcRenderer.send('hide-tooltip');
-
-            // componentArguments.contentWindow.document.getElementById(`topSection-${componentArguments.index}`).style.display = "block";
 
 			let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
             if (buttonSectionElements) {

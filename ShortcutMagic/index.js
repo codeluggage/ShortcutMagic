@@ -16,6 +16,7 @@ const {
 const os = require('os');
 const log = require('electron-log');
 let isQuitting = false; // TODO: find a better way to do this
+let localShortcutsCreated = false; // TODO: find a better way to do this
 
 
 log.transports.console.level = 'info';
@@ -113,9 +114,6 @@ var defaultBubbleBounds = {x: 800, y: 10, width: 250, height: 200};
 var GLOBAL_SETTINGS = "all programs";
 
 app.setName("ShortcutMagic");
-// The dock icon is hidden because we are trying to be an overlay application that is just "always there"
-// TODO: Set this in the settings, in case someone wants a full running program
-app.dock.hide();
 
 // Global (for now) objects:
 // controls the tray of the application
@@ -333,6 +331,9 @@ function quitShortcutMagic() {
     miniSettingsWindow = null;
     backgroundTaskRunnerWindow = null;
     mainWindow = null;
+    welcomeWindow = null;
+    gifRecorderWindow = null;
+    gifCommunityWindow = null;
 
     if (trayObject) {
         trayObject.destroy();
@@ -408,6 +409,11 @@ function savePosition(appName) {
 }
 
 function createMiniSettingsWindow() {
+	if (miniSettingsWindow) {
+		console.log('miniSettingsWindow already existed, exiting');
+		return;
+	}
+
 	miniSettingsWindow = new BrowserWindow({
 		show: false,
 		title: "miniSettingsWindow",
@@ -423,6 +429,11 @@ function createMiniSettingsWindow() {
 }
 
 function createSettingsWindow() {
+	if (settingsWindow) {
+		console.log('settingsWindow already existed, exiting');
+		return;
+	}
+
 	settingsWindow = new BrowserWindow({
 		show: false,
 		title: "settingsWindow",
@@ -441,44 +452,52 @@ function createSettingsWindow() {
 
 function createWindows() {
 	// The actual shortcut window is only created when the app switches
-	createTray();
+	// createTray();
 	createBackgroundTaskRunnerWindow();
 	createBackgroundListenerWindow();
 	createSettingsWindow();
 	createMiniSettingsWindow();
 	// createWelcomeWindow();
-	// createMainWindow();
+	createMainWindow();
     createTooltipWindow();
     createGifRecorderWindow();
     createGifCommunityWindow();
 
-    electronLocalshortcut.register(mainWindow, 'Cmd+1', () => {
-        log.info("hit execute");
-        mainWindow.webContents.send('execute-list-item', 1);
-    });
+    if (!localShortcutsCreated) {
+    	localShortcutsCreated = true;
+	    electronLocalshortcut.register(mainWindow, 'Cmd+1', () => {
+	        log.info("hit execute");
+	        mainWindow.webContents.send('execute-list-item', 1);
+	    });
 
-    electronLocalshortcut.register(mainWindow, 'Cmd+2', () => {
-        log.info("hit execute");
-        mainWindow.webContents.send('execute-list-item', 2);
-    });
+	    electronLocalshortcut.register(mainWindow, 'Cmd+2', () => {
+	        log.info("hit execute");
+	        mainWindow.webContents.send('execute-list-item', 2);
+	    });
 
-    electronLocalshortcut.register(mainWindow, 'Cmd+3', () => {
-        log.info("hit execute");
-        mainWindow.webContents.send('execute-list-item', 3);
-    });
+	    electronLocalshortcut.register(mainWindow, 'Cmd+3', () => {
+	        log.info("hit execute");
+	        mainWindow.webContents.send('execute-list-item', 3);
+	    });
 
-    electronLocalshortcut.register(mainWindow, 'Cmd+4', () => {
-        log.info("hit execute");
-        mainWindow.webContents.send('execute-list-item', 4);
-    });
+	    electronLocalshortcut.register(mainWindow, 'Cmd+4', () => {
+	        log.info("hit execute");
+	        mainWindow.webContents.send('execute-list-item', 4);
+	    });
 
-    electronLocalshortcut.register(mainWindow, 'Cmd+5', () => {
-        log.info("hit execute");
-        mainWindow.webContents.send('execute-list-item', 5);
-    });
+	    electronLocalshortcut.register(mainWindow, 'Cmd+5', () => {
+	        log.info("hit execute");
+	        mainWindow.webContents.send('execute-list-item', 5);
+	    });
+	  }
 }
 
 function createGifCommunityWindow() {
+	if (gifCommunityWindow) {
+		console.log('gifCommunityWindow already existed, exiting');
+		return;
+	}
+
     gifCommunityWindow = new BrowserWindow({
         name: "gifCommunityWindow",
         show: false,
@@ -491,6 +510,11 @@ function createGifCommunityWindow() {
 }
 
 function createGifRecorderWindow() {
+		if (gifRecorderWindow) {
+			console.log('gifRecorderWindow already existed, exiting');
+			return;
+		}
+
     gifRecorderWindow = new BrowserWindow({
 		name: "gifRecorderWindow",
         show: false,
@@ -504,6 +528,11 @@ function createGifRecorderWindow() {
 }
 
 function createTooltipWindow() {
+	if (tooltipWindow) {
+		console.log('tooltipWindow already existed, exiting');
+		return;
+	}
+
     tooltipWindow = new BrowserWindow({
 		name: "tooltipWindow",
         show: false,
@@ -517,6 +546,10 @@ function createTooltipWindow() {
 }
 
 function createMainWindow() {
+	if (mainWindow) {
+		console.log('mainWindow already existed, exiting');
+		return;
+	}
     // getDb().find({
     //     name: GLOBAL_SETTINGS
     // }, function(err, res) {
@@ -676,6 +709,10 @@ function debugEverything() {
 }
 
 function createTray() {
+	if (trayObject) {
+		console.log('trayObject already existed, exiting');
+		return;
+	}
 	// TODO: read if menu is dark or not, load white/black hat icon as response:
 	// const iconPath = path.join(__dirname, osxPrefs.isDarkMode() ? 'assets/wizard-white.png' : 'wizard.png');
 	const iconPath = path.join(__dirname, 'assets/wizard_16x16.png');
@@ -703,6 +740,11 @@ function createTray() {
 }
 
 function createBackgroundTaskRunnerWindow() {
+	if (backgroundTaskRunnerWindow) {
+		console.log('backgroundTaskRunnerWindow already existed, exiting');
+		return;
+	}
+
 	backgroundTaskRunnerWindow = new BrowserWindow({
 		show: false,
 		title: "backgroundTaskRunnerWindow"
@@ -713,6 +755,11 @@ function createBackgroundTaskRunnerWindow() {
 }
 
 function createBackgroundListenerWindow() {
+	if (backgroundListenerWindow) {
+		console.log('backgroundListenerWindow already existed, exiting');
+		return;
+	}
+
 	backgroundListenerWindow = new BrowserWindow({
 		show: false,
 		title: "backgroundListenerWindow"
@@ -723,12 +770,17 @@ function createBackgroundListenerWindow() {
 }
 
 function createWelcomeWindow() {
+	if (welcomeWindow) {
+		console.log('welcomeWindow already existed, exiting');
+		return;
+	}
+
 	welcomeWindow = new BrowserWindow({
 		show: true,
-        width: "800",
-        height: "640",
+		width: "800",
+		height: "640",
 		title: "welcomeWindow",
-        nodeIntegration: true,
+		nodeIntegration: true,
 	});
 
     // welcomeWindow.on('quit', (event) => {
@@ -739,13 +791,12 @@ function createWelcomeWindow() {
     // });
 
 	welcomeWindow.loadURL(`file://${__dirname}/welcome/index.html`);
-    welcomeWindow.on('closed', event => {
-        log.info('in welcomewindow closed, isQuitting: ', isQuitting);
-        // TODO: Fix bug where quit creates these windows
-        if (!isQuitting) {
-            createWindows();
-        }
-    });
+	welcomeWindow.on('closed', event => {
+		log.info('in welcomewindow closed, isQuitting: ', isQuitting);
+		if (!isQuitting) {
+			app.dock.hide(); // TODO: Read from settings instead
+		}
+	});
 }
 
 function updateRenderedShortcuts(shortcuts) {
@@ -958,13 +1009,14 @@ app.on('ready', () => {
 	// createWindows();
 	// loadWithPeriods(backgroundTaskRunnerWindow.webContents.send('read-last-app-name'));
     createWelcomeWindow();
-    createMainWindow();
+    createTray();
+    // createMainWindow();
 });
 
 app.on('before-quit', (event) => {
-    log.info('in before-quit');
-    isQuitting = true;
-    globalShortcut.unregisterAll()
+	log.info('in before-quit');
+	isQuitting = true;
+	globalShortcut.unregisterAll()
 	quitShortcutMagic();
 });
 
@@ -1325,4 +1377,8 @@ ipcMain.on('create-windows', (event) => {
 ipcMain.on('log', (event) => {
     console.log('logging from ipcMain.on "log" ');
     console.log(event);
+});
+
+ipcMain.on('welcome-window-ready', (event) => {
+    createWindows();
 });

@@ -3,67 +3,6 @@ import React, { Component } from 'react';
 import Electron, { ipcRenderer, remote } from 'electron';
 import ReactDOM from 'react-dom';
 
-
-// index.html:
-
-
-
-    // <script>
-    //     require('babel-register');
-    //     var ipcRenderer = require('electron').ipcRenderer;
-    //     // welcomeWindow.webContents.send('ipc-message', 'heiiiiii');
-
-    //     onload = () => {
-    //       const webview = window.document.querySelector('webview');
-
-    //       webview.addEventListener('ipc-message', event => {
-    //         console.log('got message for ipc-message');
-    //         console.log(event.channel)
-    //       });
-
-    //       const loadstart = () => {
-    //         console.log('loadstart');
-    //       }
-
-    //       const loadstop = () => {
-    //         console.log('loadstop');
-    //       }
-
-    //       const end = () => {
-    //         webview.send('create-windows');
-    //       }
-
-    //       webview.addEventListener('did-start-loading', () => {
-    //         console.log('did-start-loading called');
-    //         console.log('calling: ');
-    //         webview.send('log',  'did-start-loading');
-    //         loadstart();
-    //       });
-
-    //       webview.addEventListener('did-stop-loading', () => {
-    //         console.log('did-stop-loading called');
-    //         console.log('calling: ');
-    //         webview.send('log',  'did-stop-loading');
-    //         loadstop();
-    //       });
-
-    //       webview.addEventListener('console-message', (e) => {
-    //         console.log('Guest page logged a message:', e.message);
-    //       });
-
-    //       webview.addEventListener('close', (e) => {
-    //         console.log('closed');
-    //         console.log(e);
-    //       });
-
-    //     }
-    // </script>
-
-    // // in body: 
-    //   <webview nodeingegration id="welcome-window" src="http://localhost:3000" style="display:inline-flex; width:800px; height:640px"></webview>
-
-
-
 var holdRemote = remote;
 
 export default class WelcomeView extends Component {
@@ -117,46 +56,48 @@ export default class WelcomeView extends Component {
     }
 
   render() {
-    // TODO: Load based on environment
-    // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> gif-community running lcoally');
-    // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> gif-community running lcoally');
-    // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> gif-community running lcoally');
-    // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> gif-community running lcoally');
-    // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> gif-community running lcoally');
-    // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> gif-community running lcoally');
-    // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> gif-community running lcoally');
-    // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> gif-community running lcoally');
-    // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> gif-community running lcoally');
-    // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> gif-community running lcoally');
-
-    // const remoteUrl = "http://localhost:3000/welcome";
-    const remoteUrl = "https://shortcutmagic.meteorapp.com/welcome";
+    const remoteUrl = (process.env.NODE_ENV === "production") ? "https://shortcutmagic.meteorapp.com/welcome" : "http://localhost:3000/welcome";
 
     // autosize minwidth="576" minheight="432"
     // preload="./test.js"
 
     return (
         <div>
-            {(this.state && this.state.showCloseButton) ? 
-                <button style={{
-                    width: '100%',
-                    backgroundColor: 'green',
-                }} onClick={e => {
-                    var windows = holdRemote.BrowserWindow.getAllWindows();
-                    for (var i = 0; i < windows.length; i++) {
-                        const w = windows[i];
-                        if (w && w.getTitle() == "welcomeWindow") {
-                            w.close();
-                        }
-                    }
-                }}>Start ShortcutMagic</button> : null
-            }
-            
             <webview id="welcome-window" src={remoteUrl} style={{
                 display: "inline-flex",
                 width: "800px",
                 height: "640px",
             }}></webview>
+
+            <br />
+
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignContent: 'center',
+                textAlign: 'center',
+            }}>
+                {(this.state && this.state.showCloseButton) ? 
+                    <a id="start" className="btn btn-primary" onClick={e => {
+                        const clickedStart = "ShortcutMagic is opening... Click again to hide this welcome window.";
+                        if (window.document.getElementById("start").text === clickedStart) {
+                            var windows = holdRemote.BrowserWindow.getAllWindows();
+                            for (var i = 0; i < windows.length; i++) {
+                                const w = windows[i];
+                                if (w && w.getTitle() == "welcomeWindow") {
+                                    w.close();
+                                }
+                            }
+                            return;
+                        }
+
+                        ipcRenderer.send('welcome-window-ready');
+                        window.document.getElementById("start").text = clickedStart;
+                    }} style={{
+                        flex: 1,
+                    }}>Start</a> : null
+                }
+            </div>
         </div>
     );
   }
