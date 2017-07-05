@@ -47,7 +47,7 @@ export default class WelcomeView extends Component {
 
         webview.addEventListener('did-navigate', (e) => {
             // TODO: regex
-            if (e.url === 'http://localhost:3000/welcome-permissions' || e.url === 'https://shortcutmagic.meteorapp.com/welcome-permissions') {
+            if (e.url === 'http://localhost:3000/welcome' || e.url === 'https://shortcutmagic.meteorapp.com/welcome') {
                 this.setState({
                     showCloseButton: true
                 });
@@ -56,8 +56,8 @@ export default class WelcomeView extends Component {
     }
 
   render() {
-    // const remoteUrl = (process.env.NODE_ENV === "development") ? "http://localhost:3000/welcome" : "https://shortcutmagic.meteorapp.com/welcome";
-    const remoteUrl = "https://shortcutmagic.meteorapp.com/welcome";
+    const remoteUrl = (process.env.NODE_ENV === "development") ? "http://localhost:3000/welcome" : "https://shortcutmagic.meteorapp.com/welcome";
+    // const remoteUrl = "https://shortcutmagic.meteorapp.com/welcome";
 
     // autosize minwidth="576" minheight="432"
     // preload="./test.js"

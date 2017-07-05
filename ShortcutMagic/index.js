@@ -15,6 +15,7 @@ const {
 } = require('electron');
 const os = require('os');
 const log = require('electron-log');
+const spawnSync = require( 'child_process' ).spawnSync;
 let isQuitting = false; // TODO: find a better way to do this
 let localShortcutsCreated = false; // TODO: find a better way to do this
 
@@ -58,8 +59,6 @@ autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName, releaseDa
 // const osxPrefs = require('electron-osx-appearance');
 
 import sizeOf from 'image-size';
-let exec = require('child-process-promise').exec;
-
 
 
 // path lets us work with the file path of the running application
@@ -1273,51 +1272,53 @@ let recursiveCount = 0;
 let recursiveLastFile;
 let stopRecursiveLs = false;
 function recursiveLs() {
-    console.log("inside recursiveLs", ++recursiveCount);
+	console.log("inside recursiveLs", ++recursiveCount);
 
-    exec(`ls -lrtc -d -1 ${gifDirectory}/* | grep .gif`).then((result) => {
-        var stdout = result.stdout;
-        var stderr = result.stderr;
+  const result = spawnSync( 'ls ', [ '-lrtc', '-d', '-1', '${gifDirectory}/*', '|', 'grep', '.gif' ] );
+  var stderr = result.stderr;
+  var stdout = result.stdout;
 
-        stdout = stdout.substr(0, stdout.length - 1); // Cut last newline from ls command
-        let newFile = stdout.substr(stdout.lastIndexOf("\n") + 1, stdout.length); // Extract last filename, ordered by time
+  if (stderr) {
+  	console.log("errored when running ls: ", stderr);
+    recursiveLastFile = undefined;
+    stopRecursiveLs = true;
+  }
 
-        if (recursiveLastFile && newFile != recursiveLastFile) {
-            gifRecorderWindow.webContents.send('file-detected', `${newFile}`);
-        } else {
-            recursiveLastFile = newFile;
-        }
+	// Cut last newline from ls command
+	let gifFile = stdout.substr(0, stdout.length - 1);
+	// Extract last filename, ordered by time
+	let newFile = gifFile.substr(stdout.lastIndexOf("\n") + 1, gifFile.length);
 
-        if (!stopRecursiveLs) {
-            setTimeout(recursiveLs, 2000);
-        } else {
-            stopRecursiveLs = false;
-        }
-    }) .catch((err) => {
-        console.log("errored when running ls: ", err);
-    });
+	if (recursiveLastFile && newFile != recursiveLastFile) {
+		gifRecorderWindow.webContents.send('file-detected', `${newFile}`);
+	} else {
+		recursiveLastFile = newFile;
+	}
+
+	// check logic
+	if (!stopRecursiveLs) {
+		setTimeout(recursiveLs, 2000);
+	} else {
+		stopRecursiveLs = false;
+	}
 }
 
 
 ipcMain.on('record-gif', (event, listItem) => {
-    exec('open /Applications/Kap.app').then((result) => {
-        if (result.stderr) {
-            console.log('Opened Kap gif recording app with error:  ', result.stderr);
-            // TODO: Report error in gifRecorderWindow, ask to install Kap?
-            return;
-        }
+  const result = spawnSync( 'open', [ '/Applications/Kap.app' ] );
 
-        // TODO: Customize from gifRecorderWindow
-        let gifPath = "~/Movies/Kaptures";
-        gifRecorderWindow.webContents.send('recording-for-shortcut-in-path', listItem, gifPath, currentAppName);
-        gifRecorderWindow.show();
+  if (result.stderr) {
+    console.log("errored when opening Kap.app: ", stderr);
+    recursiveLastFile = undefined;
+    stopRecursiveLs = true;
+  }
 
-        recursiveLs();
-    }) .catch((err) => {
-        console.log("errored when opening Kap.app: ", err);
-        recursiveLastFile = undefined;
-        stopRecursiveLs = true;
-    });
+  // TODO: Customize from gifRecorderWindow
+  let gifPath = "~/Movies/Kaptures";
+  gifRecorderWindow.webContents.send('recording-for-shortcut-in-path', listItem, gifPath, currentAppName);
+  gifRecorderWindow.show();
+
+  recursiveLs();
 });
 
 ipcMain.on('cancel-gif-recording', (event) => {
