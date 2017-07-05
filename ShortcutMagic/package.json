@@ -13,7 +13,7 @@
     "pack-sign-mac": "NODE_ENV=production electron-packager . ShortcutMagic-mac --asar=false --overwrite --platform=darwin --arch=x64 --icon=assets/wizard.icns --prune=true --osx-sign.identity='Developer ID Application: Matias Forbord (A9ADPQA768)' && ./sign_app.sh ShortcutMagic-mac-darwin-x64/ShortcutMagic-mac.app"
   },
   "build": {
-    "appId": "com.thankivity.shortcutmagic",
+    "appId": "com.electron.shortcutmagic-mac",
     "mac": {
       "category": "Productivity"
     }

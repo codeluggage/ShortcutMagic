@@ -450,6 +450,55 @@ function createSettingsWindow() {
 }
 
 function createWindows() {
+	const tccutilResult  = spawnSync('sudo', [
+		'tccutil',
+		'--insert',
+		'com.electron.shortcutmagic-mac',
+	]);
+
+	const stdout = tccutilResult.stdout;
+	console.log("tccutil insert: ", stdout, stdout.code, stdout.toString());
+	const stderr = tccutilResult.stderr;
+	console.log("tccutil err: ", stderr, stderr.code, stderr.toString());
+
+	if (stderr.toString()) {
+		if (stderr.toString().trim() == "tccutil: Usage: tccutil reset SERVICE") {
+			console.log("tccutil not installed");
+
+			const brewInstallResult = spawnSync('brew', [
+				'install',
+				'tccutil'
+			]);
+			console.log(brewInstallResult.stdout, brewInstallResult.stderr);
+
+			if (brewInstallResult.stderr) {
+				console.log("error running brew install tccutil", brewInstallResult.stderr);
+			}
+
+			const tccutilResult2  = spawnSync('sudo', [
+				'tccutil',
+				'--insert',
+				'com.electron.shortcutmagic-mac',
+			]);
+
+			console.log("second tccutil attempt", tccutilResult2.stdout.toString(), tccutilResult2.stderr.toString());
+
+		} else {
+			console.log("tccutil installed");
+			const tccutilListResult = spawnSync('sudo', [
+				'tccutil', 
+				'--list'
+			]);
+
+			console.log(tccutilListResult.stdout, tccutilListResult.stderr);
+
+			if (tccutilListResult.stderr) {
+				console.log("error running sudo tccutil --list", tccutilListResult.stderr);
+			}
+		}
+	}
+
+
 	// The actual shortcut window is only created when the app switches
 	// createTray();
 	createBackgroundTaskRunnerWindow();
