@@ -149,7 +149,7 @@ const SortableItem = SortableElement((componentArguments) => {
                     console.log("clicked execute-list-item with ", listItem);
                     ipcRenderer.send('execute-list-item', listItem);
                 }}>
-                    <span className="fa fa-3x fa-play"style={{
+                    <span className="fa fa-2x fa-play"style={{
                         color: "green",
                     }}></span>
                     <br />
@@ -172,11 +172,11 @@ const SortableItem = SortableElement((componentArguments) => {
                 }}>
                     {
                         (listItem.isFavorite) ? (
-                            <span className="fa fa-3x fa-star" style={{
+                            <span className="fa fa-2x fa-star" style={{
                                 color: "gold",
                             }}></span>
                         ) : (
-                            <span className="fa fa-3x fa-star-o" style={{
+                            <span className="fa fa-2x fa-star-o" style={{
                                 color: "gold",
                             }}></span>
                         )
@@ -197,7 +197,7 @@ const SortableItem = SortableElement((componentArguments) => {
                     console.log("Updating shortcut item with toggled isHidden: ", listItem);
                     ipcRenderer.send('update-shortcut-item', listItem);
                 }}>
-                    <span className="fa fa-3x fa-eye" style={{
+                    <span className="fa fa-2x fa-eye" style={{
                         color: (listItem.isHidden) ? "grey" : "red",
                     }}></span>
                     <br />
@@ -216,7 +216,7 @@ const SortableItem = SortableElement((componentArguments) => {
                     ipcRenderer.send('hide-tooltip');
                     ipcRenderer.send('record-gif', listItem);
                 }}>
-                    <span className="fa fa-3x fa-film" style={{ }}></span>
+                    <span className="fa fa-2x fa-film" style={{ }}></span>
                     <br />
                     GIF
                 </button>
@@ -889,15 +889,14 @@ export default class Home extends Component {
                         ipcRenderer.send('toggle-gif-community');
                     }}>
                         <ReactTooltip id='gifcommunity-tooltip'
-                            place={tooltipEffect.place}
+                            place='right'
                             type={tooltipEffect.type}
                             effect={tooltipEffect.effect}
                             multiline={true}/>
 
                         <span data-for='gifcommunity-tooltip'
                             data-iscapture="true"
-                            data-tip={`Open community window
-                                \nwith gif overview`} className="fa fa-film" style={{}}>
+                            data-tip="Open community window <br /> with gif overview" className="fa fa-film" style={{}}>
                         </span>
                     </button>
 
@@ -906,7 +905,8 @@ export default class Home extends Component {
     		                    // backgroundColor: 'transparent',
     							// flex: 2,
     							// margin: 0,
-                    }} onClick={() => {
+                    }} onClick={(event) => {
+                        event.preventDefault();
                         console.log("clicked font size up");
                         this.changeFontUp();
                     }}>
@@ -918,7 +918,7 @@ export default class Home extends Component {
 
                         <span data-for='increase-font-size-tooltip'
                             data-iscapture="true"
-                            data-tip="Open community window<br />with gif overview" className="icon icon-plus-circled">
+                            data-tip="Increase font size" className="icon icon-plus-circled">
                         </span>
                     </button>
                     <button id="decrease-font-size-button" className="btn btn-default" style={{
@@ -926,7 +926,8 @@ export default class Home extends Component {
     		                    // backgroundColor: 'transparent',
     							// flex: 2,
     							// margin: 0,
-                    }} onClick={() => {
+                    }} onClick={(event) => {
+                        event.preventDefault();
                         console.log("clicked font size down");
                         this.changeFontDown();
                     }}>
@@ -946,7 +947,8 @@ export default class Home extends Component {
     		                    // backgroundColor: 'transparent',
     							// flex: 2,
     							// margin: 0,
-                    }} onClick={() => {
+                    }} onClick={(event) => {
+                        event.preventDefault();
                         console.log("clicked settings");
                         this.toggleSettings();
                     }}>
@@ -978,19 +980,15 @@ export default class Home extends Component {
 
                         <span data-for='toggle-bubble-mode-tooltip'
                             data-iscapture="true"
-                            data-tip={`Mini mode
-                            \n\nUse this mode when you want
-                            \nas much space as possible for other things.
-                            \nThe mode will be remembered and stay the same
-                            \neach time {this.state.name} is focused.`} className="icon icon-progress-0">
-                        </span>
+                            data-tip="Mini mode <br />Use this mode when you want <br />as much space as possible <br /> for other things. The mode <br />will be remembered and stay the same <br/> each time {this.state.name} is focused." className="icon icon-progress-0"> </span>
                     </button>
                     <button id="toggle-full-mode" className="btn btn-default" style={{
     		                    // color: this.state.textColor,
     		                    backgroundColor: (this.state.windowMode === "full") ? '#333' : '#fcfcfc',
     							// flex: 2,
     							// margin: 0,
-                    }} onClick={() => {
+                    }} onClick={(event) => {
+                        event.preventDefault();
     					ipcRenderer.send('set-full-view-mode');
                     }}>
                         <ReactTooltip id='toggle-full-mode-tooltip'
@@ -1001,10 +999,7 @@ export default class Home extends Component {
 
                         <span data-for='toggle-full-mode-tooltip'
                             data-iscapture="true"
-                            data-tip={`Regular mode
-                                \n\nThis mode is good for learning and
-                                \nexploring a program. Drag the edges of
-                                \nthe windows to resize.`} className="icon icon-window">
+                            data-tip="Regular mode<br />This mode is good for <br />learning and exploring <br />a program. Drag the edges of <br />the windows to resize." className="icon icon-window">
                         </span>
                     </button>
                     <button id="toggle-hidden-mode" className="btn btn-default" style={{
@@ -1012,22 +1007,20 @@ export default class Home extends Component {
     		                    backgroundColor: (this.state.windowMode === "hidden") ? '#333' : '#fcfcfc',
     							// flex: 2,
     							// margin: 0,
-                    }} onClick={() => {
+                    }} onClick={(event) => {
+                        event.preventDefault();
                         // TODO: Manage state ourselves here? messy..
     					ipcRenderer.send('set-hidden-mode');
                     }}>
                         <ReactTooltip id='toggle-hidden-mode-tooltip'
-                            place={tooltipEffect.place}
+                            place={'left'}
                             type={tooltipEffect.type}
                             effect={tooltipEffect.effect}
                             multiline={true}/>
 
                         <span data-for='toggle-hidden-mode-tooltip'
                             data-iscapture="true"
-                            data-tip={`Hide
-                                \n\nThis hides the window completely
-                                \nfor ${this.state.name}. You have to click the hat
-                                \nicon to show it again.`} className="icon icon-publish">
+                            data-tip="Hide <br />This hides the window completely <br />for ${this.state.name}. <br />You have to click the hat <br />icon to show it again." className="icon icon-publish">
                         </span>
                     </button>
                 </div>
@@ -1053,8 +1046,8 @@ export default class Home extends Component {
        //              <span data-for='toggle-mini-settings-tooltip'
        //                  data-iscapture="true"
        //                  data-tip={`Colors and themes.
-       //                      \n\nThis is where you can customize ShortcutMagic
-       //                      \nto look exactly like you want.`} className="icon icon-palette">
+       //                      <br />This is where you can customize ShortcutMagic
+       //                      <br />to look exactly like you want.`} className="icon icon-palette">
        //              </span>
        //          </button>
 
