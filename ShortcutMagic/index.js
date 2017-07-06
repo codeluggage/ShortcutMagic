@@ -450,50 +450,56 @@ function createSettingsWindow() {
 }
 
 function createWindows() {
-	const tccutilResult  = spawnSync('sudo', [
-		'tccutil',
-		'--insert',
-		'com.electron.shortcutmagic-mac',
+	const assistiveAccess = spawnSync('osascript', [
+		'shared/testAccessibility.scpt'
 	]);
 
-	const stdout = tccutilResult.stdout;
-	console.log("tccutil insert: ", stdout, stdout.code, stdout.toString());
-	const stderr = tccutilResult.stderr;
-	console.log("tccutil err: ", stderr, stderr.code, stderr.toString());
+	if (assistiveAccess.stderr.toString()) {
+		const tccutilResult  = spawnSync('sudo', [
+			'tccutil',
+			'--insert',
+			'com.electron.shortcutmagic-mac',
+		]);
 
-	if (stderr.toString()) {
-		if (stderr.toString().trim() == "tccutil: Usage: tccutil reset SERVICE") {
-			console.log("tccutil not installed");
+		const stdout = tccutilResult.stdout;
+		console.log("tccutil insert: ", stdout, stdout.code, stdout.toString());
+		const stderr = tccutilResult.stderr;
+		console.log("tccutil err: ", stderr, stderr.code, stderr.toString());
 
-			const brewInstallResult = spawnSync('brew', [
-				'install',
-				'tccutil'
-			]);
-			console.log(brewInstallResult.stdout, brewInstallResult.stderr);
+		if (stderr.toString()) {
+			if (stderr.toString().trim() == "tccutil: Usage: tccutil reset SERVICE") {
+				console.log("tccutil not installed");
 
-			if (brewInstallResult.stderr) {
-				console.log("error running brew install tccutil", brewInstallResult.stderr);
-			}
+				const brewInstallResult = spawnSync('brew', [
+					'install',
+					'tccutil'
+				]);
+				console.log(brewInstallResult.stdout, brewInstallResult.stderr);
 
-			const tccutilResult2  = spawnSync('sudo', [
-				'tccutil',
-				'--insert',
-				'com.electron.shortcutmagic-mac',
-			]);
+				if (brewInstallResult.stderr) {
+					console.log("error running brew install tccutil", brewInstallResult.stderr);
+				}
 
-			console.log("second tccutil attempt", tccutilResult2.stdout.toString(), tccutilResult2.stderr.toString());
+				const tccutilResult2  = spawnSync('sudo', [
+					'tccutil',
+					'--insert',
+					'com.electron.shortcutmagic-mac',
+				]);
 
-		} else {
-			console.log("tccutil installed");
-			const tccutilListResult = spawnSync('sudo', [
-				'tccutil', 
-				'--list'
-			]);
+				console.log("second tccutil attempt", tccutilResult2.stdout.toString(), tccutilResult2.stderr.toString());
 
-			console.log(tccutilListResult.stdout, tccutilListResult.stderr);
+			} else {
+				console.log("tccutil installed");
+				const tccutilListResult = spawnSync('sudo', [
+					'tccutil', 
+					'--list'
+				]);
 
-			if (tccutilListResult.stderr) {
-				console.log("error running sudo tccutil --list", tccutilListResult.stderr);
+				console.log(tccutilListResult.stdout, tccutilListResult.stderr);
+
+				if (tccutilListResult.stderr) {
+					console.log("error running sudo tccutil --list", tccutilListResult.stderr);
+				}
 			}
 		}
 	}
@@ -1380,14 +1386,15 @@ ipcMain.on('keep-recording-gif', (event) => {
 });
 
 ipcMain.on('save-gif', (event, newGif, listItem, appName) => {
-    recursiveLastFile = undefined;
-    stopRecursiveLs = true;
+	gifRecorderWindow.hide();
 
-    gifRecorderWindow.hide();
-    listItem.gif = newGif;
+	listItem.gif = newGif;
+	stopRecursiveLs = true;
+	recursiveLastFile = undefined;
+
 	let shortcutObject = {};
-    shortcutObject[`shortcuts.${listItem.name}`] = listItem;
-    console.log("updating shortcut with gif: ", listItem);
+	shortcutObject[`shortcuts.${listItem.name}`] = listItem;
+	console.log("updating shortcut with gif: ", listItem);
 
 	if (!inMemoryShortcuts || !inMemoryShortcuts[appName]) {
 		console.log("error: no loaded shortcuts when saving with save-gif");
@@ -1395,7 +1402,7 @@ ipcMain.on('save-gif', (event, newGif, listItem, appName) => {
 		inMemoryShortcuts[appName].shortcuts[listItem.name] = listItem;
 	}
 
-    getDb().update({
+	getDb().update({
         name: appName
 	}, {
 		$set: shortcutObject
