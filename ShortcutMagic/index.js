@@ -560,7 +560,7 @@ function createGifCommunityWindow() {
         nodeIntegration: false,
     });
 
-    gifCommunityWindow.loadURL('http://localhost:3000');
+    gifCommunityWindow.loadURL('https://shortcutmagic.meteorapp.com');
 }
 
 function createGifRecorderWindow() {
@@ -1425,9 +1425,9 @@ ipcMain.on('toggle-gif-community', (event) => {
 	if (gifCommunityWindow.isVisible()) {
 		gifCommunityWindow.blur();
 	} else {
-        gifCommunityWindow.show();
-        gifCommunityWindow.focus();
-    }
+		gifCommunityWindow.show();
+		gifCommunityWindow.focus();
+	}
 });
 
 ipcMain.on('create-windows', (event) => {
