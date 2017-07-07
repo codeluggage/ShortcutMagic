@@ -16,9 +16,15 @@ const {
 const os = require('os');
 const log = require('electron-log');
 const spawnSync = require( 'child_process' ).spawnSync;
-const sleep = require('sleep');
 let isQuitting = false; // TODO: find a better way to do this
 let localShortcutsCreated = false; // TODO: find a better way to do this
+
+
+import Sudoer from 'electron-sudo';
+const sudoer = new Sudoer({
+	name: 'ShortcutMagic'
+});
+
 
 
 log.transports.console.level = 'info';
@@ -451,70 +457,99 @@ function createSettingsWindow() {
 	log.info("after loading url");
 }
 
-function createWindows() {
-	const assistiveAccess = spawnSync('osascript', [
-		'shared/testAccessibility.scpt'
-	]);
-
-	if (assistiveAccess.stderr.toString()) {
-		const tccutilResult  = spawnSync('sudo', [
-			'tccutil',
-			'--insert',
-			'com.electron.shortcutmagic-mac',
-		]);
-
+function permissionCheck(cb) {
+	const identifier = "com.electron.shortcutmagic-mac";
+	sudoer.spawn(`tccutil --insert ${identifier}`, [], {}).then((tccutilResult) => {
 		const stdout = tccutilResult.stdout;
-		console.log("tccutil insert: ", stdout, stdout.code, stdout.toString());
+		log.info("tccutil insert: ", stdout.toString());
 		const stderr = tccutilResult.stderr;
-		console.log("tccutil err: ", stderr, stderr.code, stderr.toString());
+		log.info("tccutil err: ", stderr.toString());
 
-		if (stderr.toString()) {
-			if (stderr.toString().trim() == "tccutil: Usage: tccutil reset SERVICE") {
-				console.log("tccutil not installed");
+		// TODO: Make more robust and portable in different OS versions
+		if (tccutilResult.stderr.toString().trim() == "tccutil: Usage: tccutil reset SERVICE") {
+			log.info("tccutil not installed");
 
-				const brewInstallResult = spawnSync('brew', [
-					'install',
-					'tccutil'
+			const installTccutil = spawnSync('brew', [
+				'install',
+				'tccutil'
+			]);
+			log.info(installTccutil.stdout, installTccutil.stderr);
+
+			if (installTccutil.stderr) {
+				log.info("error running brew install tccutil", installTccutil.stderr);
+
+				const installBrew = spawnSync('/usr/bin/ruby', [
+					'-e',
+					'"$(curl',
+					'-fsSL',
+					'https://raw.githubusercontent.com/Homebrew/install/master/install)"',
 				]);
-				console.log(brewInstallResult.stdout, brewInstallResult.stderr);
-
-				if (brewInstallResult.stderr) {
-					console.log("error running brew install tccutil", brewInstallResult.stderr);
-				}
-
-				const tccutilResult2  = spawnSync('sudo', [
-					'tccutil',
-					'--insert',
-					'com.electron.shortcutmagic-mac',
-				]);
-
-				console.log("second tccutil attempt", tccutilResult2.stdout.toString(), tccutilResult2.stderr.toString());
-
-			} else {
-				console.log("tccutil installed");
-				const tccutilListResult = spawnSync('sudo', [
-					'tccutil', 
-					'--list'
-				]);
-
-				console.log(tccutilListResult.stdout, tccutilListResult.stderr);
-
-				if (tccutilListResult.stderr) {
-					console.log("error running sudo tccutil --list", tccutilListResult.stderr);
+				
+				const installBrewErr = installBrew.stderr.toString();
+				if (installBrewErr) {
+					log.info('installBrewErr', installBrewErr);
+					log.info('installing brew failed, returning false for permissions');
+					cb(false);
 				}
 			}
+
+			sudoer.spawn(`tccutil --insert ${identifier}`, [], {}).then((tccutilResult2) => {
+				log.info("second tccutil attempt", tccutilResult2.stdout.toString(), tccutilResult2.stderr.toString());
+				const tccutilResult2Err = tccutilResult2.stderr.toString();
+				if (tccutilResult2Err) {
+					log.info('installing tccutil failed, returning false for permissions', tccutilResult2Err);
+					cb(false);
+				}
+
+				log.info('permissions success!');
+				cb(true);
+			});
+		} else {
+			log.info("tccutil installed");
+			cb(true);
+			// sudoer.spawn(`tccutil --list | grep ${identifier}`, [], {}).then((tccutilListResult) => {
+			// 	log.info(tccutilListResult.stdout.toString());
+
+			// 	if (tccutilListResult.stderr.toString()) {
+			// 		log.info("error running sudo tccutil --list", tccutilListResult.stderr.toString());
+			// 		cb(false);
+			// 	}
+
+			// 	if (tccutilListResult.stdout.toString() == "") {
+			// 		log.info('empty grep, failed permissions');
+			// 		cb(false);
+			// 	}
+
+			// 	if (tccutilListResult.stdout.toString() != identifier) {
+			// 		log.info(`result is not equal to ${identifier}`);
+			// 		cb(false);
+			// 	}
+
+			// 	log.info('permissions success!');
+			// 	cb(true);
+			// });
 		}
-	}
+	});
+}
 
+function createWindows() {
+	// keep it simple for now, change asap
+	let reallyQuit = true;
+	permissionCheck((success) => {
+		if (!success && reallyQuit) {
+			return;
+		}
 
-	// The actual shortcut window is only created when the app switches
-	// createTray();
-	createBackgroundTaskRunnerWindow();
-	createBackgroundListenerWindow();
-	createSettingsWindow();
-	createMiniSettingsWindow();
-	// createWelcomeWindow();
-	createMainWindow();
+		reallyQuit = false;
+
+		// The actual shortcut window is only created when the app switches
+		// createTray();
+		createBackgroundTaskRunnerWindow();
+		createBackgroundListenerWindow();
+		createSettingsWindow();
+		createMiniSettingsWindow();
+		// createWelcomeWindow();
+		createMainWindow();
     createTooltipWindow();
     createGifRecorderWindow();
     createGifCommunityWindow();
@@ -546,11 +581,12 @@ function createWindows() {
 	        mainWindow.webContents.send('execute-list-item', 5);
 	    });
 	  }
+	});
 }
 
 function createGifCommunityWindow() {
 	if (gifCommunityWindow) {
-		console.log('gifCommunityWindow already existed, exiting');
+		log.info('gifCommunityWindow already existed, exiting');
 		return;
 	}
 

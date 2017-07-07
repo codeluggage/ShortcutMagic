@@ -901,10 +901,10 @@ export default class Home extends Component {
                     </button>
 
                     <button id="increase-font-size-button" className="btn btn-default" style={{
-    		                    // color: this.state.textColor,
-    		                    // backgroundColor: 'transparent',
-    							// flex: 2,
-    							// margin: 0,
+	                    // color: this.state.textColor,
+	                    // backgroundColor: 'transparent',
+						// flex: 2,
+						// margin: 0,
                     }} onClick={(event) => {
                         event.preventDefault();
                         console.log("clicked font size up");
@@ -922,10 +922,10 @@ export default class Home extends Component {
                         </span>
                     </button>
                     <button id="decrease-font-size-button" className="btn btn-default" style={{
-    		                    // color: this.state.textColor,
-    		                    // backgroundColor: 'transparent',
-    							// flex: 2,
-    							// margin: 0,
+	                    // color: this.state.textColor,
+	                    // backgroundColor: 'transparent',
+						// flex: 2,
+						// margin: 0,
                     }} onClick={(event) => {
                         event.preventDefault();
                         console.log("clicked font size down");
@@ -943,10 +943,10 @@ export default class Home extends Component {
                         </span>
                     </button>
                     <button id="settings-button" className="btn btn-default" style={{
-    		                    // color: this.state.textColor,
-    		                    // backgroundColor: 'transparent',
-    							// flex: 2,
-    							// margin: 0,
+	                    // color: this.state.textColor,
+	                    // backgroundColor: 'transparent',
+						// flex: 2,
+						// margin: 0,
                     }} onClick={(event) => {
                         event.preventDefault();
                         console.log("clicked settings");
@@ -964,10 +964,10 @@ export default class Home extends Component {
                         </span>
                     </button>
                     <button id="toggle-bubble-mode" className="btn btn-default" style={{
-    		                    // color: this.state.textColor,
-    		                    backgroundColor: (this.state.windowMode === "bubble") ? '#333' : '#fcfcfc',
-    							// flex: 2,
-    							// margin: 0,
+	                    // color: this.state.textColor,
+	                    backgroundColor: (this.state.windowMode === "bubble") ? '#333' : '#fcfcfc',
+						// flex: 2,
+						// margin: 0,
 
                     }} onClick={() => {
     					ipcRenderer.send('set-bubble-mode');
@@ -983,10 +983,10 @@ export default class Home extends Component {
                             data-tip="Mini mode <br />Use this mode when you want <br />as much space as possible <br /> for other things. The mode <br />will be remembered and stay the same <br/> each time {this.state.name} is focused." className="icon icon-progress-0"> </span>
                     </button>
                     <button id="toggle-full-mode" className="btn btn-default" style={{
-    		                    // color: this.state.textColor,
-    		                    backgroundColor: (this.state.windowMode === "full") ? '#333' : '#fcfcfc',
-    							// flex: 2,
-    							// margin: 0,
+	                    // color: this.state.textColor,
+	                    backgroundColor: (this.state.windowMode === "full") ? '#333' : '#fcfcfc',
+						// flex: 2,
+						// margin: 0,
                     }} onClick={(event) => {
                         event.preventDefault();
     					ipcRenderer.send('set-full-view-mode');
@@ -1003,10 +1003,10 @@ export default class Home extends Component {
                         </span>
                     </button>
                     <button id="toggle-hidden-mode" className="btn btn-default" style={{
-    		                    // color: this.state.textColor,
-    		                    backgroundColor: (this.state.windowMode === "hidden") ? '#333' : '#fcfcfc',
-    							// flex: 2,
-    							// margin: 0,
+	                    // color: this.state.textColor,
+	                    backgroundColor: (this.state.windowMode === "hidden") ? '#333' : '#fcfcfc',
+						// flex: 2,
+						// margin: 0,
                     }} onClick={(event) => {
                         event.preventDefault();
                         // TODO: Manage state ourselves here? messy..
