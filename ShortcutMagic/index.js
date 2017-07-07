@@ -11,47 +11,49 @@ const {
     // Tray is used for the icon in the menu bar on mac, where we show the wizard hat
     Tray,
     globalShortcut,
-    autoUpdater
+    // autoUpdater,
 } = require('electron');
 const os = require('os');
 const log = require('electron-log');
 const spawnSync = require( 'child_process' ).spawnSync;
+const sleep = require('sleep');
 let isQuitting = false; // TODO: find a better way to do this
 let localShortcutsCreated = false; // TODO: find a better way to do this
 
 
 log.transports.console.level = 'info';
-autoUpdater.logger = log;
-autoUpdater.logger.transports.file.level = 'info';
+// autoUpdater.logger = log;
+// autoUpdater.logger.transports.file.level = 'info';
 log.info('App starting...');
 
 
 const electronLocalshortcut = require('electron-localshortcut');
 
-autoUpdater.on('checking-for-update', () => {
-});
-autoUpdater.on('update-available', (event, info) => {
-    log.info('AUTOUPDATER: update-available', info);
-    //log.info('arguments', arguments);
-});
-autoUpdater.on('update-not-available', (event, info) => {
-    log.info('AUTOUPDATER: update-not-available', info);
-    //log.info('arguments', arguments);
-});
-autoUpdater.on('error', (event, error) => {
-    log.info('AUTOUPDATER: error ', error);
-    //log.info('arguments', arguments);
-});
-autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName, releaseDate, updateURL) => {
-    log.info('AUTOUPDATER: update-downloaded ', event, releaseNotes, releaseName, releaseDate, updateURL);
-    //log.info('arguments', arguments);
+	// TODO: Properly implement auto update releases
+// autoUpdater.on('checking-for-update', () => {
+// });
+// autoUpdater.on('update-available', (event, info) => {
+//     log.info('AUTOUPDATER: update-available', info);
+//     //log.info('arguments', arguments);
+// });
+// autoUpdater.on('update-not-available', (event, info) => {
+//     log.info('AUTOUPDATER: update-not-available', info);
+//     //log.info('arguments', arguments);
+// });
+// autoUpdater.on('error', (event, error) => {
+//     log.info('AUTOUPDATER: error ', error);
+//     //log.info('arguments', arguments);
+// });
+// autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName, releaseDate, updateURL) => {
+//     log.info('AUTOUPDATER: update-downloaded ', event, releaseNotes, releaseName, releaseDate, updateURL);
+//     //log.info('arguments', arguments);
 
-    setTimeout(() => {
-        log.info("AUTOUPDATER:  autoUpdater.quitAndInstall();");
-        quitShortcutMagic();
-        autoUpdater.quitAndInstall();
-    }, 2000)
-});
+//     setTimeout(() => {
+//         log.info("AUTOUPDATER:  autoUpdater.quitAndInstall();");
+//         quitShortcutMagic();
+//         autoUpdater.quitAndInstall();
+//     }, 2000)
+// });
 
 
 // TODO: Fix preference crash when building release version
@@ -409,7 +411,7 @@ function savePosition(appName) {
 
 function createMiniSettingsWindow() {
 	if (miniSettingsWindow) {
-		console.log('miniSettingsWindow already existed, exiting');
+		log.info('miniSettingsWindow already existed, exiting');
 		return;
 	}
 
@@ -429,7 +431,7 @@ function createMiniSettingsWindow() {
 
 function createSettingsWindow() {
 	if (settingsWindow) {
-		console.log('settingsWindow already existed, exiting');
+		log.info('settingsWindow already existed, exiting');
 		return;
 	}
 
@@ -565,7 +567,7 @@ function createGifCommunityWindow() {
 
 function createGifRecorderWindow() {
 		if (gifRecorderWindow) {
-			console.log('gifRecorderWindow already existed, exiting');
+			log.info('gifRecorderWindow already existed, exiting');
 			return;
 		}
 
@@ -583,7 +585,7 @@ function createGifRecorderWindow() {
 
 function createTooltipWindow() {
 	if (tooltipWindow) {
-		console.log('tooltipWindow already existed, exiting');
+		log.info('tooltipWindow already existed, exiting');
 		return;
 	}
 
@@ -601,7 +603,7 @@ function createTooltipWindow() {
 
 function createMainWindow() {
 	if (mainWindow) {
-		console.log('mainWindow already existed, exiting');
+		log.info('mainWindow already existed, exiting');
 		return;
 	}
     // getDb().find({
@@ -751,20 +753,20 @@ function debugEverything() {
 		// tooltipWindow.show();
 		tooltipWindow.openDevTools();
 	} else {
-		console.log("cant find tooltipWindow to show");
+		log.info("cant find tooltipWindow to show");
 	}
 
 	if (gifRecorderWindow) {
 		// gifRecorderWindow.show();
 		gifRecorderWindow.openDevTools();
 	} else {
-		console.log("cant find gifRecorderWindow to show");
+		log.info("cant find gifRecorderWindow to show");
 	}
 }
 
 function createTray() {
 	if (trayObject) {
-		console.log('trayObject already existed, exiting');
+		log.info('trayObject already existed, exiting');
 		return;
 	}
 	// TODO: read if menu is dark or not, load white/black hat icon as response:
@@ -795,7 +797,7 @@ function createTray() {
 
 function createBackgroundTaskRunnerWindow() {
 	if (backgroundTaskRunnerWindow) {
-		console.log('backgroundTaskRunnerWindow already existed, exiting');
+		log.info('backgroundTaskRunnerWindow already existed, exiting');
 		return;
 	}
 
@@ -810,7 +812,7 @@ function createBackgroundTaskRunnerWindow() {
 
 function createBackgroundListenerWindow() {
 	if (backgroundListenerWindow) {
-		console.log('backgroundListenerWindow already existed, exiting');
+		log.info('backgroundListenerWindow already existed, exiting');
 		return;
 	}
 
@@ -825,14 +827,14 @@ function createBackgroundListenerWindow() {
 
 function createWelcomeWindow() {
 	if (welcomeWindow) {
-		console.log('welcomeWindow already existed, exiting');
+		log.info('welcomeWindow already existed, exiting');
 		return;
 	}
 
 	welcomeWindow = new BrowserWindow({
 		show: true,
-		width: "800",
-		height: "640",
+		width: 800,
+		height: 800,
 		title: "welcomeWindow",
 		alwaysOnTop: true,
 		frame: false,
@@ -1016,19 +1018,21 @@ app.on('activate-with-no-open-windows', () => {
 });
 
 app.on('ready', () => {
-    const checkForUpdates = () => {
-        log.info("before AUTOUPDATER setFeedUrl");
-        // const appVersion = app.getVersion();
-        var platform = `${os.platform()}_${os.arch()}`;
-        var version = app.getVersion();
-        autoUpdater.setFeedURL(`https://shortcutmagic-updater.herokuapp.com/update/${platform}/${version}`);
-        log.info("after AUTOUPDATER setFeedUrl");
-        log.info("before AUTOUPDATER checkForUpdates");
-        autoUpdater.checkForUpdates();
-        // setTimeout(checkForUpdates, 3600000);
-    };
+	// TODO: Properly implement auto update releases
 
-    setTimeout(checkForUpdates, 1000);
+    // const checkForUpdates = () => {
+    //     log.info("before AUTOUPDATER setFeedUrl");
+    //     // const appVersion = app.getVersion();
+    //     var platform = `${os.platform()}_${os.arch()}`;
+    //     var version = app.getVersion();
+    //     autoUpdater.setFeedURL(`https://shortcutmagic-updater.herokuapp.com/update/${platform}/${version}`);
+    //     log.info("after AUTOUPDATER setFeedUrl");
+    //     log.info("before AUTOUPDATER checkForUpdates");
+    //     autoUpdater.checkForUpdates();
+    //     // setTimeout(checkForUpdates, 3600000);
+    // };
+
+    // setTimeout(checkForUpdates, 1000);
 
 
     globalShortcut.register('Command+Shift+Alt+Space', function () {
@@ -1287,17 +1291,17 @@ ipcMain.on('unfocus-main-window', (event) => {
 });
 
 ipcMain.on('show-tooltip-for-list-item', (event, listItem) => {
-    console.log(`in show-tooltip-for-list-item with ${JSON.stringify(listItem)}`);
+    log.info(`in show-tooltip-for-list-item with ${JSON.stringify(listItem)}`);
     let originalBounds = tooltipWindow.getBounds();
     let mainBounds = mainWindow.getBounds();
 
     if (listItem.gif) {
-        console.log("trying to call sizeOf with gif ", listItem.gif);
+        log.info("trying to call sizeOf with gif ", listItem.gif);
         var dimensions = sizeOf(listItem.gif);
-        console.log("dimensions for gif: ", dimensions);
+        log.info("dimensions for gif: ", dimensions);
 
         if (!dimensions || !dimensions.height || !dimensions.width) {
-            console.log("invalid dimensions: ", dimensions);
+            log.info("invalid dimensions: ", dimensions);
             return;
         }
 
@@ -1327,14 +1331,14 @@ let recursiveCount = 0;
 let recursiveLastFile;
 let stopRecursiveLs = false;
 function recursiveLs() {
-	console.log("inside recursiveLs", ++recursiveCount);
+	log.info("inside recursiveLs", ++recursiveCount);
 
   const result = spawnSync( 'ls ', [ '-lrtc', '-d', '-1', '${gifDirectory}/*', '|', 'grep', '.gif' ] );
   var stderr = result.stderr;
   var stdout = result.stdout;
 
   if (stderr) {
-  	console.log("errored when running ls: ", stderr);
+  	log.info("errored when running ls: ", stderr);
     recursiveLastFile = undefined;
     stopRecursiveLs = true;
   }
@@ -1363,7 +1367,7 @@ ipcMain.on('record-gif', (event, listItem) => {
   const result = spawnSync( 'open', [ '/Applications/Kap.app' ] );
 
   if (result.stderr) {
-    console.log("errored when opening Kap.app: ", stderr);
+    log.info("errored when opening Kap.app: ", stderr);
     recursiveLastFile = undefined;
     stopRecursiveLs = true;
   }
@@ -1394,10 +1398,10 @@ ipcMain.on('save-gif', (event, newGif, listItem, appName) => {
 
 	let shortcutObject = {};
 	shortcutObject[`shortcuts.${listItem.name}`] = listItem;
-	console.log("updating shortcut with gif: ", listItem);
+	log.info("updating shortcut with gif: ", listItem);
 
 	if (!inMemoryShortcuts || !inMemoryShortcuts[appName]) {
-		console.log("error: no loaded shortcuts when saving with save-gif");
+		log.info("error: no loaded shortcuts when saving with save-gif");
 	} else {
 		inMemoryShortcuts[appName].shortcuts[listItem.name] = listItem;
 	}
@@ -1410,12 +1414,12 @@ ipcMain.on('save-gif', (event, newGif, listItem, appName) => {
 		upsert: true
 	}, (err, res) => {
 		if (err) {
-			console.log("error saving new gif", err, newGif);
+			log.info("error saving new gif", err, newGif);
 		} else {
             // This might update the window with other shortcuts than the one we just recorded a gif for. That is ok
             // because the gif will be visible when they switch back to that app again.
             mainWindow.webContents.send('update-shortcuts', inMemoryShortcuts[currentAppName]);
-			console.log("successfuly saved new gif", res);
+			log.info("successfuly saved new gif", res);
 		}
 	});
 });
@@ -1436,8 +1440,8 @@ ipcMain.on('create-windows', (event) => {
 });
 
 ipcMain.on('log', (event) => {
-    console.log('logging from ipcMain.on "log" ');
-    console.log(event);
+    log.info('logging from ipcMain.on "log" ');
+    log.info(event);
 });
 
 ipcMain.on('welcome-window-ready', (event) => {
