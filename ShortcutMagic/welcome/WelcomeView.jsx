@@ -112,12 +112,28 @@ export default class WelcomeView extends Component {
                 <i>
                 Optional (advanced): 
                 <br />
-                The code for ShortcutMagic is open and freely available. Want to take a look, or maybe even help make it better? 
+                The code for ShortcutMagic is open and freely available. Want to check out the code? Something missing? A cool idea? Clik one of these!
                 <br />
-                <a style={{color: 'blue'}} onClick={(event) => {
-                    event.preventDefault();
-                    shell.openExternal('https://github.com/codeluggage/ShortcutMagic');
-                }}>Check out the code for ShortcutMagic!</a>
+                <ul>
+
+                    <li>
+                        <a style={{color: 'blue'}} onClick={(event) => {
+                            shell.openExternal('https://github.com/codeluggage/ShortcutMagic');
+                        }}>Code</a>
+                    </li>
+                    <li>
+                        <a style={{color: 'blue'}} onClick={(event) => {
+                            shell.openExternal('https://github.com/codeluggage/ShortcutMagic/issues');
+                        }}>Report problems and share ideas</a>
+                    </li>
+                    <li>
+                        <a style={{color: 'blue'}} onClick={(event) => {
+                            shell.openExternal('https://github.com/codeluggage/ShortcutMagic/blob/master/CONTRIBUTING.md');
+                        }}>Help the ShortcutMagic community</a>
+                    </li>
+
+
+                </ul>
                 </i>
                 <br />
             </div>
