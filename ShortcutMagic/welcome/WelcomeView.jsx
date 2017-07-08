@@ -56,7 +56,7 @@ export default class WelcomeView extends Component {
     }
 
   render() {
-    const remoteUrl = (process.env.NODE_ENV === "development") ? "http://localhost:3000/welcome" : "https://shortcutmagic.meteorapp.com/welcome";
+    let remoteUrl = (process.env.NODE_ENV === "development") ? "http://localhost:3000/welcome" : "https://shortcutmagic.meteorapp.com/welcome";
     // const remoteUrl = "https://shortcutmagic.meteorapp.com/welcome";
 
     // autosize minwidth="576" minheight="432"
@@ -78,22 +78,29 @@ export default class WelcomeView extends Component {
                 alignContent: 'center',
                 textAlign: 'center',
             }}>
-                {(this.state && this.state.showCloseButton) ? 
+                {(this.state && this.state.accessGranted) ? 
                     <a id="start" className="btn btn-primary" onClick={e => {
-                        const clickedStart = "ShortcutMagic is opening... Click again to hide this welcome window.";
-                        if (window.document.getElementById("start").text === clickedStart) {
-                            var windows = holdRemote.BrowserWindow.getAllWindows();
-                            for (var i = 0; i < windows.length; i++) {
-                                const w = windows[i];
-                                if (w && w.getTitle() == "welcomeWindow") {
-                                    w.close();
+                        const alreadyClicked = "Continue to tutorials";
+
+                        if (window.document.getElementById("start").text === alreadyClicked) {
+                            const webview = window.document.querySelector('webview');
+                            if (webview.src == "https://shortcutmagic.meteorapp.com/tutorials") {
+                                var windows = holdRemote.BrowserWindow.getAllWindows();
+                                for (var i = 0; i < windows.length; i++) {
+                                    const w = windows[i];
+                                    if (w && w.getTitle() == "welcomeWindow") {
+                                        w.close();
+                                        return;
+                                    }
                                 }
                             }
+
+                            webview.src = webview.src.substr(0, webview.src.lastIndexOf("/")) + "/tutorials";
                             return;
                         }
 
                         ipcRenderer.send('welcome-window-ready');
-                        window.document.getElementById("start").text = clickedStart;
+                        window.document.getElementById("start").text = alreadyClicked;
                     }} style={{
                         paddingLeft: '40px',
                         paddingRight: '40px',

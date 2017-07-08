@@ -25,6 +25,7 @@
     "electron-localshortcut": "^1.1.1",
     "electron-log": "^2.2.4",
     "electron-osx-appearance": "^0.1.1",
+    "electron-sudo": "^4.0.12",
     "font-awesome": "^4.7.0",
     "image-size": "^0.5.1",
     "nedb": "^1.8.0",
