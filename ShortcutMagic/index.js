@@ -144,6 +144,9 @@ let tooltipWindow;
 let gifRecorderWindow;
 // the gifCommunity window:
 let gifCommunityWindow
+
+let learnWindow;
+
 // a hacky bad construct holding the shortcuts from the db in memory
 // TODO: merge into a class that encapsulates the db and functionality, and caches things in memory without checking this array everywhere :|
 let inMemoryShortcuts = [];
@@ -895,6 +898,30 @@ function createWelcomeWindow() {
 	});
 }
 
+function createLearnWindow() {
+	if (learnWindow) {
+		log.info('learnWindow already existed, exiting');
+		return;
+	}
+
+	learnWindow = new BrowserWindow({
+		show: true,
+		width: 800,
+		height: 800,
+		title: "learnWindow",
+		alwaysOnTop: false,
+		frame: false,
+		nodeIntegration: true,
+	});
+
+	learnWindow.loadURL(`file://${__dirname}/learn/index.html`);
+
+	// TODO: prevent closing and just hide
+	learnWindow.on('closed', event => {
+		log.info('in learnWindow closed');
+	});
+}
+
 function updateRenderedShortcuts(shortcuts) {
 	mainWindow.webContents.send('update-shortcuts', shortcuts);
 }
@@ -1107,6 +1134,7 @@ app.on('ready', () => {
 	// createWindows();
 	// loadWithPeriods(backgroundTaskRunnerWindow.webContents.send('read-last-app-name'));
     createWelcomeWindow();
+    createLearnWindow();
     createTray();
     // createMainWindow();
 });
@@ -1455,9 +1483,9 @@ ipcMain.on('save-gif', (event, newGif, listItem, appName) => {
 		if (err) {
 			log.info("error saving new gif", err, newGif);
 		} else {
-            // This might update the window with other shortcuts than the one we just recorded a gif for. That is ok
-            // because the gif will be visible when they switch back to that app again.
-            mainWindow.webContents.send('update-shortcuts', inMemoryShortcuts[currentAppName]);
+      // This might update the window with other shortcuts than the one we just recorded a gif for. That is ok
+      // because the gif will be visible when they switch back to that app again.
+      mainWindow.webContents.send('update-shortcuts', inMemoryShortcuts[currentAppName]);
 			log.info("successfuly saved new gif", res);
 		}
 	});
