@@ -1369,6 +1369,7 @@ let stopRecursiveLs = false;
 function recursiveLs() {
 	log.info("inside recursiveLs", ++recursiveCount);
 
+	// Grab latest file that matches .gif from the gif directory
   const result = spawnSync( 'ls ', [ '-lrtc', '-d', '-1', '${gifDirectory}/*', '|', 'grep', '.gif' ] );
   var stderr = result.stderr;
   var stdout = result.stdout;
@@ -1400,6 +1401,7 @@ function recursiveLs() {
 
 
 ipcMain.on('record-gif', (event, listItem) => {
+	// TODO: Go further than just opening? Or show how to use Kap in a tutorial
   const result = spawnSync( 'open', [ '/Applications/Kap.app' ] );
 
   if (result.stderr) {
@@ -1411,6 +1413,7 @@ ipcMain.on('record-gif', (event, listItem) => {
   // TODO: Customize from gifRecorderWindow
   let gifPath = "~/Movies/Kaptures";
   gifRecorderWindow.webContents.send('recording-for-shortcut-in-path', listItem, gifPath, currentAppName);
+  // TODO: Display on the list item itself instead? Less easy to hide in the recording... 
   gifRecorderWindow.show();
 
   recursiveLs();
