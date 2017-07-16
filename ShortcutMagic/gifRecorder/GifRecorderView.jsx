@@ -3,8 +3,6 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { ipcRenderer, remote } from 'electron';
 
-let holdRemote = remote;
-
 export default class GifRecorderView extends Component {
     componentWillMount() {
         ipcRenderer.on('recording-for-shortcut-in-path', (event, listItem, gifPath, appName) => {
@@ -98,7 +96,7 @@ export default class GifRecorderView extends Component {
                         gif: null
                     });
 
-                    var windows = holdRemote.BrowserWindow.getAllWindows();
+                    var windows = remote.BrowserWindow.getAllWindows();
                     for (var i = 0; i < windows.length; i++) {
                         let holdWindow = windows[i];
                         if (holdWindow && holdWindow.getTitle() == "gifRecorderWindow") {

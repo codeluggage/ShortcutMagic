@@ -3,8 +3,6 @@ import React, { Component } from 'react';
 import Electron, { ipcRenderer, remote, shell } from 'electron';
 import ReactDOM from 'react-dom';
 
-var holdRemote = remote;
-
 export default class WelcomeView extends Component {
   componentWillMount() {
     this.setState({
@@ -26,126 +24,117 @@ export default class WelcomeView extends Component {
     });
   }
 
-  componentDidMount() {
-        const webview = window.document.querySelector('webview');
-
-        // webview.addEventListener('ipc-message', event => {
-        //   console.log('got message for ipc-message');
-        //   console.log(event.channel)
-        // });
-
-        // const loadstart = () => {
-        //   console.log('loadstart');
-        // }
-
-        // const loadstop = () => {
-        //   console.log('loadstop');
-        // }
-
-        // webview.addEventListener('did-start-loading', loadstart)
-        // webview.addEventListener('did-stop-loading', loadstop)
-
-        webview.addEventListener('did-navigate', (e) => {
-            // TODO: regex
-            if (e.url === 'http://localhost:3000/welcome' || e.url === 'https://shortcutmagic.meteorapp.com/welcome') {
-                this.setState({
-                    showCloseButton: true
-                });
-            }
-        })
-    }
+  componentDidMount() {}
 
   render() {
-    let remoteUrl = (process.env.NODE_ENV === "development") ? "http://localhost:3000/welcome" : "https://shortcutmagic.meteorapp.com/welcome";
-    // const remoteUrl = "https://shortcutmagic.meteorapp.com/welcome";
-
-    // autosize minwidth="576" minheight="432"
-    // preload="./test.js"
-
     return (
-        <div>
-            <webview id="welcome-window" src={remoteUrl} style={{
-                display: "inline-flex",
-                width: "800px",
-                height: "640px",
-            }}></webview>
+        <div style={{
+            display: 'flex',
+            flex: 9,
+            flexDirection: 'column',
+            alignContent: 'center',
+            alignItems: 'center',
+        }}>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignContent: 'center',
+            alignItems: 'center',
+            textAlign: 'center',
+          }}>
+            <img src="../assets/wizard.png" height="150" width="150"></img>
+            <h1>Running ShortcutMagic</h1>
 
+            To run ShortcutMagic, it needs administrative access which is unlocked with your computer password. 
             <br />
+            ShortcutMagic does not use the password, only the administrative access.
+            <br />
+            It will look like this: 
 
-            <div style={{
-                display: 'flex',
-                flexDirection: 'row',
-                alignContent: 'center',
-                textAlign: 'center',
-            }}>
-                <a id="learn" className="btn btn-positive" onClick={e => {
-                    var windows = holdRemote.BrowserWindow.getAllWindows();
-                    for (var i = 0; i < windows.length; i++) {
-                        const w = windows[i];
-                        if (w && w.getTitle() == "learnWindow") {
+            <img src="../assets/admin-access.png" height="auto" width="auto"></img>
+
+          </div>
+
+          <br />
+
+          <div style={{
+            display: 'flex',
+            flex: 1,
+            flexDirection: 'row',
+            alignContent: 'center',
+            alignItems: 'center',
+          }}>
+            <div id="learn" className="btn btn-positive" onClick={e => {
+                let windows = remote.BrowserWindow.getAllWindows();
+                let closeAfter; 
+                for (let i = 0; i < windows.length; i++) {
+                    const w = windows[i];
+                    if (w) {
+                        if (w.getTitle() === "learnWindow") {
                             w.show();
+                        } else if (w.getTitle() === "welcomeWindow") {
+                            closeAfter = w;
+                        }
+                    }
+                }
+
+                closeAfter.close();
+            }} style={{
+                flex: 1,
+                display: 'none',
+                paddingLeft: '40px',
+                paddingRight: '40px',
+                fontSize: 28,
+                margin: '20px',
+            }}>Learn ShortcutMagic!</div>
+
+            <div id="start" className="btn btn-primary" onClick={e => {
+                let alreadyClicked = "Close window";
+                if (window.document.getElementById("start").innerText != alreadyClicked) {
+                    window.document.getElementById("start").innerText = alreadyClicked;
+                    window.document.getElementById("learn").style.display = 'block';
+                    ipcRenderer.send('welcome-window-ready');
+                } else {
+                    let windows = remote.BrowserWindow.getAllWindows();
+                    for (let i = 0; i < windows.length; i++) {
+                        const w = windows[i];
+                        if (w && w.getTitle() === "welcomeWindow") {
+                            w.close();
                             return;
                         }
                     }
-                }} style={{
-                    flex: 1,
-                    display: 'none',
-                }}>Learn ShortcutMagic</a>
+                }
+            }} style={{
+                flex: 1,
+                paddingRight: '40px',
+                paddingLeft: '40px',
+                fontSize: 28,
+                margin: '20px',
+            }}>Start</div>
 
-                <a id="start" className="btn btn-primary" onClick={e => {
-                    let alreadyClicked = "Close window";
-                    if (window.document.getElementById("start").text != alreadyClicked) {
-                        window.document.getElementById("start").text = alreadyClicked;
-                        window.document.getElementById("learn").style.display = 'block';
-                        ipcRenderer.send('welcome-window-ready');
-                    } else {
-                        var windows = holdRemote.BrowserWindow.getAllWindows();
-                        for (var i = 0; i < windows.length; i++) {
-                            const w = windows[i];
-                            if (w && w.getTitle() == "welcomeWindow") {
-                                w.close();
-                                return;
-                            }
-                        }
-                    }
-                }} style={{
-                    flex: 1,
-                }}>Start</a>
-
-                <br />
-                <br />
-            </div>
-
-            <div style={{
-                textAlign: 'center',
-            }}>
-                <i>
-                    Optional (advanced): 
-                    <br />
-                    The code for ShortcutMagic is open and freely available.
-                    <br />
-                    Want to check out the code? Something missing? A cool idea? Clik one of these!
-                    <br />
-                    <br />
-                    <p>
-                    <a style={{color: 'blue'}} onClick={(event) => {
-                        shell.openExternal('https://github.com/codeluggage/ShortcutMagic');
-                    }}>Code</a>
-                    </p>
-                    <p>
-                    <a style={{color: 'blue'}} onClick={(event) => {
-                        shell.openExternal('https://github.com/codeluggage/ShortcutMagic/issues');
-                    }}>Report problems and share ideas</a>
-                    </p>
-                    <p>
-                    <a style={{color: 'blue'}} onClick={(event) => {
-                        shell.openExternal('https://github.com/codeluggage/ShortcutMagic/blob/master/CONTRIBUTING.md');
-                    }}>Help the ShortcutMagic community</a>
-                    </p>
-                    <br />
-                </i>
-            </div>
+            <br />
         </div>
+
+        <br />
+
+        <div style={{
+            textAlign: 'center',
+            flex: 1,
+        }}>
+            Optional (advanced): 
+            <br />
+            The code for ShortcutMagic is open and freely available.
+            <br />
+            Want to check out the <a style={{color: 'blue'}} onClick={(event) => {
+                shell.openExternal('https://github.com/codeluggage/ShortcutMagic');
+            }}>code</a>? Something missing or <a style={{color: 'blue'}} onClick={(event) => {
+                shell.openExternal('https://github.com/codeluggage/ShortcutMagic/issues');
+            }}>wrong</a>? A cool <a style={{color: 'blue'}} onClick={(event) => {
+                shell.openExternal('https://github.com/codeluggage/ShortcutMagic/blob/master/CONTRIBUTING.md');
+            }}>idea</a>? Clik one of these!
+            <br />
+        </div>
+    </div>
     );
   }
 };

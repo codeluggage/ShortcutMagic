@@ -6,8 +6,6 @@ import { SketchPicker } from 'react-color';
 
 import { Settings } from './settings';
 let settings = new Settings();
-let holdRemote = remote;
-
 export default class SettingsView extends Component {
     componentWillMount() {
 		settings.create(this);
@@ -16,7 +14,7 @@ export default class SettingsView extends Component {
 			this.saveCurrentSettings();
 		});
 		ipcRenderer.on('get-app-settings', (event) => {
-            let windows = holdRemote.BrowserWindow.getAllWindows();
+            let windows = remote.BrowserWindow.getAllWindows();
             for (let i = 0; i < windows.length; i++) {
                 let holdWindow = windows[i];
                 if (holdWindow && holdWindow.getTitle() == "miniSettingsWindow") {
@@ -46,7 +44,7 @@ export default class SettingsView extends Component {
 				appSettings: originalSettings
 			});
 
-	        var windows = holdRemote.BrowserWindow.getAllWindows();
+	        var windows = remote.BrowserWindow.getAllWindows();
 	        for (var i = 0; i < windows.length; i++) {
 	            let holdWindow = windows[i];
 	            if (holdWindow) {
@@ -218,7 +216,7 @@ export default class SettingsView extends Component {
         						this.saveCurrentSettings();
                             }
 
-                            let windows = holdRemote.BrowserWindow.getAllWindows();
+                            let windows = remote.BrowserWindow.getAllWindows();
                             for (let i = 0; i < windows.length; i++) {
                                 let holdWindow = windows[i];
                                 if (holdWindow && holdWindow.getTitle() == "settingsWindow") holdWindow.hide();
@@ -247,7 +245,7 @@ export default class SettingsView extends Component {
                 }}>
                     Something is not right here... Sorry! If you click in this window, you can try reloading (command + R) or quit (command + Q) and start ShortcutMagic again.
 					<button onClick={() => {
-				        var windows = holdRemote.BrowserWindow.getAllWindows();
+				        var windows = remote.BrowserWindow.getAllWindows();
 				        for (var i = 0; i < windows.length; i++) {
 				            let holdWindow = windows[i];
 				            if (holdWindow && holdWindow.getTitle() == "settingsWindow") {

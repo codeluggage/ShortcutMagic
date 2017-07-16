@@ -56,8 +56,6 @@ settingsDb.ensureIndex({
 	}
 });
 
-var holdRemote = remote;
-
 // TODO: send to worker?
 settingsDb.find({
 	name: GLOBAL_SETTINGS

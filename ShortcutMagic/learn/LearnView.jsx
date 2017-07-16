@@ -3,8 +3,6 @@ import React, { Component } from 'react';
 import Electron, { ipcRenderer, remote, shell } from 'electron';
 import ReactDOM from 'react-dom';
 
-var holdRemote = remote;
-
 export default class LearnView extends Component {
 	render() {
 		return (

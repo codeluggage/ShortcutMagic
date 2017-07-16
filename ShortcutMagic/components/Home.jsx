@@ -314,8 +314,6 @@ const SortableList = SortableContainer((componentArguments) => {
     );
 });
 
-var holdRemote = remote;
-
 export default class Home extends Component {
     componentWillMount() {
 		//
@@ -381,7 +379,7 @@ export default class Home extends Component {
         });
 
         ipcRenderer.on('start-shortcut-window', (event) => {
-            var windows = holdRemote.BrowserWindow.getAllWindows();
+            var windows = remote.BrowserWindow.getAllWindows();
             for (var i = 0; i < windows.length; i++) {
                 let mainWindow = windows[i];
                 if (mainWindow && mainWindow.getTitle() == "mainWindow") {
@@ -594,7 +592,7 @@ export default class Home extends Component {
 
     toggleSettings() {
         // TODO: refer directly to the browser window by id instead of grabbing all windows
-        let windows = holdRemote.BrowserWindow.getAllWindows();
+        let windows = remote.BrowserWindow.getAllWindows();
         for (let i = 0; i < windows.length; i++) {
             let settingsWindow = windows[i];
             if (settingsWindow) {
@@ -617,7 +615,7 @@ export default class Home extends Component {
 
     toggleMiniSettings() {
         // TODO: refer directly to the browser window by id instead of grabbing all windows
-        let windows = holdRemote.BrowserWindow.getAllWindows();
+        let windows = remote.BrowserWindow.getAllWindows();
         let mainWindow = null;
         for (let i = 0; i < windows.length; i++) {
             mainWindow = windows[i];
