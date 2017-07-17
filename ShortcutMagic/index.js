@@ -873,7 +873,7 @@ function createWelcomeWindow() {
 	welcomeWindow = new BrowserWindow({
 		show: true,
 		width: 800,
-		height: 800,
+		height: 720,
 		title: "welcomeWindow",
 		alwaysOnTop: true,
 		frame: false,
@@ -905,9 +905,11 @@ function createLearnWindow() {
 	}
 
 	learnWindow = new BrowserWindow({
-		show: true,
-		width: 800,
-		height: 800,
+		show: false,
+		x: 20,
+		y: 20,
+		width: 600,
+		height: 600,
 		title: "learnWindow",
 		alwaysOnTop: false,
 		frame: false,

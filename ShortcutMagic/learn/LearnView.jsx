@@ -8,8 +8,8 @@ export default class LearnView extends Component {
 		return (
             <webview id="learn-window" src="https://shortcutmagic.meteorapp.com/tutorial1" style={{
                 display: "inline-flex",
-                width: "800px",
-                height: "800px",
+                width: "600px",
+                height: "600px",
             }}></webview>
 		);
 	}

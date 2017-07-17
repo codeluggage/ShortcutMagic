@@ -42,20 +42,20 @@ export default class WelcomeView extends Component {
             alignItems: 'center',
             textAlign: 'center',
           }}>
-            <img src="../assets/wizard.png" height="150" width="150"></img>
+            <img src="../assets/wizard.png" height="128" width="128"></img>
             <h1>Running ShortcutMagic</h1>
 
             To run ShortcutMagic, it needs administrative access which is unlocked with your computer password. 
             <br />
-            ShortcutMagic does not use the password, only the administrative access.
+            <br />
+            The password is not used for anything, it only unlocks administrative access.
+            <br />
             <br />
             It will look like this: 
 
-            <img src="../assets/admin-access.png" height="auto" width="auto"></img>
+            <img src="../assets/admin-access.png" height="236" width="380"></img>
 
           </div>
-
-          <br />
 
           <div style={{
             display: 'flex',
@@ -86,10 +86,10 @@ export default class WelcomeView extends Component {
                 paddingRight: '40px',
                 fontSize: 28,
                 margin: '20px',
-            }}>Learn ShortcutMagic!</div>
+            }}>Open learning window</div>
 
             <div id="start" className="btn btn-primary" onClick={e => {
-                let alreadyClicked = "Close window";
+                let alreadyClicked = "Learn later";
                 if (window.document.getElementById("start").innerText != alreadyClicked) {
                     window.document.getElementById("start").innerText = alreadyClicked;
                     window.document.getElementById("learn").style.display = 'block';
@@ -121,17 +121,15 @@ export default class WelcomeView extends Component {
             textAlign: 'center',
             flex: 1,
         }}>
-            Optional (advanced): 
-            <br />
-            The code for ShortcutMagic is open and freely available.
+            ShortcutMagic is an open project. You can contribute! 
             <br />
             Want to check out the <a style={{color: 'blue'}} onClick={(event) => {
                 shell.openExternal('https://github.com/codeluggage/ShortcutMagic');
-            }}>code</a>? Something missing or <a style={{color: 'blue'}} onClick={(event) => {
+            }}>code</a>? Something <a style={{color: 'blue'}} onClick={(event) => {
                 shell.openExternal('https://github.com/codeluggage/ShortcutMagic/issues');
-            }}>wrong</a>? A cool <a style={{color: 'blue'}} onClick={(event) => {
+            }}>missing or not working</a>? Do you have a <a style={{color: 'blue'}} onClick={(event) => {
                 shell.openExternal('https://github.com/codeluggage/ShortcutMagic/blob/master/CONTRIBUTING.md');
-            }}>idea</a>? Clik one of these!
+            }}>cool idea or request?</a>? We'd love to hear about it! 
             <br />
         </div>
     </div>
