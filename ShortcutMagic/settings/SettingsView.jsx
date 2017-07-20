@@ -240,8 +240,9 @@ export default class SettingsView extends Component {
 	    } else {
 	    	return (
                 <div style={{
-                    backgroundColor: 'white',
-                    color: 'black',
+                    // backgroundColor: 'white',
+                    // color: 'black',
+                    backgroundColor: "#323f53", color: "#323f53", borderBottom: "1px solid #253246", boxShadow: "0 1px 0 #495b71 inset"
                 }}>
                     Something is not right here... Sorry! If you click in this window, you can try reloading (command + R) or quit (command + Q) and start ShortcutMagic again.
 					<button onClick={() => {

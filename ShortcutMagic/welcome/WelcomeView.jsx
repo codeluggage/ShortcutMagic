@@ -129,7 +129,7 @@ export default class WelcomeView extends Component {
                 shell.openExternal('https://github.com/codeluggage/ShortcutMagic/issues');
             }}>missing or not working</a>? Do you have a <a style={{color: 'blue'}} onClick={(event) => {
                 shell.openExternal('https://github.com/codeluggage/ShortcutMagic/blob/master/CONTRIBUTING.md');
-            }}>cool idea or request?</a>? We'd love to hear about it! 
+            }}>cool idea or request</a>? We'd love to hear about it! 
             <br />
         </div>
     </div>

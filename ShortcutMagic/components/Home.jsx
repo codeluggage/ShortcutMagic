@@ -40,6 +40,7 @@ const SortableItem = SortableElement((componentArguments) => {
             marginLeft: '10px',
 			fontSize: globalState.listTitleFontSize,
 			fontWeight: globalState.listTitleFontWeight,
+            backgroundColor: "#323f53", color: "#eedba5", 
         }}>{listItem.name}</p>
     );
 
@@ -55,10 +56,10 @@ const SortableItem = SortableElement((componentArguments) => {
                 marginRight: '5px',
                 marginLeft: '5px',
                 // color: globalState.textColor,
-                borderRadius: ".25rem",
-                borderWidth: ".50rem",
-                border: `2px solid #ddd`,
-                backgroundColor: '#f5f5f4',
+                // borderRadius: ".25rem",
+                // borderWidth: ".50rem",
+                // border: `2px solid #ddd`,
+                backgroundColor: "#323f53", color: "#eedba5", 
                 textAlign: 'center',
             }}>{
                 // Always show ⌘ if there are no mods or glyphs
@@ -73,11 +74,12 @@ const SortableItem = SortableElement((componentArguments) => {
                     marginRight: '5px',
                     marginLeft: '5px',
                     // color: globalState.textColor,
-                    borderRadius: ".25rem",
-                    borderWidth: ".50rem",
-                    border: `2px solid #ddd`,
-                    backgroundColor: '#f5f5f4',
+                    // borderRadius: ".25rem",
+                    // borderWidth: ".50rem",
+                    // border: `2px solid #ddd`,
+                    // backgroundColor: '#1e2430',
                     textAlign: 'center',
+                    backgroundColor: "#323f53", color: "#eedba5", 
                 }}>{listItem["glyph"]}</p>
             ): ""}
 
@@ -87,10 +89,11 @@ const SortableItem = SortableElement((componentArguments) => {
                     marginRight: '5px',
                     marginLeft: '5px',
                     // color: globalState.textColor,
-                    borderRadius: ".25rem",
-                    borderWidth: ".50rem",
-                    border: `2px solid #ddd`,
-                    backgroundColor: '#f5f5f4',
+                    // borderRadius: ".25rem",
+                    // borderWidth: ".50rem",
+                    // border: `2px solid #ddd`,
+                    // backgroundColor: '#1e2430',
+                    backgroundColor: "#323f53", color: "#eedba5", 
                     textAlign: 'center',
                 }}>{listItem["char"]}</p>
             ): ""}
@@ -101,10 +104,11 @@ const SortableItem = SortableElement((componentArguments) => {
                     marginRight: '5px',
                     marginLeft: '5px',
                     // color: globalState.textColor,
-                    borderRadius: ".25rem",
-                    borderWidth: ".50rem",
-                    border: `2px solid #ddd`,
-                    backgroundColor: '#f5f5f4',
+                    // borderRadius: ".25rem",
+                    // borderWidth: ".50rem",
+                    // border: `2px solid #ddd`,
+                    // backgroundColor: '#1e2430',
+                    backgroundColor: "#323f53", color: "#eedba5", 
                     textAlign: 'center',
                 }}>{listItem.menuName}</p>
             ) : ""}
@@ -115,10 +119,11 @@ const SortableItem = SortableElement((componentArguments) => {
                     flex: 1,
                     paddingLeft: "5px",
                     paddingRight: "5px",
-                    borderRadius: ".25rem",
-                    borderWidth: ".50rem",
-                    border: `2px solid #ddd`,
-                    backgroundColor: '#f5f5f4',
+                    // borderRadius: ".25rem",
+                    // borderWidth: ".50rem",
+                    // border: `2px solid #ddd`,
+                    // backgroundColor: '#1e2430',
+                    backgroundColor: "#323f53", color: "#eedba5", 
                     textAlign: 'center',
                 }}>⌘ {componentArguments.index + 1}</p>
             ) : ""}
@@ -229,12 +234,13 @@ const SortableItem = SortableElement((componentArguments) => {
 
     return (
         <td style={{
-            borderRadius: ".35rem",
-            borderWidth: ".50rem",
-            borderLeft: `2px solid #f5f5f4`,
-            borderRight: `2px solid #f5f5f4`,
-            borderTop: `2px solid #f5f5f4`,
-            borderBottom: `2px solid #ddd`,
+            // borderRadius: ".35rem",
+            // borderWidth: ".50rem",
+            // borderLeft: `2px solid #1e2430`,
+            // borderRight: `2px solid #1e2430`,
+            // borderTop: `2px solid #1e2430`,
+            // borderBottom: `2px solid #ddd`,
+            backgroundColor: "#323f53", color: "#eedba5", borderBottom: "1px solid #253246", boxShadow: "0 1px 0 #495b71 inset",
             // backgroundColor: globalState.itemBackgroundColor,
             // marginBottom: "8px",
             display: 'flex',
@@ -274,9 +280,10 @@ const SortableItem = SortableElement((componentArguments) => {
         }}>
             <div style={{
                 flex: 3,
-                borderRadius: ".25rem",
-                borderWidth: ".50rem",
-                border: `2px solid #f5f5f4`,
+                // borderRadius: ".25rem",
+                // borderWidth: ".50rem",
+                // border: `2px solid #1e2430`,
+                backgroundColor: "#323f53", color: "#eedba5", 
             }}>
                 {topSection}
                 {mouseOverButtonsSection}
@@ -298,18 +305,16 @@ const SortableList = SortableContainer((componentArguments) => {
         <p>No items yet</p>
     ) : (
         <div>
-            {
-                items.map((value, index) => {
-                    return (
-                            <SortableItem
-                                key={`item-${index}`}
-                                index={index}
-                                listItem={value}
-                                contentWindow={componentArguments.contentWindow}
-                            />
-                    );
-                })
-            }
+            {items.map((value, index) => {
+                return (
+                    <SortableItem
+                        key={`item-${index}`}
+                        index={index}
+                        listItem={value}
+                        contentWindow={componentArguments.contentWindow}
+                    />
+                );
+            })}
         </div>
     );
 });
@@ -759,9 +764,10 @@ export default class Home extends Component {
 
             return (
                 <div style={{
-                    backgroundColor: '#fff',
+                    // backgroundColor: '#1e2430',
                     padding: '20px',
                     textAlign: 'center',
+                    backgroundColor: "#323f53", color: "#eedba5", 
                 }}>
                     <h1>ShortcutMagic</h1>
                     <p>{randomWelcomeText}</p>
@@ -785,7 +791,7 @@ export default class Home extends Component {
 
                     <button style={{
                         // color: this.state.textColor,
-                        borderColor: 'transparent',
+                        borderColor: '#1e2430',
                         margin: 0,
                     }} id="toggle-main-buttons" className="simple-button" onClick={() => {
                         this.setState({
@@ -816,9 +822,10 @@ export default class Home extends Component {
             <input id="search-field" className="form-control" type="text" placeholder="Search actions and shortcuts"
             style={{
                 display: 'none',
-                borderRadius: ".25rem",
-                borderWidth: ".50rem",
-                border: `2px solid #737475`, // #737475 is the color from Photon mac css
+                // borderRadius: ".25rem",
+                // borderWidth: ".50rem",
+                // border: `2px solid #737475`, // #737475 is the color from Photon mac css
+                backgroundColor: "#323f53", color: "#eedba5", 
             }} onChange={this.filterListTrigger}
             onKeyDown={(e) => {
                 if (e.keyCode === 27) { // key code 27 == escape
@@ -879,6 +886,7 @@ export default class Home extends Component {
         let SettingsButtons = (
             <div id="settings-button-group" className="toolbar-actions" style={{
                 display: 'none',
+                backgroundColor: "#323f53", color: "#eedba5", 
             }}>
                 <div className="btn-group">
                     <button className="btn btn-default"
@@ -978,7 +986,7 @@ export default class Home extends Component {
 
                         <span data-for='toggle-bubble-mode-tooltip'
                             data-iscapture="true"
-                            data-tip="Mini mode <br />Use this mode when you want <br />as much space as possible <br /> for other things. The mode <br />will be remembered and stay the same <br/> each time {this.state.name} is focused." className="icon icon-progress-0"> </span>
+                            data-tip="Mini mode <br />Use this mode when you want <br />as much space as possible <br /> for other things. The mode <br />will be remembered and stay the same <br/> for each program you set it." className="icon icon-progress-0"> </span>
                     </button>
                     <button id="toggle-full-mode" className="btn btn-default" style={{
 	                    // color: this.state.textColor,
@@ -1055,41 +1063,61 @@ export default class Home extends Component {
 
 
         let Title = (
-            <h1 id="title" style={{
+            <h4 id="title" style={{
                 // color: this.state.textColor,
                 marginTop:'2px',
                 marginBottom:'2px',
-            }}>{(displaySettings) ? displaySettings : this.state.name}</h1>
+            }}>{(displaySettings) ? displaySettings : this.state.name}</h4>
         );
 
         let displaySettings = null;
         let hidingSlowly = false;
-		let TitleAndSettings = (
-            <div id="title-and-settings"
-            style={{
-                textAlign: 'center',
-            }} onMouseEnter={(e) => {
-                hidingSlowly = true;
-    			window.document.getElementById("settings-button-group").style.display = "block";
-    			window.document.getElementById("search-field").style.display = "";
+            // }} onMouseEnter={(e) => {
+            //     hidingSlowly = true;
+            //     window.document.getElementById("settings-button-group").style.display = "block";
+            //     window.document.getElementById("search-field").style.display = "";
 
-                ipcRenderer.send('show-window');
-    			window.document.getElementById("search-field").focus();
-            }} onMouseLeave={(e) => {
-                if (hidingSlowly) {
-                    hidingSlowly = false;
-                    setTimeout(() => {
-                        if (!hidingSlowly) {
-                			window.document.getElementById("settings-button-group").style.display = "none";
-                			window.document.getElementById("search-field").style.display = "none";
-                        }
-                    }, 400);
+            //     ipcRenderer.send('show-window');
+            //     window.document.getElementById("search-field").focus();
+            // }} onMouseLeave={(e) => {
+            //     if (hidingSlowly) {
+            //         hidingSlowly = false;
+            //         setTimeout(() => {
+            //             if (!hidingSlowly) {
+            //                 window.document.getElementById("settings-button-group").style.display = "none";
+            //                 window.document.getElementById("search-field").style.display = "none";
+            //             }
+            //         }, 400);
+            //     } else {
+            //         window.document.getElementById("settings-button-group").style.display = "none";
+            //         window.document.getElementById("search-field").style.display = "none";
+            //     }
+        let ToggleSettings = (
+            <div className="btn" style={{
+
+            }} onClick={() => {
+                if (window.document.getElementById("settings-button-group").style.display === "block") {
+                    window.document.getElementById("settings-button-group").style.display = "none";
+                    window.document.getElementById("search-field").style.display = "none";
+                    // window.document.getElementById("title").style.display = "none";
                 } else {
-        			window.document.getElementById("settings-button-group").style.display = "none";
-        			window.document.getElementById("search-field").style.display = "none";
+                    window.document.getElementById("settings-button-group").style.display = "block";
+                    window.document.getElementById("search-field").style.display = "";
+                    // window.document.getElementById("title").style.display = "block";
+
+                    ipcRenderer.send('show-window');
+                    window.document.getElementById("search-field").focus();
                 }
             }}>
-                {Title}
+                burger
+            </div>
+        );
+		let TitleAndSettings = (
+            <div id="title-and-settings" style={{
+                textAlign: 'center',
+                backgroundColor: "#323f53", color: "#eedba5", 
+            }}>
+                {ToggleSettings} {Title}
                 {SettingsButtons}
                 {SearchField}
             </div>
@@ -1101,6 +1129,7 @@ export default class Home extends Component {
                 height: '20px',
                 width: '100%',
                 textAlign: 'center',
+                backgroundColor: "#323f53", color: "#eedba5", 
             }} onMouseEnter={(e) => {
                 hidingSlowly = true;
     			window.document.getElementById("settings-button-group").style.display = "block";
@@ -1160,7 +1189,9 @@ export default class Home extends Component {
 			return (
                 <div className="window">
 
-                  <div className="window-content">
+                  <div className="window-content" style={{
+                        backgroundColor: "#323f53", color: "#eedba5", 
+                    }}>
                       <div className="pane">
                         <table className="table-striped">
                           <tbody>
@@ -1181,27 +1212,32 @@ export default class Home extends Component {
             return (
                 <div className="window">
 
-                  <div className="window-content">
+                  <div className="window-content" style={{
+                        backgroundColor: "#323f53", color: "#eedba5", 
+                    }}>
+                      <div className="pane">
                         <table className="table-striped">
-                          <thead>
-                            <tr>
-                              <th>{TitleAndSettings}</th>
-                            </tr>
-                          </thead>
                           <tbody>
-                            {ShortcutList}
+                            <tr className="file_arq">
+                                <td style={{
+                                    backgroundColor: "#323f53", color: "#eedba5", 
+                                }}>{TitleAndSettings}</td>
+                            </tr>
+                            <tr className="file_arq">
+                              {ShortcutList}
+                            </tr>
                           </tbody>
                         </table>
+                      </div>
                     </div>
-                    
                   </div>
-	        );
+            );
 			// previous sortablelist itemstyle
 			//   itemStyle={{backgroundColor: (this.state.itemColor) ? this.state.itemColor : '#FFFFFF'}}
 		}
     }
 }
 
-window.onload = function(){
+window.onload = function() {
     ReactDOM.render(<Home />, document.getElementById("app"));
 }
