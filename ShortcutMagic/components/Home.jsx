@@ -59,8 +59,9 @@ const SortableItem = SortableElement((componentArguments) => {
                 // borderRadius: ".25rem",
                 // borderWidth: ".50rem",
                 // border: `2px solid #ddd`,
-                backgroundColor: "#323f53", color: "#eedba5", 
-                textAlign: 'center',
+                backgroundColor: "transparent", color: "#eedba5", 
+                textAlign: 'left',
+                fontSize: globalState.listTitleFontSize,
             }}>
                 {
                     // Always show ⌘ if there are no mods or glyphs
@@ -87,7 +88,7 @@ const SortableItem = SortableElement((componentArguments) => {
                     // borderWidth: ".50rem",
                     // border: `2px solid #ddd`,
                     // backgroundColor: '#1e2430',
-                    backgroundColor: "#323f53", color: "#eedba5", 
+                    backgroundColor: "transparent", color: "#eedba5", 
                     textAlign: 'center',
                 }}>{listItem.menuName}</p>
             ) : ""}
@@ -102,8 +103,9 @@ const SortableItem = SortableElement((componentArguments) => {
                     // borderWidth: ".50rem",
                     // border: `2px solid #ddd`,
                     // backgroundColor: '#1e2430',
-                    backgroundColor: "#323f53", color: "#eedba5", 
-                    textAlign: 'center',
+                    backgroundColor: "transparent", color: "#eedba5", 
+                    textAlign: 'right',
+                    fontSize: globalState.listTitleFontSize,
                 }}>⌘ {componentArguments.index + 1}</p>
             ) : ""}
         </div>
@@ -226,7 +228,7 @@ const SortableItem = SortableElement((componentArguments) => {
             // borderTop: `2px solid #1e2430`,
             // borderBottom: `2px solid #ddd`,
             backgroundColor: "#323f53", color: "#eedba5", 
-            border: '2px solid rgb(37, 50, 70)', boxShadow: 'rgb(73, 91, 113) 0px 1px 0px inset',
+            border: '4px solid rgb(37, 50, 70)', boxShadow: '#222 0px 0px 20px 0px',
             // backgroundColor: globalState.itemBackgroundColor,
             // marginBottom: "8px",
             display: 'flex',
