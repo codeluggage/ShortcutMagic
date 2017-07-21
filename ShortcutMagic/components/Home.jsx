@@ -61,44 +61,23 @@ const SortableItem = SortableElement((componentArguments) => {
                 // border: `2px solid #ddd`,
                 backgroundColor: "#323f53", color: "#eedba5", 
                 textAlign: 'center',
-            }}>{
-                // Always show ⌘ if there are no mods or glyphs
-                (listItem["mod"]) ? listItem["mod"] :
-                    (listItem["glyph"] && !listItem["char"]) ? "⌘" :
-                        (!listItem["glyph"] && listItem["char"]) ? "⌘" : ""
-            }</p>
+            }}>
+                {
+                    // Always show ⌘ if there are no mods or glyphs
+                    (listItem["mod"]) ? listItem["mod"] :
+                        (listItem["glyph"] && !listItem["char"]) ? "⌘" :
+                            (!listItem["glyph"] && listItem["char"]) ? "⌘" : ""
+                }
+                {
+                    (listItem["glyph"]) ? ( listItem["glyph"] ) : ""
+                }
 
-            {(listItem["glyph"]) ? (
-                <p style={{
-                    flex: 2,
-                    marginRight: '5px',
-                    marginLeft: '5px',
-                    // color: globalState.textColor,
-                    // borderRadius: ".25rem",
-                    // borderWidth: ".50rem",
-                    // border: `2px solid #ddd`,
-                    // backgroundColor: '#1e2430',
-                    textAlign: 'center',
-                    backgroundColor: "#323f53", color: "#eedba5", 
-                }}>{listItem["glyph"]}</p>
-            ): ""}
+                {
+                    (listItem["char"]) ? ( listItem["char"]): ""
+                }
+            </p>
 
-            {(listItem["char"]) ? (
-                <p style={{
-                    flex: 2,
-                    marginRight: '5px',
-                    marginLeft: '5px',
-                    // color: globalState.textColor,
-                    // borderRadius: ".25rem",
-                    // borderWidth: ".50rem",
-                    // border: `2px solid #ddd`,
-                    // backgroundColor: '#1e2430',
-                    backgroundColor: "#323f53", color: "#eedba5", 
-                    textAlign: 'center',
-                }}>{listItem["char"]}</p>
-            ): ""}
-
-            { (globalState.showMenuNames) ? (
+            {(globalState.showMenuNames) ? (
                 <p style={{
                     flex: 2,
                     marginRight: '5px',
@@ -140,11 +119,13 @@ const SortableItem = SortableElement((componentArguments) => {
             alignContent: 'stretch',
             textAlign: 'center',
             height: '100%',
+            backgroundColor: "#323f53", color: "#eedba5", 
         }}>
             <div name={`buttonSection-${componentArguments.index}`} className="btn-group toolbar-actions" style={{
                 display: 'none',
             }}>
                 <button className="btn btn-default" style={{
+                    backgroundColor: "#323f53", color: "#eedba5", border: '2px solid rgb(37, 50, 70)', boxShadow: 'rgb(73, 91, 113) 0px 1px 0px inset',
                     // color: this.state.textColor,
                     // backgroundColor: 'transparent',
                     // flex: 2,
@@ -169,7 +150,8 @@ const SortableItem = SortableElement((componentArguments) => {
                     // flex: 4,
                     // display: (listItem.isFavorite) ? 'block' : 'none',
                     // color: globalState.textColor,
-                    backgroundColor: (listItem.isFavorite) ? 'transparent' : globalState.itemColor,
+                    backgroundColor: (listItem.isFavorite) ? '#eedba5' : globalState.itemColor,
+                    color: "#eedba5", border: '2px solid rgb(37, 50, 70)', boxShadow: 'rgb(73, 91, 113) 0px 1px 0px inset',
                 }} onClick={() => {
                     listItem.isFavorite = !listItem.isFavorite;
                     console.log("Updating shortcut item with toggled isFavorite: ", listItem);
@@ -190,13 +172,14 @@ const SortableItem = SortableElement((componentArguments) => {
                     Favorite
                 </button>
 
-                <button id={(listItem.isHidden) ? 'enabled-hidden-button' : ''} className="btn btn-default" style={{
+                <button id={(listItem.isHidden) ? 'enabled-hidden-button' : ''} className="btn" style={{
                     // color: this.state.textColor,
                     // backgroundColor: 'transparent',
                     // flex: 2,
                     // margin: 0,
                     // flex: 4,
-                    backgroundColor: (listItem.isHidden) ? 'transparent' : globalState.itemColor,
+                    color: "#eedba5", border: '2px solid rgb(37, 50, 70)', boxShadow: 'rgb(73, 91, 113) 0px 1px 0px inset',
+                    backgroundColor: (listItem.isHidden) ? '#323f53' : globalState.itemColor,
                 }} onClick={() => {
                     listItem.isHidden = !listItem.isHidden;
                     console.log("Updating shortcut item with toggled isHidden: ", listItem);
@@ -209,25 +192,27 @@ const SortableItem = SortableElement((componentArguments) => {
                     Hide
                 </button>
 
-                <button className="btn btn-default"
-                onMouseEnter={(e) => {
-                    console.log(`sending show-tooltip-for-list-item with ${componentArguments.listItem}`);
-                    ipcRenderer.send('show-tooltip-for-list-item', componentArguments.listItem);
-                }} onMouseLeave={(e) => {
-                    console.log(`sending hide-tooltip with ${componentArguments.listItem}`);
-                    ipcRenderer.send('hide-tooltip');
-                }} onClick={() => {
-                    console.log(`sending hide-tooltip with ${componentArguments.listItem}`);
-                    ipcRenderer.send('hide-tooltip');
-                    ipcRenderer.send('record-gif', listItem);
-                }}>
-                    <span className="fa fa-2x fa-film" style={{ }}></span>
-                    <br />
-                    GIF
-                </button>
             </div>
         </div>
     );
+
+    // TODO: add in gifs again: 
+                // <button className="btn" 
+                // onMouseEnter={(e) => {
+                //     console.log(`sending show-tooltip-for-list-item with ${componentArguments.listItem}`);
+                //     ipcRenderer.send('show-tooltip-for-list-item', componentArguments.listItem);
+                // }} onMouseLeave={(e) => {
+                //     console.log(`sending hide-tooltip with ${componentArguments.listItem}`);
+                //     ipcRenderer.send('hide-tooltip');
+                // }} onClick={() => {
+                //     console.log(`sending hide-tooltip with ${componentArguments.listItem}`);
+                //     ipcRenderer.send('hide-tooltip');
+                //     ipcRenderer.send('record-gif', listItem);
+                // }}>
+                //     <span className="fa fa-2x fa-film" style={{ }}></span>
+                //     <br />
+                //     GIF
+                // </button>
 
     // todo add these:
     // - general list item size
@@ -240,7 +225,8 @@ const SortableItem = SortableElement((componentArguments) => {
             // borderRight: `2px solid #1e2430`,
             // borderTop: `2px solid #1e2430`,
             // borderBottom: `2px solid #ddd`,
-            backgroundColor: "#323f53", color: "#eedba5", borderBottom: "1px solid #253246", boxShadow: "0 1px 0 #495b71 inset",
+            backgroundColor: "#323f53", color: "#eedba5", 
+            border: '2px solid rgb(37, 50, 70)', boxShadow: 'rgb(73, 91, 113) 0px 1px 0px inset',
             // backgroundColor: globalState.itemBackgroundColor,
             // marginBottom: "8px",
             display: 'flex',
@@ -889,8 +875,9 @@ export default class Home extends Component {
                 backgroundColor: "#323f53", color: "#eedba5", 
             }}>
                 <div className="btn-group">
-                    <button className="btn btn-default"
-                    onClick={() => {
+                    <button className="btn" style={{
+                        border: '2px solid rgb(37, 50, 70)', boxShadow: 'rgb(73, 91, 113) 0px 1px 0px inset',
+                    }} onClick={() => {
                         console.log(`opening community window `);
                         ipcRenderer.send('toggle-gif-community');
                     }}>
@@ -906,7 +893,8 @@ export default class Home extends Component {
                         </span>
                     </button>
 
-                    <button id="increase-font-size-button" className="btn btn-default" style={{
+                    <button id="increase-font-size-button" className="btn" style={{
+                        border: '2px solid rgb(37, 50, 70)', boxShadow: 'rgb(73, 91, 113) 0px 1px 0px inset',
 	                    // color: this.state.textColor,
 	                    // backgroundColor: 'transparent',
 						// flex: 2,
@@ -927,7 +915,8 @@ export default class Home extends Component {
                             data-tip="Increase font size" className="icon icon-plus-circled">
                         </span>
                     </button>
-                    <button id="decrease-font-size-button" className="btn btn-default" style={{
+                    <button id="decrease-font-size-button" className="btn" style={{
+                        border: '2px solid rgb(37, 50, 70)', boxShadow: 'rgb(73, 91, 113) 0px 1px 0px inset',
 	                    // color: this.state.textColor,
 	                    // backgroundColor: 'transparent',
 						// flex: 2,
@@ -948,7 +937,8 @@ export default class Home extends Component {
                             data-tip="Smaller text" className="icon icon-minus-circled">
                         </span>
                     </button>
-                    <button id="settings-button" className="btn btn-default" style={{
+                    <button id="settings-button" className="btn" style={{
+                        border: '2px solid rgb(37, 50, 70)', boxShadow: 'rgb(73, 91, 113) 0px 1px 0px inset',
 	                    // color: this.state.textColor,
 	                    // backgroundColor: 'transparent',
 						// flex: 2,
@@ -969,7 +959,8 @@ export default class Home extends Component {
                             data-tip="Settings" className="icon icon-cog">
                         </span>
                     </button>
-                    <button id="toggle-bubble-mode" className="btn btn-default" style={{
+                    <button id="toggle-bubble-mode" className="btn" style={{
+                        border: '2px solid rgb(37, 50, 70)', boxShadow: 'rgb(73, 91, 113) 0px 1px 0px inset',
 	                    // color: this.state.textColor,
 	                    backgroundColor: (this.state.windowMode === "bubble") ? '#333' : '#fcfcfc',
 						// flex: 2,
@@ -988,7 +979,7 @@ export default class Home extends Component {
                             data-iscapture="true"
                             data-tip="Mini mode <br />Use this mode when you want <br />as much space as possible <br /> for other things. The mode <br />will be remembered and stay the same <br/> for each program you set it." className="icon icon-progress-0"> </span>
                     </button>
-                    <button id="toggle-full-mode" className="btn btn-default" style={{
+                    <button id="toggle-full-mode" className="btn" style={{
 	                    // color: this.state.textColor,
 	                    backgroundColor: (this.state.windowMode === "full") ? '#333' : '#fcfcfc',
 						// flex: 2,
@@ -1196,7 +1187,11 @@ export default class Home extends Component {
                         <table className="table-striped">
                           <tbody>
                             <tr className="file_arq">
-                                <td>{HiddenSettings}</td>
+                                <td style={{
+                                    backgroundColor: "#323f53", color: "#eedba5", 
+                                }}>
+                                    {HiddenSettings}
+                                </td>
                             </tr>
                             <tr className="file_arq">
                               {ShortcutList}
@@ -1223,7 +1218,9 @@ export default class Home extends Component {
                                     backgroundColor: "#323f53", color: "#eedba5", 
                                 }}>{TitleAndSettings}</td>
                             </tr>
-                            <tr className="file_arq">
+                            <tr className="file_arq" style={{
+                                border: '4px solid rgb(37, 50, 70)', boxShadow: 'rgb(73, 91, 113) 0px 2px 0px inset',
+                            }}>
                               {ShortcutList}
                             </tr>
                           </tbody>
