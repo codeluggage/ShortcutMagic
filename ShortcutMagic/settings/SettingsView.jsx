@@ -131,19 +131,25 @@ export default class SettingsView extends Component {
                 </div>
             );
 
+            // TODO: Make this DRY
             let BoundsPerAppElement = (this.state.globalSettings.boundsPerApp) ? (
 				<div className="checkbox">
 					<label>
-                        <input id="boundsPerAppCheckbox" type="checkbox" defaultChecked /> Use the same the same size for all apps
+                        <input id="boundsPerAppCheckbox" type="checkbox" defaultChecked /> Use the same the same window size for all apps
                     </label>
 				</div>
             ) : (
 				<div className="checkbox">
 					<label>
-                        <input id="boundsPerAppCheckbox" type="checkbox" /> Use the same the same size for all apps
+                        <input id="boundsPerAppCheckbox" type="checkbox" /> Use the same the same window size for all apps
                     </label>
 				</div>
             );
+
+            // TODO: Open mini settings from settings window again: 
+            // Open styling for {this.state.appSettings.name}: <button className="btn btn-primary" onClick={() => {
+            //     ipcRenderer.send('show-mini-settings');
+            // }}>Reload</button>
 
     		return (
                 <div>
@@ -173,10 +179,7 @@ export default class SettingsView extends Component {
                             console.log('sending reloadShortcuts from ipcRenderer');
                             ipcRenderer.send('main-parse-shortcuts');
                         }}>Reload</button>
-
-                        Open styling for {this.state.appSettings.name}: <button className="btn btn-primary" onClick={() => {
-                            ipcRenderer.send('show-mini-settings');
-                        }}>Reload</button>
+                        <br />
                     </div>
 
 

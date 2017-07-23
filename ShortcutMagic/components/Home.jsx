@@ -332,6 +332,10 @@ export default class Home extends Component {
         });
 
         ipcRenderer.on('focus-search-field', (event) => {
+            this.setState({
+                menuActive: true
+            });
+
             window.document.getElementById("title").style.display = "none";
             window.document.getElementById("settings-button-group").style.display = "block";
             window.document.getElementById("search-field").style.display = "";
@@ -770,27 +774,30 @@ export default class Home extends Component {
         if (this.state.loading && !this.state.hiddenLoading) {
             let loadingLength = this.state.loading.length - 1;
             return (
-                <div>
-                    <h1>Loading shortcuts for {
-                        this.state.loading.map((obj, index) => (index == loadingLength) ? obj : obj + ", ")
-                    }...</h1>
-
-                    <i className="fa fa-3x fa-spin fa-spinner"></i>
-
-                    <button style={{
-                        // color: this.state.textColor,
-                        borderColor: '#1e2430',
-                        margin: 0,
-                    }} id="toggle-main-buttons" className="simple-button" onClick={() => {
-                        this.setState({
-                            hiddenLoading: true
-                        });
-                    }}>
-                        Hide
-                    </button>
+                <div style={{
+                    backgroundColor: "#323f53", color: "#eedba5", 
+                    textAlign: 'center',
+                }}>
+                    <h2>Loading shortcuts for</h2>
+                    <h2>{ this.state.loading.map((obj, index) => (index == loadingLength) ? obj : obj + ", ") }</h2>
+                    <br />
+                    <i className="fa fa-3x fa-spin fa-spinner" style={{
+                        marginBottom: '10px',
+                    }}></i>
                 </div>
             );
         }
+                    // <button style={{
+                    //     backgroundColor: "#323f53", color: "#eedba5", 
+                    //     // color: this.state.textColor,
+                    //     margin: 0,
+                    // }} id="toggle-main-buttons" className="simple-button" onClick={() => {
+                    //     this.setState({
+                    //         hiddenLoading: true
+                    //     });
+                    // }}>
+                    //     Hide
+                    // </button>
 /*
                 sort-up
                 sort-down
@@ -807,17 +814,20 @@ export default class Home extends Component {
 
 
 		let SearchField = (
-            <input id="search-field" className="form-control" type="text" placeholder="Search actions and shortcuts"
-            style={{
+            <input id="search-field" className="form-control" type="text" placeholder="Search actions and shortcuts" style={{
                 display: 'none',
                 // borderRadius: ".25rem",
                 // borderWidth: ".50rem",
-                // border: `2px solid #737475`, // #737475 is the color from Photon mac css
+                border: `2px solid #737475`, // #737475 is the color from Photon mac css
                 backgroundColor: "#323f53", color: "#eedba5", 
-            }} onChange={this.filterListTrigger}
-            onKeyDown={(e) => {
+            }} onChange={this.filterListTrigger} onKeyDown={(e) => {
                 if (e.keyCode === 27) { // key code 27 == escape
                     ipcRenderer.send('unfocus-main-window');
+
+                    let isActive = !(window.document.getElementById("hamburger-5").className.indexOf("is-active") > -1);
+                    this.setState({
+                        menuActive: isActive
+                    });
 
                     // Clear search field and trigger list filter on empty search filter
                     window.document.getElementById("search-field").value = '';
@@ -1056,11 +1066,15 @@ export default class Home extends Component {
 
 
         let Title = (
-            <h4 id="title" style={{
+            <h3 id="title" style={{
                 // color: this.state.textColor,
                 marginTop:'2px',
                 marginBottom:'2px',
-            }}>{(displaySettings) ? displaySettings : this.state.name}</h4>
+                flex: 11,
+                justifyContent: 'center',
+                alignContent: 'stretch',
+                textDecoration: 'underline',
+            }}>{(displaySettings) ? displaySettings : this.state.name}</h3>
         );
 
         let displaySettings = null;
@@ -1085,32 +1099,62 @@ export default class Home extends Component {
             //         window.document.getElementById("settings-button-group").style.display = "none";
             //         window.document.getElementById("search-field").style.display = "none";
             //     }
-        let ToggleSettings = (
-            <div className="btn" style={{
 
+        let ToggleSettings = (
+            <div className= {(this.state.menuActive) ? "hamburger is-active" : "hamburger"} id="hamburger-5" style={{
+                flex: 1,
+                marginTop: '5px',
+                marginBottom: '5px',
+                width: '100%',
             }} onClick={() => {
-                if (window.document.getElementById("settings-button-group").style.display === "block") {
-                    window.document.getElementById("settings-button-group").style.display = "none";
-                    window.document.getElementById("search-field").style.display = "none";
-                    // window.document.getElementById("title").style.display = "none";
-                } else {
+                let menu = window.document.getElementById("hamburger-5");
+                let isActive = !(menu && menu.className.indexOf("is-active") > -1);
+
+                if (isActive) {
                     window.document.getElementById("settings-button-group").style.display = "block";
                     window.document.getElementById("search-field").style.display = "";
-                    // window.document.getElementById("title").style.display = "block";
+                    window.document.getElementById("title").style.display = (this.state.mode === "full-mode") ? "block" : "none";
 
                     ipcRenderer.send('show-window');
                     window.document.getElementById("search-field").focus();
+
+                    this.setState({
+                        menuActive: isActive
+                    });
                 }
             }}>
-                burger
+                <span className="line"></span>
+                <span className="line"></span>
+                <span className="line"></span>
             </div>
         );
+
 		let TitleAndSettings = (
             <div id="title-and-settings" style={{
                 textAlign: 'center',
                 backgroundColor: "#323f53", color: "#eedba5", 
             }}>
-                {ToggleSettings} {Title}
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                }}  onClick={() => {
+                    let menu = window.document.getElementById("hamburger-5");
+                    let isActive = !(menu && menu.className.indexOf("is-active") > -1);
+
+                    if (!isActive) {
+                        window.document.getElementById("settings-button-group").style.display = "none";
+                        window.document.getElementById("search-field").style.display = "none";
+                        console.log('about to set tile with values ', this.state);
+                        window.document.getElementById("title").style.display = (this.state.mode !== "full-mode") ? "block" : "none";
+
+                        this.setState({
+                            menuActive: isActive
+                        });
+                    }
+                }}>
+                    {Title}
+                    {ToggleSettings}
+                </div>
                 {SettingsButtons}
                 {SearchField}
             </div>
@@ -1161,21 +1205,29 @@ export default class Home extends Component {
 
 			return (
                 <div className="window">
-                  <div className="window-content">
+
+                  <div className="window-content" style={{
+                        backgroundColor: "#323f53", color: "#eedba5", 
+                    }}>
                       <div className="pane">
                         <table className="table-striped">
                           <tbody>
                             <tr className="file_arq">
-                              <td>{SearchField}</td>
+                                <td style={{
+                                    backgroundColor: "#323f53", color: "#eedba5", 
+                                }}>
+                                    {SearchField}
+                                </td>
                             </tr>
                             <tr className="file_arq">
-                              <td>{SearchResults}</td>
+                              {ShortcutList}
                             </tr>
                           </tbody>
                         </table>
                       </div>
                     </div>
-                </div>
+                  </div>
+            
 			);
 		} else if (this.state.mode == "bubble-mode") {
 			// Bubble mode:

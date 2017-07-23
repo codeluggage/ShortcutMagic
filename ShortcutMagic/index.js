@@ -1172,13 +1172,13 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
         appName === "SecurityAgent" ||
         appName === "AirPlayUIAgent") {
 		log.info("Not switching to this app: ", appName);
-        mainWindow.webContents.send('focus', false);
+    mainWindow.webContents.send('focus', false);
 		return;
 	}
 
 	if (appName == currentAppName) {
 		log.info("cannot switch to same app again");
-        mainWindow.webContents.send('focus', false);
+    mainWindow.webContents.send('focus', false);
 		return;
 	}
 
