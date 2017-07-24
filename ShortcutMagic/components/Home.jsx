@@ -10,6 +10,12 @@ let globalState;
 // From http://www.visualcinnamon.com/2016/05/smooth-color-legend-d3-svg-gradient.html
 let beautifulColors = ["#2c7bb6",  "#00a6ca", "#00ccbc", "#90eb9d", "#ffff8c", "#f9d057", "#f29e2e", "#e76818", "#d7191c"];
 
+let tooltipEffect = {
+    place: "bottom",
+    type: "light",
+    effect: "solid",
+};
+
 function hexToRgba(hex, alpha) {
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
 	if (!result) return;
@@ -41,6 +47,7 @@ const SortableItem = SortableElement((componentArguments) => {
 			fontSize: globalState.listTitleFontSize,
 			fontWeight: globalState.listTitleFontWeight,
             backgroundColor: "#323f53", color: "#eedba5", 
+            textAlign: 'center',
         }}>{listItem.name}</p>
     );
 
@@ -140,27 +147,42 @@ const SortableItem = SortableElement((componentArguments) => {
         }}>
 
             <ul name={`buttonSection-${componentArguments.index}`} className="wrapper-2" style={{
-                // display: 'none',
+                display: 'none',
                 textAlign: 'right',
             }}>
+
 
                 <li onClick={() => {
                     console.log("clicked execute-list-item with ", listItem);
                     ipcRenderer.send('execute-list-item', listItem);
-                }}><span className="fa fa-1x fa-play" style={{
+                }}
+                data-for='execute-tooltip'
+                data-iscapture="true"
+                data-tip="Run this shortcut">
+                <span className="fa fa-1x fa-play" style={{
                     // color: this.state.textColor,
                     // backgroundColor: 'transparent',
                     // flex: 2,
                     // margin: 0,
                     // flex: 4,
                 }}>
-                </span></li>
+                </span>
+                    <ReactTooltip id='execute-tooltip'
+                        place={tooltipEffect.place}
+                        type={tooltipEffect.type}
+                        effect={tooltipEffect.effect}
+                        multiline={false}/>
+                </li>
 
                 <li onClick={() => {
                     listItem.isFavorite = !listItem.isFavorite;
                     console.log("Updating shortcut item with toggled isFavorite: ", listItem);
                     ipcRenderer.send('update-shortcut-item', listItem);
-                }}><span name={(listItem.isFavorite) ? 'enabled-favorite-button' : ''} 
+                }}
+                data-for='favorite-tooltip'
+                data-iscapture="true"
+                data-tip="Add to favorites and keep <br />at the top of the list">
+                <span name={(listItem.isFavorite) ? 'enabled-favorite-button' : ''} 
                 className={(listItem.isFavorite) ? 'fa fa-1x fa-star' : 'fa fa-1x fa-star-o' } style={{
                     // color: this.state.textColor,
                     // backgroundColor: 'transparent',
@@ -170,22 +192,36 @@ const SortableItem = SortableElement((componentArguments) => {
                     // display: (listItem.isFavorite) ? 'block' : 'none',
                     // color: globalState.textColor,
                     color: (listItem.isFavorite) ? 'gold' : '',                
-                }}>
-                </span></li>
+                }}></span>
+                    <ReactTooltip id='favorite-tooltip'
+                        place={tooltipEffect.place}
+                        type={tooltipEffect.type}
+                        effect={tooltipEffect.effect}
+                        multiline={true}/>
+                </li>
 
                 <li onClick={() => {
                     listItem.isHidden = !listItem.isHidden;
                     console.log("Updating shortcut item with toggled isHidden: ", listItem);
                     ipcRenderer.send('update-shortcut-item', listItem);
-                }}><span name={(listItem.isHidden) ? 'enabled-hidden-button' : ''} className='fa fa-1x fa-eye' style={{
+                }}
+                data-for='favorite-tooltip'
+                data-iscapture="true"
+                data-tip="Hide at the bottom <br />of the list">
+                <span name={(listItem.isHidden) ? 'enabled-hidden-button' : ''} className='fa fa-1x fa-eye' style={{
                     // color: this.state.textColor,
                     // backgroundColor: 'transparent',
                     // flex: 2,
                     // margin: 0,
                     // flex: 4,
                     color: (listItem.isHidden) ? 'red' : '',                
-                }}>
-                </span></li>
+                }}></span>
+                    <ReactTooltip id='favorite-tooltip'
+                        place={tooltipEffect.place}
+                        type={tooltipEffect.type}
+                        effect={tooltipEffect.effect}
+                        multiline={true}/>
+                </li>
             </ul>
         </div>
     );
@@ -228,35 +264,35 @@ const SortableItem = SortableElement((componentArguments) => {
             flexDirection: 'column',
             padding: 0,
         }} onMouseEnter={(e) => {
-			// let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
-   //          if (buttonSectionElements) {
-			// 	for (var i = 0; i < buttonSectionElements.length; i++) {
+			let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
+            if (buttonSectionElements) {
+				for (var i = 0; i < buttonSectionElements.length; i++) {
 
-			// 		buttonSectionElements[i].style.display = "block";
+					buttonSectionElements[i].style.display = "block";
 
-			// 		if (buttonSectionElements[i].name === "enabled-favorite-button" || 
-   //                      buttonSectionElements[i].name === "enabled-hidden-button") {
-   //                      buttonSectionElements[i].style.backgroundColor = globalState.itemColor;
-   //                      buttonSectionElements[i].style.border = `2px solid ${globalState.itemColor}`;
-   //                  }
-			// 	}
-			// }
+					if (buttonSectionElements[i].name === "enabled-favorite-button" || 
+                        buttonSectionElements[i].name === "enabled-hidden-button") {
+                        buttonSectionElements[i].style.backgroundColor = globalState.itemColor;
+                        buttonSectionElements[i].style.border = `2px solid ${globalState.itemColor}`;
+                    }
+				}
+			}
         }} onMouseLeave={(e) => {
             // Call this to be doubly sure tooltip is hidden
-   //          ipcRenderer.send('hide-tooltip');
+            ipcRenderer.send('hide-tooltip');
 
-			// let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
-   //          if (buttonSectionElements) {
-			// 	for (var i = 0; i < buttonSectionElements.length; i++) {
-			// 		if (buttonSectionElements[i].name != "enabled-favorite-button" && 
-   //                      buttonSectionElements[i].name != "enabled-hidden-button") {
-			// 			buttonSectionElements[i].style.display = "none";
-			// 		} else {
-   //                      buttonSectionElements[i].style.backgroundColor = "transparent";
-   //                      buttonSectionElements[i].style.border = "transparent";
-   //                  }
-			// 	}
-			// }
+			let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
+            if (buttonSectionElements) {
+				for (var i = 0; i < buttonSectionElements.length; i++) {
+					if (buttonSectionElements[i].name != "enabled-favorite-button" && 
+                        buttonSectionElements[i].name != "enabled-hidden-button") {
+						buttonSectionElements[i].style.display = "none";
+					} else {
+                        buttonSectionElements[i].style.backgroundColor = "transparent";
+                        buttonSectionElements[i].style.border = "transparent";
+                    }
+				}
+			}
         }}>
             <div style={{
                 flex: 3,
@@ -868,11 +904,21 @@ export default class Home extends Component {
             </div>
 		);
 
-        let tooltipEffect = {
-            place: "bottom",
-            type: "light",
-            effect: "solid",
-        };
+// TODO: Re-enable gif community: 
+                    // <li onClick={() => {
+                    //     console.log(`opening community window `);
+                    //     ipcRenderer.send('toggle-gif-community');
+                    // }}><span className="fa fa-2x fa-film" data-for='gifcommunity-tooltip'
+                    // data-iscapture="true"
+                    // data-tip="Open community window <br /> with gif overview">
+
+                    //     <ReactTooltip id='gifcommunity-tooltip'
+                    //         place='right'
+                    //         type={tooltipEffect.type}
+                    //         effect={tooltipEffect.effect}
+                    //         multiline={true}/>
+
+                    // </span></li>
 
         let SettingsButtons = (
             <div id="settings-button-group" className="toolbar-actions" style={{
@@ -886,40 +932,33 @@ export default class Home extends Component {
                     alignContent: 'center',
                     textAlign: 'center',
                 }}>
-                    <li onClick={() => {
-                        console.log(`opening community window `);
-                        ipcRenderer.send('toggle-gif-community');
-                    }}><span className="fa fa-2x fa-film" data-for='gifcommunity-tooltip'
-                    data-iscapture="true"
-                    data-tip="Open community window <br /> with gif overview">
-
-                        <ReactTooltip id='gifcommunity-tooltip'
-                            place='right'
-                            type={tooltipEffect.type}
-                            effect={tooltipEffect.effect}
-                            multiline={true}/>
-
-                    </span></li>
-
                     <li onClick={(event) => {
                         event.preventDefault();
                         console.log("clicked font size up");
                         this.changeFontUp();
-                    }}><span id="increase-font-size-button" className="fa fa-2x fa-plus" data-for='increase-font-size-tooltip'
+                    }} 
+                    data-for='increase-font-size-tooltip'
                     data-iscapture="true"
                     data-tip="Increase font size">
+                    <span id="increase-font-size-button" className="fa fa-2x fa-plus">
+                    </span>
                         <ReactTooltip id='increase-font-size-tooltip'
                             place={tooltipEffect.place}
                             type={tooltipEffect.type}
                             effect={tooltipEffect.effect}
                             multiline={true}/>
-                    </span></li>
+                    </li>
 
                     <li onClick={(event) => {
                         event.preventDefault();
                         console.log("clicked font size down");
                         this.changeFontDown();
-                    }}><span id="decrease-font-size-button" className="fa fa-2x fa-minus" data-for='decrease-font-size-tooltip' data-iscapture="true" data-tip="Smaller text">
+                    }}
+                    data-for='decrease-font-size-tooltip'
+                    data-iscapture="true"
+                    data-tip="Smaller text">
+                    <span id="decrease-font-size-button" className="fa fa-2x fa-minus">
+                    </span>
 
                         <ReactTooltip id='decrease-font-size-tooltip'
                             place={tooltipEffect.place}
@@ -927,50 +966,57 @@ export default class Home extends Component {
                             effect={tooltipEffect.effect}
                             multiline={true}/>
 
-                    </span></li>
+                    </li>
 
                     <li onClick={(event) => {
                         event.preventDefault();
                         console.log("clicked settings");
                         this.toggleSettings();
-                    }}><span id="settings-button" className="fa fa-2x fa-cog"data-for='toggle-settings-tooltip' data-iscapture="true" data-tip="Settings">
-
+                    }} data-for='toggle-settings-tooltip'
+                    data-iscapture="true"
+                    data-tip="Settings">
+                    <span id="settings-button" className="fa fa-2x fa-cog">
+                    </span>
                         <ReactTooltip id='toggle-settings-tooltip'
                             place={tooltipEffect.place}
                             type={tooltipEffect.type}
                             effect={tooltipEffect.effect}
                             multiline={true}/>
-                    </span></li>
+                    </li>
 
                     <li onClick={(event) => {
                         event.preventDefault();
                         ipcRenderer.send('set-full-view-mode');
-                    }}><span id="toggle-full-mode"  className="fa fa-2x fa-window-maximize"data-for='toggle-full-mode-tooltip'
-                            data-iscapture="true"
-                            data-tip="Regular mode<br />This mode is good for <br />learning and exploring <br />a program. Drag the edges of <br />the windows to resize.">
-
+                    }}
+                    data-for='toggle-full-mode-tooltip'
+                    data-iscapture="true"
+                    data-tip="Regular mode<br />This mode is good for <br />learning and exploring <br />a program. Drag the edges of <br />the windows to resize.">
+                    <span id="toggle-full-mode" className="fa fa-2x fa-window-maximize">
+                    </span>
                         <ReactTooltip id='toggle-full-mode-tooltip'
                             place={tooltipEffect.place}
                             type={tooltipEffect.type}
                             effect={tooltipEffect.effect}
                             multiline={true}/>
-
-                    </span></li>
+                    </li>
 
                     <li onClick={(event) => {
                         event.preventDefault();
                         // TODO: Manage state ourselves here? messy..
                         ipcRenderer.send('set-hidden-mode');
-                    }}><span id="toggle-hidden-mode" className="fa fa-2x fa-window-minimize"data-for='toggle-hidden-mode-tooltip'
-                            data-iscapture="true"
-                            data-tip="Hide <br />This hides the window completely <br />for ${this.state.name}. <br />You have to click the hat <br />icon to show it again.">
+                    }}
+                    data-for='toggle-hidden-mode-tooltip'
+                    data-iscapture="true"
+                    data-tip="Hide <br />This hides the window completely for this program. <br />You have to click the hat <br />icon in the menu bar <br ?>to show it again.">
+                    <span id="toggle-hidden-mode" className="fa fa-2x fa-window-minimize">
+                    </span>
 
                         <ReactTooltip id='toggle-hidden-mode-tooltip'
                             place={'left'}
                             type={tooltipEffect.type}
                             effect={tooltipEffect.effect}
                             multiline={true}/>
-                    </span></li>
+                    </li>
 
                 </ul>
             </div>
@@ -1006,7 +1052,7 @@ export default class Home extends Component {
 
 
         let Title = (
-            <h3 id="title" style={{
+            <h2 id="title" style={{
                 // color: this.state.textColor,
                 marginTop:'2px',
                 marginBottom:'2px',
@@ -1014,7 +1060,7 @@ export default class Home extends Component {
                 justifyContent: 'center',
                 alignContent: 'stretch',
                 textDecoration: 'underline',
-            }}>{(displaySettings) ? displaySettings : this.state.name}</h3>
+            }}>{(displaySettings) ? displaySettings : this.state.name}</h2>
         );
 
         let displaySettings = null;
