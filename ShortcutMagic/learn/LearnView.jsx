@@ -66,7 +66,7 @@ export default class LearnView extends Component {
                     <br />
                     <img src="../assets/learn/executing.png" height="512" width="512"></img>
 
-                </div>
+ and some iOS and Android                </div>
 
                 <div id="hide">
                     <br />

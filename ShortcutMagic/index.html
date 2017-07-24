@@ -2,9 +2,118 @@
 <html>
   <head>
   <link rel="stylesheet" type="text/css" href="./app.global.css"/>
-  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="./dist/css/photon.css">
     <style>
+      
+*{
+  border:0; 
+  margin:0 ; 
+  padding:0; 
+  list-style-type:none; 
+  outline:none;
+}
+ul{
+  margin:0 !important;
+  background-color:rgb(74, 74, 74);
+  background: url("http://subtlepatterns.subtlepatterns.netdna-cdn.com/patterns/noisy_net.png") repeat scroll center center rgb(74, 74, 74);
+}
+/*html,body{
+  height:100%;
+}
+ul{
+  background-color:rgb(74, 74, 74);
+  background: url("http://subtlepatterns.subtlepatterns.netdna-cdn.com/patterns/noisy_net.png") repeat scroll center center rgb(74, 74, 74);
+}
+*/
+
+.wrapper-1{
+  background-color: transparent;
+  margin:10px auto;
+  border-radius:4px;
+  padding:5px;
+  padding-bottom:5px;
+}
+.wrapper-2{
+
+  background-color: transparent;
+  margin:2px auto;
+  border-radius:4px;
+  padding:2px;
+
+}
+
+
+ul li {
+float:left;
+padding-top:10px;
+width:50px;
+height:50px;
+color:#D9D9D9;
+text-align:center;
+text-shadow:0 1px #0F1014;
+display:table;
+background: linear-gradient(#44494F,#2F3237);
+border-radius:3px;
+border-right:1px solid #0F1014;
+border-bottom:1px solid #0F1014;
+border-top:1px solid #53575C;
+border-left:1px solid #53575C;
+box-shadow:1px 1px #17191C;
+cursor:pointer;
+}
+
+ul.wrapper-2 li {
+float:left;
+padding:7px;
+width:10px;
+height:10px;
+color:#D9D9D9;
+text-align:center;
+text-shadow:0 1px #0F1014;
+display:table;
+background: linear-gradient(#44494F,#2F3237);
+border-radius:3px;
+border-right:1px solid #0F1014;
+border-bottom:1px solid #0F1014;
+border-top:1px solid #53575C;
+border-left:1px solid #53575C;
+box-shadow:1px 1px #17191C;
+cursor:pointer;
+}
+
+ul li b{
+  margin-top:20px;
+  font-size:24px;
+ }
+
+ul li:active, ul li.active{
+  color:#171820;
+  background:#2A2D31;
+  box-shadow:
+      inset 0 0 5px 2px rgba(15, 16, 20, 0.5);
+  border:1px solid #0F1014;
+}
+  ul li:not(.active):hover{
+  text-shadow:1px 1px 10px Yellow;
+  }
+ 
+  .wrapper-2 ul li:not(.active):hover{
+  text-shadow:1px 1px 10px HotPink;
+  }
+   ul li:active{
+    text-shadow:none !important;
+  }
+  .wrapper-2 ul li {
+    color:#0F1014; 
+    text-shadow:0 1px #666;
+  }
+  .wrapper-2 ul li:active,
+  .wrapper-2 ul li.active {
+    color:grey;
+  }
+    
+
       .five { width: 40.73%; }
 
       /* COLUMNS */

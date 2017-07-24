@@ -1204,7 +1204,7 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 
 	settingsWindow.webContents.send('app-changed', currentAppName);
 	miniSettingsWindow.webContents.send('app-changed', currentAppName);
-    mainWindow.webContents.send('focus', false);
+  // mainWindow.webContents.send('focus', false);
 });
 
 ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {

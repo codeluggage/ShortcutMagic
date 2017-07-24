@@ -47,10 +47,27 @@ const SortableItem = SortableElement((componentArguments) => {
     let bottomSection = (
         <div style={{
             display: 'flex',
-            flexDirection: 'row',
+            flexDirection: 'column',
             flex: 2,
             fontWeight: globalState.listItemFontWeight,
         }}>
+            {(globalState.focused && componentArguments.index < 5) ? (
+                <p style={{
+                    // color: globalState.textColor,
+                    flex: 1,
+                    paddingLeft: "5px",
+                    paddingRight: "5px",
+                    paddingBottom: "5px",
+                    // borderRadius: ".25rem",
+                    // borderWidth: ".50rem",
+                    // border: `2px solid #ddd`,
+                    // backgroundColor: '#1e2430',
+                    backgroundColor: "transparent", color: "#eedba5", 
+                    textAlign: 'left',
+                    fontSize: globalState.listTitleFontSize,
+                }}>⌘ {componentArguments.index + 1}</p>
+            ) : ""}
+
             <p style={{
                 flex: 2,
                 marginRight: '5px',
@@ -92,24 +109,22 @@ const SortableItem = SortableElement((componentArguments) => {
                     textAlign: 'center',
                 }}>{listItem.menuName}</p>
             ) : ""}
-
-            {(globalState.focused && componentArguments.index < 5) ? (
-                <p style={{
-                    // color: globalState.textColor,
-                    flex: 1,
-                    paddingLeft: "5px",
-                    paddingRight: "5px",
-                    // borderRadius: ".25rem",
-                    // borderWidth: ".50rem",
-                    // border: `2px solid #ddd`,
-                    // backgroundColor: '#1e2430',
-                    backgroundColor: "transparent", color: "#eedba5", 
-                    textAlign: 'right',
-                    fontSize: globalState.listTitleFontSize,
-                }}>⌘ {componentArguments.index + 1}</p>
-            ) : ""}
         </div>
     );
+
+                // <li><span classname="fa fa-film" style={{
+                //     backgroundcolor: "#323f53", color: "#eedba5", border: '2px solid rgb(37, 50, 70)', boxshadow: 'rgb(73, 91, 113) 0px 1px 0px inset',
+                //     // color: this.state.textcolor,
+                //     // backgroundcolor: 'transparent',
+                //     // flex: 2,
+                //     // margin: 0,
+                //     // flex: 4,
+                // }} onclick={() => {
+                //     console.log("clicked execute-list-item with ", listitem);
+                //     ipcrenderer.send('execute-list-item', listitem);
+                // }}>
+                // </span></li>
+
 
     let mouseOverButtonsSection = (
         <div style={{
@@ -117,34 +132,36 @@ const SortableItem = SortableElement((componentArguments) => {
             flexDirection: 'row',
             marginBottom: '2px',
             // marginTop: '2px',
-            justifyContent: 'center',
+            justifyContent: 'flex-end',
             alignContent: 'stretch',
             textAlign: 'center',
             height: '100%',
             backgroundColor: "#323f53", color: "#eedba5", 
         }}>
-            <div name={`buttonSection-${componentArguments.index}`} className="btn-group toolbar-actions" style={{
-                display: 'none',
+
+            <ul name={`buttonSection-${componentArguments.index}`} className="wrapper-2" style={{
+                // display: 'none',
+                textAlign: 'right',
             }}>
-                <button className="btn btn-default" style={{
-                    backgroundColor: "#323f53", color: "#eedba5", border: '2px solid rgb(37, 50, 70)', boxShadow: 'rgb(73, 91, 113) 0px 1px 0px inset',
+
+                <li onClick={() => {
+                    console.log("clicked execute-list-item with ", listItem);
+                    ipcRenderer.send('execute-list-item', listItem);
+                }}><span className="fa fa-1x fa-play" style={{
                     // color: this.state.textColor,
                     // backgroundColor: 'transparent',
                     // flex: 2,
                     // margin: 0,
                     // flex: 4,
-                }} onClick={() => {
-                    console.log("clicked execute-list-item with ", listItem);
-                    ipcRenderer.send('execute-list-item', listItem);
                 }}>
-                    <span className="fa fa-2x fa-play"style={{
-                        color: "green",
-                    }}></span>
-                    <br />
-                    Execute
-                </button>
+                </span></li>
 
-                <button id={(listItem.isFavorite) ? 'enabled-favorite-button' : ''} className="btn btn-default" style={{
+                <li onClick={() => {
+                    listItem.isFavorite = !listItem.isFavorite;
+                    console.log("Updating shortcut item with toggled isFavorite: ", listItem);
+                    ipcRenderer.send('update-shortcut-item', listItem);
+                }}><span name={(listItem.isFavorite) ? 'enabled-favorite-button' : ''} 
+                className={(listItem.isFavorite) ? 'fa fa-1x fa-star' : 'fa fa-1x fa-star-o' } style={{
                     // color: this.state.textColor,
                     // backgroundColor: 'transparent',
                     // flex: 2,
@@ -152,49 +169,24 @@ const SortableItem = SortableElement((componentArguments) => {
                     // flex: 4,
                     // display: (listItem.isFavorite) ? 'block' : 'none',
                     // color: globalState.textColor,
-                    backgroundColor: (listItem.isFavorite) ? '#eedba5' : globalState.itemColor,
-                    color: "#eedba5", border: '2px solid rgb(37, 50, 70)', boxShadow: 'rgb(73, 91, 113) 0px 1px 0px inset',
-                }} onClick={() => {
-                    listItem.isFavorite = !listItem.isFavorite;
-                    console.log("Updating shortcut item with toggled isFavorite: ", listItem);
-                    ipcRenderer.send('update-shortcut-item', listItem);
+                    color: (listItem.isFavorite) ? 'gold' : '',                
                 }}>
-                    {
-                        (listItem.isFavorite) ? (
-                            <span className="fa fa-2x fa-star" style={{
-                                color: "gold",
-                            }}></span>
-                        ) : (
-                            <span className="fa fa-2x fa-star-o" style={{
-                                color: "gold",
-                            }}></span>
-                        )
-                    }
-                    <br />
-                    Favorite
-                </button>
+                </span></li>
 
-                <button id={(listItem.isHidden) ? 'enabled-hidden-button' : ''} className="btn" style={{
+                <li onClick={() => {
+                    listItem.isHidden = !listItem.isHidden;
+                    console.log("Updating shortcut item with toggled isHidden: ", listItem);
+                    ipcRenderer.send('update-shortcut-item', listItem);
+                }}><span name={(listItem.isHidden) ? 'enabled-hidden-button' : ''} className='fa fa-1x fa-eye' style={{
                     // color: this.state.textColor,
                     // backgroundColor: 'transparent',
                     // flex: 2,
                     // margin: 0,
                     // flex: 4,
-                    color: "#eedba5", border: '2px solid rgb(37, 50, 70)', boxShadow: 'rgb(73, 91, 113) 0px 1px 0px inset',
-                    backgroundColor: (listItem.isHidden) ? '#323f53' : globalState.itemColor,
-                }} onClick={() => {
-                    listItem.isHidden = !listItem.isHidden;
-                    console.log("Updating shortcut item with toggled isHidden: ", listItem);
-                    ipcRenderer.send('update-shortcut-item', listItem);
+                    color: (listItem.isHidden) ? 'red' : '',                
                 }}>
-                    <span className="fa fa-2x fa-eye" style={{
-                        color: (listItem.isHidden) ? "grey" : "red",
-                    }}></span>
-                    <br />
-                    Hide
-                </button>
-
-            </div>
+                </span></li>
+            </ul>
         </div>
     );
 
@@ -236,45 +228,46 @@ const SortableItem = SortableElement((componentArguments) => {
             flexDirection: 'column',
             padding: 0,
         }} onMouseEnter={(e) => {
-			let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
-            if (buttonSectionElements) {
-				for (var i = 0; i < buttonSectionElements.length; i++) {
+			// let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
+   //          if (buttonSectionElements) {
+			// 	for (var i = 0; i < buttonSectionElements.length; i++) {
 
-					buttonSectionElements[i].style.display = "block";
+			// 		buttonSectionElements[i].style.display = "block";
 
-					if (buttonSectionElements[i].id === "enabled-favorite-button" || 
-                        buttonSectionElements[i].id === "enabled-hidden-button") {
-                        buttonSectionElements[i].style.backgroundColor = globalState.itemColor;
-                        buttonSectionElements[i].style.border = `2px solid ${globalState.itemColor}`;
-                    }
-				}
-			}
+			// 		if (buttonSectionElements[i].name === "enabled-favorite-button" || 
+   //                      buttonSectionElements[i].name === "enabled-hidden-button") {
+   //                      buttonSectionElements[i].style.backgroundColor = globalState.itemColor;
+   //                      buttonSectionElements[i].style.border = `2px solid ${globalState.itemColor}`;
+   //                  }
+			// 	}
+			// }
         }} onMouseLeave={(e) => {
             // Call this to be doubly sure tooltip is hidden
-            ipcRenderer.send('hide-tooltip');
+   //          ipcRenderer.send('hide-tooltip');
 
-			let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
-            if (buttonSectionElements) {
-				for (var i = 0; i < buttonSectionElements.length; i++) {
-					if (buttonSectionElements[i].id != "enabled-favorite-button" && 
-                        buttonSectionElements[i].id != "enabled-hidden-button") {
-						buttonSectionElements[i].style.display = "none";
-					} else {
-                        buttonSectionElements[i].style.backgroundColor = "transparent";
-                        buttonSectionElements[i].style.border = "transparent";
-                    }
-				}
-			}
+			// let buttonSectionElements = componentArguments.contentWindow.document.getElementsByName(`buttonSection-${componentArguments.index}`);
+   //          if (buttonSectionElements) {
+			// 	for (var i = 0; i < buttonSectionElements.length; i++) {
+			// 		if (buttonSectionElements[i].name != "enabled-favorite-button" && 
+   //                      buttonSectionElements[i].name != "enabled-hidden-button") {
+			// 			buttonSectionElements[i].style.display = "none";
+			// 		} else {
+   //                      buttonSectionElements[i].style.backgroundColor = "transparent";
+   //                      buttonSectionElements[i].style.border = "transparent";
+   //                  }
+			// 	}
+			// }
         }}>
             <div style={{
                 flex: 3,
+                display: 'flex',
+                flexDirection: 'column',
                 // borderRadius: ".25rem",
                 // borderWidth: ".50rem",
                 // border: `2px solid #1e2430`,
                 backgroundColor: "#323f53", color: "#eedba5", 
             }}>
-                {topSection}
-                {mouseOverButtonsSection}
+                {topSection}{mouseOverButtonsSection}
             </div>
 
             {bottomSection}
@@ -886,153 +879,100 @@ export default class Home extends Component {
                 display: 'none',
                 backgroundColor: "#323f53", color: "#eedba5", 
             }}>
-                <div className="btn-group">
-                    <button className="btn" style={{
-                        border: '2px solid rgb(37, 50, 70)', boxShadow: 'rgb(73, 91, 113) 0px 1px 0px inset',
-                    }} onClick={() => {
+
+                <ul className="wrapper-1" style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignContent: 'center',
+                    textAlign: 'center',
+                }}>
+                    <li onClick={() => {
                         console.log(`opening community window `);
                         ipcRenderer.send('toggle-gif-community');
-                    }}>
+                    }}><span className="fa fa-2x fa-film" data-for='gifcommunity-tooltip'
+                    data-iscapture="true"
+                    data-tip="Open community window <br /> with gif overview">
+
                         <ReactTooltip id='gifcommunity-tooltip'
                             place='right'
                             type={tooltipEffect.type}
                             effect={tooltipEffect.effect}
                             multiline={true}/>
 
-                        <span data-for='gifcommunity-tooltip'
-                            data-iscapture="true"
-                            data-tip="Open community window <br /> with gif overview" className="fa fa-film" style={{}}>
-                        </span>
-                    </button>
+                    </span></li>
 
-                    <button id="increase-font-size-button" className="btn" style={{
-                        border: '2px solid rgb(37, 50, 70)', boxShadow: 'rgb(73, 91, 113) 0px 1px 0px inset',
-	                    // color: this.state.textColor,
-	                    // backgroundColor: 'transparent',
-						// flex: 2,
-						// margin: 0,
-                    }} onClick={(event) => {
+                    <li onClick={(event) => {
                         event.preventDefault();
                         console.log("clicked font size up");
                         this.changeFontUp();
-                    }}>
+                    }}><span id="increase-font-size-button" className="fa fa-2x fa-plus" data-for='increase-font-size-tooltip'
+                    data-iscapture="true"
+                    data-tip="Increase font size">
                         <ReactTooltip id='increase-font-size-tooltip'
                             place={tooltipEffect.place}
                             type={tooltipEffect.type}
                             effect={tooltipEffect.effect}
                             multiline={true}/>
+                    </span></li>
 
-                        <span data-for='increase-font-size-tooltip'
-                            data-iscapture="true"
-                            data-tip="Increase font size" className="icon icon-plus-circled">
-                        </span>
-                    </button>
-                    <button id="decrease-font-size-button" className="btn" style={{
-                        border: '2px solid rgb(37, 50, 70)', boxShadow: 'rgb(73, 91, 113) 0px 1px 0px inset',
-	                    // color: this.state.textColor,
-	                    // backgroundColor: 'transparent',
-						// flex: 2,
-						// margin: 0,
-                    }} onClick={(event) => {
+                    <li onClick={(event) => {
                         event.preventDefault();
                         console.log("clicked font size down");
                         this.changeFontDown();
-                    }}>
+                    }}><span id="decrease-font-size-button" className="fa fa-2x fa-minus" data-for='decrease-font-size-tooltip' data-iscapture="true" data-tip="Smaller text">
+
                         <ReactTooltip id='decrease-font-size-tooltip'
                             place={tooltipEffect.place}
                             type={tooltipEffect.type}
                             effect={tooltipEffect.effect}
                             multiline={true}/>
 
-                        <span data-for='decrease-font-size-tooltip'
-                            data-iscapture="true"
-                            data-tip="Smaller text" className="icon icon-minus-circled">
-                        </span>
-                    </button>
-                    <button id="settings-button" className="btn" style={{
-                        border: '2px solid rgb(37, 50, 70)', boxShadow: 'rgb(73, 91, 113) 0px 1px 0px inset',
-	                    // color: this.state.textColor,
-	                    // backgroundColor: 'transparent',
-						// flex: 2,
-						// margin: 0,
-                    }} onClick={(event) => {
+                    </span></li>
+
+                    <li onClick={(event) => {
                         event.preventDefault();
                         console.log("clicked settings");
                         this.toggleSettings();
-                    }}>
+                    }}><span id="settings-button" className="fa fa-2x fa-cog"data-for='toggle-settings-tooltip' data-iscapture="true" data-tip="Settings">
+
                         <ReactTooltip id='toggle-settings-tooltip'
                             place={tooltipEffect.place}
                             type={tooltipEffect.type}
                             effect={tooltipEffect.effect}
                             multiline={true}/>
+                    </span></li>
 
-                        <span data-for='toggle-settings-tooltip'
-                            data-iscapture="true"
-                            data-tip="Settings" className="icon icon-cog">
-                        </span>
-                    </button>
-                    <button id="toggle-bubble-mode" className="btn" style={{
-                        border: '2px solid rgb(37, 50, 70)', boxShadow: 'rgb(73, 91, 113) 0px 1px 0px inset',
-	                    // color: this.state.textColor,
-	                    backgroundColor: (this.state.windowMode === "bubble") ? '#333' : '#fcfcfc',
-						// flex: 2,
-						// margin: 0,
-
-                    }} onClick={() => {
-    					ipcRenderer.send('set-bubble-mode');
-                    }}>
-                        <ReactTooltip id='toggle-bubble-mode-tooltip'
-                            place={tooltipEffect.place}
-                            type={tooltipEffect.type}
-                            effect={tooltipEffect.effect}
-                            multiline={true}/>
-
-                        <span data-for='toggle-bubble-mode-tooltip'
-                            data-iscapture="true"
-                            data-tip="Mini mode <br />Use this mode when you want <br />as much space as possible <br /> for other things. The mode <br />will be remembered and stay the same <br/> for each program you set it." className="icon icon-progress-0"> </span>
-                    </button>
-                    <button id="toggle-full-mode" className="btn" style={{
-	                    // color: this.state.textColor,
-	                    backgroundColor: (this.state.windowMode === "full") ? '#333' : '#fcfcfc',
-						// flex: 2,
-						// margin: 0,
-                    }} onClick={(event) => {
+                    <li onClick={(event) => {
                         event.preventDefault();
-    					ipcRenderer.send('set-full-view-mode');
-                    }}>
+                        ipcRenderer.send('set-full-view-mode');
+                    }}><span id="toggle-full-mode"  className="fa fa-2x fa-window-maximize"data-for='toggle-full-mode-tooltip'
+                            data-iscapture="true"
+                            data-tip="Regular mode<br />This mode is good for <br />learning and exploring <br />a program. Drag the edges of <br />the windows to resize.">
+
                         <ReactTooltip id='toggle-full-mode-tooltip'
                             place={tooltipEffect.place}
                             type={tooltipEffect.type}
                             effect={tooltipEffect.effect}
                             multiline={true}/>
 
-                        <span data-for='toggle-full-mode-tooltip'
-                            data-iscapture="true"
-                            data-tip="Regular mode<br />This mode is good for <br />learning and exploring <br />a program. Drag the edges of <br />the windows to resize." className="icon icon-window">
-                        </span>
-                    </button>
-                    <button id="toggle-hidden-mode" className="btn btn-default" style={{
-	                    // color: this.state.textColor,
-	                    backgroundColor: (this.state.windowMode === "hidden") ? '#333' : '#fcfcfc',
-						// flex: 2,
-						// margin: 0,
-                    }} onClick={(event) => {
+                    </span></li>
+
+                    <li onClick={(event) => {
                         event.preventDefault();
                         // TODO: Manage state ourselves here? messy..
-    					ipcRenderer.send('set-hidden-mode');
-                    }}>
+                        ipcRenderer.send('set-hidden-mode');
+                    }}><span id="toggle-hidden-mode" className="fa fa-2x fa-window-minimize"data-for='toggle-hidden-mode-tooltip'
+                            data-iscapture="true"
+                            data-tip="Hide <br />This hides the window completely <br />for ${this.state.name}. <br />You have to click the hat <br />icon to show it again.">
+
                         <ReactTooltip id='toggle-hidden-mode-tooltip'
                             place={'left'}
                             type={tooltipEffect.type}
                             effect={tooltipEffect.effect}
                             multiline={true}/>
+                    </span></li>
 
-                        <span data-for='toggle-hidden-mode-tooltip'
-                            data-iscapture="true"
-                            data-tip="Hide <br />This hides the window completely <br />for ${this.state.name}. <br />You have to click the hat <br />icon to show it again." className="icon icon-publish">
-                        </span>
-                    </button>
-                </div>
+                </ul>
             </div>
         );
 
@@ -1070,7 +1010,7 @@ export default class Home extends Component {
                 // color: this.state.textColor,
                 marginTop:'2px',
                 marginBottom:'2px',
-                flex: 11,
+                flex: 9,
                 justifyContent: 'center',
                 alignContent: 'stretch',
                 textDecoration: 'underline',
