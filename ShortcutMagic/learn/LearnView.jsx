@@ -28,7 +28,7 @@ export default class LearnView extends Component {
                     <br />
                     It only needs to load the shortcuts once. After the first time, the shortcuts will load quickly. 
                     <br />
-                    <img src="../assets/learn/loading.png" height="512" width="512"></img>
+                    <img src="../assets/learn/loading.gif" height="auto" width="auto"></img>
                 </div>
 
                 <div id="search">
@@ -38,7 +38,7 @@ export default class LearnView extends Component {
                     <br />
                     find what you are looking for, even if you only type a few characters.
                     <br />
-                    <img src="../assets/learn/executing.png" height="512" width="512"></img>
+                    <img src="../assets/learn/search.gif" height="auto" width="auto"></img>
                     <br />
                     The global shortcut to make ShortcutMagic visible (cmd+alt+shift+S) will focus the search
                     <br />
@@ -48,7 +48,7 @@ export default class LearnView extends Component {
                 <div id="executing">
                     You can run shortcuts 3 ways: 
                     <br />
-                    <img src="../assets/learn/executing.png" height="512" width="512"></img>
+                    <img src="../assets/learn/execute.gif" height="auto" width="auto"></img>
                     <br />
                     <ol>
                         <li>Using the original shortcut keys. These are listed in the ShortcutMagic window.</li>
@@ -64,19 +64,18 @@ export default class LearnView extends Component {
                     <br />
                     Use this to make your most used shortcuts easily available from the top of the list any time.
                     <br />
-                    <img src="../assets/learn/executing.png" height="512" width="512"></img>
+                    <img src="../assets/learn/favorite.gif" height="auto" width="auto"></img>
 
  and some iOS and Android                </div>
 
                 <div id="hide">
+                    You can hide the shortcuts you don't use by pressing the eye icon. 
                     <br />
-                    <img src="../assets/learn/executing.png" height="512" width="512"></img>
-
+                    This moves the shortcut to the bottom of the list, out of the way.
+                    <br />
+                    <img src="../assets/learn/hide.gif" height="auto" width="auto"></img>
                 </div>
-
-
             </div>
-        </div>
 		);
 	}
 };

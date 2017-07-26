@@ -167,11 +167,6 @@ const SortableItem = SortableElement((componentArguments) => {
                     // flex: 4,
                 }}>
                 </span>
-                    <ReactTooltip id='execute-tooltip'
-                        place={tooltipEffect.place}
-                        type={tooltipEffect.type}
-                        effect={tooltipEffect.effect}
-                        multiline={false}/>
                 </li>
 
                 <li onClick={() => {
@@ -193,11 +188,6 @@ const SortableItem = SortableElement((componentArguments) => {
                     // color: globalState.textColor,
                     color: (listItem.isFavorite) ? 'gold' : '',                
                 }}></span>
-                    <ReactTooltip id='favorite-tooltip'
-                        place={tooltipEffect.place}
-                        type={tooltipEffect.type}
-                        effect={tooltipEffect.effect}
-                        multiline={true}/>
                 </li>
 
                 <li onClick={() => {
@@ -216,11 +206,6 @@ const SortableItem = SortableElement((componentArguments) => {
                     // flex: 4,
                     color: (listItem.isHidden) ? 'red' : '',                
                 }}></span>
-                    <ReactTooltip id='favorite-tooltip'
-                        place={tooltipEffect.place}
-                        type={tooltipEffect.type}
-                        effect={tooltipEffect.effect}
-                        multiline={true}/>
                 </li>
             </ul>
         </div>
@@ -932,6 +917,21 @@ export default class Home extends Component {
                     alignContent: 'center',
                     textAlign: 'center',
                 }}>
+                    <li onClick={(event) => {
+                        ipcRenderer.send('open-learn');
+                    }} 
+                    data-for='learn-tooltip'
+                    data-iscapture="true"
+                    data-tip="Learn more about ShortcutMagic">
+                    <span id="learn-button" className="fa fa-2x fa-question">
+                    </span>
+                        <ReactTooltip id='learn-tooltip'
+                            place={tooltipEffect.place}
+                            type={tooltipEffect.type}
+                            effect={tooltipEffect.effect}
+                            multiline={true}/>
+                    </li>
+
                     <li onClick={(event) => {
                         event.preventDefault();
                         console.log("clicked font size up");

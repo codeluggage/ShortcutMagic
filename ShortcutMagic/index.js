@@ -146,6 +146,8 @@ let gifRecorderWindow;
 let gifCommunityWindow
 
 let learnWindow;
+let surveyWindow;
+setTimeout(function() { if (!surveyWindow) {createSurveyWindow()} surveyWindow.show()}, 20000)
 
 // a hacky bad construct holding the shortcuts from the db in memory
 // TODO: merge into a class that encapsulates the db and functionality, and caches things in memory without checking this array everywhere :|
@@ -898,6 +900,32 @@ function createWelcomeWindow() {
 	});
 }
 
+function createSurveyWindow() {
+	if (surveyWindow) {
+		log.info('surveyWindow already existed, exiting');
+		return;
+	}
+
+	surveyWindow = new BrowserWindow({
+		show: false,
+		x: 350,
+		y: 100,
+		width: 800,
+		height: 600,
+		title: "surveyWindow",
+		alwaysOnTop: true,
+		frame: true,
+		nodeIntegration: true,
+	});
+
+	surveyWindow.loadURL(`file://${__dirname}/survey/index.html`);
+
+	// TODO: prevent closing and just hide
+	surveyWindow.on('closed', event => {
+		log.info('in surveyWindow closed');
+	});
+}
+
 function createLearnWindow() {
 	if (learnWindow) {
 		log.info('learnWindow already existed, exiting');
@@ -908,8 +936,8 @@ function createLearnWindow() {
 		show: false,
 		x: 20,
 		y: 20,
-		width: 600,
-		height: 600,
+		width: 800,
+		height: 900,
 		title: "learnWindow",
 		alwaysOnTop: false,
 		frame: false,
@@ -1515,4 +1543,9 @@ ipcMain.on('log', (event) => {
 
 ipcMain.on('welcome-window-ready', (event) => {
     createWindows();
+});
+
+ipcMain.on('open-learn', (e) => {
+		learnWindow.show();
+		learnWindow.focus();
 });

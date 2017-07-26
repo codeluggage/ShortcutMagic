@@ -86,10 +86,10 @@ export default class WelcomeView extends Component {
                 paddingRight: '40px',
                 fontSize: 28,
                 margin: '20px',
-            }}>Open learning window</div>
+            }}>Tutorial</div>
 
             <div id="start" className="btn btn-primary" onClick={e => {
-                let alreadyClicked = "Learn later";
+                let alreadyClicked = "No tutorial";
                 if (window.document.getElementById("start").innerText != alreadyClicked) {
                     window.document.getElementById("start").innerText = alreadyClicked;
                     window.document.getElementById("learn").style.display = 'block';
