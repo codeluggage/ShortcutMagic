@@ -9,8 +9,8 @@ export default class SurveyView extends Component {
             <div>
                 <webview id="gif-upload" src="https://matias49.typeform.com/to/mZTqRz" style={{
                     display: "inline-flex",
-                    width: "600px",
-                    height: "640px",
+                    width: "800",
+                    height: "600",
                 }}></webview>
             </div>
         );

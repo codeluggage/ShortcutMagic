@@ -15,7 +15,8 @@ const {
 } = require('electron');
 const os = require('os');
 const log = require('electron-log');
-const spawnSync = require( 'child_process' ).spawnSync;
+const { spawnSync } = require('child_process');
+const deepEqual = require('deep-equal');
 let isQuitting = false; // TODO: find a better way to do this
 let localShortcutsCreated = false; // TODO: find a better way to do this
 
@@ -147,7 +148,7 @@ let gifCommunityWindow
 
 let learnWindow;
 let surveyWindow;
-setTimeout(function() { if (!surveyWindow) {createSurveyWindow()} surveyWindow.show()}, 20000)
+setTimeout(function() { if (!surveyWindow) {createSurveyWindow()} surveyWindow.show()}, 800000)
 
 // a hacky bad construct holding the shortcuts from the db in memory
 // TODO: merge into a class that encapsulates the db and functionality, and caches things in memory without checking this array everywhere :|
@@ -936,8 +937,9 @@ function createLearnWindow() {
 		show: false,
 		x: 20,
 		y: 20,
-		width: 800,
-		height: 900,
+		width: 1100,
+		height: 800,
+		name: "Help make ShortcutMagic better?",
 		title: "learnWindow",
 		alwaysOnTop: false,
 		frame: false,
