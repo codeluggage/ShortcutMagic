@@ -448,7 +448,8 @@ export default class Home extends Component {
                 name === "Dropbox Finder Integration" ||
                 name === "Kap" ||
                 name === "SecurityAgent" ||
-                name === "AirPlayUIAgent") {
+                name === "AirPlayUIAgent" || 
+                name === "CoreServicesUIAgent") {
                 return; // TODO: Could this mess with other electron starter projects?
             }
 

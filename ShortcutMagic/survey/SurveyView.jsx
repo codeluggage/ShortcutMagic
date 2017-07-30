@@ -5,6 +5,7 @@ import ReactDOM from 'react-dom';
 
 export default class SurveyView extends Component {
 	render() {
+        // TODO: Write logic for not recurring if the last path of the survey is reached in the webview
 		return (
             <div>
                 <webview id="gif-upload" src="https://matias49.typeform.com/to/mZTqRz" style={{
