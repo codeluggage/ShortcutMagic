@@ -150,71 +150,82 @@ setTimeout(function() { if (!surveyWindow) {createSurveyWindow()} surveyWindow.s
 let inMemoryShortcuts = [];
 // the name of the app that was switched to last time, so we know it's the name of the currently active program
 let currentAppName = "Electron"; // TODO: Check for bugs with this when opening ShortcutMagic the first time
-const weirdErrorPos = { x: 89, y: 23, width: 0, height: 0 };
+// const weirdErrorPos = { x: 89, y: 23, width: 0, height: 0 };
 // hackyStopSavePos needs to be replaced with a better system. right now it just stops the size and position of the application
 // from being saved. this is typically set when we are loading a position or moving between window modes
 let hackyStopSavePos = false;
 // The default bounds are appliend when no other bounds are found, typically for new running programs we open and parse
 // TODO: Save to settings db
 const defaultFullBounds = {x: 1100, y: 150, width: 320, height: 700};
-// const hiddenBounds = {x: 1, y: 1, width: 0, height: 0};
+const hiddenBounds  = { x: 89, y: 23, width: 0, height: 0 };
 
 
 
 // Functions
 
-function currentMemoryBounds() {
-	return inMemoryShortcuts[currentAppName].bounds;
+function updateInMemoryBounds(bounds) {
+	const hidden = deepEqual(bounds, hiddenBounds);
+	if (!inMemoryShortcuts[currentAppName]) {
+		inMemoryShortcuts[currentAppName] = {
+			bounds,
+			hidden,
+		};
+	} else {
+		inMemoryShortcuts[currentAppName].bounds = bounds;
+		inMemoryShortcuts[currentAppName].hidden = hidden;
+	}
 }
 
-function showMainWindow(bounds) {
-	if (!bounds || deepEqual(bounds, weirdErrorPos)) {
-		bounds = currentMemoryBounds();
-	}
-
-	if (deepEqual(bounds, weirdErrorPos)) {
-		// TODO: Only grab position
+// TODO: Use promise instead of this callback hell: 
+function getShortcuts(cb) {
+	if (inMemoryShortcuts[currentAppName]) {
+		cb(inMemoryShortcuts[currentAppName]);
+	} else {
 		getDb().find({
-			name: appName
+			name: currentAppName
 		}, function(err, res) {
-			log.info('loaded shortcuts, err? ', err);
 			if (err) {
 				log.info('errored during db find: ', err);
 				return;
 			}
 
 			if (res.length > 0) {
-				holdShortcuts = res[0];
-	      inMemoryShortcuts[appName] = holdShortcuts;
-
-	      if (deepEqual(holdShortcuts.bounds, weirdErrorPos)) {
-		      mainWindow.setBounds(defaultFullBounds);
-	      } else {
-		      mainWindow.setBounds(holdShortcuts.bounds);
-	      }
+	      let currentShortcuts = inMemoryShortcuts[currentAppName] = res[0];
+	      log.info('loaded shortcuts', currentShortcuts.name, currentShortcuts.bounds, mainWindow.getBounds());
+	      cb(inMemoryShortcuts[currentAppName]);
 			} else {
-		      mainWindow.setBounds(defaultFullBounds);
+				cb(null);
 			}
 		});
-	} else {
-		mainWindow.setBounds(bounds);
 	}
+}
+
+function showMainWindow() {
+	getShortcuts((currentShortcuts) => {
+		if (!currentShortcuts || !currentShortcuts.bounds || deepEqual(currentShortcuts.bounds, hiddenBounds)) {
+			mainWindow.setBounds(defaultFullBounds);
+		} else {
+			mainWindow.setBounds(currentShortcuts.bounds);
+		}
+	});
 }
 
 function hideMainWindow() {
 	let bounds = mainWindow.getBounds();
 
-	// Already hidden
-	if (deepEqual(bounds, weirdErrorPos)) return;
-
-	mainWindow.setBounds(weirdErrorPos);
+	getShortcuts((currentShortcuts) => {
+		// Already hidden?
+		if (!deepEqual(bounds, hiddenBounds)) {
+			mainWindow.setBounds(hiddenBounds);
+		}
+	});
 }
 
 // Changes the window mode, either by just calling it or calling it with the argument
 function toggleWindow() {
 	const bounds = mainWindow.getBounds();
 	log.info('togglewindow with existing bounds: ', bounds);
-	if (deepEqual(bounds, weirdErrorPos)) {
+	if (deepEqual(bounds, hiddenBounds)) {
 		showMainWindow();
 	} else {
 		hideMainWindow();
@@ -242,20 +253,43 @@ function quitShortcutMagic() {
     }
 }
 
-function savePosition(appName) {
-	if (!appName || !mainWindow) return;
+function savePosition() {
+	if (!mainWindow) {
+		log.info('no mainWindow in savePosition()');
+		return;
+	}
 
 	const newBounds = mainWindow.getBounds();
-	if (inMemoryShortcuts && inMemoryShortcuts[appName]) inMemoryShortcuts[appName].bounds = newBounds;
+	let oldBounds = null;
 
-	getDb().update({
-		name: appName
-	}, {
-		$set: {
-			bounds: newBounds
+	getShortcuts((currentShortcuts) => {
+		if (currentShortcuts) { 
+			oldBounds = currentShortcuts.bounds;
 		}
-	}, function(err, res) {
-		log.info('finished updating bounds with err res doc', err, res, newBounds);
+
+		updateInMemoryBounds(newBounds);
+
+		log.info('savePosition() [FROM TO] ', oldBounds, newBounds);
+
+		let payload = {
+			hidden: deepEqual(newBounds, hiddenBounds)
+		};
+
+		if (!payload.hidden) {
+			payload.bounds = newBounds;
+		}
+
+		getDb().update({
+			name: currentAppName
+		}, {
+			$set: payload
+		}, function(err, res) {
+			if (err) {
+				log.info('ERROR: upserting in db got error: ', err);
+			} else {
+				log.info('finished saving position, [NAME HIDDEN NEW ACTUAL] ', currentAppName, payload.hidden, payload.bounds, mainWindow.getBounds());
+			}
+		});
 	});
 }
 
@@ -522,6 +556,8 @@ function createMainWindow() {
 	mainWindow.loadURL(`file://${__dirname}/index.html`);
 
 	mainWindow.on('resize', (event) => {
+		log.info("//////////////////////////////////////// on.resize with hackyStopSavePos ", hackyStopSavePos);
+
 		if (!hackyStopSavePos) {
 			// const bounds = mainWindow.getBounds();
 			// log.info('ARE BOUNDS CRAZY???? ', bounds, weirdErrorPos, deepEqual(bounds, weirdErrorPos));
@@ -534,12 +570,12 @@ function createMainWindow() {
 			// 	console.trace();
 			// }
 
-			log.info("//////////////////////////////////////// on.resize");
-			savePosition(currentAppName);
+			savePosition();
 		}
 	});
 
 	mainWindow.on('moved', (event) => {
+		log.info("//////////////////////////////////////// on.moved with hackyStopSavePos ", hackyStopSavePos);
 		if (!hackyStopSavePos) {
 			// const bounds = mainWindow.getBounds();
 			// log.info('ARE BOUNDS CRAZY???? ', bounds, weirdErrorPos, deepEqual(bounds, weirdErrorPos));
@@ -552,8 +588,7 @@ function createMainWindow() {
 			// 	console.trace();
 			// }
 
-			log.info("//////////////////////////////////////// on.moved");
-			savePosition(currentAppName);
+			savePosition();
 		}
 	});
 
@@ -803,52 +838,61 @@ function saveWithoutPeriods(payload) {
 	});
 }
 
-function loadWithPeriods(appName) {
-	log.info(`entering loadWithPeriods for appname ${appName}`);
+function loadWithPeriods() {
+	log.info(`entering loadWithPeriods with currentAppName ${currentAppName}`);
+
 	if (!mainWindow) {
-		log.info("CANT FIND MAIN WINDOW WHEN LOADING SHORTCUTS");
+		log.info("no mainWindow when calling loadWithPeriods()");
 	}
 
-	var holdShortcuts = inMemoryShortcuts[appName];
+	if (!currentAppName) {
+		log.info("no currentAppName when calling loadWithPeriods()");
+	}
 
-	if (holdShortcuts && holdShortcuts.bounds) {
-		log.info('found and loaded in-memory shortcuts with bounds: ', holdShortcuts.bounds);
-		mainWindow.setBounds(holdShortcuts.bounds);
-		mainWindow.webContents.send('update-shortcuts', holdShortcuts);
-	} else {
-		getDb().find({
-			name: appName
-		}, function(err, res) {
-			log.info('loaded shortcuts, err? ', err);
-			if (err) {
-				log.info('errored during db find: ', err);
-				return;
-			}
 
-			if (res.length > 0) {
-				holdShortcuts = res[0];
-
-				// We replace the period with a character code so the db understands it as a single string
-				// instead of sub-selecting items in the json:
-				var stringified = JSON.stringify(holdShortcuts.shortcuts);
-				stringified = stringified.replace(/u002e/g, '.');
-				holdShortcuts.shortcuts = JSON.parse(stringified);
-
-				// temporary for old code: 
-				if (!holdShortcuts["bounds"] && holdShortcuts["fullBounds"]) {
-					holdShortcuts.bounds = holdShortcuts.lastFullBounds;
+	getShortcuts((currentShortcuts) => {
+		if (currentShortcuts && currentShortcuts.bounds) {
+			log.info('loaded in memory shortcuts, mainWindow bounds are [OLD NEW] ', mainWindow.getBounds(), currentShortcuts.bounds);
+			mainWindow.setBounds(currentShortcuts.bounds);
+			mainWindow.webContents.send('update-shortcuts', currentShortcuts);
+		} else {
+			getDb().find({
+				name: currentAppName
+			}, function(err, res) {
+				log.info('loaded shortcuts, err? ', err);
+				if (err) {
+					log.info('errored during db find: ', err);
+					return;
 				}
 
-	      inMemoryShortcuts[appName] = holdShortcuts;
-	      mainWindow.setBounds(holdShortcuts.bounds);
-	      mainWindow.webContents.send('update-shortcuts', holdShortcuts);
-			} else {
-				mainWindow.webContents.send('set-loading', appName);
-				log.info('sending webview-parse-shortcuts with appName', appName);
-				backgroundTaskRunnerWindow.webContents.send('webview-parse-shortcuts', appName);
-			}
-		});
-	}
+				if (res.length > 0) {
+					currentShortcuts = res[0];
+					if (!currentShortcuts) {
+						log.info('ERROR bad data - loaded currentShortcuts but did not exist!');
+						return;
+					} else if (!currentShortcuts.bounds) {
+						log.info('ERROR bad data - loaded currentShortcuts but no bounds found! resetting to default');
+						currentShortcuts.bounds = defaultFullBounds;
+					}
+
+					// We replace the period with a character code so the db understands it as a single string
+					// instead of sub-selecting items in the json:
+					var stringified = JSON.stringify(currentShortcuts.shortcuts);
+					stringified = stringified.replace(/u002e/g, '.');
+					currentShortcuts.shortcuts = JSON.parse(stringified);
+
+					log.info('loaded shortcuts from DB, bounds [OLD OLD-MEMORY NEW] ', mainWindow.getBounds(), (inMemoryShortcuts[currentAppName]) ? inMemoryShortcuts[currentAppName].bounds : null, currentShortcuts.bounds);
+		      inMemoryShortcuts[currentAppName] = currentShortcuts;
+		      mainWindow.setBounds(currentShortcuts.bounds);
+		      mainWindow.webContents.send('update-shortcuts', currentShortcuts);
+				} else {
+					mainWindow.webContents.send('set-loading', currentAppName);
+					log.info('sending webview-parse-shortcuts with currentAppName', currentAppName);
+					backgroundTaskRunnerWindow.webContents.send('webview-parse-shortcuts', currentAppName);
+				}
+			});
+		}
+	});
 }
 
 
@@ -949,7 +993,9 @@ ipcMain.on('get-app-name-sync', function(event) {
 	event.returnValue = currentAppName;
 });
 
-ipcMain.on('main-app-switched-notification', function(event, appName) {
+ipcMain.on('main-app-switched-notification', appSwitched);
+
+function appSwitched(event, appName) {
 	// TODO: Make this list editable somewhere to avoid people having problems?
     if (appName === "Electron" ||
         appName === "ShortcutMagic" ||
@@ -987,13 +1033,13 @@ ipcMain.on('main-app-switched-notification', function(event, appName) {
 
 	// log.info(`${currentAppName} -> ${appName}`);
 
-	loadWithPeriods(appName);
-	log.info("finished loading pos for app: ", mainWindow.getBounds(), appName);
 	currentAppName = appName;
+	loadWithPeriods();
+	log.info("finished loading pos for app: ", mainWindow.getBounds(), appName);
 
 	settingsWindow.webContents.send('app-changed', currentAppName);
 	miniSettingsWindow.webContents.send('app-changed', currentAppName);
-});
+}
 
 ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
 	log.info("main-parse-shortcuts-callback");
@@ -1005,7 +1051,11 @@ ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
 
 ipcMain.on('main-parse-shortcuts', function(event, appName) {
 	log.info('#2 - root index.js, triggered main-parse-shortcuts, with appName: ', appName, typeof appName);
-	loadWithPeriods(appName);
+	if (currentAppName !== appName) {
+		appSwitched(event, appName);
+	}
+
+	loadWithPeriods();
 });
 
 ipcMain.on('update-shortcut-order', function(event, appName, shortcuts) {
@@ -1033,6 +1083,7 @@ ipcMain.on('update-shortcut-item', (event, shortcutItem) => {
 	var shortcutObject = {};
 	shortcutObject[`shortcuts.${shortcutItem.name}`] = shortcutItem;
 
+	// TODO: use new function (callback hell) here until promises 
 	if (!inMemoryShortcuts || !inMemoryShortcuts[currentAppName]) {
 		log.info("error: no loaded shortcuts when updating with update-shortcut-item");
 	} else {
@@ -1050,7 +1101,7 @@ ipcMain.on('update-shortcut-item', (event, shortcutItem) => {
 			log.info("error when updating favorite for list item ", listItemName);
 		} else {
 			log.info("succeeded favoriting item: ", res);
-			loadWithPeriods(currentAppName); // TODO: Is this really needed? Double rendering
+			loadWithPeriods(); // TODO: Is this really needed? Double rendering
 		}
 	});
 });
@@ -1060,7 +1111,7 @@ ipcMain.on('execute-list-item', (event, listItem) => {
 		// how did we end up here??
 		log.info("tried to execute non existent stuff");
 		return;
-		// loadWithPeriods(appName); // TODO: load shortcuts and do remaining work in callback here
+		// loadWithPeriods(); // TODO: load shortcuts and do remaining work in callback here
 	}
 
 	var listItemName = listItem.name;
