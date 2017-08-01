@@ -454,6 +454,17 @@ export default class Home extends Component {
             }
 
             let loadingList = null;
+
+            // Clear out after a few minutes for simplicity
+            setTimeout(() => {
+                if (loadingList && loadingList.indexOf(name)) {
+                    this.setState({
+                        loading: null,
+                        hiddenLoading: true,
+                    });
+                }
+            }, 120000);
+
             if (this.state && this.state.loading) {
                 loadingList = this.state.loading;
                 let loadingIndex = loadingList.indexOf(name);

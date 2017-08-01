@@ -163,8 +163,8 @@ const hiddenBounds  = { x: 89, y: 23, width: 0, height: 0 };
 
 // Functions
 
-function updateInMemoryBounds(bounds) {
-	const hidden = deepEqual(bounds, hiddenBounds);
+function updateInMemoryBounds(bounds, hidden) {
+	const currentlyHidden = deepEqual(bounds, hiddenBounds);
 	if (!inMemoryShortcuts[currentAppName]) {
 		inMemoryShortcuts[currentAppName] = {
 			bounds,
@@ -202,10 +202,13 @@ function getShortcuts(cb) {
 
 function showMainWindow() {
 	getShortcuts((currentShortcuts) => {
-		if (!currentShortcuts || !currentShortcuts.bounds || deepEqual(currentShortcuts.bounds, hiddenBounds)) {
-			mainWindow.setBounds(defaultFullBounds);
-		} else {
+		if (currentShortcuts.hidden) {
+			currentShortcuts.hidden = false;
 			mainWindow.setBounds(currentShortcuts.bounds);
+			updateInMemoryBounds(currentShortcuts.bounds, currentShortcuts.hidden);
+		} else {
+			mainWindow.setBounds(defaultFullBounds);
+			updateInMemoryBounds(defaultFullBounds, currentShortcuts.hidden);
 		}
 	});
 }
@@ -540,6 +543,7 @@ function createMainWindow() {
 		frame: false,
 		show: true, // Don't show until we have the information of the app that is running
 		transparent: true,
+		backgroundColor: "#323f53",
 	  x: defaultFullBounds.x,
 	  y: defaultFullBounds.y,
 	  width: defaultFullBounds.width,
@@ -1046,13 +1050,17 @@ ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
 	if (payload) {
 		updateRenderedShortcuts(payload);
 		saveWithoutPeriods(payload);
+	} else {
+		appSwitched(event, currentAppName);
 	}
 });
 
 ipcMain.on('main-parse-shortcuts', function(event, appName) {
 	log.info('#2 - root index.js, triggered main-parse-shortcuts, with appName: ', appName, typeof appName);
-	if (currentAppName !== appName) {
+	if (appName && currentAppName !== appName) {
 		appSwitched(event, appName);
+	} else {
+		appSwitched(event, currentAppName);
 	}
 
 	loadWithPeriods();
