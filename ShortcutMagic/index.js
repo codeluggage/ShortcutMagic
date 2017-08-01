@@ -201,36 +201,45 @@ function getShortcuts(cb) {
 }
 
 function showMainWindow() {
+	const bounds = mainWindow.getBounds();
+
 	getShortcuts((currentShortcuts) => {
-		if (currentShortcuts.hidden) {
+		if (currentShortcuts &&
+			!deepEqual(currentShortcuts.bounds, hiddenBounds) &&
+			(currentShortcuts.hidden || deepEqual(bounds, hiddenBounds))) {
+
 			currentShortcuts.hidden = false;
 			mainWindow.setBounds(currentShortcuts.bounds);
-			updateInMemoryBounds(currentShortcuts.bounds, currentShortcuts.hidden);
+			updateInMemoryBounds(currentShortcuts.bounds, false);
 		} else {
 			mainWindow.setBounds(defaultFullBounds);
-			updateInMemoryBounds(defaultFullBounds, currentShortcuts.hidden);
+			updateInMemoryBounds(defaultFullBounds, false);
 		}
 	});
 }
 
 function hideMainWindow() {
-	let bounds = mainWindow.getBounds();
+	const bounds = mainWindow.getBounds();
 
 	getShortcuts((currentShortcuts) => {
 		// Already hidden?
 		if (!deepEqual(bounds, hiddenBounds)) {
+			hackyStopSavePos = true;
 			mainWindow.setBounds(hiddenBounds);
+			updateInMemoryBounds(bounds, true);
+			hackyStopSavePos = false;
 		}
 	});
 }
 
-// Changes the window mode, either by just calling it or calling it with the argument
 function toggleWindow() {
 	const bounds = mainWindow.getBounds();
 	log.info('togglewindow with existing bounds: ', bounds);
 	if (deepEqual(bounds, hiddenBounds)) {
+		log.info('togglewindow calling showMainWindow');
 		showMainWindow();
 	} else {
+		log.info('togglewindow calling hideMainWindow');
 		hideMainWindow();
 	}
 }
@@ -423,13 +432,10 @@ function createWindows() {
 
 		reallyQuit = false;
 
-		// The actual shortcut window is only created when the app switches
-		// createTray();
 		createBackgroundTaskRunnerWindow();
 		createBackgroundListenerWindow();
 		createSettingsWindow();
 		createMiniSettingsWindow();
-		// createWelcomeWindow();
 		createMainWindow();
     createTooltipWindow();
     createGifRecorderWindow();
@@ -541,19 +547,17 @@ function createMainWindow() {
 		acceptFirstClick: true,
 		alwaysOnTop: inMemoryShortcuts[GLOBAL_SETTINGS]["alwaysOnTop"],
 		frame: false,
-		show: true, // Don't show until we have the information of the app that is running
+		show: true,
 		transparent: true,
 		backgroundColor: "#323f53",
-	  x: defaultFullBounds.x,
-	  y: defaultFullBounds.y,
-	  width: defaultFullBounds.width,
-	  height: defaultFullBounds.height,
+	  x: hiddenBounds.x,
+	  y: hiddenBounds.y,
+	  width: hiddenBounds.width,
+	  height: hiddenBounds.height,
     webPreferences: {
       vibrancy: 'appearance-based',
     },
 	});
-
-	hideMainWindow();
 
 	mainWindow.setHasShadow(false);
 
@@ -563,17 +567,6 @@ function createMainWindow() {
 		log.info("//////////////////////////////////////// on.resize with hackyStopSavePos ", hackyStopSavePos);
 
 		if (!hackyStopSavePos) {
-			// const bounds = mainWindow.getBounds();
-			// log.info('ARE BOUNDS CRAZY???? ', bounds, weirdErrorPos, deepEqual(bounds, weirdErrorPos));
-			// if (deepEqual(bounds, weirdErrorPos)) {
-			// 	hackyStopSavePos = true;
-			// 	inMemoryShortcuts[currentAppName].bounds = defaultFullBounds;
-			// 	mainWindow.setBounds(defaultFullBounds);
-			// 	hackyStopSavePos = false;
-			// 	log.info('mainwindow.resize', bounds);
-			// 	console.trace();
-			// }
-
 			savePosition();
 		}
 	});
@@ -581,20 +574,11 @@ function createMainWindow() {
 	mainWindow.on('moved', (event) => {
 		log.info("//////////////////////////////////////// on.moved with hackyStopSavePos ", hackyStopSavePos);
 		if (!hackyStopSavePos) {
-			// const bounds = mainWindow.getBounds();
-			// log.info('ARE BOUNDS CRAZY???? ', bounds, weirdErrorPos, deepEqual(bounds, weirdErrorPos));
-			// if (deepEqual(bounds, weirdErrorPos)) {
-			// 	hackyStopSavePos = true;
-			// 	inMemoryShortcuts[currentAppName].bounds = defaultFullBounds;
-			// 	mainWindow.setBounds(defaultFullBounds);
-			// 	hackyStopSavePos = false;
-			// 	log.info('mainwindow.moved', bounds);
-			// 	console.trace();
-			// }
-
 			savePosition();
 		}
 	});
+
+	showMainWindow();
 
     //   if (type == "appearance-based") {
     //     vibrancyType = NSVisualEffectMaterialAppearanceBased;
@@ -738,17 +722,11 @@ function createWelcomeWindow() {
 		width: 800,
 		height: 720,
 		title: "welcomeWindow",
+		backgroundColor: "#323f53",
 		alwaysOnTop: true,
 		frame: false,
 		nodeIntegration: true,
 	});
-
-    // welcomeWindow.on('quit', (event) => {
-    //     createWindows();
-    // });
-    // welcomeWindow.on('close', (event) => {
-    //     createWindows();
-    // });
 
 	welcomeWindow.loadURL(`file://${__dirname}/welcome/index.html`);
 	welcomeWindow.on('closed', event => {
@@ -856,8 +834,12 @@ function loadWithPeriods() {
 
 	getShortcuts((currentShortcuts) => {
 		if (currentShortcuts && currentShortcuts.bounds) {
-			log.info('loaded in memory shortcuts, mainWindow bounds are [OLD NEW] ', mainWindow.getBounds(), currentShortcuts.bounds);
-			mainWindow.setBounds(currentShortcuts.bounds);
+			log.info('loaded in memory shortcuts, mainWindow bounds are [OLD NEW HIDDEN] ', mainWindow.getBounds(), currentShortcuts.bounds, currentShortcuts.hidden);
+
+			hackyStopSavePos = true;
+			mainWindow.setBounds(currentShortcuts.hidden ? hiddenBounds : currentShortcuts.bounds);
+			hackyStopSavePos = false;
+
 			mainWindow.webContents.send('update-shortcuts', currentShortcuts);
 		} else {
 			getDb().find({
