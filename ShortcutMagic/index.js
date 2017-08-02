@@ -10,6 +10,7 @@ const {
     ipcMain,
     // Tray is used for the icon in the menu bar on mac, where we show the wizard hat
     Tray,
+    Menu,
     globalShortcut,
     // autoUpdater,
 } = require('electron');
@@ -549,7 +550,6 @@ function createMainWindow() {
 		frame: false,
 		show: true,
 		transparent: true,
-		backgroundColor: "#323f53",
 	  x: hiddenBounds.x,
 	  y: hiddenBounds.y,
 	  width: hiddenBounds.width,
@@ -675,8 +675,26 @@ function createTray() {
 
 	log.info('created trayObject: ', trayObject);
 	trayObject.setToolTip('ShortcutMagic!');
-	trayObject.on('right-click', debugEverything);
-	trayObject.on('click', toggleWindow);
+	trayObject.on('right-click', toggleWindow);
+
+
+	const trayMenuTemplate = [{
+		label: 'Show/Hide (right click)',
+		click: toggleWindow
+	},
+	{
+		label: 'Open debug windows',
+		click: debugEverything
+	},
+	{
+		label: 'Quit ShortcutMagic',
+		click: function () {
+			app.quit();
+			quitShortcutMagic();
+		}
+	}];
+	const trayMenu = Menu.buildFromTemplate(trayMenuTemplate);
+	trayObject.setContextMenu(trayMenu);
 
 	return trayObject;
 }
@@ -873,6 +891,8 @@ function loadWithPeriods() {
 		      mainWindow.webContents.send('update-shortcuts', currentShortcuts);
 				} else {
 					mainWindow.webContents.send('set-loading', currentAppName);
+					trayObject.setTitle("Loading...");
+
 					log.info('sending webview-parse-shortcuts with currentAppName', currentAppName);
 					backgroundTaskRunnerWindow.webContents.send('webview-parse-shortcuts', currentAppName);
 				}
@@ -881,6 +901,10 @@ function loadWithPeriods() {
 	});
 }
 
+
+ipcMain.on("not-loading", (e) => {
+	trayObject.setTitle("");
+});
 
 ipcMain.on('toggle-window', () => {
   toggleWindow();

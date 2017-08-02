@@ -474,6 +474,8 @@ export default class Home extends Component {
                 if (loadingList.length == 0) {
                     loadingList = null;
                 }
+            } else {
+                ipcRenderer.send('not-loading');
             }
 
             let shortcuts = newShortcuts.shortcuts;
@@ -787,21 +789,23 @@ export default class Home extends Component {
         //     this.state.backgroundColor : hexToRgba(beautifulColors[Math.floor(Math.random() * beautifulColors.length)], 0.5);
 
         // TODO: check for length here instead of nulling it out above?
-        if (this.state.loading && !this.state.hiddenLoading) {
-            let loadingLength = this.state.loading.length - 1;
+        if (this.state.loading) { // && !this.state.hiddenLoading) {
+
+
+                    // <h2>Loading shortcuts for</h2>
+                    // <h2>{ this.state.loading.map((obj, index) => (index == loadingLength) ? obj : obj + ", ") }</h2>
+                    // <br />
+                    // <i className="fa fa-3x fa-spin fa-spinner" style={{
+                    //     marginBottom: '10px',
+                    // }}></i>
+
+            // let loadingLength = this.state.loading.length - 1;
+
             return (
-                <div style={{
-                    backgroundColor: "#323f53", color: "#eedba5", 
-                    textAlign: 'center',
-                }}>
-                    <h2>Loading shortcuts for</h2>
-                    <h2>{ this.state.loading.map((obj, index) => (index == loadingLength) ? obj : obj + ", ") }</h2>
-                    <br />
-                    <i className="fa fa-3x fa-spin fa-spinner" style={{
-                        marginBottom: '10px',
-                    }}></i>
-                </div>
+                <div style={{ backgroundColor: "transparent", }}> </div>
             );
+        } else {
+            ipcRenderer.send("not-loading");
         }
                     // <button style={{
                     //     backgroundColor: "#323f53", color: "#eedba5", 
