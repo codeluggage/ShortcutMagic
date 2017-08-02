@@ -6,7 +6,6 @@ import { SketchPicker } from 'react-color';
 let Datastore = require('nedb');
 const path = require('path');
 
-let holdRemote = remote;
 let cachedStyles = [];
 let GLOBAL_SETTINGS = "all programs";
 // From http://www.visualcinnamon.com/2016/05/smooth-color-legend-d3-svg-gradient.html
@@ -121,7 +120,7 @@ export default class MiniSettingsView extends Component {
     }
 
     applyAllStyles(newStyles) {
-		var windows = holdRemote.BrowserWindow.getAllWindows();
+		var windows = remote.BrowserWindow.getAllWindows();
 		for (var i = 0; i < windows.length; i++) {
 			let holdWindow = windows[i];
 			if (holdWindow && holdWindow.getTitle() == "mainWindow") {
@@ -165,7 +164,7 @@ export default class MiniSettingsView extends Component {
 			backgroundColor: colorString
 		});
 
-        var windows = holdRemote.BrowserWindow.getAllWindows();
+        var windows = remote.BrowserWindow.getAllWindows();
         for (var i = 0; i < windows.length; i++) {
             let holdWindow = windows[i];
             if (holdWindow && holdWindow.getTitle() == "mainWindow") {
@@ -183,7 +182,7 @@ export default class MiniSettingsView extends Component {
 			itemBackgroundColor: colorString
 		});
 
-        var windows = holdRemote.BrowserWindow.getAllWindows();
+        var windows = remote.BrowserWindow.getAllWindows();
         for (var i = 0; i < windows.length; i++) {
             let holdWindow = windows[i];
             if (holdWindow && holdWindow.getTitle() == "mainWindow") {
@@ -201,7 +200,7 @@ export default class MiniSettingsView extends Component {
 			textColor: colorString
 		});
 
-        var windows = holdRemote.BrowserWindow.getAllWindows();
+        var windows = remote.BrowserWindow.getAllWindows();
         for (var i = 0; i < windows.length; i++) {
             let holdWindow = windows[i];
             if (holdWindow && holdWindow.getTitle() == "mainWindow") {
@@ -219,7 +218,7 @@ export default class MiniSettingsView extends Component {
             itemColor: colorString
 		});
 
-        var windows = holdRemote.BrowserWindow.getAllWindows();
+        var windows = remote.BrowserWindow.getAllWindows();
         for (var i = 0; i < windows.length; i++) {
             let holdWindow = windows[i];
             if (holdWindow && holdWindow.getTitle() == "mainWindow") {

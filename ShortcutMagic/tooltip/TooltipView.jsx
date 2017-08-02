@@ -3,8 +3,6 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { ipcRenderer, remote } from 'electron';
 
-let holdRemote = remote;
-
 export default class TooltipView extends Component {
     componentWillMount() {
         ipcRenderer.on('set-gif', (event, listItem) => {

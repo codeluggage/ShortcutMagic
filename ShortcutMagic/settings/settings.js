@@ -22,13 +22,16 @@ var defaultBubbleBounds = {x: 800, y: 10, width: 250, height: 200};
 defaultSettings = {
 	name: GLOBAL_SETTINGS,
 	acceptFirstClick: true,
+	defaultWindowMode: 'tray',
 	alwaysOnTop: true,
-    boundsPerApp: false,
+  boundsPerApp: false,
 	showMenuNames: false,
 	frame: false,
 	show: true,
-	x: defaultFullBounds.x, y: defaultFullBounds.y, width: defaultFullBounds.width, height: defaultFullBounds.height,
-	// bounds: defaultFullBounds,
+	x: defaultFullBounds.x,
+	y: defaultFullBounds.y,
+	width: defaultFullBounds.width,
+	height: defaultFullBounds.height,
 	lastFullBounds: defaultFullBounds,
 	lastBubbleBounds: defaultBubbleBounds,
 	title: "mainWindow",
@@ -55,8 +58,6 @@ settingsDb.ensureIndex({
 		console.log('ERROR: settings.ensureIndex failed to set unique constraint', err);
 	}
 });
-
-var holdRemote = remote;
 
 // TODO: send to worker?
 settingsDb.find({

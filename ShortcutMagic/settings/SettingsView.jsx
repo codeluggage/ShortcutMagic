@@ -6,8 +6,6 @@ import { SketchPicker } from 'react-color';
 
 import { Settings } from './settings';
 let settings = new Settings();
-let holdRemote = remote;
-
 export default class SettingsView extends Component {
     componentWillMount() {
 		settings.create(this);
@@ -16,7 +14,7 @@ export default class SettingsView extends Component {
 			this.saveCurrentSettings();
 		});
 		ipcRenderer.on('get-app-settings', (event) => {
-            let windows = holdRemote.BrowserWindow.getAllWindows();
+            let windows = remote.BrowserWindow.getAllWindows();
             for (let i = 0; i < windows.length; i++) {
                 let holdWindow = windows[i];
                 if (holdWindow && holdWindow.getTitle() == "miniSettingsWindow") {
@@ -46,7 +44,7 @@ export default class SettingsView extends Component {
 				appSettings: originalSettings
 			});
 
-	        var windows = holdRemote.BrowserWindow.getAllWindows();
+	        var windows = remote.BrowserWindow.getAllWindows();
 	        for (var i = 0; i < windows.length; i++) {
 	            let holdWindow = windows[i];
 	            if (holdWindow) {
@@ -133,19 +131,25 @@ export default class SettingsView extends Component {
                 </div>
             );
 
+            // TODO: Make this DRY
             let BoundsPerAppElement = (this.state.globalSettings.boundsPerApp) ? (
 				<div className="checkbox">
 					<label>
-                        <input id="boundsPerAppCheckbox" type="checkbox" defaultChecked /> Use the same the same size for all apps
+                        <input id="boundsPerAppCheckbox" type="checkbox" defaultChecked /> Use the same the same window size for all apps
                     </label>
 				</div>
             ) : (
 				<div className="checkbox">
 					<label>
-                        <input id="boundsPerAppCheckbox" type="checkbox" /> Use the same the same size for all apps
+                        <input id="boundsPerAppCheckbox" type="checkbox" /> Use the same the same window size for all apps
                     </label>
 				</div>
             );
+
+            // TODO: Open mini settings from settings window again: 
+            // Open styling for {this.state.appSettings.name}: <button className="btn btn-primary" onClick={() => {
+            //     ipcRenderer.send('show-mini-settings');
+            // }}>Reload</button>
 
     		return (
                 <div>
@@ -175,10 +179,7 @@ export default class SettingsView extends Component {
                             console.log('sending reloadShortcuts from ipcRenderer');
                             ipcRenderer.send('main-parse-shortcuts');
                         }}>Reload</button>
-
-                        Open styling for {this.state.appSettings.name}: <button className="btn btn-primary" onClick={() => {
-                            ipcRenderer.send('show-mini-settings');
-                        }}>Reload</button>
+                        <br />
                     </div>
 
 
@@ -218,7 +219,7 @@ export default class SettingsView extends Component {
         						this.saveCurrentSettings();
                             }
 
-                            let windows = holdRemote.BrowserWindow.getAllWindows();
+                            let windows = remote.BrowserWindow.getAllWindows();
                             for (let i = 0; i < windows.length; i++) {
                                 let holdWindow = windows[i];
                                 if (holdWindow && holdWindow.getTitle() == "settingsWindow") holdWindow.hide();
@@ -242,12 +243,13 @@ export default class SettingsView extends Component {
 	    } else {
 	    	return (
                 <div style={{
-                    backgroundColor: 'white',
-                    color: 'black',
+                    // backgroundColor: 'white',
+                    // color: 'black',
+                    backgroundColor: "#323f53", color: "#323f53", borderBottom: "1px solid #253246", boxShadow: "0 1px 0 #495b71 inset"
                 }}>
                     Something is not right here... Sorry! If you click in this window, you can try reloading (command + R) or quit (command + Q) and start ShortcutMagic again.
 					<button onClick={() => {
-				        var windows = holdRemote.BrowserWindow.getAllWindows();
+				        var windows = remote.BrowserWindow.getAllWindows();
 				        for (var i = 0; i < windows.length; i++) {
 				            let holdWindow = windows[i];
 				            if (holdWindow && holdWindow.getTitle() == "settingsWindow") {

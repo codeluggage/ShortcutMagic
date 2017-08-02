@@ -3,8 +3,6 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { ipcRenderer, remote } from 'electron';
 
-let holdRemote = remote;
-
 export default class GifRecorderView extends Component {
     componentWillMount() {
         ipcRenderer.on('recording-for-shortcut-in-path', (event, listItem, gifPath, appName) => {
@@ -25,37 +23,23 @@ export default class GifRecorderView extends Component {
     }
 
     render() {
-        if (!this.state) {
-            return (
-                <div style={{
-                    textAlign: 'center',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    textAlign: 'center',
-                    height: '100%',
-                }}>
-                    <h2>Opening Kap - a neat gif recording app</h2>
-                </div>
-            );
+        let queryParameters = "";
+        if (this.state) {
+            queryParameters = `?app=${this.state.appName}&shortcut=${this.state.shortcut}&gif=${this.state.gifPath}`;
         }
 
-        if (!this.state.gif) {
-            return (
-                <div style={{
-                    textAlign: 'center',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    textAlign: 'center',
-                    height: '100%',
-                }}>
-                    <h2>Waiting for new {this.state.shortcut} gifs in {this.state.recordPath}</h2>
-                </div>
-            );
-        }
+        let remoteUrl = (process.env.NODE_ENV === "development") ? `http://localhost:3000/upload${queryParameters}` :
+            `https://shortcutmagic.meteorapp.com/upload${queryParameters}`;
+
+        return (
+            <div>
+                <webview id="gif-upload" src={remoteUrl} style={{
+                    display: "inline-flex",
+                    width: "800px",
+                    height: "640px",
+                }}></webview>
+            </div>
+        );
 
         // html, body {
         //   height: 100%;
@@ -112,7 +96,7 @@ export default class GifRecorderView extends Component {
                         gif: null
                     });
 
-                    var windows = holdRemote.BrowserWindow.getAllWindows();
+                    var windows = remote.BrowserWindow.getAllWindows();
                     for (var i = 0; i < windows.length; i++) {
                         let holdWindow = windows[i];
                         if (holdWindow && holdWindow.getTitle() == "gifRecorderWindow") {

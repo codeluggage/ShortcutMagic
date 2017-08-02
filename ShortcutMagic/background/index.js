@@ -8,11 +8,14 @@ const executeShortcut = require('../shared/executeShortcut');
 
 window.onload = function () {
 	ipcRenderer.on('webview-parse-shortcuts', (event, appName) => {
-		ipcRenderer.send('main-parse-shortcuts-callback', readShortcuts.readShortcuts(appName));
+		ipcRenderer.send('main-parse-shortcuts-callback', 
+			(appName) ? readShortcuts.readShortcuts(appName) : null);
 	});
 
 	ipcRenderer.on('webview-execute-menu-item', (event, appName, listItem, menu) => {
-		executeMenuItem(appName, listItem, menu);
+		if (!appName) {
+			executeMenuItem(appName, listItem, menu);
+		}
 	});
 
 	// This handler works sync not async
