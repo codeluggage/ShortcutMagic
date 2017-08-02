@@ -683,11 +683,11 @@ function createTray() {
 		click: toggleWindow
 	},
 	{
-		label: 'Open debug windows',
+		label: 'Open debug windows (advanced)',
 		click: debugEverything
 	},
 	{
-		label: 'Quit ShortcutMagic',
+		label: 'Quit',
 		click: function () {
 			app.quit();
 			quitShortcutMagic();
