@@ -10,7 +10,7 @@
   "scripts": {
     "start": "NODE_ENV=production ./node_modules/.bin/electron shortcutmagic.js",
     "debug": "NODE_ENV=development ./node_modules/.bin/electron shortcutmagic.js --verbose --debug",
-    "pack-sign-mac": "NODE_ENV=production electron-packager . ShortcutMagic-mac --asar=false --overwrite --platform=darwin --arch=x64 --icon=assets/wizard.icns --prune=true --osx-sign.identity='Developer ID Application: Matias Forbord (A9ADPQA768)' && ./sign_app.sh ShortcutMagic-mac-darwin-x64/ShortcutMagic-mac.app"
+    "pack-sign-mac": "NODE_ENV=production electron-packager . ShortcutMagic-mac --asar=false --overwrite --platform=darwin --arch=x64 --icon=assets/wizard.icns --prune=true --osx-sign.identity='Developer ID Application: Matias Forbord (A9ADPQA768)' && rm -f ShortcutMagic-mac-darwin-x64/ShortcutMagic-mac.app/Contents/Resources/app/db/* && ./sign_app.sh ShortcutMagic-mac-darwin-x64/ShortcutMagic-mac.app"
   },
   "build": {
     "appId": "com.electron.shortcutmagic-mac",
