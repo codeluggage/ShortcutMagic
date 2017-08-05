@@ -39,13 +39,13 @@ defaultSettings = {
 
 // Defaults
 var settingsDb = new Datastore({
-	filename: `${__dirname}/../db/settings.db`,
+	filename: path.resolve(`~/Library/Application Support/ShortcutMagic/settings.db`),
 	autoload: true
 });
 
 // No need for unique indexes here, we just keep inserting forever(?)
 var settingsHistoryDb = new Datastore({
-	filename: `${__dirname}/../db/settingsHistory.db`,
+	filename: path.resolve(`~/Library/Application Support/ShortcutMagic/settingsHistory.db`),
 	autoload: true
 });
 

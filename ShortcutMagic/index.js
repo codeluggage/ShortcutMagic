@@ -79,38 +79,39 @@ const Datastore = require('nedb');
 let db;
 
 function getDb() {
-    if (!db) {
-        db = new Datastore({
-            filename: `${__dirname}/db/shortcuts.db`,
-            autoload: true,
-        });
+  if (!db) {
+    db = new Datastore({
+      filename: path.resolve(`~/Library/Application Support/ShortcutMagic/shortcuts.db`),
+      autoload: true,
+    });
 
-        // The field for "name" is the one we want to keep unique, so anything we write to the db for another running program is
-        // updated, and not duplicated.
-        // TODO: this is not always been unique and needs to be improved
-        getDb().ensureIndex({
-            fieldName: 'name',
-            unique: true // Setting unique value constraint on name
-        }, function (err) {
-            if (err) {
-                log.info('ERROR: getDb().ensureIndex failed to set unique constraint for shortcut db', err);
-            }
-        });
+    // The field for "name" is the one we want to keep unique, so anything we write to the db for another running program is
+    // updated, and not duplicated.
+    // TODO: this is not always been unique and needs to be improved
+    getDb().ensureIndex({
+      fieldName: 'name',
+      unique: true // Setting unique value constraint on name
+    }, function (err) {
+      if (err) {
+	      log.info('ERROR: getDb().ensureIndex failed to set unique constraint for shortcut db', err);
+      }
+    });
 
 
-        // For testing, we need to check parsing of shortcuts sometimes. These applications are simple and have few shortcuts,
-        // so they are quick to test with.
-        // TODO: Make this only run in debug/dev mode
-        log.info("temporary removal of PomoDoneApp and mysms shortcuts for testing, TODO: hard remove instead");
-        getDb().remove({
-            name: "PomoDoneApp"
-        });
-        getDb().remove({
-            name: "mysms"
-        });
-    }
+    // For testing, we need to check parsing of shortcuts sometimes. These applications are simple and have few shortcuts,
+    // so they are quick to test with.
+    // TODO: Make this only run in debug/dev mode
+    log.info("temporary removal of PomoDoneApp and mysms shortcuts for testing, TODO: hard remove instead");
+    getDb().remove({
+      name: "PomoDoneApp"
+    });
 
-    return db;
+    getDb().remove({
+      name: "mysms"
+    });
+  }
+
+  return db;
 }
 
 // These global settings are stored together with the shortcuts, and this is the "name":
@@ -234,6 +235,8 @@ function hideMainWindow() {
 }
 
 function toggleWindow() {
+	if (!mainWindow) return;
+
 	const bounds = mainWindow.getBounds();
 	log.info('togglewindow with existing bounds: ', bounds);
 	if (deepEqual(bounds, hiddenBounds)) {

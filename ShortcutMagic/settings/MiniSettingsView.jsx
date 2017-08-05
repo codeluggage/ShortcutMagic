@@ -24,7 +24,7 @@ let styleDb;
 function getDb() {
     if (!styleDb) {
         styleDb = new Datastore({
-            filename: `${__dirname}/../db/styles.db`,
+            filename: path.resolve(`~/Library/Application Support/ShortcutMagic/styles.db`),
             autoload: true,
         });
 
