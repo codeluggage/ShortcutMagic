@@ -37,61 +37,62 @@ defaultSettings = {
 	title: "mainWindow",
 };
 
-
-let splitPath = path.resolve('').split('/');
-
-// TODO: How does this happen? Running the app from / - fix in the future by extracting username or something
-if (splitPath.length < 3) {
-	alert('ShortcutMagic cannot find find a user folder to save shortcuts in!');
-	app.quit();
-	quitShortcutMagic();
-	return;
-}
-
 // Pick word 1 and 2 (0 is an empty string because of the preceding slash) as the root of the path
-const folderPath = `/${splitPath[1]}/${splitPath[2]}/Library/Application\ Support/ShortcutMagic`;
-const resolvedSettings = `${folderPath}/settings.db`;
-var settingsDb = new Datastore({
-	filename: resolvedSettings,
-	autoload: true
-});
+const folderPath = remote.getGlobal('folderpath');
+console.log('folderPath: ', dbPath);
+const resolvedSettings = `${folderPath}/ShortcutMagic/settings.db`;
+console.log('resolvedSettings: ', resolvedSettings);
+
+let resolvedHistoryDb;
+let settingsHistoryDb;
+
+let settingsDb 
 
 // No need for unique indexes here, we just keep inserting forever(?)
-const resolvedHistoryDb = `${folderPath}/settingsHistory.db`;
-var settingsHistoryDb = new Datastore({
-	filename: resolvedHistoryDb,
-	autoload: true
-});
+try {
+	resolvedHistoryDb = `${folderPath}/ShortcutMagic/settingsHistory.db`;
+	console.log('resolvedHistoryDb: ', resolvedHistoryDb);
+	settingsHistoryDb = new Datastore({
+		filename: resolvedHistoryDb,
+		autoload: true
+	});
+	
+	settingsDb = new Datastore({
+		filename: resolvedSettings,
+		autoload: true
+	});
+	
+	settingsDb.ensureIndex({
+		fieldName: 'name',
+		unique: true // Setting unique value constraint on name
+	}, function (err) {
+		if (err) {
+			console.log('ERROR: settings.ensureIndex failed to set unique constraint', err);
+		}
+	});
 
+	// TODO: send to worker?
+	settingsDb.find({
+		name: GLOBAL_SETTINGS
+	}, function(err, doc) {
+		if (err) {
+			console.log('Tried to find default settings, got error: ', err);
+			return;
+		}
 
-settingsDb.ensureIndex({
-	fieldName: 'name',
-	unique: true // Setting unique value constraint on name
-}, function (err) {
-	if (err) {
-		console.log('ERROR: settings.ensureIndex failed to set unique constraint', err);
-	}
-});
-
-// TODO: send to worker?
-settingsDb.find({
-	name: GLOBAL_SETTINGS
-}, function(err, doc) {
-	if (err) {
-		console.log('Tried to find default settings, got error: ', err);
-		return;
-	}
-
-	if (!doc || (doc == [] || doc.length == 0)) {
-		settingsDb.insert(defaultSettings, function(err, doc) {
-			if (err) {
-				console.log('ERROR: inserting default settings into settings db failed with err', err);
-			}
-		});
-	} else {
-		cachedSettings[GLOBAL_SETTINGS] = defaultSettings = doc[0];
-	}
-});
+		if (!doc || (doc == [] || doc.length == 0)) {
+			settingsDb.insert(defaultSettings, function(err, doc) {
+				if (err) {
+					console.log('ERROR: inserting default settings into settings db failed with err', err);
+				}
+			});
+		} else {
+			cachedSettings[GLOBAL_SETTINGS] = defaultSettings = doc[0];
+		}
+	});
+} catch (e) {
+	log.error(e);
+}
 
 
 // make sure all of these are set ok for main window:

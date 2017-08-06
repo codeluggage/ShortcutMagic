@@ -30,6 +30,7 @@ const sudoer = new Sudoer({
 
 
 log.transports.console.level = 'info';
+log.transports.file.level = 'info';
 // autoUpdater.logger = log;
 // autoUpdater.logger.transports.file.level = 'info';
 log.info('App starting...');
@@ -80,49 +81,47 @@ let db;
 
 function getDb() {
   if (!db) {
-  	let splitPath = path.resolve('').split('/');
+  	try {
+	  	global.folderPath = app.getPath('appData');
+	  	const dbPath = `${global.folderPath}/ShortcutMagic/shortcuts.db`;
+	    console.log('folderPath: ', dbPath);
+	    console.log('dbPath: ', dbPath);
 
-  	// TODO: How does this happen? Running the app from / - fix in the future by extracting username or something
-  	if (splitPath.length < 3) {
-  		alert('ShortcutMagic cannot find find a user folder to save shortcuts in!');
-  		app.quit();
-  		quitShortcutMagic();
-  		return;
-  	}
+	    db = new Datastore({
+	      filename: dbPath,
+	      autoload: true,
+	    });
 
-  	// Pick word 1 and 2 (0 is an empty string because of the preceding slash) as the root of the path
-  	const folderPath = `/${splitPath[1]}/${splitPath[2]}/Library/Application\ Support/ShortcutMagic`;
-  	const dbPath = `${folderPath}/shortcuts.db`;
-
-    db = new Datastore({
-      filename: dbPath,
-      autoload: true,
-    });
-
-    // The field for "name" is the one we want to keep unique, so anything we write to the db for another running program is
-    // updated, and not duplicated.
-    // TODO: this is not always been unique and needs to be improved
-    getDb().ensureIndex({
-      fieldName: 'name',
-      unique: true // Setting unique value constraint on name
-    }, function (err) {
-      if (err) {
-	      log.info('ERROR: getDb().ensureIndex failed to set unique constraint for shortcut db', err);
-      }
-    });
+	    // The field for "name" is the one we want to keep unique, so anything we write to the db for another running program is
+	    // updated, and not duplicated.
+	    // TODO: this is not always been unique and needs to be improved
+	    getDb().ensureIndex({
+	      fieldName: 'name',
+	      unique: true // Setting unique value constraint on name
+	    }, function (err) {
+	      if (err) {
+		      log.info('ERROR: getDb().ensureIndex failed to set unique constraint for shortcut db', err);
+	      }
+	    });
 
 
-    // For testing, we need to check parsing of shortcuts sometimes. These applications are simple and have few shortcuts,
-    // so they are quick to test with.
-    // TODO: Make this only run in debug/dev mode
-    log.info("temporary removal of PomoDoneApp and mysms shortcuts for testing, TODO: hard remove instead");
-    getDb().remove({
-      name: "PomoDoneApp"
-    });
+	    // For testing, we need to check parsing of shortcuts sometimes. These applications are simple and have few shortcuts,
+	    // so they are quick to test with.
+	    // TODO: Make this only run in debug/dev mode
+	    log.info("temporary removal of PomoDoneApp and mysms shortcuts for testing, TODO: hard remove instead");
+	    getDb().remove({
+	      name: "PomoDoneApp"
+	    });
 
-    getDb().remove({
-      name: "mysms"
-    });
+	    getDb().remove({
+	      name: "mysms"
+	    });
+	  	return db;
+	  } catch (e) {
+	  	// Ignore exception from this
+	  	log.error(e);
+	  	return db;
+	  }
   }
 
   return db;
@@ -441,6 +440,12 @@ function permissionCheck(cb) {
 }
 
 function createWindows() {
+	if (!global.folderPath) {
+		console.log('setting folderpath on global, was -> is');
+		console.log(global["folderPath"]);
+  	global.folderPath = app.getPath('appData');
+		console.log(global["folderPath"]);
+	}
 	// keep it simple for now, change asap
 	let reallyQuit = true;
 	permissionCheck((success) => {
@@ -487,6 +492,7 @@ function createWindows() {
 	    });
 	  }
 	});
+	
 }
 
 function createGifCommunityWindow() {
@@ -1076,6 +1082,9 @@ ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
 	} else {
 		appSwitched(event, currentAppName);
 	}
+	backgroundTaskRunnerWindow.destroy();
+	backgroundTaskRunnerWindow = null;
+	createBackgroundTaskRunnerWindow();
 });
 
 ipcMain.on('main-parse-shortcuts', function(event, appName) {
@@ -1087,6 +1096,9 @@ ipcMain.on('main-parse-shortcuts', function(event, appName) {
 	}
 
 	loadWithPeriods();
+	backgroundTaskRunnerWindow.destroy();
+	backgroundTaskRunnerWindow = null;
+	createBackgroundTaskRunnerWindow();
 });
 
 ipcMain.on('update-shortcut-order', function(event, appName, shortcuts) {

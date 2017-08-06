@@ -346,15 +346,14 @@ export default class Home extends Component {
         });
 
         ipcRenderer.on('focus-search-field', (event) => {
-            this.setState({
-                menuActive: true
-            });
-
             window.document.getElementById("title").style.display = "none";
             window.document.getElementById("settings-button-group").style.display = "block";
             window.document.getElementById("search-field").style.display = "";
 
-            ipcRenderer.send('show-window');
+            this.setState({
+                menuActive: true
+            });
+
             window.document.getElementById("search-field").focus();
         });
 
@@ -463,7 +462,7 @@ export default class Home extends Component {
                         hiddenLoading: true,
                     });
                 }
-            }, 120000);
+            }, 100000);
 
             if (this.state && this.state.loading) {
                 loadingList = this.state.loading;
@@ -1107,7 +1106,6 @@ export default class Home extends Component {
                     window.document.getElementById("search-field").style.display = "";
                     window.document.getElementById("title").style.display = (this.state.mode === "full-mode") ? "block" : "none";
 
-                    ipcRenderer.send('show-window');
                     window.document.getElementById("search-field").focus();
 
                     this.setState({

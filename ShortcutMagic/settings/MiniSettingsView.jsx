@@ -23,19 +23,10 @@ let styleDb;
 
 function getDb() {
     if (!styleDb) {
-        let splitPath = path.resolve('').split('/');
-
-        // TODO: How does this happen? Running the app from / - fix in the future by extracting username or something
-        if (splitPath.length < 3) {
-            alert('ShortcutMagic cannot find find a user folder to save shortcuts in!');
-            app.quit();
-            quitShortcutMagic();
-            return;
-        }
-
-        // Pick word 1 and 2 (0 is an empty string because of the preceding slash) as the root of the path
-        const folderPath = `/${splitPath[1]}/${splitPath[2]}/Library/Application\ Support/ShortcutMagic`;
-        const miniSettingsPath = `${folderPath}/styles.db`;
+        const folderPath = remote.getGlobal('folderpath');
+        console.log('folderPath: ', dbPath);
+        const miniSettingsPath = `${folderPath}/ShortcutMagic/styles.db`;
+        console.log('miniSettingsPath: ', miniSettingsPath);
         styleDb = new Datastore({
             filename: miniSettingsPath,
             autoload: true,
