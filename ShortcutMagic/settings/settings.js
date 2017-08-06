@@ -37,15 +37,29 @@ defaultSettings = {
 	title: "mainWindow",
 };
 
-// Defaults
+
+let splitPath = path.resolve('').split('/');
+
+// TODO: How does this happen? Running the app from / - fix in the future by extracting username or something
+if (splitPath.length < 3) {
+	alert('ShortcutMagic cannot find find a user folder to save shortcuts in!');
+	app.quit();
+	quitShortcutMagic();
+	return;
+}
+
+// Pick word 1 and 2 (0 is an empty string because of the preceding slash) as the root of the path
+const folderPath = `/${splitPath[1]}/${splitPath[2]}/Library/Application\ Support/ShortcutMagic`;
+const resolvedSettings = `${folderPath}/settings.db`;
 var settingsDb = new Datastore({
-	filename: path.resolve(`~/Library/Application Support/ShortcutMagic/settings.db`),
+	filename: resolvedSettings,
 	autoload: true
 });
 
 // No need for unique indexes here, we just keep inserting forever(?)
+const resolvedHistoryDb = `${folderPath}/settingsHistory.db`;
 var settingsHistoryDb = new Datastore({
-	filename: path.resolve(`~/Library/Application Support/ShortcutMagic/settingsHistory.db`),
+	filename: resolvedHistoryDb,
 	autoload: true
 });
 

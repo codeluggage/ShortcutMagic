@@ -80,8 +80,22 @@ let db;
 
 function getDb() {
   if (!db) {
+  	let splitPath = path.resolve('').split('/');
+
+  	// TODO: How does this happen? Running the app from / - fix in the future by extracting username or something
+  	if (splitPath.length < 3) {
+  		alert('ShortcutMagic cannot find find a user folder to save shortcuts in!');
+  		app.quit();
+  		quitShortcutMagic();
+  		return;
+  	}
+
+  	// Pick word 1 and 2 (0 is an empty string because of the preceding slash) as the root of the path
+  	const folderPath = `/${splitPath[1]}/${splitPath[2]}/Library/Application\ Support/ShortcutMagic`;
+  	const dbPath = `${folderPath}/shortcuts.db`;
+
     db = new Datastore({
-      filename: path.resolve(`~/Library/Application Support/ShortcutMagic/shortcuts.db`),
+      filename: dbPath,
       autoload: true,
     });
 
