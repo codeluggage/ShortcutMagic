@@ -1,17 +1,11 @@
 'use strict';
+
 const { ipcRenderer } = require('electron');
-const readShortcutsObj = require('../shared/readShortcuts');
-const readShortcuts = readShortcutsObj();
 const executeMenuItem = require('../shared/executeMenuItem');
 const executeShortcut = require('../shared/executeShortcut');
 
 
 window.onload = function () {
-	ipcRenderer.on('webview-parse-shortcuts', (event, appName) => {
-		ipcRenderer.send('main-parse-shortcuts-callback', 
-			(appName) ? readShortcuts.readShortcuts(appName) : null);
-	});
-
 	ipcRenderer.on('webview-execute-menu-item', (event, appName, listItem, menu) => {
 		if (!appName) {
 			executeMenuItem(appName, listItem, menu);

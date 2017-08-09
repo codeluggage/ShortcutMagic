@@ -18,6 +18,7 @@ const os = require('os');
 const log = require('electron-log');
 const { spawnSync } = require('child_process');
 const deepEqual = require('deep-equal');
+const parseShortcuts = require('./background/parseShortcuts.js');
 let isQuitting = false; // TODO: find a better way to do this
 let localShortcutsCreated = false; // TODO: find a better way to do this
 
@@ -916,8 +917,8 @@ function loadWithPeriods() {
 					mainWindow.webContents.send('set-loading', currentAppName);
 					trayObject.setTitle("Loading...");
 
-					log.info('sending webview-parse-shortcuts with currentAppName', currentAppName);
-					backgroundTaskRunnerWindow.webContents.send('webview-parse-shortcuts', currentAppName);
+					log.info('calling parseShortcuts with currentAppName', currentAppName);
+					parseShortcuts(currentAppName, mainParseShortcutsCallback);
 				}
 			});
 		}
@@ -1074,18 +1075,16 @@ function appSwitched(event, appName) {
 	miniSettingsWindow.webContents.send('app-changed', currentAppName);
 }
 
-ipcMain.on('main-parse-shortcuts-callback', function(event, payload) {
-	log.info("main-parse-shortcuts-callback");
+function mainParseShortcutsCallback(payload) {
+	log.info("mainParseShortcutsCallback");
+
 	if (payload) {
 		updateRenderedShortcuts(payload);
 		saveWithoutPeriods(payload);
 	} else {
-		appSwitched(event, currentAppName);
+		appSwitched(null, currentAppName);
 	}
-	backgroundTaskRunnerWindow.destroy();
-	backgroundTaskRunnerWindow = null;
-	createBackgroundTaskRunnerWindow();
-});
+}
 
 ipcMain.on('main-parse-shortcuts', function(event, appName) {
 	log.info('#2 - root index.js, triggered main-parse-shortcuts, with appName: ', appName, typeof appName);
@@ -1096,9 +1095,6 @@ ipcMain.on('main-parse-shortcuts', function(event, appName) {
 	}
 
 	loadWithPeriods();
-	backgroundTaskRunnerWindow.destroy();
-	backgroundTaskRunnerWindow = null;
-	createBackgroundTaskRunnerWindow();
 });
 
 ipcMain.on('update-shortcut-order', function(event, appName, shortcuts) {

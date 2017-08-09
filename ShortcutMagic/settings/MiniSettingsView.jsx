@@ -24,7 +24,7 @@ let styleDb;
 function getDb() {
     if (!styleDb) {
         const folderPath = remote.getGlobal('folderpath');
-        console.log('folderPath: ', dbPath);
+        console.log('folderPath: ', folderPath);
         const miniSettingsPath = `${folderPath}/ShortcutMagic/styles.db`;
         console.log('miniSettingsPath: ', miniSettingsPath);
         styleDb = new Datastore({
