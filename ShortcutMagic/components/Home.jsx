@@ -716,120 +716,15 @@ export default class Home extends Component {
     }
 
     render() {
-		// itemColor:hexToRgba(beautifulColors[2], 100),
-		// textColor:hexToRgba(beautifulColors[0], 100),
-
         globalState = this.state;
-        console.log('render() called');
-        if (!this.state) {
-            // window.document.documentElement.style.backgroundColor = hexToRgba(beautifulColors[Math.floor(Math.random() * beautifulColors.length)], 0.5);
-            let randomWelcomeText = "Welcome to ShortcutMagic!";
+        console.log('render() called', JSON.stringify(globalState));
 
-            switch (Math.floor(Math.random() * 8)) {
-                case 0:
-                    randomWelcomeText = "Did you know ShortcutMagic was created with the dream to help all humans use computers?";
-                    break;
-                case 1:
-                    randomWelcomeText = `Did you know that ShortcutMagic pretends to actually press the keyboard?
-                    It is done to make the computer understand us the best.`;
-                    break;
-                case 2:
-                    randomWelcomeText = "Did you know that using shortcuts prevents carpal tunnel and other computer related injuries?";
-                    break;
-                case 3:
-                    randomWelcomeText = `Did you know that using a shortcut over and over will make it "muscle memory".
-                    At some point you remember it automatically, so the more you use it, the easier it gets.`;
-                    break;
-                case 4:
-                    randomWelcomeText = `Did you know that shortcuts are identical in many different programs?
-                    "Copy", "Paste" and "New file" are the most common ones.`;
-                    break;
-                case 5:
-                    randomWelcomeText = `Did you know that ShortcutMagic will remember where you want it to be?
-                    Each program gets its own ShortcutMagic position, color, transparency and size.`;
-                    break;
-                // case 6:
-                //     randomWelcomeText = `Did you know that ShortcutMagic will remember what color and transparency you set for each program?
-                //     This way you can make it look exactly the way you want to.`;
-                //     break;
-                // case 7:
-                //     randomWelcomeText = `Did you know that you are helping people in need by becoming a ShortcutMagic member?
-                //     Because you contribute with paying for a membership, a person in need will get ShortcutMagic for free.`;
-                //     break;
-                case 6:
-                    randomWelcomeText = `Did you know that ShortcutMagic has its own shortcuts? You can make the window small,
-                    hide it completely, or show it like normal. ShortcutMagic remembers how you conifgured each mode, too.`;
-                    break;
-                case 7:
-                    randomWelcomeText = `Did you know that the ShortcutMagic program is actually a local website?
-                    That way it will work on as many different computers as possible, so it can help as many as possible.`;
-                    break;
-                case 8:
-                    randomWelcomeText = `Did you know that ShortcutMagic will work for website shortcuts too?
-                    This is more difficult than program shortcuts, because websites don't follow a standard for
-                    making shortcuts, so it has to be added individually for each one.`;
-                    break;
-            }
-
-            return (
-                <div style={{
-                    // backgroundColor: '#1e2430',
-                    padding: '20px',
-                    textAlign: 'center',
-                    backgroundColor: "#323f53", color: "#eedba5", 
-                }}>
-                    <h1>ShortcutMagic</h1>
-                    <p>{randomWelcomeText}</p>
-                </div>
-            );
-        }
-
-        // window.document.documentElement.style.backgroundColor = (this.state.backgroundColor) ?
-        //     this.state.backgroundColor : hexToRgba(beautifulColors[Math.floor(Math.random() * beautifulColors.length)], 0.5);
-
-        // TODO: check for length here instead of nulling it out above?
-        if (this.state.loading) { // && !this.state.hiddenLoading) {
-
-
-                    // <h2>Loading shortcuts for</h2>
-                    // <h2>{ this.state.loading.map((obj, index) => (index == loadingLength) ? obj : obj + ", ") }</h2>
-                    // <br />
-                    // <i className="fa fa-3x fa-spin fa-spinner" style={{
-                    //     marginBottom: '10px',
-                    // }}></i>
-
-            // let loadingLength = this.state.loading.length - 1;
-
-            return (
-                <div style={{ backgroundColor: "transparent", }}> </div>
-            );
+        if (!this.state || this.state.loading) {
+            console.log('rendering transparent window');
+            return <div style={{ backgroundColor: "transparent", }}> </div>
         } else {
             ipcRenderer.send("not-loading");
         }
-                    // <button style={{
-                    //     backgroundColor: "#323f53", color: "#eedba5", 
-                    //     // color: this.state.textColor,
-                    //     margin: 0,
-                    // }} id="toggle-main-buttons" className="simple-button" onClick={() => {
-                    //     this.setState({
-                    //         hiddenLoading: true
-                    //     });
-                    // }}>
-                    //     Hide
-                    // </button>
-/*
-                sort-up
-                sort-down
-                star-o
-                star
-                chevron-up
-                chevron-down
-                check-square
-                check-square-o
-                square
-                question-circle
-
-*/
 
 
 		let SearchField = (
@@ -910,6 +805,24 @@ export default class Home extends Component {
 
                     // </span></li>
 
+// TODO: Re-enable settings:
+                    // <li onClick={(event) => {
+                    //     event.preventDefault();
+                    //     console.log("clicked settings");
+                    //     this.toggleSettings();
+                    // }} data-for='toggle-settings-tooltip'
+                    // data-iscapture="true"
+                    // data-tip="Settings">
+                    // <span id="settings-button" className="fa fa-2x fa-cog">
+                    // </span>
+                    //     <ReactTooltip id='toggle-settings-tooltip'
+                    //         place={tooltipEffect.place}
+                    //         type={tooltipEffect.type}
+                    //         effect={tooltipEffect.effect}
+                    //         multiline={true}/>
+                    // </li>
+
+
         let SettingsButtons = (
             <div id="settings-button-group" className="toolbar-actions" style={{
                 display: 'none',
@@ -971,22 +884,6 @@ export default class Home extends Component {
                             effect={tooltipEffect.effect}
                             multiline={true}/>
 
-                    </li>
-
-                    <li onClick={(event) => {
-                        event.preventDefault();
-                        console.log("clicked settings");
-                        this.toggleSettings();
-                    }} data-for='toggle-settings-tooltip'
-                    data-iscapture="true"
-                    data-tip="Settings">
-                    <span id="settings-button" className="fa fa-2x fa-cog">
-                    </span>
-                        <ReactTooltip id='toggle-settings-tooltip'
-                            place={tooltipEffect.place}
-                            type={tooltipEffect.type}
-                            effect={tooltipEffect.effect}
-                            multiline={true}/>
                     </li>
 
                     <li onClick={(event) => {

@@ -38,7 +38,7 @@ defaultSettings = {
 };
 
 // Pick word 1 and 2 (0 is an empty string because of the preceding slash) as the root of the path
-const folderPath = remote.getGlobal('folderpath');
+const folderPath = remote.getGlobal('folderPath');
 console.log('folderPath: ', folderPath);
 const resolvedSettings = `${folderPath}/ShortcutMagic/settings.db`;
 console.log('resolvedSettings: ', resolvedSettings);

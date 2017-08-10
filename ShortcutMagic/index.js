@@ -265,13 +265,13 @@ function toggleWindow() {
 function quitShortcutMagic() {
     // loop over browserwindows and destroy + null all?
 
-    settingsWindow = null; // TODO: double check that the settings window isn't destroyed elsewhere
-    miniSettingsWindow = null;
+    // settingsWindow = null; // TODO: double check that the settings window isn't destroyed elsewhere
+    // miniSettingsWindow = null;
     backgroundTaskRunnerWindow = null;
     mainWindow = null;
     welcomeWindow = null;
-    gifRecorderWindow = null;
-    gifCommunityWindow = null;
+    // gifRecorderWindow = null;
+    // gifCommunityWindow = null;
 
     if (trayObject) {
         trayObject.destroy();
@@ -367,7 +367,7 @@ function createSettingsWindow() {
 
 function permissionCheck(cb) {
 	const identifier = "com.electron.shortcutmagic-mac";
-	sudoer.spawn(`tccutil --insert ${identifier}`, [], {}).then((tccutilResult) => {
+	sudoer.spawn(`tccutil --enable ${identifier}`, [], {}).then((tccutilResult) => {
 		const stdout = tccutilResult.stdout;
 		log.info("tccutil insert: ", stdout.toString());
 		const stderr = tccutilResult.stderr;
@@ -458,12 +458,12 @@ function createWindows() {
 
 		createBackgroundTaskRunnerWindow();
 		createBackgroundListenerWindow();
-		createSettingsWindow();
-		createMiniSettingsWindow();
+		// createSettingsWindow();
+		// createMiniSettingsWindow();
 		createMainWindow();
     createTooltipWindow();
-    createGifRecorderWindow();
-    createGifCommunityWindow();
+    // createGifRecorderWindow();
+    // createGifCommunityWindow();
 
     if (!localShortcutsCreated) {
     	localShortcutsCreated = true;
@@ -1071,8 +1071,8 @@ function appSwitched(event, appName) {
 	loadWithPeriods();
 	log.info("finished loading pos for app: ", mainWindow.getBounds(), appName);
 
-	settingsWindow.webContents.send('app-changed', currentAppName);
-	miniSettingsWindow.webContents.send('app-changed', currentAppName);
+	// settingsWindow.webContents.send('app-changed', currentAppName);
+	// miniSettingsWindow.webContents.send('app-changed', currentAppName);
 }
 
 function mainParseShortcutsCallback(payload) {
