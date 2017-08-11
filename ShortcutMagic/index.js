@@ -21,6 +21,7 @@ const deepEqual = require('deep-equal');
 const parseShortcuts = require('./background/parseShortcuts.js');
 let isQuitting = false; // TODO: find a better way to do this
 let localShortcutsCreated = false; // TODO: find a better way to do this
+let loadingText = null;
 
 
 import Sudoer from 'electron-sudo';
@@ -158,7 +159,7 @@ let gifCommunityWindow
 
 let learnWindow;
 let surveyWindow;
-setTimeout(function() { if (!surveyWindow) {createSurveyWindow()} surveyWindow.show()}, 800000)
+setTimeout(function() { if (!surveyWindow) createSurveyWindow()}, 800000)
 
 
 // a hacky bad construct holding the shortcuts from the db in memory
@@ -783,7 +784,8 @@ function createWelcomeWindow() {
 
 function createSurveyWindow() {
 	if (surveyWindow) {
-		log.info('surveyWindow already existed, exiting');
+		log.info('surveyWindow already existed, showing window but not creating');
+		setTimeout(surveyWindow.show, 10000); // Let webview load on slow connections
 		return;
 	}
 
@@ -804,6 +806,10 @@ function createSurveyWindow() {
 	// TODO: prevent closing and just hide
 	surveyWindow.on('closed', event => {
 		log.info('in surveyWindow closed');
+	});
+
+	surveyWindow.on('ready', event => {
+		setTimeout(surveyWindow.show, 10000); // Let webview load on slow connections
 	});
 }
 
@@ -914,11 +920,20 @@ function loadWithPeriods() {
 		      mainWindow.setBounds(currentShortcuts.bounds);
 		      mainWindow.webContents.send('update-shortcuts', currentShortcuts);
 				} else {
-					mainWindow.webContents.send('set-loading', currentAppName);
-					trayObject.setTitle("Loading...");
+					if (!loadingText) {
+						mainWindow.webContents.send('set-loading', currentAppName);
+						loadingText = "Loading...";
+						trayObject.setTitle(loadingText);
 
-					log.info('calling parseShortcuts with currentAppName', currentAppName);
-					parseShortcuts(currentAppName, mainParseShortcutsCallback);
+						log.info('calling parseShortcuts with currentAppName', currentAppName);
+						parseShortcuts(currentAppName, mainParseShortcutsCallback);
+					} else {
+						// Clear out eventually
+						setTimeout(() => {
+							trayObject.setTitle("");
+							loadingText = null;
+						}, 20000);
+					}
 				}
 			});
 		}
@@ -1030,31 +1045,34 @@ ipcMain.on('get-app-name-sync', function(event) {
 ipcMain.on('main-app-switched-notification', appSwitched);
 
 function appSwitched(event, appName) {
-	// TODO: Make this list editable somewhere to avoid people having problems?
-    if (appName === "Electron" ||
-        appName === "ShortcutMagic" ||
-        appName === "ShortcutMagic-mac") {
+		const compare = appName.toLowerCase();
+		// TODO: Make this list editable somewhere to avoid people having problems?
+		// TODO: Convert to regex or match
+    if (compare === "electron" ||
+        compare === "shortcutmagic" ||
+        compare === "shortcutmagic-mac") {
         log.info("Not switching to ourselves, but sending 'focus-self' to main window");
         mainWindow.webContents.send('focus', true);
         return;
     }
 
-    if (appName === "ScreenSaverEngine" ||
-        appName === "loginwindow" ||
-        appName === "Dock" ||
-        appName === "Google Software Update..." ||
-        appName === "Google Software Update" ||
-        appName === "Dropbox Finder Integration" ||
-        appName === "Kap" ||
-        appName === "SecurityAgent" ||
-        appName === "AirPlayUIAgent" ||
-        appName === "CoreServicesUIAgent") {
+    if (compare === "screensaverengine" ||
+        compare === "loginwindow" ||
+        compare === "dock" ||
+        compare === "google software update..." ||
+        compare === "google software update" ||
+        compare === "dropbox finder integration" ||
+        compare === "kap" ||
+        compare === "securityagent" ||
+        compare === "airplayuiagent" ||
+        compare === "coreservicesuiagent" ||
+        compare === "evernote helper") {
 		log.info("Not switching to this app: ", appName);
     mainWindow.webContents.send('focus', false);
 		return;
 	}
 
-	if (appName == currentAppName) {
+	if (compare == currentAppName) {
 		log.info("cannot switch to same app again");
     mainWindow.webContents.send('focus', false);
 		return;
@@ -1077,6 +1095,8 @@ function appSwitched(event, appName) {
 
 function mainParseShortcutsCallback(payload) {
 	log.info("mainParseShortcutsCallback");
+	trayObject.setTitle("");
+	loadingText = null;
 
 	if (payload) {
 		updateRenderedShortcuts(payload);

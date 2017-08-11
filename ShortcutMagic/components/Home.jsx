@@ -435,20 +435,22 @@ export default class Home extends Component {
             console.log('entered update-shortcuts in Home');
             console.log(newShortcuts);
             let name = newShortcuts.name;
+            let compare = name.toLowerCase();
 
-        	if (name === "Electron" ||
-                name === "ShortcutMagic" ||
-                name === "ShortcutMagic-mac" ||
-                name === "ScreenSaverEngine" ||
-                name === "loginwindow" ||
-                name === "Dock" ||
-                name === "Google Software Update..." ||
-                name === "Google Software Update" ||
-                name === "Dropbox Finder Integration" ||
-                name === "Kap" ||
-                name === "SecurityAgent" ||
-                name === "AirPlayUIAgent" || 
-                name === "CoreServicesUIAgent") {
+        	if (compare === "electron" ||
+                compare === "shortcutmagic" ||
+                compare === "shortcutmagic-mac" ||
+                compare === "screensaverengine" ||
+                compare === "loginwindow" ||
+                compare === "dock" ||
+                compare === "google software update..." ||
+                compare === "google software update" ||
+                compare === "dropbox finder integration" ||
+                compare === "kap" ||
+                compare === "securityagent" ||
+                compare === "airplayuiagent" || 
+                compare === "evernote helper" ||
+                compare === "coreservicesuiagent") {
                 return; // TODO: Could this mess with other electron starter projects?
             }
 
