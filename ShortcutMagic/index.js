@@ -22,6 +22,10 @@ const parseShortcuts = require('./background/parseShortcuts.js');
 let isQuitting = false; // TODO: find a better way to do this
 let localShortcutsCreated = false; // TODO: find a better way to do this
 let loadingText = null;
+let gifDirectory = "~/Movies/Kaptures";
+let recursiveCount = 0;
+let recursiveLastFile;
+let stopRecursiveLs = false;
 
 
 import Sudoer from 'electron-sudo';
@@ -155,7 +159,8 @@ let tooltipWindow;
 // the gif recording/saving window:
 let gifRecorderWindow;
 // the gifCommunity window:
-let gifCommunityWindow
+let gifCommunityWindow;
+let bubbleWindow;
 
 let learnWindow;
 let surveyWindow;
@@ -179,6 +184,27 @@ const hiddenBounds  = { x: 89, y: 23, width: 0, height: 0 };
 
 
 // Functions
+
+function getBubbleWindowBounds() {
+  const windowBounds = bubbleWindow.getBounds()
+  const trayBounds = trayObject.getBounds()
+
+  // Center window horizontally below the tray icon
+  const x = Math.round(trayBounds.x + (trayBounds.width / 2) - (windowBounds.width / 2))
+
+  // Position window 4 pixels vertically below the tray icon
+  const y = Math.round(trayBounds.y + trayBounds.height + 4)
+
+  const bounds = {
+  	x,
+  	y,
+  	height: 150,
+  	width: 300,
+  };
+
+  console.log('returning bounds for bubble window', bounds);
+  return bounds;
+}
 
 function updateInMemoryBounds(bounds, hidden) {
 	const currentlyHidden = deepEqual(bounds, hiddenBounds);
@@ -215,6 +241,20 @@ function getShortcuts(cb) {
 			}
 		});
 	}
+}
+
+function showBubbleWindow() {
+	console.log('bubbleWindow.setBounds(getBubbleWindowBounds());', bubbleWindow.getBounds());
+	const bounds = getBubbleWindowBounds();
+	console.log('new bounds: ', bounds);
+	bubbleWindow.setBounds(bounds);
+	console.log('bubbleWindow.getBounds', bubbleWindow.getBounds());
+}
+
+function hideBubbleWindow() {
+	console.log('bubbleWindow.setBounds(getBubbleWindowBounds());', bubbleWindow.getBounds());
+	bubbleWindow.setBounds(hiddenBounds);
+	console.log('bubbleWindow.getBounds', bubbleWindow.getBounds());
 }
 
 function showMainWindow() {
@@ -271,6 +311,7 @@ function quitShortcutMagic() {
     backgroundTaskRunnerWindow = null;
     mainWindow = null;
     welcomeWindow = null;
+    bubbleWindow = null;
     // gifRecorderWindow = null;
     // gifCommunityWindow = null;
 
@@ -322,6 +363,26 @@ function savePosition() {
 			}
 		});
 	});
+}
+
+function createBubbleWindow() {
+	if (bubbleWindow) {
+		log.info('bubbleWindow already existed, exiting');
+		return;
+	}
+
+	bubbleWindow = new BrowserWindow({
+		show: true,
+		title: "bubbleWindow",
+		alwaysOnTop: true,
+		acceptFirstClick: true,
+		transparent: true,
+		frame: false,
+		x: hiddenBounds.x, y: hiddenBounds.y, width: hiddenBounds.width, height: hiddenBounds.height,
+	});
+
+	var bubblePath = `file://${__dirname}/bubble/index.html`;
+	bubbleWindow.loadURL(bubblePath);
 }
 
 function createMiniSettingsWindow() {
@@ -462,6 +523,7 @@ function createWindows() {
 		// createSettingsWindow();
 		// createMiniSettingsWindow();
 		createMainWindow();
+		createBubbleWindow();
     createTooltipWindow();
     // createGifRecorderWindow();
     // createGifCommunityWindow();
@@ -686,6 +748,12 @@ function debugEverything() {
 	} else {
 		log.info("cant find gifRecorderWindow to show");
 	}
+
+	if (bubbleWindow) {
+		bubbleWindow.openDevTools();
+	} else {
+		log.info("cant find bubbleWindow to show");
+	}
 }
 
 function createTray() {
@@ -842,6 +910,7 @@ function createLearnWindow() {
 
 function updateRenderedShortcuts(shortcuts) {
 	mainWindow.webContents.send('update-shortcuts', shortcuts);
+	bubbleWindow.webContents.send('update-shortcuts', shortcuts);
 }
 
 function saveWithoutPeriods(payload) {
@@ -882,6 +951,12 @@ function loadWithPeriods() {
 
 	getShortcuts((currentShortcuts) => {
 		if (currentShortcuts && currentShortcuts.bounds) {
+			if (currentShortcuts.hidden) {
+				showBubbleWindow();
+			} else {
+				hideBubbleWindow();
+			}
+
 			log.info('loaded in memory shortcuts, mainWindow bounds are [OLD NEW HIDDEN] ', mainWindow.getBounds(), currentShortcuts.bounds, currentShortcuts.hidden);
 
 			hackyStopSavePos = true;
@@ -889,6 +964,7 @@ function loadWithPeriods() {
 			hackyStopSavePos = false;
 
 			mainWindow.webContents.send('update-shortcuts', currentShortcuts);
+			bubbleWindow.webContents.send('update-shortcuts', currentShortcuts);
 		} else {
 			getDb().find({
 				name: currentAppName
@@ -918,7 +994,13 @@ function loadWithPeriods() {
 					log.info('loaded shortcuts from DB, bounds [OLD OLD-MEMORY NEW] ', mainWindow.getBounds(), (inMemoryShortcuts[currentAppName]) ? inMemoryShortcuts[currentAppName].bounds : null, currentShortcuts.bounds);
 		      inMemoryShortcuts[currentAppName] = currentShortcuts;
 		      mainWindow.setBounds(currentShortcuts.bounds);
+		      
+					if (currentShortcuts && deepEqual(currentShortcuts.bounds, hiddenBounds)) {
+						showBubbleWindow();
+					}
+
 		      mainWindow.webContents.send('update-shortcuts', currentShortcuts);
+		      bubbleWindow.webContents.send('update-shortcuts', currentShortcuts);
 				} else {
 					if (!loadingText) {
 						mainWindow.webContents.send('set-loading', currentAppName);
@@ -1025,9 +1107,9 @@ app.on('ready', () => {
 
 	// createWindows();
 	// loadWithPeriods(backgroundTaskRunnerWindow.webContents.send('read-last-app-name'));
+    createTray();
     createWelcomeWindow();
     createLearnWindow();
-    createTray();
     // createMainWindow();
 });
 
@@ -1283,10 +1365,6 @@ ipcMain.on('hide-tooltip', (event) => {
     tooltipWindow.hide();
 });
 
-let gifDirectory = "~/Movies/Kaptures";
-let recursiveCount = 0;
-let recursiveLastFile;
-let stopRecursiveLs = false;
 function recursiveLs() {
 	log.info("inside recursiveLs", ++recursiveCount);
 
@@ -1379,6 +1457,7 @@ ipcMain.on('save-gif', (event, newGif, listItem, appName) => {
       // This might update the window with other shortcuts than the one we just recorded a gif for. That is ok
       // because the gif will be visible when they switch back to that app again.
       mainWindow.webContents.send('update-shortcuts', inMemoryShortcuts[currentAppName]);
+      bubbleWindow.webContents.send('update-shortcuts', inMemoryShortcuts[currentAppName]);
 			log.info("successfuly saved new gif", res);
 		}
 	});
