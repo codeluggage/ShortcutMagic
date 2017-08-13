@@ -3,20 +3,100 @@ import React, { Component } from 'react';
 import { ipcRenderer } from 'electron';
 import ReactDOM from 'react-dom';
 
+
+
+/**
+ * Randomize array element order in-place.
+ * Using Durstenfeld shuffle algorithm.
+ * https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
+ */
+function shuffleArray(array) {
+    for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+    return array;
+}
+
+
+let stopFadeOut = false;
+const initialFade = 0.6;
+
 export default class BubbleView extends Component {
   componentWillMount() {
-    ipcRenderer.on('update-shortcuts', (e, shortcuts) => {
-      // TODO: Count down in transparency!
+    const fadeOut = () => {
+        console.log('in fadeout ', this.state.fade);
+        if (stopFadeOut) {
+          console.log('stopping fadeout');
+          return;
+        }
+
+        if (this.state.fade <= 0.01) {
+          this.setState({
+            fade: 0,
+            fading: false
+          });
+          return;
+        }
+
+        this.setState({
+          fade: this.state.fade - 0.01,
+          fading: true
+        });
+
+        setTimeout(fadeOut, 50);
+    };
+    
+
+    ipcRenderer.on('update-shortcuts', (e, shortcutInfo) => {
+      stopFadeOut = true;
+
+      let shortcuts = Object.values(shortcutInfo.shortcuts);
+
+      console.log('about to filter shortcuts before/after: ');
+      console.log(shortcuts);
+      shortcuts = shortcuts.filter(obj => !obj.isHidden)
+      console.log(shortcuts);
+      shuffleArray(shortcuts);
+
+      shortcuts.sort((a, b) => {
+        if (a.isFavorite && b.isFavorite) {
+          return 0;
+        } else if (a.isFavorite) {
+          return -1;
+        } else if (b.isFavorite) {
+          return 1;
+        }
+
+        return 0;
+      });
+
+      // Random shortcut from top half of the list
+      let randomShortcut = shortcuts[Math.floor(Math.random() * (shortcuts.length * 0.5))];
+      console.log('random shortcut is: ', randomShortcut);
 
       this.setState({
-        shortcuts: Object.values(shortcuts.shortcuts),
-        currentShortcut: null,
+        shortcuts: shortcuts,
+        currentShortcut: randomShortcut,
+        fade: initialFade, // TODO: DRY
       });
+
+      setTimeout(() => {
+        stopFadeOut = false;
+        fadeOut();
+      }, 2500);
+    });
+
+
+    this.setState({
+      fade: initialFade // TODO: DRY
     });
   }
 
   render() {
-    if (!this.state || !this.state.shortcuts) {
+    if (!this.state || !this.state.currentShortcut) {
       return (
         <div style={{
           backgroundColor: `rgba(255, 255, 255, 0)`
@@ -26,35 +106,66 @@ export default class BubbleView extends Component {
       );
     }
 
-    console.log('>>>>>>>>>>>>>>> SHORTCUTS: ');
-    console.log(this.state.shortcuts);
-    console.log(this.state);
-    let shortcuts = this.state.shortcuts.filter(s => !s.isHidden);
+    let { fade, currentShortcut } = this.state;
 
-    if (!this.previousShortcuts || this.previousShortcuts != shortcuts) {
-      shortcuts.sort((a, b) => {
-        if (a.isFavorite) {
-          return -1;
-        }
-
-        return 0;
-      });
+    if (fade <= 0.01) {
+      ipcRenderer.send('hide-bubble-window');
     }
 
-    let randomShortcut = shortcuts[Math.floor(Math.random() * shortcuts.length)];
-    console.log('random shortcut is: ', randomShortcut);
+    console.log('render ');
+    console.log(fade);
+    console.log(currentShortcut);
 
     // TODO: Use same color as main window? going for feelings of "bright, easy, fades away into nothing, not interrupting, not disturbing, not sudden, not in the way"
 
     // TODO: Make not clickable except for button with action or open main window
+
+
     return (
       <div style={{
-        backgroundColor: `rgba(144, 235, 157, 0.4)`,
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: `rgba(144, 235, 157, ${this.state.fade})`,
         borderRadius: ".35rem",
         borderWidth: ".50rem",
-        boxShadow: '#222 0px 0px 15px 5px'
+        boxShadow: 'rgba(34, 34, 34, ${this.state.fade}) 0px 0px 10px 0px',
+        color: `rgba(0, 0, 0, ${this.state.fade})`,
+        textAlign: 'center',
+      }} onMouseEnter={(e) => {
+        stopFadeOut = true;
+        this.setState({
+          fade: initialFade, //TODO: DRY
+          fading: false,
+        })
       }}>
-        {JSON.stringify(randomShortcut)}
+        <b style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignContent: 'stretch',
+          marginBottom: '1px',
+          fontSize: 16,
+          fontWeight: 500,
+        }}>{currentShortcut.name}</b>
+        <b style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignContent: 'stretch',
+          marginTop: '1px',
+          fontSize: 22,
+          fontWeight: 600,
+        }}>
+          {
+            (currentShortcut["mod"]) ? currentShortcut["mod"] :
+              (currentShortcut["glyph"] && !currentShortcut["char"]) ? "⌘" :
+                (!currentShortcut["glyph"] && currentShortcut["char"]) ? "⌘" : ""
+          }
+          {
+            (currentShortcut["glyph"]) ? ( currentShortcut["glyph"] ) : ""
+          }
+          {
+            (currentShortcut["char"]) ? ( currentShortcut["char"]): ""
+          }
+        </b>
       </div>
     );
   }

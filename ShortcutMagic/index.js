@@ -180,30 +180,25 @@ let hackyStopSavePos = false;
 // TODO: Save to settings db
 const defaultFullBounds = {x: 1100, y: 150, width: 320, height: 700};
 const hiddenBounds  = { x: 89, y: 23, width: 0, height: 0 };
+const defaultBubbleHeight = 75;
+const defaultBubbleWidth = 250;
 
 
 
 // Functions
 
 function getBubbleWindowBounds() {
-  const windowBounds = bubbleWindow.getBounds()
-  const trayBounds = trayObject.getBounds()
+  const trayBounds = trayObject.getBounds();
 
-  // Center window horizontally below the tray icon
-  const x = Math.round(trayBounds.x + (trayBounds.width / 2) - (windowBounds.width / 2))
-
-  // Position window 4 pixels vertically below the tray icon
-  const y = Math.round(trayBounds.y + trayBounds.height + 4)
-
-  const bounds = {
-  	x,
-  	y,
-  	height: 150,
-  	width: 300,
+  const defaultBubbleBounds = {
+  	x: Math.round(trayBounds.x - (defaultBubbleWidth / 2)),
+  	y: Math.round(trayBounds.y + trayBounds.height + 4),
+  	height: defaultBubbleHeight,
+  	width: defaultBubbleWidth,
   };
 
-  console.log('returning bounds for bubble window', bounds);
-  return bounds;
+  console.log('returning bounds for bubble window', defaultBubbleBounds);
+  return defaultBubbleBounds;
 }
 
 function updateInMemoryBounds(bounds, hidden) {
@@ -281,10 +276,8 @@ function hideMainWindow() {
 	getShortcuts((currentShortcuts) => {
 		// Already hidden?
 		if (!deepEqual(bounds, hiddenBounds)) {
-			hackyStopSavePos = true;
 			mainWindow.setBounds(hiddenBounds);
 			updateInMemoryBounds(bounds, true);
-			hackyStopSavePos = false;
 		}
 	});
 }
@@ -297,9 +290,11 @@ function toggleWindow() {
 	if (deepEqual(bounds, hiddenBounds)) {
 		log.info('togglewindow calling showMainWindow');
 		showMainWindow();
+		hideBubbleWindow();
 	} else {
 		log.info('togglewindow calling hideMainWindow');
 		hideMainWindow();
+		showBubbleWindow();
 	}
 }
 
@@ -347,9 +342,7 @@ function savePosition() {
 			hidden: deepEqual(newBounds, hiddenBounds)
 		};
 
-		if (!payload.hidden) {
-			payload.bounds = newBounds;
-		}
+		payload.bounds = newBounds;
 
 		getDb().update({
 			name: currentAppName
@@ -380,6 +373,8 @@ function createBubbleWindow() {
 		frame: false,
 		x: hiddenBounds.x, y: hiddenBounds.y, width: hiddenBounds.width, height: hiddenBounds.height,
 	});
+
+	// bubbleWindow.setHasShadow(false);
 
 	var bubblePath = `file://${__dirname}/bubble/index.html`;
 	bubbleWindow.loadURL(bubblePath);
@@ -665,8 +660,6 @@ function createMainWindow() {
 		}
 	});
 
-	showMainWindow();
-
     //   if (type == "appearance-based") {
     //     vibrancyType = NSVisualEffectMaterialAppearanceBased;
     //   } else if (type == "light") {
@@ -951,7 +944,7 @@ function loadWithPeriods() {
 
 	getShortcuts((currentShortcuts) => {
 		if (currentShortcuts && currentShortcuts.bounds) {
-			if (currentShortcuts.hidden) {
+			if (deepEqual(currentShortcuts.bounds, hiddenBounds)) {
 				showBubbleWindow();
 			} else {
 				hideBubbleWindow();
@@ -982,7 +975,7 @@ function loadWithPeriods() {
 						return;
 					} else if (!currentShortcuts.bounds) {
 						log.info('ERROR bad data - loaded currentShortcuts but no bounds found! resetting to default');
-						currentShortcuts.bounds = defaultFullBounds;
+						currentShortcuts.bounds = hiddenBounds;
 					}
 
 					// We replace the period with a character code so the db understands it as a single string
@@ -1495,3 +1488,5 @@ ipcMain.on('open-learn', (e) => {
 	learnWindow.show();
 	learnWindow.focus();
 });
+
+ipcMain.on('hide-bubble-window', hideBubbleWindow);
