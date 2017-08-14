@@ -2,7 +2,7 @@
   "name": "ShortcutMagic",
   "productName": "ShortcutMagic",
   "description": "ShortcutMagic is a simple tool to see every action in any program, and master them.",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "license": "MIT",
   "private": true,
   "main": "shortcutmagic.js",
