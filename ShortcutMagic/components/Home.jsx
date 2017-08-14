@@ -46,7 +46,7 @@ const SortableItem = SortableElement((componentArguments) => {
             marginLeft: '10px',
 			fontSize: globalState.listTitleFontSize,
 			fontWeight: globalState.listTitleFontWeight,
-            backgroundColor: "#323f53", color: "#eedba5", 
+            backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
             textAlign: 'center',
         }}>{listItem.name}</p>
     );
@@ -120,7 +120,7 @@ const SortableItem = SortableElement((componentArguments) => {
     );
 
                 // <li><span classname="fa fa-film" style={{
-                //     backgroundcolor: "#323f53", color: "#eedba5", border: '2px solid rgb(37, 50, 70)', boxshadow: 'rgb(73, 91, 113) 0px 1px 0px inset',
+                //     backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, border: '2px solid rgb(37, 50, 70)', boxshadow: 'rgb(73, 91, 113) 0px 1px 0px inset',
                 //     // color: this.state.textcolor,
                 //     // backgroundcolor: 'transparent',
                 //     // flex: 2,
@@ -143,7 +143,7 @@ const SortableItem = SortableElement((componentArguments) => {
             alignContent: 'stretch',
             textAlign: 'center',
             height: '100%',
-            backgroundColor: "#323f53", color: "#eedba5", 
+            backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
         }}>
 
             <ul name={`buttonSection-${componentArguments.index}`} className="wrapper-2" style={{
@@ -240,7 +240,7 @@ const SortableItem = SortableElement((componentArguments) => {
             // borderRight: `2px solid #1e2430`,
             // borderTop: `2px solid #1e2430`,
             // borderBottom: `2px solid #ddd`,
-            backgroundColor: "#323f53", color: "#eedba5", 
+            backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
             border: '4px solid rgb(37, 50, 70)', boxShadow: '#222 0px 0px 20px 0px',
             // backgroundColor: globalState.itemBackgroundColor,
             // marginBottom: "8px",
@@ -286,7 +286,7 @@ const SortableItem = SortableElement((componentArguments) => {
                 // borderRadius: ".25rem",
                 // borderWidth: ".50rem",
                 // border: `2px solid #1e2430`,
-                backgroundColor: "#323f53", color: "#eedba5", 
+                backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
             }}>
                 {topSection}{mouseOverButtonsSection}
             </div>
@@ -735,7 +735,7 @@ export default class Home extends Component {
                 // borderRadius: ".25rem",
                 // borderWidth: ".50rem",
                 border: `2px solid #737475`, // #737475 is the color from Photon mac css
-                backgroundColor: "#323f53", color: "#eedba5", 
+                backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
             }} onChange={this.filterListTrigger} onKeyDown={(e) => {
                 if (e.keyCode === 27) { // key code 27 == escape
                     ipcRenderer.send('unfocus-main-window');
@@ -828,7 +828,7 @@ export default class Home extends Component {
         let SettingsButtons = (
             <div id="settings-button-group" className="toolbar-actions" style={{
                 display: 'none',
-                backgroundColor: "#323f53", color: "#eedba5", 
+                backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
             }}>
 
                 <ul className="wrapper-1" style={{
@@ -1021,7 +1021,7 @@ export default class Home extends Component {
 		let TitleAndSettings = (
             <div id="title-and-settings" style={{
                 textAlign: 'center',
-                backgroundColor: "#323f53", color: "#eedba5", 
+                backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
             }}>
                 <div style={{
                     display: 'flex',
@@ -1055,7 +1055,7 @@ export default class Home extends Component {
                 height: '20px',
                 width: '100%',
                 textAlign: 'center',
-                backgroundColor: "#323f53", color: "#eedba5", 
+                backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
             }} onMouseEnter={(e) => {
                 hidingSlowly = true;
     			window.document.getElementById("settings-button-group").style.display = "block";
@@ -1096,14 +1096,14 @@ export default class Home extends Component {
                 <div className="window">
 
                   <div className="window-content" style={{
-                        backgroundColor: "#323f53", color: "#eedba5", 
+                        backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
                     }}>
                       <div className="pane">
                         <table className="table-striped">
                           <tbody>
                             <tr className="file_arq">
                                 <td style={{
-                                    backgroundColor: "#323f53", color: "#eedba5", 
+                                    backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
                                 }}>
                                     {SearchField}
                                 </td>
@@ -1124,14 +1124,14 @@ export default class Home extends Component {
                 <div className="window">
 
                   <div className="window-content" style={{
-                        backgroundColor: "#323f53", color: "#eedba5", 
+                        backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
                     }}>
                       <div className="pane">
                         <table className="table-striped">
                           <tbody>
                             <tr className="file_arq">
                                 <td style={{
-                                    backgroundColor: "#323f53", color: "#eedba5", 
+                                    backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
                                 }}>
                                     {HiddenSettings}
                                 </td>
@@ -1151,14 +1151,14 @@ export default class Home extends Component {
                 <div className="window">
 
                   <div className="window-content" style={{
-                        backgroundColor: "#323f53", color: "#eedba5", 
+                        backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
                     }}>
                       <div className="pane">
                         <table className="table-striped">
                           <tbody>
                             <tr className="file_arq">
                                 <td style={{
-                                    backgroundColor: "#323f53", color: "#eedba5", 
+                                    backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
                                 }}>{TitleAndSettings}</td>
                             </tr>
                             <tr className="file_arq" style={{

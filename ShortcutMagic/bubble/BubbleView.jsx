@@ -46,7 +46,7 @@ export default class BubbleView extends Component {
           fading: true
         });
 
-        setTimeout(fadeOut, 50);
+        setTimeout(fadeOut, 30);
     };
     
 
@@ -86,7 +86,7 @@ export default class BubbleView extends Component {
       setTimeout(() => {
         stopFadeOut = false;
         fadeOut();
-      }, 2500);
+      }, 2000);
     });
 
 
@@ -125,11 +125,11 @@ export default class BubbleView extends Component {
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: `rgba(144, 235, 157, ${this.state.fade})`,
+        backgroundColor: `rgba(238, 219, 165, ${this.state.fade})`,
+        color: `rgba(0, 0, 0, ${this.state.fade})`, 
         borderRadius: ".35rem",
         borderWidth: ".50rem",
         boxShadow: 'rgba(34, 34, 34, ${this.state.fade}) 0px 0px 10px 0px',
-        color: `rgba(0, 0, 0, ${this.state.fade})`,
         textAlign: 'center',
       }} onMouseEnter={(e) => {
         stopFadeOut = true;

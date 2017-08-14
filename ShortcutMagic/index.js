@@ -275,10 +275,8 @@ function hideMainWindow() {
 
 	getShortcuts((currentShortcuts) => {
 		// Already hidden?
-		if (!deepEqual(bounds, hiddenBounds)) {
-			mainWindow.setBounds(hiddenBounds);
-			updateInMemoryBounds(bounds, true);
-		}
+		mainWindow.setBounds(hiddenBounds);
+		updateInMemoryBounds(bounds, true);
 	});
 }
 
@@ -374,7 +372,7 @@ function createBubbleWindow() {
 		x: hiddenBounds.x, y: hiddenBounds.y, width: hiddenBounds.width, height: hiddenBounds.height,
 	});
 
-	// bubbleWindow.setHasShadow(false);
+	bubbleWindow.setHasShadow(false);
 
 	var bubblePath = `file://${__dirname}/bubble/index.html`;
 	bubbleWindow.loadURL(bubblePath);
