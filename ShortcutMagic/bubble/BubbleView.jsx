@@ -22,7 +22,8 @@ function shuffleArray(array) {
 
 
 let stopFadeOut = false;
-const initialFade = 0.6;
+const initialFade = 0.0;
+const maxFade = 0.8;
 
 export default class BubbleView extends Component {
   componentWillMount() {
@@ -33,11 +34,13 @@ export default class BubbleView extends Component {
           return;
         }
 
-        if (this.state.fade <= 0.01) {
+        if (this.state.fade <= 0.03) {
           this.setState({
             fade: 0,
             fading: false
           });
+
+          ipcRenderer.send('hide-bubble-window');
           return;
         }
 
@@ -48,6 +51,25 @@ export default class BubbleView extends Component {
 
         setTimeout(fadeOut, 30);
     };
+
+    const fadeIn = () => {
+        console.log('in fadeIn ', this.state.fade);
+
+        if (this.state.fade >= maxFade) {
+          this.setState({
+            fade: maxFade,
+            fading: false
+          });
+          return;
+        }
+
+        this.setState({
+          fade: this.state.fade + 0.02,
+          fading: true
+        });
+
+        setTimeout(fadeIn, 30);
+    };
     
 
     ipcRenderer.on('update-shortcuts', (e, shortcutInfo) => {
@@ -57,7 +79,8 @@ export default class BubbleView extends Component {
 
       console.log('about to filter shortcuts before/after: ');
       console.log(shortcuts);
-      shortcuts = shortcuts.filter(obj => !obj.isHidden)
+      // TODO: Decide what to exclude based on shortcut power level!
+      shortcuts = shortcuts.filter(obj => !obj.isHidden && obj.menu != "File");
       console.log(shortcuts);
       shuffleArray(shortcuts);
 
@@ -80,13 +103,17 @@ export default class BubbleView extends Component {
       this.setState({
         shortcuts: shortcuts,
         currentShortcut: randomShortcut,
-        fade: initialFade, // TODO: DRY
+        fade: initialFade,
       });
 
       setTimeout(() => {
-        stopFadeOut = false;
-        fadeOut();
-      }, 2000);
+        fadeIn();
+        setTimeout(() => {
+          stopFadeOut = false;
+          fadeOut();
+        }, 3000);
+      }, 500);
+
     });
 
 
@@ -101,16 +128,11 @@ export default class BubbleView extends Component {
         <div style={{
           backgroundColor: `rgba(255, 255, 255, 0)`
         }}>
-          No shortcuts...
         </div>
       );
     }
 
     let { fade, currentShortcut } = this.state;
-
-    if (fade <= 0.01) {
-      ipcRenderer.send('hide-bubble-window');
-    }
 
     console.log('render ');
     console.log(fade);
@@ -188,7 +210,7 @@ export default class BubbleView extends Component {
       }} onMouseEnter={(e) => {
         stopFadeOut = true;
         this.setState({
-          fade: initialFade, //TODO: DRY
+          fade: 1, //TODO: DRY
           fading: false,
           mouseOver: true,
         });

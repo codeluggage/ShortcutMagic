@@ -188,16 +188,7 @@ const defaultBubbleWidth = 250;
 // Functions
 
 function getBubbleWindowBounds() {
-  let trayBounds = trayObject.getBounds();
-  if (!trayBounds || trayBounds.height <= 0 || trayBounds.width <= 0) {
-  	// TODO: DRY
-  	trayBounds = {
-  		x: 400,
-  		y: 20,
-  		height: defaultBubbleHeight,
-  		width: defaultBubbleWidth,
-  	};
-  }
+  const trayBounds = trayObject.getBounds();
 
   const defaultBubbleBounds = {
   	x: Math.round(trayBounds.x - (defaultBubbleWidth / 2)),
@@ -249,19 +240,7 @@ function getShortcuts(cb) {
 
 function showBubbleWindow() {
 	console.log('bubbleWindow.setBounds(getBubbleWindowBounds());', bubbleWindow.getBounds());
-	let bounds = getBubbleWindowBounds();
-
-	// TODO: Fix this
-	if (!bounds || deepEqual(bounds, hiddenBounds) || bounds.width <= 0 || bounds.height <= 0) {
-		// TODO: DRY
-		bounds = {
-  		x: 400,
-  		y: 20,
-  		height: defaultBubbleHeight,
-  		width: defaultBubbleWidth,
-		};
-	}
-
+	const bounds = getBubbleWindowBounds();
 	console.log('new bounds: ', bounds);
 	bubbleWindow.setBounds(bounds);
 	console.log('bubbleWindow.getBounds', bubbleWindow.getBounds());
