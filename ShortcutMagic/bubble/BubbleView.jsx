@@ -120,6 +120,60 @@ export default class BubbleView extends Component {
 
     // TODO: Make not clickable except for button with action or open main window
 
+    let bottomSection = null;
+
+    if (this.state.mouseOver) {
+      bottomSection = 
+        <div style={{
+          display: 'flex',
+          flexDirection: 'row',
+          fontSize: 16,
+        }} onMouseEnter={(e) => {
+          stopFadeOut = true;
+        }}>
+          <div style={{
+            backgroundColor: `rgba(255, 255, 255, 0)`,
+            color: `rgba(0, 0, 0, ${this.state.fade})`, 
+            border: '4px solid rgba(0, 0, 0, ${this.state.fade})',
+            borderRadius: ".35rem",
+            borderWidth: ".50rem",
+            flex: 2,
+          }} onMouseEnter={(e) => {
+            stopFadeOut = true;
+          }} onClick={() => {
+            currentShortcut.isHidden = true;
+            ipcRenderer.send('update-shortcut-item', currentShortcut);
+          }}>Not interested</div>
+          <div style={{
+            backgroundColor: `rgba(255, 255, 255, 0)`,
+            color: `rgba(0, 0, 0, ${this.state.fade})`, 
+            border: '4px solid rgba(0, 0, 0, ${this.state.fade})',
+            borderRadius: ".35rem",
+            borderWidth: ".50rem",
+            flex: 2,
+          }} onMouseEnter={(e) => {
+            stopFadeOut = true;
+          }} onClick={() => {
+            ipcRenderer.send('execute-list-item', currentShortcut);
+          }}>Run</div>
+        </div>
+    } else {
+      bottomSection = 
+        <div>
+            {
+              (currentShortcut["mod"]) ? currentShortcut["mod"] :
+                (currentShortcut["glyph"] && !currentShortcut["char"]) ? "⌘" :
+                  (!currentShortcut["glyph"] && currentShortcut["char"]) ? "⌘" : ""
+            }
+            {
+              (currentShortcut["glyph"]) ? ( currentShortcut["glyph"] ) : ""
+            }
+            {
+              (currentShortcut["char"]) ? ( currentShortcut["char"]): ""
+            }
+        </div>
+    }
+
 
     return (
       <div style={{
@@ -136,7 +190,12 @@ export default class BubbleView extends Component {
         this.setState({
           fade: initialFade, //TODO: DRY
           fading: false,
-        })
+          mouseOver: true,
+        });
+      }} onMouseLeave={(e) => {
+        this.setState({
+          mouseOver: false,
+        });
       }}>
         <b style={{
           flex: 1,
@@ -154,17 +213,7 @@ export default class BubbleView extends Component {
           fontSize: 22,
           fontWeight: 600,
         }}>
-          {
-            (currentShortcut["mod"]) ? currentShortcut["mod"] :
-              (currentShortcut["glyph"] && !currentShortcut["char"]) ? "⌘" :
-                (!currentShortcut["glyph"] && currentShortcut["char"]) ? "⌘" : ""
-          }
-          {
-            (currentShortcut["glyph"]) ? ( currentShortcut["glyph"] ) : ""
-          }
-          {
-            (currentShortcut["char"]) ? ( currentShortcut["char"]): ""
-          }
+          {bottomSection}
         </b>
       </div>
     );

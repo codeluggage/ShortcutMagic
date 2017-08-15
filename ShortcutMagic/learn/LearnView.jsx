@@ -17,7 +17,7 @@ export default class LearnView extends Component {
                 <h1>Learn ShortcutMagic</h1>
 
                 <ul style={{fontSize: 28, textAlign: 'left'}}>
-                    <li><a href="#loading">Loading shortcuts for a new app</a></li>
+                    <li><a href="#loading">Parsing shortcuts for a new app</a></li>
                     <li><a href="#search">Finding shortcuts</a></li>
                     <li><a href="#executing">Running shortcuts</a></li>
                     <li><a href="#favorites">Shortcut favorites</a></li>

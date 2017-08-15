@@ -188,7 +188,16 @@ const defaultBubbleWidth = 250;
 // Functions
 
 function getBubbleWindowBounds() {
-  const trayBounds = trayObject.getBounds();
+  let trayBounds = trayObject.getBounds();
+  if (!trayBounds || trayBounds.height <= 0 || trayBounds.width <= 0) {
+  	// TODO: DRY
+  	trayBounds = {
+  		x: 400,
+  		y: 20,
+  		height: defaultBubbleHeight,
+  		width: defaultBubbleWidth,
+  	};
+  }
 
   const defaultBubbleBounds = {
   	x: Math.round(trayBounds.x - (defaultBubbleWidth / 2)),
@@ -240,7 +249,19 @@ function getShortcuts(cb) {
 
 function showBubbleWindow() {
 	console.log('bubbleWindow.setBounds(getBubbleWindowBounds());', bubbleWindow.getBounds());
-	const bounds = getBubbleWindowBounds();
+	let bounds = getBubbleWindowBounds();
+
+	// TODO: Fix this
+	if (!bounds || deepEqual(bounds, hiddenBounds) || bounds.width <= 0 || bounds.height <= 0) {
+		// TODO: DRY
+		bounds = {
+  		x: 400,
+  		y: 20,
+  		height: defaultBubbleHeight,
+  		width: defaultBubbleWidth,
+		};
+	}
+
 	console.log('new bounds: ', bounds);
 	bubbleWindow.setBounds(bounds);
 	console.log('bubbleWindow.getBounds', bubbleWindow.getBounds());
@@ -899,11 +920,6 @@ function createLearnWindow() {
 	});
 }
 
-function updateRenderedShortcuts(shortcuts) {
-	mainWindow.webContents.send('update-shortcuts', shortcuts);
-	bubbleWindow.webContents.send('update-shortcuts', shortcuts);
-}
-
 function saveWithoutPeriods(payload) {
 	payload.bounds = mainWindow.getBounds();
 
@@ -963,6 +979,7 @@ function loadWithPeriods() {
 				log.info('loaded shortcuts, err? ', err);
 				if (err) {
 					log.info('errored during db find: ', err);
+					showBubbleWindow();
 					return;
 				}
 
@@ -986,16 +1003,16 @@ function loadWithPeriods() {
 		      inMemoryShortcuts[currentAppName] = currentShortcuts;
 		      mainWindow.setBounds(currentShortcuts.bounds);
 		      
-					if (currentShortcuts && deepEqual(currentShortcuts.bounds, hiddenBounds)) {
-						showBubbleWindow();
-					}
-
 		      mainWindow.webContents.send('update-shortcuts', currentShortcuts);
 		      bubbleWindow.webContents.send('update-shortcuts', currentShortcuts);
+
+					if ((currentShortcuts && deepEqual(currentShortcuts.bounds, hiddenBounds)) || !currentShortcuts || !currentShortcuts.bounds) {
+						showBubbleWindow();
+					}
 				} else {
 					if (!loadingText) {
 						mainWindow.webContents.send('set-loading', currentAppName);
-						loadingText = "Loading...";
+						loadingText = "Learning...";
 						trayObject.setTitle(loadingText);
 
 						log.info('calling parseShortcuts with currentAppName', currentAppName);
@@ -1172,7 +1189,8 @@ function mainParseShortcutsCallback(payload) {
 	loadingText = null;
 
 	if (payload) {
-		updateRenderedShortcuts(payload);
+		mainWindow.webContents.send('update-shortcuts', payload);
+		bubbleWindow.webContents.send('update-shortcuts', payload);
 		saveWithoutPeriods(payload);
 	} else {
 		appSwitched(null, currentAppName);
@@ -1238,6 +1256,7 @@ ipcMain.on('update-shortcut-item', (event, shortcutItem) => {
 	});
 });
 
+// TODO: Why does bubblewindow re-render after calling this?
 ipcMain.on('execute-list-item', (event, listItem) => {
 	if (!listItem) {
 		// how did we end up here??
