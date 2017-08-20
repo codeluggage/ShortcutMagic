@@ -180,7 +180,7 @@ let hackyStopSavePos = false;
 // TODO: Save to settings db
 const defaultFullBounds = {x: 1100, y: 150, width: 320, height: 700};
 const hiddenBounds  = { x: 89, y: 23, width: 0, height: 0 };
-const defaultBubbleHeight = 75;
+const defaultBubbleHeight = 125;
 const defaultBubbleWidth = 250;
 
 
@@ -1486,3 +1486,7 @@ ipcMain.on('open-learn', (e) => {
 });
 
 ipcMain.on('hide-bubble-window', hideBubbleWindow);
+
+ipcMain.on('force-to-top', (e, shortcut) => {
+	mainWindow.webContents.send('force-to-top', shortcut);
+});

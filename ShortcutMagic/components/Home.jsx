@@ -345,17 +345,7 @@ export default class Home extends Component {
             }
         });
 
-        ipcRenderer.on('focus-search-field', (event) => {
-            window.document.getElementById("title").style.display = "none";
-            window.document.getElementById("settings-button-group").style.display = "block";
-            window.document.getElementById("search-field").style.display = "";
-
-            this.setState({
-                menuActive: true
-            });
-
-            window.document.getElementById("search-field").focus();
-        });
+        ipcRenderer.on('focus-search-field', this.focusSearchField);
 
         ipcRenderer.on('temporarily-update-app-settings', (event, newSetting) => {
             // let backgroundColor = newSetting["backgroundColor"];
@@ -543,6 +533,10 @@ export default class Home extends Component {
 			})
 		});
 
+        ipcRenderer.on('force-to-top', (event, shortcut) => {
+            this.focusSearchField(null, shortcut.name);
+        });
+
         console.log('home constructor called');
         // this.setState({
         //     name: "ShortcutMagic",
@@ -717,6 +711,44 @@ export default class Home extends Component {
         this.setState({items: updatedList});
     }
 
+    filterListKeyDown(e) {
+        if (e.keyCode === 27) { // key code 27 == escape
+            ipcRenderer.send('unfocus-main-window');
+
+            let isActive = !(window.document.getElementById("hamburger-5").className.indexOf("is-active") > -1);
+            this.setState({
+                menuActive: isActive
+            });
+
+            // Clear search field and trigger list filter on empty search filter
+            window.document.getElementById("search-field").value = '';
+            this.filterListTrigger();
+
+            // Reset looks of title/search area
+            // TODO: DRY this up in a function
+            window.document.getElementById("title").style.display = "block";
+            window.document.getElementById("settings-button-group").style.display = "none";
+            window.document.getElementById("search-field").style.display = "none";
+        }
+    }
+
+    focusSearchField(event, searchValue) {
+        window.document.getElementById("title").style.display = "none";
+        window.document.getElementById("settings-button-group").style.display = "block";
+        window.document.getElementById("search-field").style.display = "";
+
+        if (searchValue && typeof searchValue === "string") {
+            window.document.getElementById("search-field").value = searchValue;
+            this.filterList(searchValue);
+        }
+
+        window.document.getElementById("search-field").focus();
+
+        this.setState({
+            menuActive: true
+        });
+    }
+
     render() {
         globalState = this.state;
         console.log('render() called', JSON.stringify(globalState));
@@ -736,26 +768,7 @@ export default class Home extends Component {
                 // borderWidth: ".50rem",
                 border: `2px solid #737475`, // #737475 is the color from Photon mac css
                 backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
-            }} onChange={this.filterListTrigger} onKeyDown={(e) => {
-                if (e.keyCode === 27) { // key code 27 == escape
-                    ipcRenderer.send('unfocus-main-window');
-
-                    let isActive = !(window.document.getElementById("hamburger-5").className.indexOf("is-active") > -1);
-                    this.setState({
-                        menuActive: isActive
-                    });
-
-                    // Clear search field and trigger list filter on empty search filter
-                    window.document.getElementById("search-field").value = '';
-                    this.filterListTrigger();
-
-                    // Reset looks of title/search area
-                    // TODO: DRY this up in a function
-                    window.document.getElementById("title").style.display = "block";
-                    window.document.getElementById("settings-button-group").style.display = "none";
-                    window.document.getElementById("search-field").style.display = "none";
-                }
-            }}/>
+            }} onChange={this.filterListTrigger} onKeyDown={this.filterListKeyDown}/>
 		);
 
         let shortcuts = this.state.items;

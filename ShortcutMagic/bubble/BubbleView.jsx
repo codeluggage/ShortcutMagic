@@ -27,99 +27,102 @@ const maxFade = 0.8;
 
 export default class BubbleView extends Component {
   componentWillMount() {
-    const fadeOut = () => {
-        console.log('in fadeout ', this.state.fade);
-        if (stopFadeOut) {
-          console.log('stopping fadeout');
-          return;
-        }
+    this.updateShortcuts = this.updateShortcuts.bind(this);
+    this.fadeOut = this.fadeOut.bind(this);
+    this.fadeIn = this.fadeIn.bind(this);
 
-        if (this.state.fade <= 0.03) {
-          this.setState({
-            fade: 0,
-            fading: false
-          });
-
-          ipcRenderer.send('hide-bubble-window');
-          return;
-        }
-
-        this.setState({
-          fade: this.state.fade - 0.01,
-          fading: true
-        });
-
-        setTimeout(fadeOut, 30);
-    };
-
-    const fadeIn = () => {
-        console.log('in fadeIn ', this.state.fade);
-
-        if (this.state.fade >= maxFade) {
-          this.setState({
-            fade: maxFade,
-            fading: false
-          });
-          return;
-        }
-
-        this.setState({
-          fade: this.state.fade + 0.02,
-          fading: true
-        });
-
-        setTimeout(fadeIn, 30);
-    };
-    
-
-    ipcRenderer.on('update-shortcuts', (e, shortcutInfo) => {
-      stopFadeOut = true;
-
-      let shortcuts = Object.values(shortcutInfo.shortcuts);
-
-      console.log('about to filter shortcuts before/after: ');
-      console.log(shortcuts);
-      // TODO: Decide what to exclude based on shortcut power level!
-      shortcuts = shortcuts.filter(obj => !obj.isHidden && obj.menu != "File");
-      console.log(shortcuts);
-      shuffleArray(shortcuts);
-
-      shortcuts.sort((a, b) => {
-        if (a.isFavorite && b.isFavorite) {
-          return 0;
-        } else if (a.isFavorite) {
-          return -1;
-        } else if (b.isFavorite) {
-          return 1;
-        }
-
-        return 0;
-      });
-
-      // Random shortcut from top half of the list
-      let randomShortcut = shortcuts[Math.floor(Math.random() * (shortcuts.length * 0.5))];
-      console.log('random shortcut is: ', randomShortcut);
-
-      this.setState({
-        shortcuts: shortcuts,
-        currentShortcut: randomShortcut,
-        fade: initialFade,
-      });
-
-      setTimeout(() => {
-        fadeIn();
-        setTimeout(() => {
-          stopFadeOut = false;
-          fadeOut();
-        }, 3000);
-      }, 500);
-
-    });
-
+    ipcRenderer.on('update-shortcuts', this.updateShortcuts);
 
     this.setState({
       fade: initialFade // TODO: DRY
     });
+  }
+
+  fadeOut() {
+    if (stopFadeOut) {
+      console.log('stopping fadeout');
+      return;
+    }
+
+    if (this.state.fade <= 0.03) {
+      this.setState({
+        fade: 0,
+        fading: false
+      });
+
+      ipcRenderer.send('hide-bubble-window');
+      return;
+    }
+
+    this.setState({
+      fade: this.state.fade - 0.01,
+      fading: true
+    });
+
+    setTimeout(this.fadeOut, 30);
+  }
+
+  fadeIn() {
+    if (this.state.fade >= maxFade) {
+      this.setState({
+        fade: maxFade,
+        fading: false
+      });
+      return;
+    }
+
+    this.setState({
+      fade: this.state.fade + 0.02,
+      fading: true
+    });
+
+    setTimeout(this.fadeIn, 30);
+  }
+
+  updateShortcuts(e, shortcutInfo) {
+    stopFadeOut = true;
+
+    let shortcuts = Object.values(shortcutInfo.shortcuts);
+
+    console.log('about to filter shortcuts before/after: ');
+    console.log(shortcuts);
+    // TODO: Decide what to exclude based on shortcut power level!
+    shortcuts = shortcuts.filter(obj => !obj.isHidden && obj.menu != "File");
+    console.log(shortcuts);
+    shuffleArray(shortcuts);
+
+    shortcuts.sort((a, b) => {
+      if (a.isFavorite && b.isFavorite) {
+        return 0;
+      } else if (a.isFavorite) {
+        return -1;
+      } else if (b.isFavorite) {
+        return 1;
+      }
+
+      return 0;
+    });
+
+    // Random shortcut from top half of the list
+    let randomShortcut = shortcuts[Math.floor(Math.random() * (shortcuts.length * 0.5))];
+    console.log('random shortcut is: ', randomShortcut);
+
+    this.setState({
+      shortcuts: shortcuts,
+      currentShortcut: randomShortcut,
+      fade: initialFade,
+      mouseOver: false,
+    });
+
+    setTimeout(() => {
+      this.fadeIn();
+      setTimeout(() => {
+        if (!this.state.mouseOver) {
+          stopFadeOut = false;
+          this.fadeOut();
+        }
+      }, 3000);
+    }, 500);
   }
 
   render() {
@@ -134,9 +137,7 @@ export default class BubbleView extends Component {
 
     let { fade, currentShortcut } = this.state;
 
-    console.log('render ');
-    console.log(fade);
-    console.log(currentShortcut);
+    // console.log('render ', this.state.mouseOver);
 
     // TODO: Use same color as main window? going for feelings of "bright, easy, fades away into nothing, not interrupting, not disturbing, not sudden, not in the way"
 
@@ -144,40 +145,176 @@ export default class BubbleView extends Component {
 
     let bottomSection = null;
 
+    const stopFadingWithState = (newState = {}) => {
+      stopFadeOut = true;
+      newState.fade = maxFade;
+      newState.fading = false;
+      this.setState(newState);
+    };
+
     if (this.state.mouseOver) {
+      const borderRemove = this.state.mouseOver == "remove" ? '1px solid rgba(50, 63, 83, 1)' : '';
+      const borderFavorite = this.state.mouseOver == "favorite" ? '1px solid rgba(50, 63, 83, 1)' : '';
+      const borderRun = this.state.mouseOver == "run" ? '1px solid rgba(50, 63, 83, 1)' : '';
+      const borderNext = this.state.mouseOver == "next" ? '1px solid rgba(50, 63, 83, 1)' : '';
+      const borderPrevious = this.state.mouseOver == "previous" ? '1px solid rgba(50, 63, 83, 1)' : '';
+      const borderHighlight = this.state.mouseOver == "highlight" ? '1px solid rgba(50, 63, 83, 1)' : '';
+
       bottomSection = 
         <div style={{
           display: 'flex',
-          flexDirection: 'row',
+          flexDirection: 'column',
           fontSize: 16,
+          padding: '4px',
         }} onMouseEnter={(e) => {
-          stopFadeOut = true;
+          stopFadingWithState({
+            mouseOver: true,
+          });
+        }} onMouseLeave={(e) => {
+          stopFadingWithState({
+            mouseOver: false,
+          });
         }}>
+
           <div style={{
-            backgroundColor: `rgba(255, 255, 255, 0)`,
-            color: `rgba(0, 0, 0, ${this.state.fade})`, 
-            border: '4px solid rgba(0, 0, 0, ${this.state.fade})',
-            borderRadius: ".35rem",
-            borderWidth: ".50rem",
-            flex: 2,
-          }} onMouseEnter={(e) => {
-            stopFadeOut = true;
-          }} onClick={() => {
-            currentShortcut.isHidden = true;
-            ipcRenderer.send('update-shortcut-item', currentShortcut);
-          }}>Not interested</div>
+            display: 'flex',
+            flex: 1,
+            flexDirection: 'row',
+          }}>
+
+            <div style={{
+              backgroundColor: `rgba(255, 255, 255, 0)`,
+              color: `rgba(0, 0, 0, ${this.state.fade})`, 
+              border: borderRemove,
+              borderRadius: ".35rem",
+              borderWidth: ".50rem",
+              flex: 2,
+            }} onMouseLeave={(e) => {
+              this.setState({
+                mouseOver: true,
+              });
+            }} onMouseEnter={(e) => {
+              stopFadingWithState({
+                mouseOver: "remove"
+              });
+            }} onClick={() => {
+              currentShortcut.isFavorite = false;
+              currentShortcut.isHidden = true;
+              ipcRenderer.send('update-shortcut-item', currentShortcut);
+            }}>Ignore</div>
+
+            <div style={{
+              backgroundColor: `rgba(255, 255, 255, 0)`,
+              color: `rgba(0, 0, 0, ${this.state.fade})`, 
+              border: borderFavorite,
+              borderRadius: ".35rem",
+              borderWidth: ".50rem",
+              flex: 2,
+            }} onMouseLeave={(e) => {
+              this.setState({
+                mouseOver: true,
+              });
+            }} onMouseEnter={(e) => {
+              stopFadingWithState({
+                mouseOver: "favorite"
+              });
+            }} onClick={() => {
+              currentShortcut.isFavorite = true;
+              currentShortcut.isHidden = false;
+              ipcRenderer.send('update-shortcut-item', currentShortcut);
+            }}>Favorite</div>
+
+            <div style={{
+              backgroundColor: `rgba(255, 255, 255, 0)`,
+              color: `rgba(0, 0, 0, ${this.state.fade})`, 
+              border: borderRun,
+              borderRadius: ".35rem",
+              borderWidth: ".50rem",
+              flex: 2,
+            }} onMouseLeave={(e) => {
+              this.setState({
+                mouseOver: true,
+              });
+            }} onMouseEnter={(e) => {
+              stopFadingWithState({
+                mouseOver: "run"
+              });
+            }} onClick={() => {
+              console.log('BEFORE EXECUTE >>>>>>>>>>>>>>>>>>>>>>.');
+              ipcRenderer.send('execute-list-item', currentShortcut);
+              console.log('AFTER EXECUTE >>>>>>>>>>>>>>>>>>>>>>.');
+            }}>Run</div>
+
+          </div>
+
           <div style={{
-            backgroundColor: `rgba(255, 255, 255, 0)`,
-            color: `rgba(0, 0, 0, ${this.state.fade})`, 
-            border: '4px solid rgba(0, 0, 0, ${this.state.fade})',
-            borderRadius: ".35rem",
-            borderWidth: ".50rem",
-            flex: 2,
-          }} onMouseEnter={(e) => {
-            stopFadeOut = true;
-          }} onClick={() => {
-            ipcRenderer.send('execute-list-item', currentShortcut);
-          }}>Run</div>
+            display: 'flex',
+            flex: 1,
+            flexDirection: 'row',
+          }}>
+
+            <div style={{
+              backgroundColor: `rgba(255, 255, 255, 0)`,
+              color: `rgba(0, 0, 0, ${this.state.fade})`, 
+              border: borderNext,
+              borderRadius: ".35rem",
+              borderWidth: ".50rem",
+              flex: 2,
+            }} onMouseLeave={(e) => {
+              this.setState({
+                mouseOver: true,
+              });
+            }} onMouseEnter={(e) => {
+              stopFadingWithState({
+                mouseOver: "next"
+              });
+            }} onClick={() => {
+              this.updateShortcuts(null, {
+                shortcuts: this.state.shortcuts
+              });
+            }}>Next</div>
+
+            <div style={{
+              backgroundColor: `rgba(255, 255, 255, 0)`,
+              color: `rgba(0, 0, 0, ${this.state.fade})`, 
+              border: borderPrevious,
+              borderRadius: ".35rem",
+              borderWidth: ".50rem",
+              flex: 2,
+            }} onMouseLeave={(e) => {
+              this.setState({
+                mouseOver: true,
+              });
+            }} onMouseEnter={(e) => {
+              stopFadingWithState({
+                mouseOver: "previous"
+              });
+            }} onClick={() => {
+
+            }}>Previous</div>
+
+            <div style={{
+              backgroundColor: `rgba(255, 255, 255, 0)`,
+              color: `rgba(0, 0, 0, ${this.state.fade})`, 
+              border: borderHighlight,
+              borderRadius: ".35rem",
+              borderWidth: ".50rem",
+              flex: 2,
+            }} onMouseLeave={(e) => {
+              this.setState({
+                mouseOver: true,
+              });
+            }} onMouseEnter={(e) => {
+              stopFadingWithState({
+                mouseOver: "highlight"
+              });
+            }} onClick={() => {
+              ipcRenderer.send('toggle-window');
+              ipcRenderer.send('force-to-top', currentShortcut);
+            }}>Highlight</div>
+
+          </div>
+
         </div>
     } else {
       bottomSection = 
@@ -208,15 +345,8 @@ export default class BubbleView extends Component {
         boxShadow: 'rgba(34, 34, 34, ${this.state.fade}) 0px 0px 10px 0px',
         textAlign: 'center',
       }} onMouseEnter={(e) => {
-        stopFadeOut = true;
-        this.setState({
-          fade: 1, //TODO: DRY
-          fading: false,
-          mouseOver: true,
-        });
-      }} onMouseLeave={(e) => {
-        this.setState({
-          mouseOver: false,
+        stopFadingWithState(this.state.mouseOver ? undefined : {
+          mouseOver: true
         });
       }}>
         <b style={{
