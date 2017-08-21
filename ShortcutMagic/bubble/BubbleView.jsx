@@ -92,13 +92,13 @@ export default class BubbleView extends Component {
     shuffleArray(shortcuts);
 
     shortcuts.sort((a, b) => {
-      if (a.isFavorite && b.isFavorite) {
-        return 0;
-      } else if (a.isFavorite) {
-        return -1;
-      } else if (b.isFavorite) {
-        return 1;
-      }
+      console.log('sorting a b', a.score, b.score);
+      if (!a.score) a.score = 0;
+      if (!b.score) b.score = 0;
+
+      if (a.score > b.score) return  -1;
+      if (a.score < b.score) return  1;
+      if (a.score === b.score) return  0;
 
       return 0;
     });
@@ -153,8 +153,8 @@ export default class BubbleView extends Component {
     };
 
     if (this.state.mouseOver) {
-      const borderRemove = this.state.mouseOver == "remove" ? '1px solid rgba(50, 63, 83, 1)' : '';
-      const borderFavorite = this.state.mouseOver == "favorite" ? '1px solid rgba(50, 63, 83, 1)' : '';
+      const borderRemove = this.state.mouseOver == "downvote" ? '1px solid rgba(50, 63, 83, 1)' : '';
+      const borderFavorite = this.state.mouseOver == "upvote" ? '1px solid rgba(50, 63, 83, 1)' : '';
       const borderRun = this.state.mouseOver == "run" ? '1px solid rgba(50, 63, 83, 1)' : '';
       const borderNext = this.state.mouseOver == "next" ? '1px solid rgba(50, 63, 83, 1)' : '';
       const borderPrevious = this.state.mouseOver == "previous" ? '1px solid rgba(50, 63, 83, 1)' : '';
@@ -195,13 +195,12 @@ export default class BubbleView extends Component {
               });
             }} onMouseEnter={(e) => {
               stopFadingWithState({
-                mouseOver: "remove"
+                mouseOver: "downvote"
               });
             }} onClick={() => {
-              currentShortcut.isFavorite = false;
-              currentShortcut.isHidden = true;
+              currentShortcut.score = currentShortcut.score ? currentShortcut.score - 1 : -1;
               ipcRenderer.send('update-shortcut-item', currentShortcut);
-            }}>Ignore</div>
+            }}>downvote</div>
 
             <div style={{
               backgroundColor: `rgba(255, 255, 255, 0)`,
@@ -216,13 +215,12 @@ export default class BubbleView extends Component {
               });
             }} onMouseEnter={(e) => {
               stopFadingWithState({
-                mouseOver: "favorite"
+                mouseOver: "upvote"
               });
             }} onClick={() => {
-              currentShortcut.isFavorite = true;
-              currentShortcut.isHidden = false;
+              currentShortcut.score = currentShortcut.score ? currentShortcut.score + 1 : 1;
               ipcRenderer.send('update-shortcut-item', currentShortcut);
-            }}>Favorite</div>
+            }}>upvote</div>
 
             <div style={{
               backgroundColor: `rgba(255, 255, 255, 0)`,
@@ -256,6 +254,25 @@ export default class BubbleView extends Component {
             <div style={{
               backgroundColor: `rgba(255, 255, 255, 0)`,
               color: `rgba(0, 0, 0, ${this.state.fade})`, 
+              border: borderPrevious,
+              borderRadius: ".35rem",
+              borderWidth: ".50rem",
+              flex: 2,
+            }} onMouseLeave={(e) => {
+              this.setState({
+                mouseOver: true,
+              });
+            }} onMouseEnter={(e) => {
+              stopFadingWithState({
+                mouseOver: "previous"
+              });
+            }} onClick={() => {
+
+            }}>Previous</div>
+            
+            <div style={{
+              backgroundColor: `rgba(255, 255, 255, 0)`,
+              color: `rgba(0, 0, 0, ${this.state.fade})`, 
               border: borderNext,
               borderRadius: ".35rem",
               borderWidth: ".50rem",
@@ -274,24 +291,6 @@ export default class BubbleView extends Component {
               });
             }}>Next</div>
 
-            <div style={{
-              backgroundColor: `rgba(255, 255, 255, 0)`,
-              color: `rgba(0, 0, 0, ${this.state.fade})`, 
-              border: borderPrevious,
-              borderRadius: ".35rem",
-              borderWidth: ".50rem",
-              flex: 2,
-            }} onMouseLeave={(e) => {
-              this.setState({
-                mouseOver: true,
-              });
-            }} onMouseEnter={(e) => {
-              stopFadingWithState({
-                mouseOver: "previous"
-              });
-            }} onClick={() => {
-
-            }}>Previous</div>
 
             <div style={{
               backgroundColor: `rgba(255, 255, 255, 0)`,

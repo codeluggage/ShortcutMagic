@@ -148,65 +148,77 @@ const SortableItem = SortableElement((componentArguments) => {
 
             <ul name={`buttonSection-${componentArguments.index}`} className="wrapper-2" style={{
                 display: 'none',
+                flex: 4,
                 textAlign: 'right',
             }}>
 
+                <div data-for='upvote-tooltip' data-iscapture="true" data-tip="Vote upwards, see it more">
+                    <span style={{
+                        color: listItem.score > -1 ? 'green' : 'red',
+                        fontWeight: 800,
+                        // backgroundColor: 'transparent',
+                        flex: 1,
+                        margin: '4px',
+                        padding: '4px',
+                        // flex: 4,
+                    }}>{listItem.score ? listItem.score : 0}</span>
+
+                </div>
 
                 <li onClick={() => {
                     console.log("clicked execute-list-item with ", listItem);
                     ipcRenderer.send('execute-list-item', listItem);
-                }}
-                data-for='execute-tooltip'
+                }} data-for='execute-tooltip'
                 data-iscapture="true"
                 data-tip="Run this shortcut">
-                <span className="fa fa-1x fa-play" style={{
-                    // color: this.state.textColor,
-                    // backgroundColor: 'transparent',
-                    // flex: 2,
-                    // margin: 0,
-                    // flex: 4,
-                }}>
-                </span>
+
+                    <span className="fa fa-1x fa-play" style={{
+                        // color: this.state.textColor,
+                        // backgroundColor: 'transparent',
+                        // flex: 2,
+                        // margin: 0,
+                        // flex: 4,
+                    }}></span>
+
                 </li>
 
                 <li onClick={() => {
-                    listItem.isFavorite = !listItem.isFavorite;
-                    console.log("Updating shortcut item with toggled isFavorite: ", listItem);
+                    listItem.score = listItem.score ? listItem.score + 1 : 1;
+                    console.log("clicked upvote-list-item with ", listItem);
                     ipcRenderer.send('update-shortcut-item', listItem);
-                }}
-                data-for='favorite-tooltip'
+                }} data-for='upvote-tooltip'
                 data-iscapture="true"
-                data-tip="Add to favorites and keep <br />at the top of the list">
-                <span name={(listItem.isFavorite) ? 'enabled-favorite-button' : ''} 
-                className={(listItem.isFavorite) ? 'fa fa-1x fa-star' : 'fa fa-1x fa-star-o' } style={{
-                    // color: this.state.textColor,
-                    // backgroundColor: 'transparent',
-                    // flex: 2,
-                    // margin: 0,
-                    // flex: 4,
-                    // display: (listItem.isFavorite) ? 'block' : 'none',
-                    // color: globalState.textColor,
-                    color: (listItem.isFavorite) ? 'gold' : '',                
-                }}></span>
+                data-tip="Vote upwards, see it more">
+
+                    <span className="fa fa-1x fa-long-arrow-up" style={{
+                        color: 'green',
+                        // backgroundColor: 'transparent',
+                        // flex: 2,
+                        // margin: 0,
+                        // flex: 4,
+                    }}></span>
+
                 </li>
 
+
                 <li onClick={() => {
-                    listItem.isHidden = !listItem.isHidden;
-                    console.log("Updating shortcut item with toggled isHidden: ", listItem);
+                    listItem.score = listItem.score ? listItem.score - 1 : -1;
+                    console.log("clicked downvote-list-item with ", listItem);
                     ipcRenderer.send('update-shortcut-item', listItem);
-                }}
-                data-for='favorite-tooltip'
+                }} data-for='downvote-tooltip'
                 data-iscapture="true"
-                data-tip="Hide at the bottom <br />of the list">
-                <span name={(listItem.isHidden) ? 'enabled-hidden-button' : ''} className='fa fa-1x fa-eye' style={{
-                    // color: this.state.textColor,
-                    // backgroundColor: 'transparent',
-                    // flex: 2,
-                    // margin: 0,
-                    // flex: 4,
-                    color: (listItem.isHidden) ? 'red' : '',                
-                }}></span>
+                data-tip="Vote downwards, see it less">
+
+                    <span className="fa fa-1x fa-long-arrow-down" style={{
+                        color: 'red',
+                        // backgroundColor: 'transparent',
+                        // flex: 2,
+                        // margin: 0,
+                        // flex: 4,
+                    }}></span>
+
                 </li>
+
             </ul>
         </div>
     );
@@ -693,21 +705,6 @@ export default class Home extends Component {
             });
         }
 
-        // updatedList.sort((a, b) => {
-        //     if (a.isHidden) {
-        //         if (b.isHidden) return 0; // a <> b
-        //
-        //         return 1; // b > a
-        //     }
-        //     if (a.isFavorite) {
-        //         if (b.isFavorite) return 0; // a <> b
-        //
-        //         return -1; // a > b
-        //     }
-        //
-        //     return 0; // a <> b
-        // });
-
         this.setState({items: updatedList});
     }
 
@@ -774,18 +771,15 @@ export default class Home extends Component {
         let shortcuts = this.state.items;
         if (!this.previousShortcuts || this.previousShortcuts != shortcuts) {
             shortcuts.sort((a, b) => {
-                if (a.isHidden) {
-                    if (b.isHidden) return 0; // a <> b
+              console.log('sorting a b', a.score, b.score);
+              if (!a.score) a.score = 0;
+              if (!b.score) b.score = 0;
 
-                    return 1; // b > a
-                }
-                if (a.isFavorite) {
-                    if (b.isFavorite) return 0; // a <> b
+              if (a.score > b.score) return  -1;
+              if (a.score < b.score) return  1;
+              if (a.score === b.score) return  0;
 
-                    return -1; // a > b
-                }
-
-                return 0; // a <> b
+              return 0;
             });
 
             this.previousShortcuts = shortcuts;

@@ -1,5 +1,6 @@
 'use strict';
 
+const electron = require('electron')
 const {
     // app lets us access global things about the whole running application, like the application name, the dock state,
     // and events that trigger for the whole application, like app.on('before-quit', ...
@@ -188,17 +189,28 @@ const defaultBubbleWidth = 250;
 // Functions
 
 function getBubbleWindowBounds() {
-  const trayBounds = trayObject.getBounds();
+	const { width } = electron.screen.getPrimaryDisplay().workAreaSize
 
-  const defaultBubbleBounds = {
-  	x: Math.round(trayBounds.x - (defaultBubbleWidth / 2)),
-  	y: Math.round(trayBounds.y + trayBounds.height + 4),
+	return {
+  	x: width - (defaultBubbleWidth + 5),
+  	y: 20,
   	height: defaultBubbleHeight,
   	width: defaultBubbleWidth,
   };
 
-  console.log('returning bounds for bubble window', defaultBubbleBounds);
-  return defaultBubbleBounds;
+
+
+  // const trayBounds = trayObject.getBounds();
+
+  // const defaultBubbleBounds = {
+  // 	x: Math.round(trayBounds.x - (defaultBubbleWidth / 2)),
+  // 	y: Math.round(trayBounds.y + trayBounds.height + 4),
+  // 	height: defaultBubbleHeight,
+  // 	width: defaultBubbleWidth,
+  // };
+
+  // console.log('returning bounds for bubble window', defaultBubbleBounds);
+  // return defaultBubbleBounds;
 }
 
 function updateInMemoryBounds(bounds, hidden) {
@@ -1229,8 +1241,8 @@ ipcMain.on('update-shortcut-item', (event, shortcutItem) => {
 		if (err) {
 			log.info("error when updating favorite for list item ", listItemName);
 		} else {
-			log.info("succeeded favoriting item: ", res);
-			loadWithPeriods(); // TODO: Is this really needed? Double rendering
+			log.info("saved ", shortcutObject, res);
+			loadWithPeriods();
 		}
 	});
 });
