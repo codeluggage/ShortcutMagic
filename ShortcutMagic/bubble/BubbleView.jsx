@@ -20,6 +20,17 @@ function shuffleArray(array) {
     return array;
 }
 
+function getRandomShortcut(shortcuts, previousShortcuts) {
+  let filtered = shortcuts;
+
+  if (shortcuts.length > previousShortcuts.length) {
+    let names = previousShortcuts.map(s => s.name);
+    filtered = (!names || !names.lenght) ? shortcuts : shortcuts.filter(s => names.indexOf(s.name) === -1);
+  }
+
+  return filtered[Math.floor(Math.random() * (filtered.length * 0.5))];
+}
+
 
 let stopFadeOut = false;
 const initialFade = 0.0;
@@ -104,25 +115,33 @@ export default class BubbleView extends Component {
     });
 
     // Random shortcut from top half of the list
-    let randomShortcut = shortcuts[Math.floor(Math.random() * (shortcuts.length * 0.5))];
+    let previousShortcuts = this.state ? (this.state.previousShortcuts ? this.state.previousShortcuts : []) : [];
+    let randomShortcut = getRandomShortcut(shortcuts, previousShortcuts);
     console.log('random shortcut is: ', randomShortcut);
+    previousShortcuts.push(randomShortcut);
 
-    this.setState({
+    let newState = {
       shortcuts: shortcuts,
       currentShortcut: randomShortcut,
-      fade: initialFade,
-      mouseOver: false,
-    });
+      previousShortcuts: previousShortcuts,
+    };
 
-    setTimeout(() => {
-      this.fadeIn();
+    if (e) {
+      newState.fade = initialFade;
+      newState.mouseOver = false;
+
       setTimeout(() => {
-        if (!this.state.mouseOver) {
-          stopFadeOut = false;
-          this.fadeOut();
-        }
-      }, 3000);
-    }, 500);
+        this.fadeIn();
+        setTimeout(() => {
+          if (!this.state.mouseOver) {
+            stopFadeOut = false;
+            this.fadeOut();
+          }
+        }, 3000);
+      }, 500);
+    }
+
+    this.setState(newState);
   }
 
   render() {
@@ -143,8 +162,6 @@ export default class BubbleView extends Component {
 
     // TODO: Make not clickable except for button with action or open main window
 
-    let bottomSection = null;
-
     const stopFadingWithState = (newState = {}) => {
       stopFadeOut = true;
       newState.fade = maxFade;
@@ -152,220 +169,254 @@ export default class BubbleView extends Component {
       this.setState(newState);
     };
 
-    if (this.state.mouseOver) {
-      const borderRemove = this.state.mouseOver == "downvote" ? '1px solid rgba(50, 63, 83, 1)' : '';
-      const borderFavorite = this.state.mouseOver == "upvote" ? '1px solid rgba(50, 63, 83, 1)' : '';
-      const borderRun = this.state.mouseOver == "run" ? '1px solid rgba(50, 63, 83, 1)' : '';
-      const borderNext = this.state.mouseOver == "next" ? '1px solid rgba(50, 63, 83, 1)' : '';
-      const borderPrevious = this.state.mouseOver == "previous" ? '1px solid rgba(50, 63, 83, 1)' : '';
-      const borderHighlight = this.state.mouseOver == "highlight" ? '1px solid rgba(50, 63, 83, 1)' : '';
-
-      bottomSection = 
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          fontSize: 16,
-          padding: '4px',
-        }} onMouseEnter={(e) => {
-          stopFadingWithState({
-            mouseOver: true,
-          });
-        }} onMouseLeave={(e) => {
-          stopFadingWithState({
-            mouseOver: false,
-          });
-        }}>
-
-          <div style={{
-            display: 'flex',
-            flex: 1,
-            flexDirection: 'row',
-          }}>
-
-            <div style={{
-              backgroundColor: `rgba(255, 255, 255, 0)`,
-              color: `rgba(0, 0, 0, ${this.state.fade})`, 
-              border: borderRemove,
-              borderRadius: ".35rem",
-              borderWidth: ".50rem",
-              flex: 2,
-            }} onMouseLeave={(e) => {
-              this.setState({
-                mouseOver: true,
-              });
-            }} onMouseEnter={(e) => {
-              stopFadingWithState({
-                mouseOver: "downvote"
-              });
-            }} onClick={() => {
-              currentShortcut.score = currentShortcut.score ? currentShortcut.score - 1 : -1;
-              ipcRenderer.send('update-shortcut-item', currentShortcut);
-            }}>downvote</div>
-
-            <div style={{
-              backgroundColor: `rgba(255, 255, 255, 0)`,
-              color: `rgba(0, 0, 0, ${this.state.fade})`, 
-              border: borderFavorite,
-              borderRadius: ".35rem",
-              borderWidth: ".50rem",
-              flex: 2,
-            }} onMouseLeave={(e) => {
-              this.setState({
-                mouseOver: true,
-              });
-            }} onMouseEnter={(e) => {
-              stopFadingWithState({
-                mouseOver: "upvote"
-              });
-            }} onClick={() => {
-              currentShortcut.score = currentShortcut.score ? currentShortcut.score + 1 : 1;
-              ipcRenderer.send('update-shortcut-item', currentShortcut);
-            }}>upvote</div>
-
-            <div style={{
-              backgroundColor: `rgba(255, 255, 255, 0)`,
-              color: `rgba(0, 0, 0, ${this.state.fade})`, 
-              border: borderRun,
-              borderRadius: ".35rem",
-              borderWidth: ".50rem",
-              flex: 2,
-            }} onMouseLeave={(e) => {
-              this.setState({
-                mouseOver: true,
-              });
-            }} onMouseEnter={(e) => {
-              stopFadingWithState({
-                mouseOver: "run"
-              });
-            }} onClick={() => {
-              console.log('BEFORE EXECUTE >>>>>>>>>>>>>>>>>>>>>>.');
-              ipcRenderer.send('execute-list-item', currentShortcut);
-              console.log('AFTER EXECUTE >>>>>>>>>>>>>>>>>>>>>>.');
-            }}>Run</div>
-
-          </div>
-
-          <div style={{
-            display: 'flex',
-            flex: 1,
-            flexDirection: 'row',
-          }}>
-
-            <div style={{
-              backgroundColor: `rgba(255, 255, 255, 0)`,
-              color: `rgba(0, 0, 0, ${this.state.fade})`, 
-              border: borderPrevious,
-              borderRadius: ".35rem",
-              borderWidth: ".50rem",
-              flex: 2,
-            }} onMouseLeave={(e) => {
-              this.setState({
-                mouseOver: true,
-              });
-            }} onMouseEnter={(e) => {
-              stopFadingWithState({
-                mouseOver: "previous"
-              });
-            }} onClick={() => {
-
-            }}>Previous</div>
-            
-            <div style={{
-              backgroundColor: `rgba(255, 255, 255, 0)`,
-              color: `rgba(0, 0, 0, ${this.state.fade})`, 
-              border: borderNext,
-              borderRadius: ".35rem",
-              borderWidth: ".50rem",
-              flex: 2,
-            }} onMouseLeave={(e) => {
-              this.setState({
-                mouseOver: true,
-              });
-            }} onMouseEnter={(e) => {
-              stopFadingWithState({
-                mouseOver: "next"
-              });
-            }} onClick={() => {
-              this.updateShortcuts(null, {
-                shortcuts: this.state.shortcuts
-              });
-            }}>Next</div>
-
-
-            <div style={{
-              backgroundColor: `rgba(255, 255, 255, 0)`,
-              color: `rgba(0, 0, 0, ${this.state.fade})`, 
-              border: borderHighlight,
-              borderRadius: ".35rem",
-              borderWidth: ".50rem",
-              flex: 2,
-            }} onMouseLeave={(e) => {
-              this.setState({
-                mouseOver: true,
-              });
-            }} onMouseEnter={(e) => {
-              stopFadingWithState({
-                mouseOver: "highlight"
-              });
-            }} onClick={() => {
-              ipcRenderer.send('toggle-window');
-              ipcRenderer.send('force-to-top', currentShortcut);
-            }}>Highlight</div>
-
-          </div>
-
-        </div>
-    } else {
-      bottomSection = 
-        <div>
-            {
-              (currentShortcut["mod"]) ? currentShortcut["mod"] :
-                (currentShortcut["glyph"] && !currentShortcut["char"]) ? "⌘" :
-                  (!currentShortcut["glyph"] && currentShortcut["char"]) ? "⌘" : ""
-            }
-            {
-              (currentShortcut["glyph"]) ? ( currentShortcut["glyph"] ) : ""
-            }
-            {
-              (currentShortcut["char"]) ? ( currentShortcut["char"]): ""
-            }
-        </div>
-    }
-
-
-    return (
+    const buttonSection = (
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: `rgba(238, 219, 165, ${this.state.fade})`,
-        color: `rgba(0, 0, 0, ${this.state.fade})`, 
-        borderRadius: ".35rem",
-        borderWidth: ".50rem",
-        boxShadow: 'rgba(34, 34, 34, ${this.state.fade}) 0px 0px 10px 0px',
-        textAlign: 'center',
+        // fontSize: 16,
+        padding: '4px',
       }} onMouseEnter={(e) => {
-        stopFadingWithState(this.state.mouseOver ? undefined : {
-          mouseOver: true
+        stopFadingWithState({
+          mouseOver: true,
+        });
+      }} onMouseLeave={(e) => {
+        stopFadingWithState({
+          mouseOver: false,
         });
       }}>
-        <b style={{
+
+        <div className="toolbar-actions btn-group" style={{
+          display: 'flex',
           flex: 1,
-          justifyContent: 'center',
-          alignContent: 'stretch',
-          marginBottom: '1px',
-          fontSize: 16,
-          fontWeight: 500,
-        }}>{currentShortcut.name}</b>
-        <b style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignContent: 'stretch',
-          marginTop: '1px',
-          fontSize: 22,
-          fontWeight: 600,
+          flexDirection: 'row',
         }}>
-          {bottomSection}
-        </b>
+
+          <div className="btn" style={{
+            flex: 2,
+          }} onMouseLeave={(e) => {
+            this.setState({
+              mouseOver: true,
+            });
+          }} onMouseEnter={(e) => {
+            stopFadingWithState({
+              mouseOver: "next"
+            });
+          }} onClick={() => {
+            this.setState({
+              currentShortcut: getRandomShortcut(this.state.shortcuts, this.state.previousShortcuts),
+            });
+          }}>Next</div>
+
+          <div className="btn" style={{
+            // backgroundColor: `rgba(255, 255, 255, 0)`,
+            // color: `rgba(0, 0, 0, ${this.state.fade})`, 
+            // border: borderUpvote,
+            // borderRadius: ".35rem",
+            // borderWidth: ".50rem",
+            flex: 2,
+          }} onMouseLeave={(e) => {
+            this.setState({
+              mouseOver: true,
+            });
+          }} onMouseEnter={(e) => {
+            stopFadingWithState({
+              mouseOver: "upvote"
+            });
+          }} onClick={() => {
+            currentShortcut.score = currentShortcut.score ? currentShortcut.score + 1 : 1;
+            ipcRenderer.send('update-current-app-value', {
+              shortcuts: [currentShortcut]
+            });
+
+            console.log('>>>> UPVOTE: ');
+            console.log(currentShortcut.score);
+            console.log(previousShortcuts);
+
+          }}>Upvote</div>
+
+          <div className="btn" style={{
+            // backgroundColor: `rgba(255, 255, 255, 0)`,
+            // color: `rgba(0, 0, 0, ${this.state.fade})`, 
+            // border: borderRun,
+            // borderRadius: ".35rem",
+            // borderWidth: ".50rem",
+            flex: 2,
+          }} onMouseLeave={(e) => {
+            this.setState({
+              mouseOver: true,
+            });
+          }} onMouseEnter={(e) => {
+            stopFadingWithState({
+              mouseOver: "run"
+            });
+          }} onClick={() => {
+            ipcRenderer.send('execute-list-item', currentShortcut);
+          }}>Run</div>
+        </div>
+
+        <div className="toolbar-actions btn-group" style={{
+          display: 'flex',
+          flex: 1,
+          flexDirection: 'row',
+        }}>
+          <div className="btn" style={{
+            // backgroundColor: `rgba(255, 255, 255, 0)`,
+            // color: `rgba(0, 0, 0, ${this.state.fade})`, 
+            // border: borderPrevious,
+            // borderRadius: ".35rem",
+            // borderWidth: ".50rem",
+            flex: 2,
+          }} onMouseLeave={(e) => {
+            this.setState({
+              mouseOver: true,
+            });
+          }} onMouseEnter={(e) => {
+            stopFadingWithState({
+              mouseOver: "previous"
+            });
+          }} onClick={() => {
+            let lastShortcut; 
+            if (this.state.previousShortcuts) {
+              lastShortcut = this.state.previousShortcuts.pop();
+            }
+            if (!lastShortcut) {
+              lastShortcut = getRandomShortcut(this.state.shortcuts, undefined);
+            }
+
+            this.setState({
+              currentShortcut: lastShortcut,
+            });
+          }}>Previous</div>
+          
+          
+          <div className="btn" style={{
+            // backgroundColor: `rgba(255, 255, 255, 0)`,
+            // color: `rgba(0, 0, 0, ${this.state.fade})`, 
+            // border: borderDownvote,
+            // borderRadius: ".35rem",
+            // borderWidth: ".50rem",
+            flex: 2,
+          }} onMouseLeave={(e) => {
+            this.setState({
+              mouseOver: true,
+            });
+          }} onMouseEnter={(e) => {
+            stopFadingWithState({
+              mouseOver: "downvote"
+            });
+          }} onClick={() => {
+            currentShortcut.score = currentShortcut.score ? currentShortcut.score - 1 : -1;
+            ipcRenderer.send('update-current-app-value', {
+              shortcuts: [currentShortcut]
+            });
+
+            console.log('>>>> DOWNVOTE: ');
+            console.log(currentShortcut.score);
+            console.log(previousShortcuts);
+
+          }}>Downvote</div>
+
+          <div className="btn" style={{
+            // backgroundColor: `rgba(255, 255, 255, 0)`,
+            // color: `rgba(0, 0, 0, ${this.state.fade})`, 
+            // border: borderHighlight,
+            // borderRadius: ".35rem",
+            // borderWidth: ".50rem",
+            flex: 2,
+          }} onMouseLeave={(e) => {
+            this.setState({
+              mouseOver: true,
+            });
+          }} onMouseEnter={(e) => {
+            stopFadingWithState({
+              mouseOver: "highlight"
+            });
+          }} onClick={() => {
+            ipcRenderer.send('show-shortcut-windows');
+            ipcRenderer.send('force-to-top', currentShortcut);
+          }}>Highlight</div>
+
+        </div>
+
+      </div>
+    );
+
+    const shortcutSection = (
+      <div>
+        {
+          (currentShortcut["mod"]) ? currentShortcut["mod"] :
+            (currentShortcut["glyph"] && !currentShortcut["char"]) ? "⌘" :
+              (!currentShortcut["glyph"] && currentShortcut["char"]) ? "⌘" : ""
+        }
+        {
+          (currentShortcut["glyph"]) ? ( currentShortcut["glyph"] ) : ""
+        }
+        {
+          (currentShortcut["char"]) ? ( currentShortcut["char"]): ""
+        }
+      </div>
+    );
+
+
+    return (
+      <div className="window" style={{
+        height: '100%',
+        width: '100%',
+        overflow: 'auto',
+        backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
+      }}>
+          <header className="toolbar toolbar-header" style={{
+            backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
+            // flex: 1,
+            // textAlign: 'center',
+            // justifyContent: 'center',
+            // alignContent: 'stretch',
+            // marginBottom: '2px',
+            // fontSize: 16,
+            // fontWeight: 500,
+          }}>
+            <div className="title" style={{
+              backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
+            }}>
+              {currentShortcut.name}{currentShortcut.score ? ` (score: ${currentShortcut.score})` : ""}
+            </div>
+          </header>
+
+        <div className="window-content">
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            // color: `rgba(0, 0, 0, ${this.state.fade})`, 
+            // borderRadius: ".35rem",
+            // borderWidth: ".50rem",
+            // boxShadow: 'rgba(34, 34, 34, ${this.state.fade}) 0px 0px 10px 0px',
+            // textAlign: 'center',
+          }} onMouseEnter={(e) => {
+            stopFadingWithState(this.state.mouseOver ? undefined : {
+              mouseOver: true
+            });
+          }}>
+            <div className="title" style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignContent: 'stretch',
+              textAlign: 'center',
+              marginBottom: '2px',
+              fontSize: 16,
+              // fontWeight: 500,
+              fontWeight: 600,
+            }}>
+              {shortcutSection}
+            </div>
+            <div style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignContent: 'stretch',
+            }}>
+              {buttonSection}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

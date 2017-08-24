@@ -116,13 +116,16 @@ function getDb() {
 	    // so they are quick to test with.
 	    // TODO: Make this only run in debug/dev mode
 	    log.info("temporary removal of PomoDoneApp and mysms shortcuts for testing, TODO: hard remove instead");
-	    getDb().remove({
-	      name: "PomoDoneApp"
-	    });
+	    if (process.env.NODE_ENV === "development") {
+		    getDb().remove({
+		      name: "PomoDoneApp"
+		    });
 
-	    getDb().remove({
-	      name: "mysms"
-	    });
+		    getDb().remove({
+		      name: "mysms"
+		    });
+		  }
+
 	  	return db;
 	  } catch (e) {
 	  	// Ignore exception from this
@@ -179,9 +182,9 @@ let currentAppName = "Electron"; // TODO: Check for bugs with this when opening 
 let hackyStopSavePos = false;
 // The default bounds are appliend when no other bounds are found, typically for new running programs we open and parse
 // TODO: Save to settings db
-const defaultFullBounds = {x: 1100, y: 150, width: 320, height: 700};
+const defaultFullBounds = {x: 200, y: 100, width: 800, height: 600};
 const hiddenBounds  = { x: 89, y: 23, width: 0, height: 0 };
-const defaultBubbleHeight = 125;
+const defaultBubbleHeight = 225;
 const defaultBubbleWidth = 250;
 
 
@@ -192,8 +195,8 @@ function getBubbleWindowBounds() {
 	const { width } = electron.screen.getPrimaryDisplay().workAreaSize
 
 	return {
-  	x: width - (defaultBubbleWidth + 5),
-  	y: 20,
+  	x: width - (defaultBubbleWidth - 35),
+  	y: 35,
   	height: defaultBubbleHeight,
   	width: defaultBubbleWidth,
   };
@@ -279,6 +282,10 @@ function showMainWindow() {
 			mainWindow.setBounds(defaultFullBounds);
 			updateInMemoryBounds(defaultFullBounds, false);
 		}
+
+		if (!mainWindow.isVisible()) {
+			mainWindow.show();
+		}
 	});
 }
 
@@ -292,20 +299,12 @@ function hideMainWindow() {
 	});
 }
 
-function toggleWindow() {
+function showShortcutWindows() {
 	if (!mainWindow) return;
 
-	const bounds = mainWindow.getBounds();
-	log.info('togglewindow with existing bounds: ', bounds);
-	if (deepEqual(bounds, hiddenBounds)) {
-		log.info('togglewindow calling showMainWindow');
-		showMainWindow();
-		hideBubbleWindow();
-	} else {
-		log.info('togglewindow calling hideMainWindow');
-		hideMainWindow();
-		showBubbleWindow();
-	}
+	log.info('showShortcutWindows calling showMainWindow');
+	showMainWindow();
+	showBubbleWindow();
 }
 
 function quitShortcutMagic() {
@@ -434,6 +433,12 @@ function createSettingsWindow() {
 
 function permissionCheck(cb) {
 	const identifier = "com.electron.shortcutmagic-mac";
+
+	// if (process.env.NODE_ENV === "development") {
+	// 	console.log('>>>>>>>>>>>>>>>>> IGNORING PERMISSIONS <<<<<<<<<<<<<<<<<<<<');
+	// 	cb(true);
+	// }
+
 	sudoer.spawn(`tccutil --enable ${identifier}`, [], {}).then((tccutilResult) => {
 		const stdout = tccutilResult.stdout;
 		log.info("tccutil insert: ", stdout.toString());
@@ -514,8 +519,9 @@ function createWindows() {
   	global.folderPath = app.getPath('appData');
 		console.log(global["folderPath"]);
 	}
-	// keep it simple for now, change asap
+
 	let reallyQuit = true;
+	// keep it simple for now, change asap
 	permissionCheck((success) => {
 		if (!success && reallyQuit) {
 			return;
@@ -533,33 +539,33 @@ function createWindows() {
     // createGifRecorderWindow();
     // createGifCommunityWindow();
 
-    if (!localShortcutsCreated) {
-    	localShortcutsCreated = true;
-	    electronLocalshortcut.register(mainWindow, 'Cmd+1', () => {
-	        log.info("hit execute");
-	        mainWindow.webContents.send('execute-list-item', 1);
-	    });
+   //  if (!localShortcutsCreated) {
+   //  	localShortcutsCreated = true;
+	  //   electronLocalshortcut.register(mainWindow, 'Cmd+1', () => {
+	  //       log.info("hit execute");
+	  //       mainWindow.webContents.send('execute-list-item', 1);
+	  //   });
 
-	    electronLocalshortcut.register(mainWindow, 'Cmd+2', () => {
-	        log.info("hit execute");
-	        mainWindow.webContents.send('execute-list-item', 2);
-	    });
+	  //   electronLocalshortcut.register(mainWindow, 'Cmd+2', () => {
+	  //       log.info("hit execute");
+	  //       mainWindow.webContents.send('execute-list-item', 2);
+	  //   });
 
-	    electronLocalshortcut.register(mainWindow, 'Cmd+3', () => {
-	        log.info("hit execute");
-	        mainWindow.webContents.send('execute-list-item', 3);
-	    });
+	  //   electronLocalshortcut.register(mainWindow, 'Cmd+3', () => {
+	  //       log.info("hit execute");
+	  //       mainWindow.webContents.send('execute-list-item', 3);
+	  //   });
 
-	    electronLocalshortcut.register(mainWindow, 'Cmd+4', () => {
-	        log.info("hit execute");
-	        mainWindow.webContents.send('execute-list-item', 4);
-	    });
+	  //   electronLocalshortcut.register(mainWindow, 'Cmd+4', () => {
+	  //       log.info("hit execute");
+	  //       mainWindow.webContents.send('execute-list-item', 4);
+	  //   });
 
-	    electronLocalshortcut.register(mainWindow, 'Cmd+5', () => {
-	        log.info("hit execute");
-	        mainWindow.webContents.send('execute-list-item', 5);
-	    });
-	  }
+	  //   electronLocalshortcut.register(mainWindow, 'Cmd+5', () => {
+	  //       log.info("hit execute");
+	  //       mainWindow.webContents.send('execute-list-item', 5);
+	  //   });
+	  // }
 	});
 	
 }
@@ -636,12 +642,12 @@ function createMainWindow() {
 
 	mainWindow = new BrowserWindow({
 		name: "ShortcutMagic",
-		title: "mainWindow",
-		acceptFirstClick: true,
-		alwaysOnTop: inMemoryShortcuts[GLOBAL_SETTINGS]["alwaysOnTop"],
-		frame: false,
+		title: "Shortcuts",
+		acceptFirstClick: false,
+		alwaysOnTop: false,
+		frame: true,
 		show: true,
-		transparent: true,
+		transparent: false,
 	  x: hiddenBounds.x,
 	  y: hiddenBounds.y,
 	  width: hiddenBounds.width,
@@ -661,14 +667,30 @@ function createMainWindow() {
 		if (!hackyStopSavePos) {
 			savePosition();
 		}
+
+		if (mainWindow.isVisible()) {
+			mainWindow.show();
+		}
 	});
 
 	mainWindow.on('moved', (event) => {
 		log.info("//////////////////////////////////////// on.moved with hackyStopSavePos ", hackyStopSavePos);
+
 		if (!hackyStopSavePos) {
 			savePosition();
 		}
+
+		if (mainWindow.isVisible()) {
+			mainWindow.show();
+		}
 	});
+
+  mainWindow.on('close', function(e) {
+    if (!isQuitting) {
+      e.preventDefault();
+      mainWindow.hide();
+    }
+  });
 
     //   if (type == "appearance-based") {
     //     vibrancyType = NSVisualEffectMaterialAppearanceBased;
@@ -771,20 +793,22 @@ function createTray() {
 
 	log.info('created trayObject: ', trayObject);
 	trayObject.setToolTip('ShortcutMagic!');
-	trayObject.on('right-click', toggleWindow);
+	trayObject.on('right-click', showShortcutWindows);
 
 
 	const trayMenuTemplate = [{
-		label: 'Show/Hide (right click)',
-		click: toggleWindow
+		label: 'Show (right click the hat)',
+		click: showShortcutWindows
 	},
 	{
-		label: 'Open debug windows (advanced)',
-		click: debugEverything
+		label: 'Open debugging windows',
+		click: debugEverything,
 	},
 	{
 		label: 'Quit',
+		accelerator: 'Cmd+Q', 
 		click: function () {
+			isQuitting = true;
 			app.quit();
 			quitShortcutMagic();
 		}
@@ -935,8 +959,8 @@ function saveWithoutPeriods(payload) {
 	});
 }
 
-function loadWithPeriods() {
-	log.info(`entering loadWithPeriods with currentAppName ${currentAppName}`);
+function loadWithPeriods(forceReload) {
+	log.info(`entering loadWithPeriods with currentAppName ${currentAppName} and forceReload ${forceReload}`);
 
 	if (!mainWindow) {
 		log.info("no mainWindow when calling loadWithPeriods()");
@@ -948,12 +972,8 @@ function loadWithPeriods() {
 
 
 	getShortcuts((currentShortcuts) => {
-		if (currentShortcuts && currentShortcuts.bounds) {
-			if (deepEqual(currentShortcuts.bounds, hiddenBounds)) {
-				showBubbleWindow();
-			} else {
-				hideBubbleWindow();
-			}
+		if (currentShortcuts && currentShortcuts.bounds && !forceReload) {
+			showBubbleWindow();
 
 			log.info('loaded in memory shortcuts, mainWindow bounds are [OLD NEW HIDDEN] ', mainWindow.getBounds(), currentShortcuts.bounds, currentShortcuts.hidden);
 
@@ -970,7 +990,6 @@ function loadWithPeriods() {
 				log.info('loaded shortcuts, err? ', err);
 				if (err) {
 					log.info('errored during db find: ', err);
-					showBubbleWindow();
 					return;
 				}
 
@@ -996,10 +1015,6 @@ function loadWithPeriods() {
 		      
 		      mainWindow.webContents.send('update-shortcuts', currentShortcuts);
 		      bubbleWindow.webContents.send('update-shortcuts', currentShortcuts);
-
-					if ((currentShortcuts && deepEqual(currentShortcuts.bounds, hiddenBounds)) || !currentShortcuts || !currentShortcuts.bounds) {
-						showBubbleWindow();
-					}
 				} else {
 					if (!loadingText) {
 						mainWindow.webContents.send('set-loading', currentAppName);
@@ -1026,8 +1041,8 @@ ipcMain.on("not-loading", (e) => {
 	trayObject.setTitle("");
 });
 
-ipcMain.on('toggle-window', () => {
-  toggleWindow();
+ipcMain.on('show-shortcut-windows', () => {
+  showShortcutWindows();
 });
 
 ipcMain.on('show-window', () => {
@@ -1042,10 +1057,25 @@ ipcMain.on('show-mini-settings', (e) => {
     miniSettingsWindow.show();
 });
 
-// Events
-app.on('window-all-closed', function() {
-	app.quit();
+// // You can use 'before-quit' instead of (or with) the close event
+// app.on('before-quit', function (e) {
+//     // Handle menu-item or keyboard shortcut quit here
+//     if (!reallyQuit){
+//         e.preventDefault();
+//         mainWindow.hide();
+//     }
+// });
+
+// Remove mainWindow.on('closed'), as it is redundant
+
+app.on('activate-with-no-open-windows', function(){
+    mainWindow.show();
 });
+
+// // Events
+// app.on('window-all-closed', function() {
+// 	app.quit();
+// });
 
 app.on('activate-with-no-open-windows', () => {
 	if (!mainWindow || !backgroundListenerWindow || !backgroundTaskRunnerWindow) {
@@ -1072,7 +1102,7 @@ app.on('ready', () => {
 
 
     globalShortcut.register('Command+Shift+Alt+Space', function () {
-        toggleWindow();
+        showShortcutWindows();
     });
 
     globalShortcut.register('Command+Shift+Alt+Up', function () {
@@ -1196,7 +1226,7 @@ ipcMain.on('main-parse-shortcuts', function(event, appName) {
 		appSwitched(event, currentAppName);
 	}
 
-	loadWithPeriods();
+	loadWithPeriods(true);
 });
 
 ipcMain.on('update-shortcut-order', function(event, appName, shortcuts) {

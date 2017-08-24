@@ -502,7 +502,9 @@ export default class Home extends Component {
 				listItemFontSize: listItemFontSize,
             });
 
-            window.document.getElementById("search-field").value = "";
+            if (window.document.getElementById("search-field")) {
+                window.document.getElementById("search-field").value = "";
+            }
             // TODO: Scroll to top here
         });
 
@@ -641,7 +643,7 @@ export default class Home extends Component {
         let mainWindow = null;
         for (let i = 0; i < windows.length; i++) {
             mainWindow = windows[i];
-            if (mainWindow && mainWindow.getTitle() == "mainWindow") break;
+            if (mainWindow && mainWindow.getTitle() == "Shortcuts") break;
         }
 
         for (let i = 0; i < windows.length; i++) {
@@ -748,7 +750,6 @@ export default class Home extends Component {
 
     render() {
         globalState = this.state;
-        console.log('render() called', JSON.stringify(globalState));
 
         if (!this.state || this.state.loading) {
             console.log('rendering transparent window');
@@ -756,17 +757,6 @@ export default class Home extends Component {
         } else {
             ipcRenderer.send("not-loading");
         }
-
-
-		let SearchField = (
-            <input id="search-field" className="form-control" type="text" placeholder="Search actions and shortcuts" style={{
-                display: 'none',
-                // borderRadius: ".25rem",
-                // borderWidth: ".50rem",
-                border: `2px solid #737475`, // #737475 is the color from Photon mac css
-                backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
-            }} onChange={this.filterListTrigger} onKeyDown={this.filterListKeyDown}/>
-		);
 
         let shortcuts = this.state.items;
         if (!this.previousShortcuts || this.previousShortcuts != shortcuts) {
@@ -785,198 +775,330 @@ export default class Home extends Component {
             this.previousShortcuts = shortcuts;
         }
 
-		let ShortcutList = (
-            <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
-                <div style={{textAlign: 'left'}}>
-                    <SortableList
-                        items={shortcuts}
-                        onSortEnd={this.onSortEnd}
-                        useDragHandle={true}
-                        lockAxis='y'
-                    />
-                </div>
+       let ShortcutList = (
+          <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
+              <div style={{textAlign: 'left'}}>
+                  <SortableList
+                      items={shortcuts}
+                      onSortEnd={this.onSortEnd}
+                      useDragHandle={true}
+                      lockAxis='y'
+                  />
+              </div>
+          </div>
+       );
+
+                // <span className="nav-group-item" onClick={(e) => {
+                //   ipcRenderer.send('main-parse-shortcuts');
+                // }}>
+                //   <span className="icon icon-download"></span>
+                //   Re-parse shortcuts
+                // </span>
+
+        return (
+          <div className="pane-group">
+            <div className="pane pane-sm sidebar">
+              <nav className="nav-group">
+                <h5 className="nav-group-title">Favorites</h5>
+                <span className="nav-group-item">
+                  <span className="icon icon-light-up"></span>
+                  Photon
+                </span>
+                <span className="nav-group-item">
+                  <span className="icon icon-folder"></span>
+                  Documents
+                </span>
+                <span className="nav-group-item">
+                  <span className="icon icon-window"></span>
+                  Applications
+                </span>
+                <span className="nav-group-item">
+                  <span className="icon icon-signal"></span>
+                  AirDrop
+                </span>
+                <span className="nav-group-item">
+                  <span className="icon icon-monitor"></span>
+                  Desktop
+                </span>
+              </nav>
             </div>
-		);
 
-// TODO: Re-enable gif community: 
-                    // <li onClick={() => {
-                    //     console.log(`opening community window `);
-                    //     ipcRenderer.send('toggle-gif-community');
-                    // }}><span className="fa fa-2x fa-film" data-for='gifcommunity-tooltip'
-                    // data-iscapture="true"
-                    // data-tip="Open community window <br /> with gif overview">
-
-                    //     <ReactTooltip id='gifcommunity-tooltip'
-                    //         place='right'
-                    //         type={tooltipEffect.type}
-                    //         effect={tooltipEffect.effect}
-                    //         multiline={true}/>
-
-                    // </span></li>
-
-// TODO: Re-enable settings:
-                    // <li onClick={(event) => {
-                    //     event.preventDefault();
-                    //     console.log("clicked settings");
-                    //     this.toggleSettings();
-                    // }} data-for='toggle-settings-tooltip'
-                    // data-iscapture="true"
-                    // data-tip="Settings">
-                    // <span id="settings-button" className="fa fa-2x fa-cog">
-                    // </span>
-                    //     <ReactTooltip id='toggle-settings-tooltip'
-                    //         place={tooltipEffect.place}
-                    //         type={tooltipEffect.type}
-                    //         effect={tooltipEffect.effect}
-                    //         multiline={true}/>
-                    // </li>
-
-
-        let SettingsButtons = (
-            <div id="settings-button-group" className="toolbar-actions" style={{
-                display: 'none',
-                backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
-            }}>
-
-                <ul className="wrapper-1" style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignContent: 'center',
-                    textAlign: 'center',
-                }}>
-                    <li onClick={(event) => {
-                        ipcRenderer.send('open-learn');
-                    }} 
-                    data-for='learn-tooltip'
-                    data-iscapture="true"
-                    data-tip="Learn more about ShortcutMagic">
-                    <span id="learn-button" className="fa fa-2x fa-question">
-                    </span>
-                        <ReactTooltip id='learn-tooltip'
-                            place={tooltipEffect.place}
-                            type={tooltipEffect.type}
-                            effect={tooltipEffect.effect}
-                            multiline={true}/>
-                    </li>
-
-                    <li onClick={(event) => {
-                        event.preventDefault();
-                        console.log("clicked font size up");
-                        this.changeFontUp();
-                    }} 
-                    data-for='increase-font-size-tooltip'
-                    data-iscapture="true"
-                    data-tip="Increase font size">
-                    <span id="increase-font-size-button" className="fa fa-2x fa-plus">
-                    </span>
-                        <ReactTooltip id='increase-font-size-tooltip'
-                            place={tooltipEffect.place}
-                            type={tooltipEffect.type}
-                            effect={tooltipEffect.effect}
-                            multiline={true}/>
-                    </li>
-
-                    <li onClick={(event) => {
-                        event.preventDefault();
-                        console.log("clicked font size down");
-                        this.changeFontDown();
-                    }}
-                    data-for='decrease-font-size-tooltip'
-                    data-iscapture="true"
-                    data-tip="Smaller text">
-                    <span id="decrease-font-size-button" className="fa fa-2x fa-minus">
-                    </span>
-
-                        <ReactTooltip id='decrease-font-size-tooltip'
-                            place={tooltipEffect.place}
-                            type={tooltipEffect.type}
-                            effect={tooltipEffect.effect}
-                            multiline={true}/>
-
-                    </li>
-
-                    <li onClick={(event) => {
-                        event.preventDefault();
-                        ipcRenderer.send('set-full-view-mode');
-                    }}
-                    data-for='toggle-full-mode-tooltip'
-                    data-iscapture="true"
-                    data-tip="Regular mode<br />This mode is good for <br />learning and exploring <br />a program. Drag the edges of <br />the windows to resize.">
-                    <span id="toggle-full-mode" className="fa fa-2x fa-window-maximize">
-                    </span>
-                        <ReactTooltip id='toggle-full-mode-tooltip'
-                            place={tooltipEffect.place}
-                            type={tooltipEffect.type}
-                            effect={tooltipEffect.effect}
-                            multiline={true}/>
-                    </li>
-
-                    <li onClick={(event) => {
-                        event.preventDefault();
-                        // TODO: Manage state ourselves here? messy..
-                        ipcRenderer.send('set-hidden-mode');
-                    }}
-                    data-for='toggle-hidden-mode-tooltip'
-                    data-iscapture="true"
-                    data-tip="Hide <br />This hides the window completely for this program. <br />You have to click the hat <br />icon in the menu bar <br ?>to show it again.">
-                    <span id="toggle-hidden-mode" className="fa fa-2x fa-window-minimize">
-                    </span>
-
-                        <ReactTooltip id='toggle-hidden-mode-tooltip'
-                            place={'left'}
-                            type={tooltipEffect.type}
-                            effect={tooltipEffect.effect}
-                            multiline={true}/>
-                    </li>
-
-                </ul>
+            <div className="pane">
+              <table className="table-striped">
+                <thead>
+                  <tr>
+                    <th>Run</th>
+                    <th>Name</th>
+                    <th>Shortcut</th>
+                    <th>Menu</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {this.state.items.map((value, index) => {
+                    return (
+                      <tr className="file_arq">
+                        <td className="btn btn-mini" onClick={(e) => {
+                          console.log("clicked execute-list-item with ", value);
+                          ipcRenderer.send('execute-list-item', value);
+                        }}>Run</td>
+                        <td>{value.name}</td>
+                        <td>
+                          {
+                              // Always show ⌘ if there are no mods or glyphs
+                              (value["mod"]) ? value["mod"] :
+                                  (value["glyph"] && !value["char"]) ? "⌘" :
+                                      (!value["glyph"] && value["char"]) ? "⌘" : ""
+                          }
+                          {
+                              (value["glyph"]) ? ( value["glyph"] ) : ""
+                          }
+                          {
+                              (value["char"]) ? ( value["char"]): ""
+                          }
+                        </td>
+                        <td>{value.menuName}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-        );
+          </div>
+      );
 
-        // TODO: Add colors back in at some point: 
-       //          <button id="mini-settings-button" className="btn btn-default" style={{
-             //                // color: this.state.textColor,
-             //                // backgroundColor: 'transparent',
-                            // // flex: 2,
-                            // // margin: 0,
-       //          }} onClick={() => {
-       //              console.log("clicked miniSettings");
-       //              this.toggleMiniSettings();
-       //          }}>
-       //              <ReactTooltip id='toggle-mini-settings-tooltip'
-       //                  place={tooltipEffect.place}
-       //                  type={tooltipEffect.type}
-       //                  effect={tooltipEffect.effect}
-       //                  multiline={true}/>
+    }
 
-       //              <span data-for='toggle-mini-settings-tooltip'
-       //                  data-iscapture="true"
-       //                  data-tip={`Colors and themes.
-       //                      <br />This is where you can customize ShortcutMagic
-       //                      <br />to look exactly like you want.`} className="icon icon-palette">
-       //              </span>
-       //          </button>
+//     render() {
+//         globalState = this.state;
+//         console.log('render() called', JSON.stringify(globalState));
+
+//         if (!this.state || this.state.loading) {
+//             console.log('rendering transparent window');
+//             return <div style={{ backgroundColor: "transparent", }}> </div>
+//         } else {
+//             ipcRenderer.send("not-loading");
+//         }
 
 
+// 		let SearchField = (
+//             <input id="search-field" className="form-control" type="text" placeholder="Search actions and shortcuts" style={{
+//                 display: 'none',
+//                 // borderRadius: ".25rem",
+//                 // borderWidth: ".50rem",
+//                 border: `2px solid #737475`, // #737475 is the color from Photon mac css
+//                 backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
+//             }} onChange={this.filterListTrigger} onKeyDown={this.filterListKeyDown}/>
+// 		);
+
+//         let shortcuts = this.state.items;
+//         if (!this.previousShortcuts || this.previousShortcuts != shortcuts) {
+//             shortcuts.sort((a, b) => {
+//               console.log('sorting a b', a.score, b.score);
+//               if (!a.score) a.score = 0;
+//               if (!b.score) b.score = 0;
+
+//               if (a.score > b.score) return  -1;
+//               if (a.score < b.score) return  1;
+//               if (a.score === b.score) return  0;
+
+//               return 0;
+//             });
+
+//             this.previousShortcuts = shortcuts;
+//         }
+
+// 		let ShortcutList = (
+//             <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
+//                 <div style={{textAlign: 'left'}}>
+//                     <SortableList
+//                         items={shortcuts}
+//                         onSortEnd={this.onSortEnd}
+//                         useDragHandle={true}
+//                         lockAxis='y'
+//                     />
+//                 </div>
+//             </div>
+// 		);
+
+// // TODO: Re-enable gif community: 
+//                     // <li onClick={() => {
+//                     //     console.log(`opening community window `);
+//                     //     ipcRenderer.send('toggle-gif-community');
+//                     // }}><span className="fa fa-2x fa-film" data-for='gifcommunity-tooltip'
+//                     // data-iscapture="true"
+//                     // data-tip="Open community window <br /> with gif overview">
+
+//                     //     <ReactTooltip id='gifcommunity-tooltip'
+//                     //         place='right'
+//                     //         type={tooltipEffect.type}
+//                     //         effect={tooltipEffect.effect}
+//                     //         multiline={true}/>
+
+//                     // </span></li>
+
+// // TODO: Re-enable settings:
+//                     // <li onClick={(event) => {
+//                     //     event.preventDefault();
+//                     //     console.log("clicked settings");
+//                     //     this.toggleSettings();
+//                     // }} data-for='toggle-settings-tooltip'
+//                     // data-iscapture="true"
+//                     // data-tip="Settings">
+//                     // <span id="settings-button" className="fa fa-2x fa-cog">
+//                     // </span>
+//                     //     <ReactTooltip id='toggle-settings-tooltip'
+//                     //         place={tooltipEffect.place}
+//                     //         type={tooltipEffect.type}
+//                     //         effect={tooltipEffect.effect}
+//                     //         multiline={true}/>
+//                     // </li>
+
+
+//         let SettingsButtons = (
+//             <div id="settings-button-group" className="toolbar-actions" style={{
+//                 display: 'none',
+//                 backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
+//             }}>
+
+//                 <ul className="wrapper-1" style={{
+//                     display: 'flex',
+//                     justifyContent: 'center',
+//                     alignContent: 'center',
+//                     textAlign: 'center',
+//                 }}>
+//                     <li onClick={(event) => {
+//                         ipcRenderer.send('open-learn');
+//                     }} 
+//                     data-for='learn-tooltip'
+//                     data-iscapture="true"
+//                     data-tip="Learn more about ShortcutMagic">
+//                     <span id="learn-button" className="fa fa-2x fa-question">
+//                     </span>
+//                         <ReactTooltip id='learn-tooltip'
+//                             place={tooltipEffect.place}
+//                             type={tooltipEffect.type}
+//                             effect={tooltipEffect.effect}
+//                             multiline={true}/>
+//                     </li>
+
+//                     <li onClick={(event) => {
+//                         event.preventDefault();
+//                         console.log("clicked font size up");
+//                         this.changeFontUp();
+//                     }} 
+//                     data-for='increase-font-size-tooltip'
+//                     data-iscapture="true"
+//                     data-tip="Increase font size">
+//                     <span id="increase-font-size-button" className="fa fa-2x fa-plus">
+//                     </span>
+//                         <ReactTooltip id='increase-font-size-tooltip'
+//                             place={tooltipEffect.place}
+//                             type={tooltipEffect.type}
+//                             effect={tooltipEffect.effect}
+//                             multiline={true}/>
+//                     </li>
+
+//                     <li onClick={(event) => {
+//                         event.preventDefault();
+//                         console.log("clicked font size down");
+//                         this.changeFontDown();
+//                     }}
+//                     data-for='decrease-font-size-tooltip'
+//                     data-iscapture="true"
+//                     data-tip="Smaller text">
+//                     <span id="decrease-font-size-button" className="fa fa-2x fa-minus">
+//                     </span>
+
+//                         <ReactTooltip id='decrease-font-size-tooltip'
+//                             place={tooltipEffect.place}
+//                             type={tooltipEffect.type}
+//                             effect={tooltipEffect.effect}
+//                             multiline={true}/>
+
+//                     </li>
+
+//                     <li onClick={(event) => {
+//                         event.preventDefault();
+//                         ipcRenderer.send('set-full-view-mode');
+//                     }}
+//                     data-for='toggle-full-mode-tooltip'
+//                     data-iscapture="true"
+//                     data-tip="Regular mode<br />This mode is good for <br />learning and exploring <br />a program. Drag the edges of <br />the windows to resize.">
+//                     <span id="toggle-full-mode" className="fa fa-2x fa-window-maximize">
+//                     </span>
+//                         <ReactTooltip id='toggle-full-mode-tooltip'
+//                             place={tooltipEffect.place}
+//                             type={tooltipEffect.type}
+//                             effect={tooltipEffect.effect}
+//                             multiline={true}/>
+//                     </li>
+
+//                     <li onClick={(event) => {
+//                         event.preventDefault();
+//                         // TODO: Manage state ourselves here? messy..
+//                         ipcRenderer.send('set-hidden-mode');
+//                     }}
+//                     data-for='toggle-hidden-mode-tooltip'
+//                     data-iscapture="true"
+//                     data-tip="Hide <br />This hides the window completely for this program. <br />You have to click the hat <br />icon in the menu bar <br ?>to show it again.">
+//                     <span id="toggle-hidden-mode" className="fa fa-2x fa-window-minimize">
+//                     </span>
+
+//                         <ReactTooltip id='toggle-hidden-mode-tooltip'
+//                             place={'left'}
+//                             type={tooltipEffect.type}
+//                             effect={tooltipEffect.effect}
+//                             multiline={true}/>
+//                     </li>
+
+//                 </ul>
+//             </div>
+//         );
+
+//         // TODO: Add colors back in at some point: 
+//        //          <button id="mini-settings-button" className="btn btn-default" style={{
+//              //                // color: this.state.textColor,
+//              //                // backgroundColor: 'transparent',
+//                             // // flex: 2,
+//                             // // margin: 0,
+//        //          }} onClick={() => {
+//        //              console.log("clicked miniSettings");
+//        //              this.toggleMiniSettings();
+//        //          }}>
+//        //              <ReactTooltip id='toggle-mini-settings-tooltip'
+//        //                  place={tooltipEffect.place}
+//        //                  type={tooltipEffect.type}
+//        //                  effect={tooltipEffect.effect}
+//        //                  multiline={true}/>
+
+//        //              <span data-for='toggle-mini-settings-tooltip'
+//        //                  data-iscapture="true"
+//        //                  data-tip={`Colors and themes.
+//        //                      <br />This is where you can customize ShortcutMagic
+//        //                      <br />to look exactly like you want.`} className="icon icon-palette">
+//        //              </span>
+//        //          </button>
 
 
 
 
-        let Title = (
-            <h2 id="title" style={{
-                // color: this.state.textColor,
-                marginTop:'2px',
-                marginBottom:'2px',
-                flex: 9,
-                justifyContent: 'center',
-                alignContent: 'stretch',
-                textDecoration: 'underline',
-            }}>{(displaySettings) ? displaySettings : this.state.name}</h2>
-        );
 
-        let displaySettings = null;
-        let hidingSlowly = false;
-            // }} onMouseEnter={(e) => {
+
+//         let Title = (
+//             <h2 id="title" style={{
+//                 // color: this.state.textColor,
+//                 marginTop:'2px',
+//                 marginBottom:'2px',
+//                 flex: 9,
+//                 justifyContent: 'center',
+//                 alignContent: 'stretch',
+//                 textDecoration: 'underline',
+//             }}>{(displaySettings) ? displaySettings : this.state.name}</h2>
+//         );
+
+//         let displaySettings = null;
+//         let hidingSlowly = false;
+//             // }} onMouseEnter={(e) => {
             //     hidingSlowly = true;
             //     window.document.getElementById("settings-button-group").style.display = "block";
             //     window.document.getElementById("search-field").style.display = "";
@@ -997,192 +1119,192 @@ export default class Home extends Component {
             //         window.document.getElementById("search-field").style.display = "none";
             //     }
 
-        let ToggleSettings = (
-            <div className= {(this.state.menuActive) ? "hamburger is-active" : "hamburger"} id="hamburger-5" style={{
-                flex: 1,
-                marginTop: '5px',
-                marginBottom: '5px',
-                width: '100%',
-            }} onClick={() => {
-                let menu = window.document.getElementById("hamburger-5");
-                let isActive = !(menu && menu.className.indexOf("is-active") > -1);
+//         let ToggleSettings = (
+//             <div className= {(this.state.menuActive) ? "hamburger is-active" : "hamburger"} id="hamburger-5" style={{
+//                 flex: 1,
+//                 marginTop: '5px',
+//                 marginBottom: '5px',
+//                 width: '100%',
+//             }} onClick={() => {
+//                 let menu = window.document.getElementById("hamburger-5");
+//                 let isActive = !(menu && menu.className.indexOf("is-active") > -1);
 
-                if (isActive) {
-                    window.document.getElementById("settings-button-group").style.display = "block";
-                    window.document.getElementById("search-field").style.display = "";
-                    window.document.getElementById("title").style.display = (this.state.mode === "full-mode") ? "block" : "none";
+//                 if (isActive) {
+//                     window.document.getElementById("settings-button-group").style.display = "block";
+//                     window.document.getElementById("search-field").style.display = "";
+//                     window.document.getElementById("title").style.display = (this.state.mode === "full-mode") ? "block" : "none";
 
-                    window.document.getElementById("search-field").focus();
+//                     window.document.getElementById("search-field").focus();
 
-                    this.setState({
-                        menuActive: isActive
-                    });
-                }
-            }}>
-                <span className="line"></span>
-                <span className="line"></span>
-                <span className="line"></span>
-            </div>
-        );
+//                     this.setState({
+//                         menuActive: isActive
+//                     });
+//                 }
+//             }}>
+//                 <span className="line"></span>
+//                 <span className="line"></span>
+//                 <span className="line"></span>
+//             </div>
+//         );
 
-		let TitleAndSettings = (
-            <div id="title-and-settings" style={{
-                textAlign: 'center',
-                backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
-            }}>
-                <div style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                }}  onClick={() => {
-                    let menu = window.document.getElementById("hamburger-5");
-                    let isActive = !(menu && menu.className.indexOf("is-active") > -1);
+// 		let TitleAndSettings = (
+//             <div id="title-and-settings" style={{
+//                 textAlign: 'center',
+//                 backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
+//             }}>
+//                 <div style={{
+//                     display: 'flex',
+//                     flexDirection: 'row',
+//                 }}  onClick={() => {
+//                     let menu = window.document.getElementById("hamburger-5");
+//                     let isActive = !(menu && menu.className.indexOf("is-active") > -1);
 
-                    if (!isActive) {
-                        window.document.getElementById("settings-button-group").style.display = "none";
-                        window.document.getElementById("search-field").style.display = "none";
-                        console.log('about to set tile with values ', this.state);
-                        window.document.getElementById("title").style.display = (this.state.mode !== "full-mode") ? "block" : "none";
+//                     if (!isActive) {
+//                         window.document.getElementById("settings-button-group").style.display = "none";
+//                         window.document.getElementById("search-field").style.display = "none";
+//                         console.log('about to set tile with values ', this.state);
+//                         window.document.getElementById("title").style.display = (this.state.mode !== "full-mode") ? "block" : "none";
 
-                        this.setState({
-                            menuActive: isActive
-                        });
-                    }
-                }}>
-                    {Title}
-                    {ToggleSettings}
-                </div>
-                {SettingsButtons}
-                {SearchField}
-            </div>
-		);
+//                         this.setState({
+//                             menuActive: isActive
+//                         });
+//                     }
+//                 }}>
+//                     {Title}
+//                     {ToggleSettings}
+//                 </div>
+//                 {SettingsButtons}
+//                 {SearchField}
+//             </div>
+// 		);
 
-		let HiddenSettings = (
-            <div id="hidden-settings"
-            style={{
-                height: '20px',
-                width: '100%',
-                textAlign: 'center',
-                backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
-            }} onMouseEnter={(e) => {
-                hidingSlowly = true;
-    			window.document.getElementById("settings-button-group").style.display = "block";
-    			window.document.getElementById("search-field").style.display = "";
-    			window.document.getElementById("hidden-settings").style.height = '60px';
+// 		let HiddenSettings = (
+//             <div id="hidden-settings"
+//             style={{
+//                 height: '20px',
+//                 width: '100%',
+//                 textAlign: 'center',
+//                 backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
+//             }} onMouseEnter={(e) => {
+//                 hidingSlowly = true;
+//     			window.document.getElementById("settings-button-group").style.display = "block";
+//     			window.document.getElementById("search-field").style.display = "";
+//     			window.document.getElementById("hidden-settings").style.height = '60px';
 
-                ipcRenderer.send('show-window');
-    			window.document.getElementById("search-field").focus();
-            }} onMouseLeave={(e) => {
-                if (hidingSlowly) {
-                    hidingSlowly = false;
-                    setTimeout(() => {
-                        if (!hidingSlowly) {
-                			window.document.getElementById("settings-button-group").style.display = "none";
-                			window.document.getElementById("search-field").style.display = "none";
-                            window.document.getElementById("hidden-settings").style.height = '20px';
-                        }
-                    }, 400);
-                } else {
-        			window.document.getElementById("settings-button-group").style.display = "none";
-        			window.document.getElementById("search-field").style.display = "none";
-                    window.document.getElementById("hidden-settings").style.height = '20px';
-                }
-            }}>
-                {SearchField}{SettingsButtons}
-            </div>
-		);
+//                 ipcRenderer.send('show-window');
+//     			window.document.getElementById("search-field").focus();
+//             }} onMouseLeave={(e) => {
+//                 if (hidingSlowly) {
+//                     hidingSlowly = false;
+//                     setTimeout(() => {
+//                         if (!hidingSlowly) {
+//                 			window.document.getElementById("settings-button-group").style.display = "none";
+//                 			window.document.getElementById("search-field").style.display = "none";
+//                             window.document.getElementById("hidden-settings").style.height = '20px';
+//                         }
+//                     }, 400);
+//                 } else {
+//         			window.document.getElementById("settings-button-group").style.display = "none";
+//         			window.document.getElementById("search-field").style.display = "none";
+//                     window.document.getElementById("hidden-settings").style.height = '20px';
+//                 }
+//             }}>
+//                 {SearchField}{SettingsButtons}
+//             </div>
+// 		);
 
 
-		if (this.state.mode == "hidden-mode") {
-			// Hidden mode:
-            // TODO:
-            // 1) listen to some kind of click on the tray
-            // 2) Show mini window with 1 random favorite
-            // 3) Show search, focused
+// 		if (this.state.mode == "hidden-mode") {
+// 			// Hidden mode:
+//             // TODO:
+//             // 1) listen to some kind of click on the tray
+//             // 2) Show mini window with 1 random favorite
+//             // 3) Show search, focused
 
-			return (
-                <div className="window">
+// 			return (
+//                 <div className="window">
 
-                  <div className="window-content" style={{
-                        backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
-                    }}>
-                      <div className="pane">
-                        <table className="table-striped">
-                          <tbody>
-                            <tr className="file_arq">
-                                <td style={{
-                                    backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
-                                }}>
-                                    {SearchField}
-                                </td>
-                            </tr>
-                            <tr className="file_arq">
-                              {ShortcutList}
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
+//                   <div className="window-content" style={{
+//                         backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
+//                     }}>
+//                       <div className="pane">
+//                         <table className="table-striped">
+//                           <tbody>
+//                             <tr className="file_arq">
+//                                 <td style={{
+//                                     backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
+//                                 }}>
+//                                     {SearchField}
+//                                 </td>
+//                             </tr>
+//                             <tr className="file_arq">
+//                               {ShortcutList}
+//                             </tr>
+//                           </tbody>
+//                         </table>
+//                       </div>
+//                     </div>
+//                   </div>
             
-			);
-		} else if (this.state.mode == "bubble-mode") {
-			// Bubble mode:
-			return (
-                <div className="window">
+// 			);
+// 		} else if (this.state.mode == "bubble-mode") {
+// 			// Bubble mode:
+// 			return (
+//                 <div className="window">
 
-                  <div className="window-content" style={{
-                        backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
-                    }}>
-                      <div className="pane">
-                        <table className="table-striped">
-                          <tbody>
-                            <tr className="file_arq">
-                                <td style={{
-                                    backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
-                                }}>
-                                    {HiddenSettings}
-                                </td>
-                            </tr>
-                            <tr className="file_arq">
-                              {ShortcutList}
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-			);
-		} else {
-            // Full mode:
-            return (
-                <div className="window">
+//                   <div className="window-content" style={{
+//                         backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
+//                     }}>
+//                       <div className="pane">
+//                         <table className="table-striped">
+//                           <tbody>
+//                             <tr className="file_arq">
+//                                 <td style={{
+//                                     backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
+//                                 }}>
+//                                     {HiddenSettings}
+//                                 </td>
+//                             </tr>
+//                             <tr className="file_arq">
+//                               {ShortcutList}
+//                             </tr>
+//                           </tbody>
+//                         </table>
+//                       </div>
+//                     </div>
+//                   </div>
+// 			);
+// 		} else {
+//             // Full mode:
+//             return (
+//                 <div className="window">
 
-                  <div className="window-content" style={{
-                        backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
-                    }}>
-                      <div className="pane">
-                        <table className="table-striped">
-                          <tbody>
-                            <tr className="file_arq">
-                                <td style={{
-                                    backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
-                                }}>{TitleAndSettings}</td>
-                            </tr>
-                            <tr className="file_arq" style={{
-                                border: '4px solid rgb(37, 50, 70)', boxShadow: 'rgb(73, 91, 113) 0px 2px 0px inset',
-                            }}>
-                              {ShortcutList}
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-            );
-			// previous sortablelist itemstyle
-			//   itemStyle={{backgroundColor: (this.state.itemColor) ? this.state.itemColor : '#FFFFFF'}}
-		}
-    }
+//                   <div className="window-content" style={{
+//                         backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
+//                     }}>
+//                       <div className="pane">
+//                         <table className="table-striped">
+//                           <tbody>
+//                             <tr className="file_arq">
+//                                 <td style={{
+//                                     backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
+//                                 }}>{TitleAndSettings}</td>
+//                             </tr>
+//                             <tr className="file_arq" style={{
+//                                 border: '4px solid rgb(37, 50, 70)', boxShadow: 'rgb(73, 91, 113) 0px 2px 0px inset',
+//                             }}>
+//                               {ShortcutList}
+//                             </tr>
+//                           </tbody>
+//                         </table>
+//                       </div>
+//                     </div>
+//                   </div>
+//             );
+// 			// previous sortablelist itemstyle
+// 			//   itemStyle={{backgroundColor: (this.state.itemColor) ? this.state.itemColor : '#FFFFFF'}}
+// 		}
+//     }
 }
 
 window.onload = function() {
