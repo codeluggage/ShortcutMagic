@@ -70,7 +70,7 @@ export default class WelcomeView extends Component {
                 for (let i = 0; i < windows.length; i++) {
                     const w = windows[i];
                     if (w) {
-                        if (w.getTitle() === "learnWindow") {
+                        if (w.getTitle() === "Learn to use ShortcutMagic") {
                             w.show();
                         } else if (w.getTitle() === "welcomeWindow") {
                             closeAfter = w;

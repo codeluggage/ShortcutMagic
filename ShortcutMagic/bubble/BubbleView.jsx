@@ -23,7 +23,7 @@ function shuffleArray(array) {
 function getRandomShortcut(shortcuts, previousShortcuts) {
   let filtered = shortcuts;
 
-  if (shortcuts.length > previousShortcuts.length) {
+  if (previousShortcuts.length > 0 && shortcuts.length > previousShortcuts.length) {
     let names = previousShortcuts.map(s => s.name);
     filtered = (!names || !names.lenght) ? shortcuts : shortcuts.filter(s => names.indexOf(s.name) === -1);
   }
@@ -45,7 +45,7 @@ export default class BubbleView extends Component {
     ipcRenderer.on('update-shortcuts', this.updateShortcuts);
 
     this.setState({
-      fade: initialFade // TODO: DRY
+      fade: initialFade
     });
   }
 
@@ -175,6 +175,7 @@ export default class BubbleView extends Component {
         flexDirection: 'column',
         // fontSize: 16,
         padding: '4px',
+        backgroundColor: `transparent`,
       }} onMouseEnter={(e) => {
         stopFadingWithState({
           mouseOver: true,
@@ -193,14 +194,6 @@ export default class BubbleView extends Component {
 
           <div className="btn" style={{
             flex: 2,
-          }} onMouseLeave={(e) => {
-            this.setState({
-              mouseOver: true,
-            });
-          }} onMouseEnter={(e) => {
-            stopFadingWithState({
-              mouseOver: "next"
-            });
           }} onClick={() => {
             this.setState({
               currentShortcut: getRandomShortcut(this.state.shortcuts, this.state.previousShortcuts),
@@ -214,14 +207,6 @@ export default class BubbleView extends Component {
             // borderRadius: ".35rem",
             // borderWidth: ".50rem",
             flex: 2,
-          }} onMouseLeave={(e) => {
-            this.setState({
-              mouseOver: true,
-            });
-          }} onMouseEnter={(e) => {
-            stopFadingWithState({
-              mouseOver: "upvote"
-            });
           }} onClick={() => {
             currentShortcut.score = currentShortcut.score ? currentShortcut.score + 1 : 1;
             ipcRenderer.send('update-current-app-value', {
@@ -241,14 +226,6 @@ export default class BubbleView extends Component {
             // borderRadius: ".35rem",
             // borderWidth: ".50rem",
             flex: 2,
-          }} onMouseLeave={(e) => {
-            this.setState({
-              mouseOver: true,
-            });
-          }} onMouseEnter={(e) => {
-            stopFadingWithState({
-              mouseOver: "run"
-            });
           }} onClick={() => {
             ipcRenderer.send('execute-list-item', currentShortcut);
           }}>Run</div>
@@ -266,14 +243,6 @@ export default class BubbleView extends Component {
             // borderRadius: ".35rem",
             // borderWidth: ".50rem",
             flex: 2,
-          }} onMouseLeave={(e) => {
-            this.setState({
-              mouseOver: true,
-            });
-          }} onMouseEnter={(e) => {
-            stopFadingWithState({
-              mouseOver: "previous"
-            });
           }} onClick={() => {
             let lastShortcut; 
             if (this.state.previousShortcuts) {
@@ -296,14 +265,6 @@ export default class BubbleView extends Component {
             // borderRadius: ".35rem",
             // borderWidth: ".50rem",
             flex: 2,
-          }} onMouseLeave={(e) => {
-            this.setState({
-              mouseOver: true,
-            });
-          }} onMouseEnter={(e) => {
-            stopFadingWithState({
-              mouseOver: "downvote"
-            });
           }} onClick={() => {
             currentShortcut.score = currentShortcut.score ? currentShortcut.score - 1 : -1;
             ipcRenderer.send('update-current-app-value', {
@@ -323,16 +284,7 @@ export default class BubbleView extends Component {
             // borderRadius: ".35rem",
             // borderWidth: ".50rem",
             flex: 2,
-          }} onMouseLeave={(e) => {
-            this.setState({
-              mouseOver: true,
-            });
-          }} onMouseEnter={(e) => {
-            stopFadingWithState({
-              mouseOver: "highlight"
-            });
           }} onClick={() => {
-            ipcRenderer.send('show-shortcut-windows');
             ipcRenderer.send('force-to-top', currentShortcut);
           }}>Highlight</div>
 
@@ -342,7 +294,9 @@ export default class BubbleView extends Component {
     );
 
     const shortcutSection = (
-      <div>
+      <div style={{
+        backgroundColor: `transparent`,
+      }}>
         {
           (currentShortcut["mod"]) ? currentShortcut["mod"] :
             (currentShortcut["glyph"] && !currentShortcut["char"]) ? "⌘" :
@@ -364,9 +318,13 @@ export default class BubbleView extends Component {
         width: '100%',
         overflow: 'auto',
         backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
+        color: `rgba(85, 85, 85, ${this.state.fade})`, 
       }}>
           <header className="toolbar toolbar-header" style={{
-            backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
+            backgroundColor: `transparent`,
+            // backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
+            // color: `rgba(85, 85, 85, ${this.state.fade})`, 
+            // backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
             // flex: 1,
             // textAlign: 'center',
             // justifyContent: 'center',
@@ -376,7 +334,9 @@ export default class BubbleView extends Component {
             // fontWeight: 500,
           }}>
             <div className="title" style={{
-              backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
+              // backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
+              color: `rgba(85, 85, 85, ${this.state.fade})`, 
+              fontSize: 14,
             }}>
               {currentShortcut.name}{currentShortcut.score ? ` (score: ${currentShortcut.score})` : ""}
             </div>
@@ -386,7 +346,11 @@ export default class BubbleView extends Component {
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            // color: `rgba(0, 0, 0, ${this.state.fade})`, 
+            backgroundColor: `transparent`,
+            // backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
+            // color: `rgba(85, 85, 85, ${this.state.fade})`, 
+            // backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
+            // color: `rgba(85, 85, 85, ${this.state.fade})`, 
             // borderRadius: ".35rem",
             // borderWidth: ".50rem",
             // boxShadow: 'rgba(34, 34, 34, ${this.state.fade}) 0px 0px 10px 0px',
@@ -401,10 +365,14 @@ export default class BubbleView extends Component {
               justifyContent: 'center',
               alignContent: 'stretch',
               textAlign: 'center',
-              marginBottom: '2px',
+              marginBottom: '4px',
+              marginBottom: '4px',
               fontSize: 16,
               // fontWeight: 500,
               fontWeight: 600,
+              backgroundColor: `transparent`,
+              // backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
+              // color: `rgba(85, 85, 85, ${this.state.fade})`, 
             }}>
               {shortcutSection}
             </div>
@@ -412,6 +380,9 @@ export default class BubbleView extends Component {
               flex: 1,
               justifyContent: 'center',
               alignContent: 'stretch',
+              backgroundColor: `transparent`,
+              // backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
+              // color: `rgba(85, 85, 85, ${this.state.fade})`, 
             }}>
               {buttonSection}
             </div>

@@ -528,25 +528,6 @@ export default class Home extends Component {
             console.log("TODO: Show that the list item execution might not work");
         });
 
-		ipcRenderer.on('hidden-mode', (event) => {
-			this.setState({
-				mode: "hidden-mode"
-			})
-		});
-
-		ipcRenderer.on('bubble-mode', (event) => {
-
-			this.setState({
-				mode: "bubble-mode"
-			})
-		});
-
-		ipcRenderer.on('full-mode', (event) => {
-			this.setState({
-				mode: "full-mode"
-			})
-		});
-
         ipcRenderer.on('force-to-top', (event, shortcut) => {
             this.focusSearchField(null, shortcut.name);
         });
@@ -683,8 +664,6 @@ export default class Home extends Component {
         this.setState({
             items: arrayMove(this.state.items, oldIndex, newIndex)
         });
-
-        ipcRenderer.send('update-shortcut-order', this.state.name, this.state.items);
     }
 
     filterListTrigger(event) {
@@ -712,7 +691,7 @@ export default class Home extends Component {
 
     filterListKeyDown(e) {
         if (e.keyCode === 27) { // key code 27 == escape
-            ipcRenderer.send('unfocus-main-window');
+            ipcRenderer.send('unfocus-shortcutmagic');
 
             let isActive = !(window.document.getElementById("hamburger-5").className.indexOf("is-active") > -1);
             this.setState({
@@ -799,26 +778,10 @@ export default class Home extends Component {
           <div className="pane-group">
             <div className="pane pane-sm sidebar">
               <nav className="nav-group">
-                <h5 className="nav-group-title">Favorites</h5>
+                <h5 className="nav-group-title">Programs</h5>
                 <span className="nav-group-item">
                   <span className="icon icon-light-up"></span>
-                  Photon
-                </span>
-                <span className="nav-group-item">
-                  <span className="icon icon-folder"></span>
-                  Documents
-                </span>
-                <span className="nav-group-item">
-                  <span className="icon icon-window"></span>
-                  Applications
-                </span>
-                <span className="nav-group-item">
-                  <span className="icon icon-signal"></span>
-                  AirDrop
-                </span>
-                <span className="nav-group-item">
-                  <span className="icon icon-monitor"></span>
-                  Desktop
+                  {this.state.name}
                 </span>
               </nav>
             </div>
@@ -1015,40 +978,6 @@ export default class Home extends Component {
 //                             effect={tooltipEffect.effect}
 //                             multiline={true}/>
 
-//                     </li>
-
-//                     <li onClick={(event) => {
-//                         event.preventDefault();
-//                         ipcRenderer.send('set-full-view-mode');
-//                     }}
-//                     data-for='toggle-full-mode-tooltip'
-//                     data-iscapture="true"
-//                     data-tip="Regular mode<br />This mode is good for <br />learning and exploring <br />a program. Drag the edges of <br />the windows to resize.">
-//                     <span id="toggle-full-mode" className="fa fa-2x fa-window-maximize">
-//                     </span>
-//                         <ReactTooltip id='toggle-full-mode-tooltip'
-//                             place={tooltipEffect.place}
-//                             type={tooltipEffect.type}
-//                             effect={tooltipEffect.effect}
-//                             multiline={true}/>
-//                     </li>
-
-//                     <li onClick={(event) => {
-//                         event.preventDefault();
-//                         // TODO: Manage state ourselves here? messy..
-//                         ipcRenderer.send('set-hidden-mode');
-//                     }}
-//                     data-for='toggle-hidden-mode-tooltip'
-//                     data-iscapture="true"
-//                     data-tip="Hide <br />This hides the window completely for this program. <br />You have to click the hat <br />icon in the menu bar <br ?>to show it again.">
-//                     <span id="toggle-hidden-mode" className="fa fa-2x fa-window-minimize">
-//                     </span>
-
-//                         <ReactTooltip id='toggle-hidden-mode-tooltip'
-//                             place={'left'}
-//                             type={tooltipEffect.type}
-//                             effect={tooltipEffect.effect}
-//                             multiline={true}/>
 //                     </li>
 
 //                 </ul>
