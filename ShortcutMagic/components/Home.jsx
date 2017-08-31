@@ -430,107 +430,96 @@ export default class Home extends Component {
             // });
         });
 
-        ipcRenderer.on('update-shortcuts', (event, newShortcuts) => {
-            // todo:
-            // - randomize the items?
-
-            console.log('entered update-shortcuts in Home');
-            console.log(newShortcuts);
-            let name = newShortcuts.name;
-            let compare = name.toLowerCase();
-
-        	if (compare === "electron" ||
-                compare === "shortcutmagic" ||
-                compare === "shortcutmagic-mac" ||
-                compare === "screensaverengine" ||
-                compare === "loginwindow" ||
-                compare === "dock" ||
-                compare === "google software update..." ||
-                compare === "google software update" ||
-                compare === "dropbox finder integration" ||
-                compare === "kap" ||
-                compare === "securityagent" ||
-                compare === "airplayuiagent" || 
-                compare === "evernote helper" ||
-                compare === "coreservicesuiagent") {
-                return; // TODO: Could this mess with other electron starter projects?
-            }
-
-            let loadingList = null;
-
-            // Clear out after a few minutes for simplicity
-            setTimeout(() => {
-                if (loadingList && loadingList.indexOf(name)) {
-                    this.setState({
-                        loading: null,
-                        hiddenLoading: true,
-                    });
-                }
-            }, 100000);
-
-            if (this.state && this.state.loading) {
-                loadingList = this.state.loading;
-                let loadingIndex = loadingList.indexOf(name);
-                if (loadingIndex < 0) return; // Stop any new rendering if we are not about to show shortcuts for an app that is loading
-
-                loadingList.splice(loadingIndex, 1);
-                if (loadingList.length == 0) {
-                    loadingList = null;
-                }
-            } else {
-                ipcRenderer.send('not-loading');
-            }
-
-            let shortcuts = newShortcuts.shortcuts;
-            const shortcutsArray = Object.keys(shortcuts).map(key => shortcuts[key]);
-            console.log('ipcRenderer callback, raw, name, new array: ', newShortcuts, name, shortcutsArray);
-
-			let listTitleFontWeight = (newShortcuts.listTitleFontWeight) ? newShortcuts.listTitleFontWeight : 400;
-			let listTitleFontSize = (newShortcuts.listTitleFontSize) ? newShortcuts.listTitleFontSize : 16;
-			let listItemFontWeight = (newShortcuts.listItemFontWeight) ? newShortcuts.listItemFontWeight : 200;
-			let listItemFontSize = (newShortcuts.listItemFontSize) ? newShortcuts.listItemFontSize : 14;
-
-            this.setState({
-                name: name,
-                initialItems: shortcutsArray,
-                items: shortcutsArray,
-                loading: loadingList,
-                hiddenLoading: false,
-				listTitleFontWeight: listTitleFontWeight,
-				listTitleFontSize: listTitleFontSize,
-				listItemFontWeight: listItemFontWeight,
-				listItemFontSize: listItemFontSize,
-            });
-
-            if (window.document.getElementById("search-field")) {
-                window.document.getElementById("search-field").value = "";
-            }
-            // TODO: Scroll to top here
+        ipcRenderer.on('set-current-program-name', (event, currentProgramName) => {
+          this.setState({
+            currentProgramName
+          });
         });
 
-        ipcRenderer.on('set-loading', (event, loading) => {
-            var alreadyLoading = (this.state) ? this.state.loading : null;
-            if (!alreadyLoading) alreadyLoading = [];
+        ipcRenderer.on('set-programs', (event, shortcuts) => {
+          let shortcutDict = {};
+          shortcuts.forEach(s => shortcutDict[s.name] = s);
+          this.setState({
+            shortcuts: shortcutDict, 
+            currentProgramName: shortcuts[0].name,
+          });
 
-            alreadyLoading.push(loading);
-            this.setState({
-                loading: alreadyLoading,
-                hiddenLoading: false,
-            });
-        });
+         //    console.log(newShortcuts);
+            // let name = newShortcuts.name;
+            // let compare = name.toLowerCase();
 
-        // Sync function
-        ipcRenderer.on('get-loading', (event) => {
-            event.returnValue = (this.state && this.state.loading) ? this.state.loading : undefined;
-        });
+        	// if (compare === "electron" ||
+         //        compare === "shortcutmagic" ||
+         //        compare === "shortcutmagic-mac" ||
+         //        compare === "screensaverengine" ||
+         //        compare === "loginwindow" ||
+         //        compare === "dock" ||
+         //        compare === "google software update..." ||
+         //        compare === "google software update" ||
+         //        compare === "dropbox finder integration" ||
+         //        compare === "kap" ||
+         //        compare === "securityagent" ||
+         //        compare === "airplayuiagent" || 
+         //        compare === "evernote helper" ||
+         //        compare === "coreservicesuiagent") {
+         //        return; // TODO: Could this mess with other electron starter projects?
+         //    }
 
-        ipcRenderer.on('no-shortcuts-visual-notification', (event) => {
-            console.log("TODO: Show that the list item execution might not work");
-        });
+            // let loadingList = null;
 
-        ipcRenderer.on('force-to-top', (event, shortcut) => {
-            this.focusSearchField(null, shortcut.name);
-        });
+            // // Clear out after a few minutes for simplicity
+            // setTimeout(() => {
+            //     if (loadingList && loadingList.indexOf(name)) {
+            //         this.setState({
+            //             loading: null,
+            //             hiddenLoading: true,
+            //         });
+            //     }
+            // }, 100000);
+
+      // if (this.state && this.state.loading) {
+          // loadingList = this.state.loading;
+          // let loadingIndex = loadingList.indexOf(name);
+          // if (loadingIndex < 0) return; // Stop any new rendering if we are not about to show shortcuts for an app that is loading
+
+          // loadingList.splice(loadingIndex, 1);
+          // if (loadingList.length == 0) {
+          //     loadingList = null;
+          // }
+      // } else {
+      //     ipcRenderer.send('not-loading');
+      // }
+
+			// let listTitleFontWeight = (newShortcuts.listTitleFontWeight) ? newShortcuts.listTitleFontWeight : 400;
+			// let listTitleFontSize = (newShortcuts.listTitleFontSize) ? newShortcuts.listTitleFontSize : 16;
+			// let listItemFontWeight = (newShortcuts.listItemFontWeight) ? newShortcuts.listItemFontWeight : 200;
+			// let listItemFontSize = (newShortcuts.listItemFontSize) ? newShortcuts.listItemFontSize : 14;
+
+    });
+
+    // ipcRenderer.on('set-loading', (event, loading) => {
+    //     var alreadyLoading = (this.state) ? this.state.loading : null;
+    //     if (!alreadyLoading) alreadyLoading = [];
+
+    //     alreadyLoading.push(loading);
+    //     this.setState({
+    //         loading: alreadyLoading,
+    //         hiddenLoading: false,
+    //     });
+    // });
+
+    // // Sync function
+    // ipcRenderer.on('get-loading', (event) => {
+    //     event.returnValue = (this.state && this.state.loading) ? this.state.loading : undefined;
+    // });
+
+    ipcRenderer.on('no-shortcuts-visual-notification', (event) => {
+        console.log("TODO: Show that the list item execution might not work");
+    });
+
+    ipcRenderer.on('force-to-top', (event, shortcut) => {
+        this.focusSearchField(null, shortcut.name);
+    });
 
         console.log('home constructor called');
         // this.setState({
@@ -555,9 +544,13 @@ export default class Home extends Component {
         this.toggleMiniSettings = this.toggleMiniSettings.bind(this);
         this.changeFontUp = this.changeFontUp.bind(this);
         this.changeFontDown = this.changeFontDown.bind(this);
+
+        ipcRenderer.send('set-programs-async');
     }
 
-    changeFontUp() {
+
+
+  changeFontUp() {
 		console.log("font up");
 		console.log(this.state.listTitleFontSize);
 		console.log(this.state.listTitleFontWeight);
@@ -576,7 +569,7 @@ export default class Home extends Component {
 		this.setState(newFontValues);
 	}
 
-    changeFontDown() {
+  changeFontDown() {
 		console.log("font down");
 		console.log(this.state.listTitleFontSize);
 		console.log(this.state.listTitleFontWeight);
@@ -595,36 +588,36 @@ export default class Home extends Component {
 		this.setState(newFontValues);
 	}
 
-    toggleSettings() {
-        // TODO: refer directly to the browser window by id instead of grabbing all windows
-        let windows = remote.BrowserWindow.getAllWindows();
-        for (let i = 0; i < windows.length; i++) {
-            let settingsWindow = windows[i];
-            if (settingsWindow) {
-				if (settingsWindow.getTitle() == "settingsWindow") {
-					// TODO: Listen for escape once window is visible, to hide window again
-					if (settingsWindow.isVisible()) {
-						// TODO: Save changes when window is hidden again
-		                settingsWindow.hide();
-					} else {
-		                settingsWindow.show();
-					}
-	            } else if (settingsWindow.getTitle() == "miniSettingsWindow") {
-					if (settingsWindow.isVisible()) {
-		                settingsWindow.hide();
-					}
-	            }
-			}
-        }
-    }
 
-    toggleMiniSettings() {
+
+
+  toggleSettings() {
+    let windows = remote.BrowserWindow.getAllWindows();
+    for (let i = 0; i < windows.length; i++) {
+      let settingsWindow = windows[i];
+      if (settingsWindow) {
+        if (settingsWindow.getTitle() == "settingsWindow") {
+          if (settingsWindow.isVisible()) {
+            settingsWindow.hide();
+          } else {
+            settingsWindow.show();
+          }
+        } else if (settingsWindow.getTitle() == "miniSettingsWindow") {
+          if (settingsWindow.isVisible()) {
+            settingsWindow.hide();
+          }
+        }
+      }
+    }
+  }
+
+  toggleMiniSettings() {
         // TODO: refer directly to the browser window by id instead of grabbing all windows
         let windows = remote.BrowserWindow.getAllWindows();
         let mainWindow = null;
         for (let i = 0; i < windows.length; i++) {
             mainWindow = windows[i];
-            if (mainWindow && mainWindow.getTitle() == "Shortcuts") break;
+            if (mainWindow && mainWindow.getTitle() == "ShortcutMagic") break;
         }
 
         for (let i = 0; i < windows.length; i++) {
@@ -648,15 +641,14 @@ export default class Home extends Component {
                         settingsWindow.webContents.send('set-style', this.state);
                         settingsWindow.setBounds(originalBounds);
 		                settingsWindow.show();
-					}
-	            } else if (settingsWindow.getTitle() == "settingsWindow") {
-					// Hide main settings window if we clicked eyedropper settings window
-					if (settingsWindow.isVisible()) {
-						settingsWindow.hide();
-					}
-	            }
-			}
+    					}
+          } else if (settingsWindow.getTitle() == "settingsWindow") {
+  					if (settingsWindow.isVisible()) {
+  						settingsWindow.hide();
+    				}
+          }
         }
+      }
     }
 
     onSortEnd({oldIndex, newIndex}) {
@@ -669,38 +661,62 @@ export default class Home extends Component {
     filterListTrigger(event) {
         this.filterList((event) ? event.target.value : "");
     }
+    filterAllListTrigger(event) {
+        this.filterAllList((event) ? event.target.value : "");
+    }
+
+    filterSpecificList(targetValue, specificList) {
+      if (targetValue) {
+        updatedList = this.state.shortcuts[specificList].filter((shortcuts) => {
+
+          const innerValues = Object.keys(program).map(key => item[key]);
+
+          for (var i = 0; i < innerValues.length; i++) {
+            let innerVal = innerValues[i];
+
+            if (typeof innerVal === 'string' && innerVal.toLowerCase().indexOf(targetValue.toLowerCase()) !== -1) return true;
+
+            if (innerVal == targetValue) return true;
+          }
+        });
+      }
+
+      this.setState({items: updatedList});
+    }
 
     filterList(targetValue) {
-        let updatedList = this.state.initialItems;
+      if (targetValue) {
+        updatedList = this.state.shortcuts.filter((program) => {
 
-        if (targetValue) {
-            updatedList = updatedList.filter(function(item){
-                const innerValues = Object.keys(item).map(key => item[key]);
+          const innerValues = Object.keys(program.shortcuts).map(key => item[key]);
 
-                for (var i = 0; i < innerValues.length; i++) {
-                    let innerVal = innerValues[i];
+          for (var i = 0; i < innerValues.length; i++) {
+            let innerVal = innerValues[i];
 
-                    if (typeof innerVal === 'string' && innerVal.toLowerCase().indexOf(targetValue.toLowerCase()) !== -1) return true;
-                    if (innerVal == targetValue) return true;
-                }
-            });
+            if (typeof innerVal === 'string' && innerVal.toLowerCase().indexOf(targetValue.toLowerCase()) !== -1) return true;
+
+            if (innerVal == targetValue) return true;
+          }
+        });
+      }
+
+      this.setState({items: updatedList});
+    }
+
+    filterAllListKeyDown(e) {
+        if (e.keyCode === 27) { // key code 27 == escape
+            // Clear search field and trigger list filter on empty search filter
+            window.document.getElementById("search-field-all").value = '';
+            this.filterSpecificList();
         }
-
-        this.setState({items: updatedList});
     }
 
     filterListKeyDown(e) {
         if (e.keyCode === 27) { // key code 27 == escape
-            ipcRenderer.send('unfocus-shortcutmagic');
-
-            let isActive = !(window.document.getElementById("hamburger-5").className.indexOf("is-active") > -1);
-            this.setState({
-                menuActive: isActive
-            });
 
             // Clear search field and trigger list filter on empty search filter
             window.document.getElementById("search-field").value = '';
-            this.filterListTrigger();
+            this.filterSpecificList();
 
             // Reset looks of title/search area
             // TODO: DRY this up in a function
@@ -728,45 +744,6 @@ export default class Home extends Component {
     }
 
     render() {
-        globalState = this.state;
-
-        if (!this.state || this.state.loading) {
-            console.log('rendering transparent window');
-            return <div style={{ backgroundColor: "transparent", }}> </div>
-        } else {
-            ipcRenderer.send("not-loading");
-        }
-
-        let shortcuts = this.state.items;
-        if (!this.previousShortcuts || this.previousShortcuts != shortcuts) {
-            shortcuts.sort((a, b) => {
-              console.log('sorting a b', a.score, b.score);
-              if (!a.score) a.score = 0;
-              if (!b.score) b.score = 0;
-
-              if (a.score > b.score) return  -1;
-              if (a.score < b.score) return  1;
-              if (a.score === b.score) return  0;
-
-              return 0;
-            });
-
-            this.previousShortcuts = shortcuts;
-        }
-
-       let ShortcutList = (
-          <div className="filter-list" style={{WebkitAppRegion: 'no-drag'}}>
-              <div style={{textAlign: 'left'}}>
-                  <SortableList
-                      items={shortcuts}
-                      onSortEnd={this.onSortEnd}
-                      useDragHandle={true}
-                      lockAxis='y'
-                  />
-              </div>
-          </div>
-       );
-
                 // <span className="nav-group-item" onClick={(e) => {
                 //   ipcRenderer.send('main-parse-shortcuts');
                 // }}>
@@ -774,61 +751,143 @@ export default class Home extends Component {
                 //   Re-parse shortcuts
                 // </span>
 
-        return (
-          <div className="pane-group">
-            <div className="pane pane-sm sidebar">
-              <nav className="nav-group">
-                <h5 className="nav-group-title">Programs</h5>
-                <span className="nav-group-item">
-                  <span className="icon icon-light-up"></span>
-                  {this.state.name}
+
+      globalState = this.state;
+
+      let shortcutTableBody;
+      let programTitles;
+
+      if (!this.state || !this.state.shortcuts || !this.state.currentProgramName) {
+        shortcutTableBody = (
+          <tbody style={{
+            textAlign: 'center',
+            fontSize: 18,
+            fontWeight: 600,
+          }}>
+            <tr className="file_arq">
+              <td>
+                Click a program to the left to see its shortcuts.
+              </td>
+            </tr>
+          </tbody>
+        );
+      } else {
+        let programs = this.state.shortcuts;
+        let sortedShortcuts = Object.values(programs[this.state.currentProgramName].shortcuts);
+
+        if (!sortedShortcuts || !sortedShortcuts.sort) {
+          console.log('cant sort sortedShortcuts');
+          console.log(sortedShortcuts);
+          console.log(sortedShortcuts.sort);
+        }
+
+        sortedShortcuts.sort((a, b) => {
+          console.log('sorting a b', a.score, b.score);
+          if (!a.score) a.score = 0;
+          if (!b.score) b.score = 0;
+
+          if (a.score > b.score) return  -1;
+          if (a.score < b.score) return  1;
+          if (a.score === b.score) return  0;
+
+          return 0;
+        });
+
+        shortcutTableBody = (
+          <tbody>
+            {sortedShortcuts.map((value) => {
+              return (
+                <tr className="file_arq" key={value.name + value.menuName}>
+                  <td className="btn btn-mini" onClick={(e) => {
+                    console.log("clicked execute-list-item with ", value);
+                    ipcRenderer.send('execute-list-item', value);
+                  }}>Run</td>
+                  <td>{value.name}</td>
+                  <td>
+                    {
+                      // Always show ⌘ if there are no mods or glyphs
+                      (value["mod"]) ? value["mod"] :
+                        (value["glyph"] && !value["char"]) ? "⌘" :
+                          (!value["glyph"] && value["char"]) ? "⌘" : ""
+                    }
+                    {
+                      (value["glyph"]) ? ( value["glyph"] ) : ""
+                    }
+                    {
+                      (value["char"]) ? ( value["char"]): ""
+                    }
+                  </td>
+                  <td>{value.menuName}</td>
+                  <td><span className="icon icon-up-open-big" onClick={e => {
+                    value.score = value.score ? value.score + 1 : 1;
+                    console.log("clicked upvote-list-item with ", value);
+                    ipcRenderer.send('update-shortcut-item', value);
+                  }}></span>   <span className="icon icon-down-open-big" onClick={e => {
+                    value.score = value.score ? value.score - 1 : -1;
+                    console.log("clicked upvote-list-item with ", value);
+                    ipcRenderer.send('update-shortcut-item', value);
+                  }}></span>   {value.score}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        );
+
+        programTitles = (
+          <nav className="nav-group">
+            <h5 className="nav-group-title">Programs <input id="search-field" style={{
+              borderRadius: ".25rem",
+              borderWidth: ".25rem",
+              border: `1px solid #1a82fb`, // rgba(26, 130, 251, 1.0) is the color from Photon mac css
+              // backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`,
+            }} type="search" placeholder=" Search" onChange={this.filterListTrigger} onKeyDown={this.filterListKeyDown}/></h5>
+
+            {Object.keys(programs).map(name => {
+              const navGroupClass = "nav-group-item" + (name == this.state.currentProgramName ? " active" : "");
+
+              return (
+                <span className={navGroupClass} key={name} onClick={(e) => {
+                  this.setState({
+                    currentProgramName: name,
+                  });
+                }}>
+                  <span className="icon icon-window"></span>
+                  {name}
                 </span>
-              </nav>
-            </div>
+              );
+            })}
+          </nav>
+        );
+      }
 
-            <div className="pane">
-              <table className="table-striped">
-                <thead>
-                  <tr>
-                    <th>Run</th>
-                    <th>Name</th>
-                    <th>Shortcut</th>
-                    <th>Menu</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {this.state.items.map((value, index) => {
-                    return (
-                      <tr className="file_arq">
-                        <td className="btn btn-mini" onClick={(e) => {
-                          console.log("clicked execute-list-item with ", value);
-                          ipcRenderer.send('execute-list-item', value);
-                        }}>Run</td>
-                        <td>{value.name}</td>
-                        <td>
-                          {
-                              // Always show ⌘ if there are no mods or glyphs
-                              (value["mod"]) ? value["mod"] :
-                                  (value["glyph"] && !value["char"]) ? "⌘" :
-                                      (!value["glyph"] && value["char"]) ? "⌘" : ""
-                          }
-                          {
-                              (value["glyph"]) ? ( value["glyph"] ) : ""
-                          }
-                          {
-                              (value["char"]) ? ( value["char"]): ""
-                          }
-                        </td>
-                        <td>{value.menuName}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+      return (
+        <div className="pane-group">
+          <div className="pane pane-sm sidebar">
+            {programTitles ? programTitles : "Loading..."}
           </div>
-      );
 
+          <div className="pane">
+            <input id="search-field-all" style={{
+              borderRadius: ".25rem",
+              borderWidth: ".25rem",
+              border: `1px solid #1a82fb`, // rgba(26, 130, 251, 1.0) is the color from Photon mac css
+              // backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`,
+            }} type="search" placeholder=" Search" onChange={this.filterAlListTrigger} onKeyDown={this.filterAllListKeyDown}/>
+            <table className="table-striped">
+              <thead>
+                <tr>
+                  <th>Run</th>
+                  <th>Name</th>
+                  <th>Shortcut</th>
+                  <th>Menu</th>
+                  <th>Rating</th>
+                </tr>
+              </thead>
+              {shortcutTableBody}
+            </table>
+          </div>
+        </div>
+      );
     }
 
 //     render() {
@@ -842,16 +901,6 @@ export default class Home extends Component {
 //             ipcRenderer.send("not-loading");
 //         }
 
-
-// 		let SearchField = (
-//             <input id="search-field" className="form-control" type="text" placeholder="Search actions and shortcuts" style={{
-//                 display: 'none',
-//                 // borderRadius: ".25rem",
-//                 // borderWidth: ".50rem",
-//                 border: `2px solid #737475`, // #737475 is the color from Photon mac css
-//                 backgroundColor: `rgba(50, 63, 83, 1)`, color: `rgba(238, 219, 165, 1)`, 
-//             }} onChange={this.filterListTrigger} onKeyDown={this.filterListKeyDown}/>
-// 		);
 
 //         let shortcuts = this.state.items;
 //         if (!this.previousShortcuts || this.previousShortcuts != shortcuts) {

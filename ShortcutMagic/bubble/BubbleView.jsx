@@ -38,11 +38,14 @@ const maxFade = 0.8;
 
 export default class BubbleView extends Component {
   componentWillMount() {
-    this.updateShortcuts = this.updateShortcuts.bind(this);
     this.fadeOut = this.fadeOut.bind(this);
     this.fadeIn = this.fadeIn.bind(this);
+    this.setPrograms = this.setPrograms.bind(this);
+    this.setCurrentProgramName = this.setCurrentProgramName.bind(this);
+    this.stopFadingWithState = this.stopFadingWithState.bind(this);
 
-    ipcRenderer.on('update-shortcuts', this.updateShortcuts);
+    ipcRenderer.on('set-programs', this.setPrograms);
+    ipcRenderer.on('set-current-program-name', this.setCurrentProgramName);
 
     this.setState({
       fade: initialFade
@@ -55,7 +58,7 @@ export default class BubbleView extends Component {
       return;
     }
 
-    if (this.state.fade <= 0.03) {
+    if (!this.state || !this.state.fade || this.state.fade <= 0.03) {
       this.setState({
         fade: 0,
         fading: false
@@ -90,26 +93,41 @@ export default class BubbleView extends Component {
     setTimeout(this.fadeIn, 30);
   }
 
-  updateShortcuts(e, shortcutInfo) {
-    stopFadeOut = true;
+  setPrograms(e, programs) {
+    this.setState({
+      programs
+    });
+  }
 
-    let shortcuts = Object.values(shortcutInfo.shortcuts);
+  setCurrentProgramName(e, newProgramName) {
+    if (!this.state || !this.state.programs) {
+      return;
+    }
+    
+    const program = this.state.programs.find(program => program.name === newProgramName);
+    if (!program) {
+      return;
+    }
+
+    let shortcuts = Object.values(program.shortcuts);
+    if (!shortcuts || shortcuts.length < 1) {
+      return;
+    }
 
     console.log('about to filter shortcuts before/after: ');
     console.log(shortcuts);
     // TODO: Decide what to exclude based on shortcut power level!
     shortcuts = shortcuts.filter(obj => !obj.isHidden && obj.menu != "File");
     console.log(shortcuts);
-    shuffleArray(shortcuts);
+    // shuffleArray(shortcuts);
 
     shortcuts.sort((a, b) => {
       console.log('sorting a b', a.score, b.score);
       if (!a.score) a.score = 0;
       if (!b.score) b.score = 0;
 
-      if (a.score > b.score) return  -1;
-      if (a.score < b.score) return  1;
-      if (a.score === b.score) return  0;
+      if (a.score > b.score) return -1;
+      if (a.score < b.score) return 1;
 
       return 0;
     });
@@ -141,8 +159,17 @@ export default class BubbleView extends Component {
       }, 500);
     }
 
+    newState.currentProgramName = newProgramName;
+    this.stopFadingWithState(newState);
+  }
+
+  stopFadingWithState(newState = {}) {
+    stopFadeOut = true;
+    newState.fade = maxFade;
+    newState.fading = false;
     this.setState(newState);
   }
+
 
   render() {
     if (!this.state || !this.state.currentShortcut) {
@@ -162,13 +189,6 @@ export default class BubbleView extends Component {
 
     // TODO: Make not clickable except for button with action or open main window
 
-    const stopFadingWithState = (newState = {}) => {
-      stopFadeOut = true;
-      newState.fade = maxFade;
-      newState.fading = false;
-      this.setState(newState);
-    };
-
     const buttonSection = (
       <div style={{
         display: 'flex',
@@ -177,11 +197,11 @@ export default class BubbleView extends Component {
         padding: '4px',
         backgroundColor: `transparent`,
       }} onMouseEnter={(e) => {
-        stopFadingWithState({
+        this.stopFadingWithState({
           mouseOver: true,
         });
       }} onMouseLeave={(e) => {
-        stopFadingWithState({
+        this.stopFadingWithState({
           mouseOver: false,
         });
       }}>
@@ -356,7 +376,7 @@ export default class BubbleView extends Component {
             // boxShadow: 'rgba(34, 34, 34, ${this.state.fade}) 0px 0px 10px 0px',
             // textAlign: 'center',
           }} onMouseEnter={(e) => {
-            stopFadingWithState(this.state.mouseOver ? undefined : {
+            this.stopFadingWithState(this.state.mouseOver ? undefined : {
               mouseOver: true
             });
           }}>

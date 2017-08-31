@@ -67,6 +67,7 @@ let loadingText = null;
 let recursiveCount = 0;
 let recursiveLastFile;
 let stopRecursiveLs = false;
+let firstLoad = false;
 
 log.transports.console.level = 'info';
 log.transports.file.level = 'info';
@@ -152,6 +153,23 @@ function getDb() {
 		    getDb().remove({
 		      name: "mysms"
 		    });
+
+		    getDb().remove({
+		      name: "Battle.net Launcher"
+		    });
+
+		    getDb().remove({
+		      name: "1Password mini"
+		    });
+
+		    getDb().remove({
+		      name: "Mullvad"
+		    });
+
+		    getDb().remove({
+		      name: "Evernote Helper"
+		    });
+
 		  }
 
 	  	return db;
@@ -441,24 +459,31 @@ function createWindows() {
 	}
 
 	let reallyQuit = true;
-
-	// TODO: keep the permissions simple for now but improve in the future
-	permissionCheck((success) => {
-		if (!success && reallyQuit) {
-			return;
-		}
-
-		reallyQuit = false;
-
+	const create = (success) => {
 		createBackgroundTaskRunnerWindow();
 		createBackgroundListenerWindow();
 		// createSettingsWindow();
 		// createMiniSettingsWindow();
-		createMainWindow();
 		createBubbleWindow();
+		createMainWindow();
     createTooltipWindow();
     // createGifRecorderWindow();
     // createGifCommunityWindow();
+  };
+
+	// TODO: keep the permissions simple for now but improve in the future
+	if (process.env.NODE_ENV === "development") {
+		create();
+	} else {
+		permissionCheck((success) => {
+			if (!success && reallyQuit) {
+				return;
+			}
+
+			reallyQuit = false;
+			create();
+		});
+	}
 
    //  if (!localShortcutsCreated) {
    //  	localShortcutsCreated = true;
@@ -487,7 +512,6 @@ function createWindows() {
 	  //       mainWindow.webContents.send('execute-list-item', 5);
 	  //   });
 	  // }
-	});
 	
 }
 
@@ -552,11 +576,11 @@ function createMainWindow() {
 
 	mainWindow = new BrowserWindow({
 		name: "ShortcutMagic",
-		title: "Shortcuts",
+		title: "ShortcutMagic",
 		acceptFirstClick: false,
 		alwaysOnTop: false,
 		frame: true,
-		show: true,
+		show: false,
 		transparent: false,
 	  x: defaultFullBounds.x, y: defaultFullBounds.y, width: defaultFullBounds.width, height: defaultFullBounds.height,
 	});
@@ -571,7 +595,10 @@ function createMainWindow() {
     }
   });
 
-  mainWindow.on('show', (e) => app.dock.show());
+  mainWindow.on('ready-to-show', (e) => {
+  	app.dock.show();
+  	mainWindow.show();
+  });
 }
 
 function debugEverything() {
@@ -829,8 +856,8 @@ function loadWithPeriods(forceReload) {
 	getShortcuts((currentShortcuts) => {
 		if (currentShortcuts && !forceReload) {
 			log.info('loaded in memory shortcuts, mainWindow bounds are [OLD NEW HIDDEN] ', mainWindow.getBounds(), currentShortcuts.bounds, currentShortcuts.hidden);
-			mainWindow.webContents.send('update-shortcuts', currentShortcuts);
-			bubbleWindow.webContents.send('update-shortcuts', currentShortcuts);
+			mainWindow.webContents.send('set-current-program-name', currentShortcuts.name);
+			bubbleWindow.webContents.send('set-current-program-name', currentShortcuts.name);
 		} else {
 			getDb().find({
 				name: currentAppName
@@ -858,8 +885,8 @@ function loadWithPeriods(forceReload) {
 
 		      inMemoryShortcuts[currentAppName] = currentShortcuts;
 		      
-		      mainWindow.webContents.send('update-shortcuts', currentShortcuts);
-		      bubbleWindow.webContents.send('update-shortcuts', currentShortcuts);
+		      mainWindow.webContents.send('set-current-program-name', currentShortcuts.name);
+		      bubbleWindow.webContents.send('set-current-program-name', currentShortcuts.name);
 				} else {
 					if (!loadingText) {
 						mainWindow.webContents.send('set-loading', currentAppName);
@@ -1003,6 +1030,29 @@ ipcMain.on('get-app-name-sync', function(event) {
 	event.returnValue = currentAppName;
 });
 
+ipcMain.on('set-programs-async', (e) => {
+	if (!inMemoryShortcuts || !inMemoryShortcuts.length) {
+	  // TODO: At some point this might be too much to read at once?
+		getDb().find({}, function(err, res) {
+			if (err) {
+				log.info('errored during db find: ', err);
+				return;
+			}
+
+			if (res.length > 0) {
+				// firstLoad = true;
+				inMemoryShortcuts = res;
+				mainWindow.webContents.send('set-programs', res);
+				setTimeout(() => {
+					bubbleWindow.webContents.send('set-programs', res)
+				}, 5000);
+			} else {
+				log.info('zero for res.length');
+			}
+		});
+	}
+});
+
 ipcMain.on('main-app-switched-notification', appSwitched);
 
 function appSwitched(event, appName) {
@@ -1047,6 +1097,7 @@ function appSwitched(event, appName) {
 	currentAppName = appName;
 	loadWithPeriods();
 	showBubbleWindow();
+	mainWindow.webContents.send('set-current-program-name', currentAppName);
 }
 
 function mainParseShortcutsCallback(payload) {
@@ -1055,8 +1106,8 @@ function mainParseShortcutsCallback(payload) {
 	loadingText = null;
 
 	if (payload) {
-		mainWindow.webContents.send('update-shortcuts', payload);
-		bubbleWindow.webContents.send('update-shortcuts', payload);
+		mainWindow.webContents.send('set-current-program-name', payload.name);
+		bubbleWindow.webContents.send('set-current-program-name', payload.name);
 		saveWithoutPeriods(payload);
 	} else {
 		appSwitched(null, currentAppName);
@@ -1308,8 +1359,8 @@ ipcMain.on('save-gif', (event, newGif, listItem, appName) => {
 		} else {
       // This might update the window with other shortcuts than the one we just recorded a gif for. That is ok
       // because the gif will be visible when they switch back to that app again.
-      mainWindow.webContents.send('update-shortcuts', inMemoryShortcuts[currentAppName]);
-      bubbleWindow.webContents.send('update-shortcuts', inMemoryShortcuts[currentAppName]);
+      mainWindow.webContents.send('set-current-program-name', currentAppName);
+      bubbleWindow.webContents.send('set-current-program-name', currentAppName);
 			log.info("successfuly saved new gif", res);
 		}
 	});
