@@ -298,6 +298,21 @@ function createBubbleWindow() {
 	var bubblePath = `file://${__dirname}/bubble/index.html`;
 	bubbleWindow.loadURL(bubblePath);
 
+	// bubbleWindow.on('ready-to-show', (e) => {
+	// 	// TODO>>>>>>>>>>>>>>>  check settings here;
+	// 	// 1 - always show when programs are switching
+	// 	// 2 - only show when X minutes has passed
+	// 	// 3 - show after switching programs X times
+	// 	// 4 - never show anything (disable bubblewindow)
+	// 	// extra:
+	// 	// - always show
+	// 	// - unique settings per window? 
+
+		
+
+	// 	bubbleWindow.webContents.send('');
+	// });
+
 
 	// TODO: Make the bubble window prettier
 
@@ -585,7 +600,7 @@ function createMainWindow() {
 	  x: defaultFullBounds.x, y: defaultFullBounds.y, width: defaultFullBounds.width, height: defaultFullBounds.height,
 	});
 
-	mainWindow.loadURL(`file://${__dirname}/index.html`);
+	mainWindow.loadURL(`file://${__dirname}/components/index.html`);
 
   mainWindow.on('close', (e) => {
     if (!isQuitting) {
@@ -1043,13 +1058,14 @@ ipcMain.on('set-programs-async', (e) => {
 				// firstLoad = true;
 				inMemoryShortcuts = res;
 				mainWindow.webContents.send('set-programs', res);
-				setTimeout(() => {
-					bubbleWindow.webContents.send('set-programs', res)
-				}, 5000);
+				bubbleWindow.webContents.send('set-programs', res)
 			} else {
 				log.info('zero for res.length');
 			}
 		});
+	} else {
+		mainWindow.webContents.send('set-programs', inMemoryShortcuts);
+		bubbleWindow.webContents.send('set-programs', inMemoryShortcuts)
 	}
 });
 

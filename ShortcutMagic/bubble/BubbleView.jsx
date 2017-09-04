@@ -58,7 +58,7 @@ export default class BubbleView extends Component {
       return;
     }
 
-    if (!this.state || !this.state.fade || this.state.fade <= 0.03) {
+    if (!this.state || !this.state.fade || this.state.fade <= 0.015) {
       this.setState({
         fade: 0,
         fading: false
@@ -86,7 +86,7 @@ export default class BubbleView extends Component {
     }
 
     this.setState({
-      fade: this.state.fade + 0.02,
+      fade: this.state.fade + 0.05,
       fading: true
     });
 
@@ -340,8 +340,18 @@ export default class BubbleView extends Component {
         backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
         color: `rgba(85, 85, 85, ${this.state.fade})`, 
       }}>
-          <header className="toolbar toolbar-header" style={{
-            backgroundColor: `transparent`,
+          <header style={{
+
+            borderBottom: '1px solid #c2c0c2',
+            minHeight: '22px',
+            boxShadow: 'inset 0 1px 0 rgba(245, 244, 245, ${this.state.fade})',
+            backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
+            backgroundImage: '-webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(232, 230, 232, ${this.state.fade})), color-stop(100%, rgba(209, 207, 209, ${this.state.fade})))',
+            backgroundImage: '-webkit-linear-gradient(top, rgba(232, 230, 232, ${this.state.fade}) 0%, rgba(209, 207, 209, ${this.state.fade}) 100%)',
+            backgroundImage: 'linear-gradient(to bottom, rgba(232, 230, 232, ${this.state.fade}) 0%, rgba(209, 207, 209, ${this.state.fade}) 100%)',
+
+            // backgroundColor: `transparent`,
+            // backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
             // backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
             // color: `rgba(85, 85, 85, ${this.state.fade})`, 
             // backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
