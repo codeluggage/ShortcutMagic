@@ -127,7 +127,7 @@ export default class MiniSettingsView extends Component {
 		var windows = remote.BrowserWindow.getAllWindows();
 		for (var i = 0; i < windows.length; i++) {
 			let holdWindow = windows[i];
-			if (holdWindow && holdWindow.getTitle() == "Shortcuts") {
+			if (holdWindow && holdWindow.getTitle() == "ShortcutMagic") {
 				// TODO: Perform more updates based on the settings...?
 				holdWindow.webContents.send('set-background-color', newStyles["backgroundColor"]);
 				holdWindow.webContents.send('set-text-color', newStyles["textColor"]);
@@ -171,7 +171,7 @@ export default class MiniSettingsView extends Component {
         var windows = remote.BrowserWindow.getAllWindows();
         for (var i = 0; i < windows.length; i++) {
             let holdWindow = windows[i];
-            if (holdWindow && holdWindow.getTitle() == "Shortcuts") {
+            if (holdWindow && holdWindow.getTitle() == "ShortcutMagic") {
 				holdWindow.webContents.send('set-background-color', colorString);
                 break;
             }
@@ -189,7 +189,7 @@ export default class MiniSettingsView extends Component {
         var windows = remote.BrowserWindow.getAllWindows();
         for (var i = 0; i < windows.length; i++) {
             let holdWindow = windows[i];
-            if (holdWindow && holdWindow.getTitle() == "Shortcuts") {
+            if (holdWindow && holdWindow.getTitle() == "ShortcutMagic") {
 				holdWindow.webContents.send('set-item-background-color', colorString);
                 break;
             }
@@ -207,7 +207,7 @@ export default class MiniSettingsView extends Component {
         var windows = remote.BrowserWindow.getAllWindows();
         for (var i = 0; i < windows.length; i++) {
             let holdWindow = windows[i];
-            if (holdWindow && holdWindow.getTitle() == "Shortcuts") {
+            if (holdWindow && holdWindow.getTitle() == "ShortcutMagic") {
 				holdWindow.webContents.send('set-text-color', colorString);
                 break;
             }
@@ -225,7 +225,7 @@ export default class MiniSettingsView extends Component {
         var windows = remote.BrowserWindow.getAllWindows();
         for (var i = 0; i < windows.length; i++) {
             let holdWindow = windows[i];
-            if (holdWindow && holdWindow.getTitle() == "Shortcuts") {
+            if (holdWindow && holdWindow.getTitle() == "ShortcutMagic") {
 				holdWindow.webContents.send('set-item-color', colorString);
                 break;
             }

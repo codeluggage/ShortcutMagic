@@ -1,49 +1,85 @@
 'use strict';
 
+import Sudoer from 'electron-sudo';
+
 const electron = require('electron')
 const {
-    // app lets us access global things about the whole running application, like the application name, the dock state,
-    // and events that trigger for the whole application, like app.on('before-quit', ...
     app,
-    // BrowserWindow is a chrome window which loads a html file. Used for all the windows of the application
     BrowserWindow,
-    // ipcMain is used for listening to events sent from other threads, like from inside BrowserWindow's
     ipcMain,
-    // Tray is used for the icon in the menu bar on mac, where we show the wizard hat
     Tray,
     Menu,
     globalShortcut,
-    // autoUpdater,
-} = require('electron');
-const os = require('os');
-const log = require('electron-log');
+} = electron;
 const { spawnSync } = require('child_process');
 const deepEqual = require('deep-equal');
 const parseShortcuts = require('./background/parseShortcuts.js');
-let isQuitting = false; // TODO: find a better way to do this
-let localShortcutsCreated = false; // TODO: find a better way to do this
-let loadingText = null;
-let gifDirectory = "~/Movies/Kaptures";
-let recursiveCount = 0;
-let recursiveLastFile;
-let stopRecursiveLs = false;
+const electronLocalshortcut = require('electron-localshortcut');
+const log = require('electron-log');
+const sizeOf = require('image-size');
+const path = require('path');
+const Datastore = require('nedb');
 
+// Global (for now) objects:
 
-import Sudoer from 'electron-sudo';
 const sudoer = new Sudoer({
 	name: 'ShortcutMagic'
 });
+const gifDirectory = "~/Movies/Kaptures";
+const defaultFullBounds = { x: 200, y: 100, width: 800, height: 600 };
+const hiddenBounds  = { x: 89, y: 23, width: 0, height: 0 };
+const defaultBubbleHeight = 130;
+const defaultBubbleWidth = 250;
 
+// the name of the app that was switched to last time, so we know it's the name of the currently active program
+let currentAppName = "ShortcutMagic-mac"; // TODO: Check for bugs with this when opening ShortcutMagic the first time
+// These global settings are stored together with the shortcuts, and this is the "name":
+var GLOBAL_SETTINGS = "all programs";
+// controls the tray of the application
+let trayObject;
 
+// Browser windows:
+let settingsWindow,
+		miniSettingsWindow,
+		mainWindow,
+		backgroundTaskRunnerWindow,
+		backgroundListenerWindow,
+		welcomeWindow,
+		tooltipWindow,
+		gifRecorderWindow,
+		gifCommunityWindow,
+		bubbleWindow,
+		learnWindow,
+		surveyWindow;
+
+// a hacky bad construct holding the shortcuts from the db in memory
+// TODO: merge into a class that encapsulates the db and functionality, and caches things in memory without checking this array everywhere :|
+let inMemoryShortcuts = [];
+// const weirdErrorPos = { x: 89, y: 23, width: 0, height: 0 };
+// hackyStopSavePos needs to be replaced with a better system. right now it just stops the size and position of the application
+// from being saved. this is typically set when we are loading a position or moving between window modes
+let hackyStopSavePos = false;
+
+let db;
+let isQuitting = false; // TODO: find a better way to do this
+let localShortcutsCreated = false; // TODO: find a better way to do this
+let loadingText = null;
+let recursiveCount = 0;
+let recursiveLastFile;
+let stopRecursiveLs = false;
+let firstLoad = false;
 
 log.transports.console.level = 'info';
 log.transports.file.level = 'info';
+// TODO: Re-enable auto updates
 // autoUpdater.logger = log;
 // autoUpdater.logger.transports.file.level = 'info';
 log.info('App starting...');
 
+app.setName("ShortcutMagic");
 
-const electronLocalshortcut = require('electron-localshortcut');
+// Start up a survey window after app has been running for a long time
+setTimeout(function() { if (!surveyWindow) createSurveyWindow()}, 600000);
 
 	// TODO: Properly implement auto update releases
 // autoUpdater.on('checking-for-update', () => {
@@ -76,15 +112,8 @@ const electronLocalshortcut = require('electron-localshortcut');
 // these prefs let us determine if the menu bar is dark or light
 // const osxPrefs = require('electron-osx-appearance');
 
-import sizeOf from 'image-size';
-
-
-// path lets us work with the file path of the running application
-const path = require('path');
-// nedb is a simple javascript database, smilar to mongodb, where we store the shortcuts and other things about another program
-const Datastore = require('nedb');
-// db is an instance of nedb and lets us store things on disk in pure text, and treat it like mongogetDb(). this stores the shortcut information
-let db;
+// Functions
+// =========
 
 function getDb() {
   if (!db) {
@@ -124,6 +153,23 @@ function getDb() {
 		    getDb().remove({
 		      name: "mysms"
 		    });
+
+		    getDb().remove({
+		      name: "Battle.net Launcher"
+		    });
+
+		    getDb().remove({
+		      name: "1Password mini"
+		    });
+
+		    getDb().remove({
+		      name: "Mullvad"
+		    });
+
+		    getDb().remove({
+		      name: "Evernote Helper"
+		    });
+
 		  }
 
 	  	return db;
@@ -137,60 +183,6 @@ function getDb() {
   return db;
 }
 
-// These global settings are stored together with the shortcuts, and this is the "name":
-var GLOBAL_SETTINGS = "all programs";
-
-app.setName("ShortcutMagic");
-
-// Global (for now) objects:
-// controls the tray of the application
-let trayObject;
-// the BrowserWindow for the settings window
-let settingsWindow;
-// the popover BrowserWindow for quick settings
-let miniSettingsWindow;
-// the BrowserWindow for the running actual application window
-let mainWindow;
-// a hidden background BrowserWindow that runs tasks in a "background" thread
-let backgroundTaskRunnerWindow;
-// a hidden background BrowserWindow that runs objective c code to listen for application switches in the operating system and calls to our ipcMain
-let backgroundListenerWindow;
-// the front window when the application opens, introduction and explanation of how to run correctly with security settings
-// TODO: make hideable with a setting
-let welcomeWindow;
-// the gif-displaying tool tip window:
-let tooltipWindow;
-// the gif recording/saving window:
-let gifRecorderWindow;
-// the gifCommunity window:
-let gifCommunityWindow;
-let bubbleWindow;
-
-let learnWindow;
-let surveyWindow;
-setTimeout(function() { if (!surveyWindow) createSurveyWindow()}, 800000)
-
-
-// a hacky bad construct holding the shortcuts from the db in memory
-// TODO: merge into a class that encapsulates the db and functionality, and caches things in memory without checking this array everywhere :|
-let inMemoryShortcuts = [];
-// the name of the app that was switched to last time, so we know it's the name of the currently active program
-let currentAppName = "Electron"; // TODO: Check for bugs with this when opening ShortcutMagic the first time
-// const weirdErrorPos = { x: 89, y: 23, width: 0, height: 0 };
-// hackyStopSavePos needs to be replaced with a better system. right now it just stops the size and position of the application
-// from being saved. this is typically set when we are loading a position or moving between window modes
-let hackyStopSavePos = false;
-// The default bounds are appliend when no other bounds are found, typically for new running programs we open and parse
-// TODO: Save to settings db
-const defaultFullBounds = {x: 200, y: 100, width: 800, height: 600};
-const hiddenBounds  = { x: 89, y: 23, width: 0, height: 0 };
-const defaultBubbleHeight = 225;
-const defaultBubbleWidth = 250;
-
-
-
-// Functions
-
 function getBubbleWindowBounds() {
 	const { width } = electron.screen.getPrimaryDisplay().workAreaSize
 
@@ -200,33 +192,6 @@ function getBubbleWindowBounds() {
   	height: defaultBubbleHeight,
   	width: defaultBubbleWidth,
   };
-
-
-
-  // const trayBounds = trayObject.getBounds();
-
-  // const defaultBubbleBounds = {
-  // 	x: Math.round(trayBounds.x - (defaultBubbleWidth / 2)),
-  // 	y: Math.round(trayBounds.y + trayBounds.height + 4),
-  // 	height: defaultBubbleHeight,
-  // 	width: defaultBubbleWidth,
-  // };
-
-  // console.log('returning bounds for bubble window', defaultBubbleBounds);
-  // return defaultBubbleBounds;
-}
-
-function updateInMemoryBounds(bounds, hidden) {
-	const currentlyHidden = deepEqual(bounds, hiddenBounds);
-	if (!inMemoryShortcuts[currentAppName]) {
-		inMemoryShortcuts[currentAppName] = {
-			bounds,
-			hidden,
-		};
-	} else {
-		inMemoryShortcuts[currentAppName].bounds = bounds;
-		inMemoryShortcuts[currentAppName].hidden = hidden;
-	}
 }
 
 // TODO: Use promise instead of this callback hell: 
@@ -268,35 +233,8 @@ function hideBubbleWindow() {
 }
 
 function showMainWindow() {
-	const bounds = mainWindow.getBounds();
-
-	getShortcuts((currentShortcuts) => {
-		if (currentShortcuts &&
-			!deepEqual(currentShortcuts.bounds, hiddenBounds) &&
-			(currentShortcuts.hidden || deepEqual(bounds, hiddenBounds))) {
-
-			currentShortcuts.hidden = false;
-			mainWindow.setBounds(currentShortcuts.bounds);
-			updateInMemoryBounds(currentShortcuts.bounds, false);
-		} else {
-			mainWindow.setBounds(defaultFullBounds);
-			updateInMemoryBounds(defaultFullBounds, false);
-		}
-
-		if (!mainWindow.isVisible()) {
-			mainWindow.show();
-		}
-	});
-}
-
-function hideMainWindow() {
-	const bounds = mainWindow.getBounds();
-
-	getShortcuts((currentShortcuts) => {
-		// Already hidden?
-		mainWindow.setBounds(hiddenBounds);
-		updateInMemoryBounds(bounds, true);
-	});
+	mainWindow.show();
+	mainWindow.focus();
 }
 
 function showShortcutWindows() {
@@ -329,44 +267,6 @@ function quitShortcutMagic() {
     }
 }
 
-function savePosition() {
-	if (!mainWindow) {
-		log.info('no mainWindow in savePosition()');
-		return;
-	}
-
-	const newBounds = mainWindow.getBounds();
-	let oldBounds = null;
-
-	getShortcuts((currentShortcuts) => {
-		if (currentShortcuts) { 
-			oldBounds = currentShortcuts.bounds;
-		}
-
-		updateInMemoryBounds(newBounds);
-
-		log.info('savePosition() [FROM TO] ', oldBounds, newBounds);
-
-		let payload = {
-			hidden: deepEqual(newBounds, hiddenBounds)
-		};
-
-		payload.bounds = newBounds;
-
-		getDb().update({
-			name: currentAppName
-		}, {
-			$set: payload
-		}, function(err, res) {
-			if (err) {
-				log.info('ERROR: upserting in db got error: ', err);
-			} else {
-				log.info('finished saving position, [NAME HIDDEN NEW ACTUAL] ', currentAppName, payload.hidden, payload.bounds, mainWindow.getBounds());
-			}
-		});
-	});
-}
-
 function createBubbleWindow() {
 	if (bubbleWindow) {
 		log.info('bubbleWindow already existed, exiting');
@@ -381,12 +281,65 @@ function createBubbleWindow() {
 		transparent: true,
 		frame: false,
 		x: hiddenBounds.x, y: hiddenBounds.y, width: hiddenBounds.width, height: hiddenBounds.height,
+    webPreferences: {
+      vibrancy: 'appearance-based',
+    },
 	});
 
 	bubbleWindow.setHasShadow(false);
 
+  bubbleWindow.on('close', (e) => {
+  	if (!isQuitting) {
+	  	e.preventDefault();
+	  	hideBubbleWindow();
+	  }
+  });
+
 	var bubblePath = `file://${__dirname}/bubble/index.html`;
 	bubbleWindow.loadURL(bubblePath);
+
+	// bubbleWindow.on('ready-to-show', (e) => {
+	// 	// TODO>>>>>>>>>>>>>>>  check settings here;
+	// 	// 1 - always show when programs are switching
+	// 	// 2 - only show when X minutes has passed
+	// 	// 3 - show after switching programs X times
+	// 	// 4 - never show anything (disable bubblewindow)
+	// 	// extra:
+	// 	// - always show
+	// 	// - unique settings per window? 
+
+		
+
+	// 	bubbleWindow.webContents.send('');
+	// });
+
+
+	// TODO: Make the bubble window prettier
+
+    //   if (type == "appearance-based") {
+    //     vibrancyType = NSVisualEffectMaterialAppearanceBased;
+    //   } else if (type == "light") {
+    //     vibrancyType = NSVisualEffectMaterialLight;
+    //   } else if (type == "dark") {
+    //     vibrancyType = NSVisualEffectMaterialDark;
+    //   } else if (type == "titlebar") {
+    //     vibrancyType = NSVisualEffectMaterialTitlebar;
+    //   }
+    //
+    //   if (base::mac::IsOSYosemiteOrLater()) 
+    //     if (type == "selection") {
+    //       vibrancyType = NSVisualEffectMaterialSelection;
+    //     } else if (type == "menu") {
+    //       vibrancyType = NSVisualEffectMaterialMenu;
+    //     } else if (type == "popover") {
+    //       vibrancyType = NSVisualEffectMaterialPopover;
+    //     } else if (type == "sidebar") {
+    //       vibrancyType = NSVisualEffectMaterialSidebar;
+    //     } else if (type == "medium-light") {
+    //       vibrancyType = NSVisualEffectMaterialMediumLight;
+    //     } else if (type == "ultra-dark") 
+    //       vibrancyType = NSVisualEffectMaterialUltraDark;
+
 }
 
 function createMiniSettingsWindow() {
@@ -521,23 +474,31 @@ function createWindows() {
 	}
 
 	let reallyQuit = true;
-	// keep it simple for now, change asap
-	permissionCheck((success) => {
-		if (!success && reallyQuit) {
-			return;
-		}
-
-		reallyQuit = false;
-
+	const create = (success) => {
 		createBackgroundTaskRunnerWindow();
 		createBackgroundListenerWindow();
 		// createSettingsWindow();
 		// createMiniSettingsWindow();
-		createMainWindow();
 		createBubbleWindow();
+		createMainWindow();
     createTooltipWindow();
     // createGifRecorderWindow();
     // createGifCommunityWindow();
+  };
+
+	// TODO: keep the permissions simple for now but improve in the future
+	if (process.env.NODE_ENV === "development") {
+		create();
+	} else {
+		permissionCheck((success) => {
+			if (!success && reallyQuit) {
+				return;
+			}
+
+			reallyQuit = false;
+			create();
+		});
+	}
 
    //  if (!localShortcutsCreated) {
    //  	localShortcutsCreated = true;
@@ -566,7 +527,6 @@ function createWindows() {
 	  //       mainWindow.webContents.send('execute-list-item', 5);
 	  //   });
 	  // }
-	});
 	
 }
 
@@ -628,93 +588,32 @@ function createMainWindow() {
 		log.info('mainWindow already existed, exiting');
 		return;
 	}
-	if (!inMemoryShortcuts[GLOBAL_SETTINGS]) {
-	    inMemoryShortcuts[GLOBAL_SETTINGS] = {
-	        boundsPerApp: true,
-	        alwaysOnTop: true,
-	    };
-	}
-
-	// temp
-	var res = [];
-	inMemoryShortcuts[GLOBAL_SETTINGS]["boundsPerApp"] = (res["boundsPerApp"]) ? res["boundsPerApp"] : true;
-	inMemoryShortcuts[GLOBAL_SETTINGS]["alwaysOnTop"] = (res["alwaysOnTop"]) ? res["alwaysOnTop"] : true;
 
 	mainWindow = new BrowserWindow({
 		name: "ShortcutMagic",
-		title: "Shortcuts",
+		title: "ShortcutMagic",
 		acceptFirstClick: false,
 		alwaysOnTop: false,
 		frame: true,
-		show: true,
+		show: false,
 		transparent: false,
-	  x: hiddenBounds.x,
-	  y: hiddenBounds.y,
-	  width: hiddenBounds.width,
-	  height: hiddenBounds.height,
-    webPreferences: {
-      vibrancy: 'appearance-based',
-    },
+	  x: defaultFullBounds.x, y: defaultFullBounds.y, width: defaultFullBounds.width, height: defaultFullBounds.height,
 	});
 
-	mainWindow.setHasShadow(false);
+	mainWindow.loadURL(`file://${__dirname}/components/index.html`);
 
-	mainWindow.loadURL(`file://${__dirname}/index.html`);
-
-	mainWindow.on('resize', (event) => {
-		log.info("//////////////////////////////////////// on.resize with hackyStopSavePos ", hackyStopSavePos);
-
-		if (!hackyStopSavePos) {
-			savePosition();
-		}
-
-		if (mainWindow.isVisible()) {
-			mainWindow.show();
-		}
-	});
-
-	mainWindow.on('moved', (event) => {
-		log.info("//////////////////////////////////////// on.moved with hackyStopSavePos ", hackyStopSavePos);
-
-		if (!hackyStopSavePos) {
-			savePosition();
-		}
-
-		if (mainWindow.isVisible()) {
-			mainWindow.show();
-		}
-	});
-
-  mainWindow.on('close', function(e) {
+  mainWindow.on('close', (e) => {
     if (!isQuitting) {
       e.preventDefault();
       mainWindow.hide();
+			app.dock.hide();
     }
   });
 
-    //   if (type == "appearance-based") {
-    //     vibrancyType = NSVisualEffectMaterialAppearanceBased;
-    //   } else if (type == "light") {
-    //     vibrancyType = NSVisualEffectMaterialLight;
-    //   } else if (type == "dark") {
-    //     vibrancyType = NSVisualEffectMaterialDark;
-    //   } else if (type == "titlebar") {
-    //     vibrancyType = NSVisualEffectMaterialTitlebar;
-    //   }
-    //
-    //   if (base::mac::IsOSYosemiteOrLater()) 
-    //     if (type == "selection") {
-    //       vibrancyType = NSVisualEffectMaterialSelection;
-    //     } else if (type == "menu") {
-    //       vibrancyType = NSVisualEffectMaterialMenu;
-    //     } else if (type == "popover") {
-    //       vibrancyType = NSVisualEffectMaterialPopover;
-    //     } else if (type == "sidebar") {
-    //       vibrancyType = NSVisualEffectMaterialSidebar;
-    //     } else if (type == "medium-light") {
-    //       vibrancyType = NSVisualEffectMaterialMediumLight;
-    //     } else if (type == "ultra-dark") 
-    //       vibrancyType = NSVisualEffectMaterialUltraDark;
+  mainWindow.on('ready-to-show', (e) => {
+  	app.dock.show();
+  	mainWindow.show();
+  });
 }
 
 function debugEverything() {
@@ -867,12 +766,9 @@ function createWelcomeWindow() {
 	});
 
 	welcomeWindow.loadURL(`file://${__dirname}/welcome/index.html`);
+
 	welcomeWindow.on('closed', event => {
 		log.info('in welcomewindow closed, isQuitting: ', isQuitting);
-		if (!isQuitting) {
-			app.dock.hide(); // TODO: Read from settings instead
-		}
-
 		welcomeWindow = null;
 	});
 }
@@ -890,7 +786,7 @@ function createSurveyWindow() {
 		y: 100,
 		width: 800,
 		height: 600,
-		title: "surveyWindow",
+		title: "Help make ShortcutMagic better by giving feedback",
 		alwaysOnTop: true,
 		frame: true,
 		nodeIntegration: true,
@@ -920,8 +816,7 @@ function createLearnWindow() {
 		y: 40,
 		width: 1100,
 		height: 800,
-		name: "How to use ShortcutMagic efficiently",
-		title: "learnWindow",
+		title: "Learn to use ShortcutMagic",
 		alwaysOnTop: false,
 		frame: true,
 		nodeIntegration: true,
@@ -930,31 +825,33 @@ function createLearnWindow() {
 	learnWindow.loadURL(`file://${__dirname}/learn/index.html`);
 
 	// TODO: prevent closing and just hide
-	learnWindow.on('closed', event => {
-		log.info('in learnWindow closed');
+	learnWindow.on('closed', (e) => {
+		if (!isQuitting) {
+			e.preventDefault();
+			learnWindow.hide();
+		}
 	});
 }
 
 function saveWithoutPeriods(payload) {
 	payload.bounds = mainWindow.getBounds();
-
 	inMemoryShortcuts[payload.name] = payload;
 
-	var stringified = JSON.stringify(payload.shortcuts);
-	stringified = stringified.replace(/\./g, 'u002e');
-	payload.shortcuts = JSON.parse(stringified);
+	let savePayload = payload;
+	let stringified = JSON.stringify(savePayload.shortcuts).replace(/\./g, 'u002e');
+	savePayload.shortcuts = JSON.parse(stringified);
 
 	getDb().update({
-		name: payload.name
+		name: savePayload.name
 	}, {
-		$set: payload
+		$set: savePayload
 	}, {
 		upsert: true
 	}, function(err, res) {
 		if (err) {
 			log.info('ERROR: upserting in db got error: ', err);
 		} else {
-			log.info('finished upserting shortcuts for ' + payload.name + ' in db');
+			log.info('finished upserting shortcuts for ' + savePayload.name + ' in db');
 		}
 	});
 }
@@ -972,17 +869,10 @@ function loadWithPeriods(forceReload) {
 
 
 	getShortcuts((currentShortcuts) => {
-		if (currentShortcuts && currentShortcuts.bounds && !forceReload) {
-			showBubbleWindow();
-
+		if (currentShortcuts && !forceReload) {
 			log.info('loaded in memory shortcuts, mainWindow bounds are [OLD NEW HIDDEN] ', mainWindow.getBounds(), currentShortcuts.bounds, currentShortcuts.hidden);
-
-			hackyStopSavePos = true;
-			mainWindow.setBounds(currentShortcuts.hidden ? hiddenBounds : currentShortcuts.bounds);
-			hackyStopSavePos = false;
-
-			mainWindow.webContents.send('update-shortcuts', currentShortcuts);
-			bubbleWindow.webContents.send('update-shortcuts', currentShortcuts);
+			mainWindow.webContents.send('set-current-program-name', currentShortcuts.name);
+			bubbleWindow.webContents.send('set-current-program-name', currentShortcuts.name);
 		} else {
 			getDb().find({
 				name: currentAppName
@@ -998,23 +888,20 @@ function loadWithPeriods(forceReload) {
 					if (!currentShortcuts) {
 						log.info('ERROR bad data - loaded currentShortcuts but did not exist!');
 						return;
-					} else if (!currentShortcuts.bounds) {
+					} else if (!currentShortcuts.bounds || deepEqual(currentShortcuts.bounds, hiddenBounds)) {
 						log.info('ERROR bad data - loaded currentShortcuts but no bounds found! resetting to default');
-						currentShortcuts.bounds = hiddenBounds;
+						currentShortcuts.bounds = defaultFullBounds;
 					}
 
-					// We replace the period with a character code so the db understands it as a single string
-					// instead of sub-selecting items in the json:
+					// Convert the sanitised periods into real periods again: 
 					var stringified = JSON.stringify(currentShortcuts.shortcuts);
 					stringified = stringified.replace(/u002e/g, '.');
 					currentShortcuts.shortcuts = JSON.parse(stringified);
 
-					log.info('loaded shortcuts from DB, bounds [OLD OLD-MEMORY NEW] ', mainWindow.getBounds(), (inMemoryShortcuts[currentAppName]) ? inMemoryShortcuts[currentAppName].bounds : null, currentShortcuts.bounds);
 		      inMemoryShortcuts[currentAppName] = currentShortcuts;
-		      mainWindow.setBounds(currentShortcuts.bounds);
 		      
-		      mainWindow.webContents.send('update-shortcuts', currentShortcuts);
-		      bubbleWindow.webContents.send('update-shortcuts', currentShortcuts);
+		      mainWindow.webContents.send('set-current-program-name', currentShortcuts.name);
+		      bubbleWindow.webContents.send('set-current-program-name', currentShortcuts.name);
 				} else {
 					if (!loadingText) {
 						mainWindow.webContents.send('set-loading', currentAppName);
@@ -1024,12 +911,19 @@ function loadWithPeriods(forceReload) {
 						log.info('calling parseShortcuts with currentAppName', currentAppName);
 						parseShortcuts(currentAppName, mainParseShortcutsCallback);
 					} else {
+						// TODO: Handle never ending shortcut parsing better
 						// Clear out eventually
 						setTimeout(() => {
 							trayObject.setTitle("");
 							loadingText = null;
 						}, 20000);
 					}
+				}
+
+				if (currentShortcuts && currentShortcuts.bounds) {
+					mainWindow.setBounds(currentShortcuts.bounds);
+				} else {
+					mainWindow.setBounds(defaultFullBounds);
 				}
 			});
 		}
@@ -1041,16 +935,12 @@ ipcMain.on("not-loading", (e) => {
 	trayObject.setTitle("");
 });
 
-ipcMain.on('show-shortcut-windows', () => {
-  showShortcutWindows();
-});
-
 ipcMain.on('show-window', () => {
   showMainWindow();
 });
 
 ipcMain.on('blur-window', () => {
-	hideMainWindow();
+	mainWindow.hide();
 });
 
 ipcMain.on('show-mini-settings', (e) => {
@@ -1102,35 +992,37 @@ app.on('ready', () => {
 
 
     globalShortcut.register('Command+Shift+Alt+Space', function () {
-        showShortcutWindows();
+        showMainWindow();
     });
 
-    globalShortcut.register('Command+Shift+Alt+Up', function () {
-        let currentBounds = mainWindow.getBounds();
-        currentBounds.y -= 25;
-        mainWindow.setBounds(currentBounds);
-    });
+    // globalShortcut.register('Command+Shift+Alt+Up', function () {
+    //     let currentBounds = mainWindow.getBounds();
+    //     currentBounds.y -= 25;
+    //     mainWindow.setBounds(currentBounds);
+    // });
 
-    globalShortcut.register('Command+Shift+Alt+Left', function () {
-        let currentBounds = mainWindow.getBounds();
-        currentBounds.x -= 25;
-        mainWindow.setBounds(currentBounds);
-    });
+    // globalShortcut.register('Command+Shift+Alt+Left', function () {
+    //     let currentBounds = mainWindow.getBounds();
+    //     currentBounds.x -= 25;
+    //     mainWindow.setBounds(currentBounds);
+    // });
 
-    globalShortcut.register('Command+Shift+Alt+Down', function () {
-        let currentBounds = mainWindow.getBounds();
-        currentBounds.y += 25;
-        mainWindow.setBounds(currentBounds);
-    });
+    // globalShortcut.register('Command+Shift+Alt+Down', function () {
+    //     let currentBounds = mainWindow.getBounds();
+    //     currentBounds.y += 25;
+    //     mainWindow.setBounds(currentBounds);
+    // });
 
-    globalShortcut.register('Command+Shift+Alt+Right', function () {
-        let currentBounds = mainWindow.getBounds();
-        currentBounds.x += 25;
-        mainWindow.setBounds(currentBounds);
-    });
+    // globalShortcut.register('Command+Shift+Alt+Right', function () {
+    //     let currentBounds = mainWindow.getBounds();
+    //     currentBounds.x += 25;
+    //     mainWindow.setBounds(currentBounds);
+    // });
 
     globalShortcut.register('Command+Shift+Alt+S', function () {
         // TODO: Implement escape to drop focus and return to previous app
+        mainWindow.show();
+        mainWindow.focus();
         mainWindow.webContents.send('focus-search-field');
     });
 
@@ -1153,6 +1045,30 @@ ipcMain.on('get-app-name-sync', function(event) {
 	event.returnValue = currentAppName;
 });
 
+ipcMain.on('set-programs-async', (e) => {
+	if (!inMemoryShortcuts || !inMemoryShortcuts.length) {
+	  // TODO: At some point this might be too much to read at once?
+		getDb().find({}, function(err, res) {
+			if (err) {
+				log.info('errored during db find: ', err);
+				return;
+			}
+
+			if (res.length > 0) {
+				// firstLoad = true;
+				inMemoryShortcuts = res;
+				mainWindow.webContents.send('set-programs', res);
+				bubbleWindow.webContents.send('set-programs', res)
+			} else {
+				log.info('zero for res.length');
+			}
+		});
+	} else {
+		mainWindow.webContents.send('set-programs', inMemoryShortcuts);
+		bubbleWindow.webContents.send('set-programs', inMemoryShortcuts)
+	}
+});
+
 ipcMain.on('main-app-switched-notification', appSwitched);
 
 function appSwitched(event, appName) {
@@ -1162,8 +1078,8 @@ function appSwitched(event, appName) {
     if (compare === "electron" ||
         compare === "shortcutmagic" ||
         compare === "shortcutmagic-mac") {
-        log.info("Not switching to ourselves, but sending 'focus-self' to main window");
-        mainWindow.webContents.send('focus', true);
+        mainWindow.show();
+        mainWindow.focus();
         return;
     }
 
@@ -1179,13 +1095,11 @@ function appSwitched(event, appName) {
         compare === "coreservicesuiagent" ||
         compare === "evernote helper") {
 		log.info("Not switching to this app: ", appName);
-    mainWindow.webContents.send('focus', false);
 		return;
 	}
 
 	if (compare == currentAppName) {
 		log.info("cannot switch to same app again");
-    mainWindow.webContents.send('focus', false);
 		return;
 	}
 
@@ -1198,10 +1112,8 @@ function appSwitched(event, appName) {
 
 	currentAppName = appName;
 	loadWithPeriods();
-	log.info("finished loading pos for app: ", mainWindow.getBounds(), appName);
-
-	// settingsWindow.webContents.send('app-changed', currentAppName);
-	// miniSettingsWindow.webContents.send('app-changed', currentAppName);
+	showBubbleWindow();
+	mainWindow.webContents.send('set-current-program-name', currentAppName);
 }
 
 function mainParseShortcutsCallback(payload) {
@@ -1210,8 +1122,8 @@ function mainParseShortcutsCallback(payload) {
 	loadingText = null;
 
 	if (payload) {
-		mainWindow.webContents.send('update-shortcuts', payload);
-		bubbleWindow.webContents.send('update-shortcuts', payload);
+		mainWindow.webContents.send('set-current-program-name', payload.name);
+		bubbleWindow.webContents.send('set-current-program-name', payload.name);
 		saveWithoutPeriods(payload);
 	} else {
 		appSwitched(null, currentAppName);
@@ -1229,22 +1141,6 @@ ipcMain.on('main-parse-shortcuts', function(event, appName) {
 	loadWithPeriods(true);
 });
 
-ipcMain.on('update-shortcut-order', function(event, appName, shortcuts) {
-	log.info('entered update-shortcut-order', appName);
-	getDb().update({
-		name: appName
-	}, {
-		$set: {
-			shortcuts: shortcuts
-		}
-	}, function(err, doc) {
-		if (err) {
-			log.info('failed to upsert shortcuts in "update-shortcut-order"', err);
-		} else {
-			log.info('succeeded in updating order of shortcuts');
-		}
-	});
-});
 
 ipcMain.on('open-settings', function(event) {
 	ipcMain.send('open-settings');
@@ -1277,13 +1173,11 @@ ipcMain.on('update-shortcut-item', (event, shortcutItem) => {
 	});
 });
 
-// TODO: Why does bubblewindow re-render after calling this?
 ipcMain.on('execute-list-item', (event, listItem) => {
 	if (!listItem) {
 		// how did we end up here??
 		log.info("tried to execute non existent stuff");
 		return;
-		// loadWithPeriods(); // TODO: load shortcuts and do remaining work in callback here
 	}
 
 	var listItemName = listItem.name;
@@ -1305,6 +1199,7 @@ ipcMain.on('execute-list-item', (event, listItem) => {
 	}
 });
 
+// TODO: merge with update-shortcut-item
 ipcMain.on('update-current-app-value', function(event, newAppValue) {
 	log.info('on update-current-app-value with ', newAppValue);
 
@@ -1319,14 +1214,6 @@ ipcMain.on('update-current-app-value', function(event, newAppValue) {
 			log.info('successfully updated app value');
 		}
 	});
-});
-
-ipcMain.on('set-full-view-mode', (event) => {
-	showMainWindow();
-});
-
-ipcMain.on('set-hidden-mode', (event) => {
-	hideMainWindow();
 });
 
 ipcMain.on('save-app-settings', (event, newSetting) => {
@@ -1355,9 +1242,10 @@ ipcMain.on('temporarily-update-app-settings', (event, newSetting) => {
     mainWindow.setAlwaysOnTop(newSetting["alwaysOnTop"]);
 });
 
-ipcMain.on('unfocus-main-window', (event) => {
+ipcMain.on('unfocus-shortcutmagic', (event) => {
     // TODO: Fix unfocusing window properly
     mainWindow.blur();
+    bubbleWindow.blur();
 });
 
 ipcMain.on('show-tooltip-for-list-item', (event, listItem) => {
@@ -1487,8 +1375,8 @@ ipcMain.on('save-gif', (event, newGif, listItem, appName) => {
 		} else {
       // This might update the window with other shortcuts than the one we just recorded a gif for. That is ok
       // because the gif will be visible when they switch back to that app again.
-      mainWindow.webContents.send('update-shortcuts', inMemoryShortcuts[currentAppName]);
-      bubbleWindow.webContents.send('update-shortcuts', inMemoryShortcuts[currentAppName]);
+      mainWindow.webContents.send('set-current-program-name', currentAppName);
+      bubbleWindow.webContents.send('set-current-program-name', currentAppName);
 			log.info("successfuly saved new gif", res);
 		}
 	});
