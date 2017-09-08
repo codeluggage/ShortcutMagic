@@ -37,6 +37,8 @@ let currentAppName = "ShortcutMagic-mac"; // TODO: Check for bugs with this when
 var GLOBAL_SETTINGS = "all programs";
 // controls the tray of the application
 let trayObject;
+// First batch of loaded shortcuts for browserwindows to immediately use
+let firstPrograms;
 
 // Browser windows:
 let settingsWindow,
@@ -170,6 +172,10 @@ function getDb() {
 		      name: "Evernote Helper"
 		    });
 
+		    getDb().remove({
+		      name: "System Preferences"
+		    });
+
 		  }
 
 	  	return db;
@@ -241,6 +247,7 @@ function showShortcutWindows() {
 	if (!mainWindow) return;
 
 	log.info('showShortcutWindows calling showMainWindow');
+	app.dock.show();
 	showMainWindow();
 	showBubbleWindow();
 }
@@ -294,6 +301,10 @@ function createBubbleWindow() {
 	  	hideBubbleWindow();
 	  }
   });
+
+  bubbleWindow.on('ready-to-show', (e) => {
+  	bubbleWindow.webContents.send('set-programs', firstPrograms, currentAppName);
+  })
 
 	var bubblePath = `file://${__dirname}/bubble/index.html`;
 	bubbleWindow.loadURL(bubblePath);
@@ -475,6 +486,21 @@ function createWindows() {
 
 	let reallyQuit = true;
 	const create = (success) => {
+		getDb().find({}, function(err, res) {
+			log.info('loaded programs, err? ', err);
+			if (err) {
+				log.info('errored during db find: ', err);
+				return;
+			}
+			if (!res || !res.length) {
+				log.info('errored during db find: ', err);
+				return;
+			}
+
+			console.log(' getdbfind in createwindows SENDING >>>>>>>>>>> ');
+			firstPrograms = res;
+		});
+
 		createBackgroundTaskRunnerWindow();
 		createBackgroundListenerWindow();
 		// createSettingsWindow();
@@ -592,7 +618,7 @@ function createMainWindow() {
 	mainWindow = new BrowserWindow({
 		name: "ShortcutMagic",
 		title: "ShortcutMagic",
-		acceptFirstClick: false,
+		acceptFirstClick: true,
 		alwaysOnTop: false,
 		frame: true,
 		show: false,
@@ -611,6 +637,7 @@ function createMainWindow() {
   });
 
   mainWindow.on('ready-to-show', (e) => {
+  	mainWindow.webContents.send('set-programs', firstPrograms, currentAppName);
   	app.dock.show();
   	mainWindow.show();
   });
@@ -841,6 +868,11 @@ function saveWithoutPeriods(payload) {
 	let stringified = JSON.stringify(savePayload.shortcuts).replace(/\./g, 'u002e');
 	savePayload.shortcuts = JSON.parse(stringified);
 
+	// if (payload.shortcuts.length < 2) {
+		// throw new Error("NOT ENOUGH SHORTCUTS");
+	// }
+
+
 	getDb().update({
 		name: savePayload.name
 	}, {
@@ -852,6 +884,23 @@ function saveWithoutPeriods(payload) {
 			log.info('ERROR: upserting in db got error: ', err);
 		} else {
 			log.info('finished upserting shortcuts for ' + savePayload.name + ' in db');
+
+			getDb().find({}, function(err, res) {
+				log.info('loaded programs, err? ', err);
+				if (err) {
+					log.info('errored during db find: ', err);
+					return;
+				}
+				if (!res || !res.length) {
+					log.info('errored during db find: ', err);
+					return;
+				}
+
+				console.log(' getdbfind SENDING >>>>>>>>>>> ');
+				console.log(res);
+				mainWindow.webContents.send('set-programs', res, currentAppName);
+				bubbleWindow.webContents.send('set-programs', res, currentAppName);
+			});
 		}
 	});
 }
@@ -870,9 +919,11 @@ function loadWithPeriods(forceReload) {
 
 	getShortcuts((currentShortcuts) => {
 		if (currentShortcuts && !forceReload) {
-			log.info('loaded in memory shortcuts, mainWindow bounds are [OLD NEW HIDDEN] ', mainWindow.getBounds(), currentShortcuts.bounds, currentShortcuts.hidden);
-			mainWindow.webContents.send('set-current-program-name', currentShortcuts.name);
-			bubbleWindow.webContents.send('set-current-program-name', currentShortcuts.name);
+			log.info('loaded in memory shortcuts ', currentAppName);
+			console.log(' loadWithPeriods SENDING >>>>>>>>>>> ');
+			console.log(currentAppName);
+			mainWindow.webContents.send('set-current-program-name', currentAppName);
+			bubbleWindow.webContents.send('set-current-program-name', currentAppName);
 		} else {
 			getDb().find({
 				name: currentAppName
@@ -899,10 +950,13 @@ function loadWithPeriods(forceReload) {
 					currentShortcuts.shortcuts = JSON.parse(stringified);
 
 		      inMemoryShortcuts[currentAppName] = currentShortcuts;
-		      
-		      mainWindow.webContents.send('set-current-program-name', currentShortcuts.name);
-		      bubbleWindow.webContents.send('set-current-program-name', currentShortcuts.name);
-				} else {
+
+					console.log(' loadWithPeriods SENDING >>>>>>>>>>> ');
+					console.log(currentAppName);
+
+		      mainWindow.webContents.send('set-current-program-name', currentAppName);
+		      bubbleWindow.webContents.send('set-current-program-name', currentAppName);
+		    } else {
 					if (!loadingText) {
 						mainWindow.webContents.send('set-loading', currentAppName);
 						loadingText = "Learning...";
@@ -918,12 +972,6 @@ function loadWithPeriods(forceReload) {
 							loadingText = null;
 						}, 20000);
 					}
-				}
-
-				if (currentShortcuts && currentShortcuts.bounds) {
-					mainWindow.setBounds(currentShortcuts.bounds);
-				} else {
-					mainWindow.setBounds(defaultFullBounds);
 				}
 			});
 		}
@@ -1045,29 +1093,29 @@ ipcMain.on('get-app-name-sync', function(event) {
 	event.returnValue = currentAppName;
 });
 
-ipcMain.on('set-programs-async', (e) => {
-	if (!inMemoryShortcuts || !inMemoryShortcuts.length) {
-	  // TODO: At some point this might be too much to read at once?
-		getDb().find({}, function(err, res) {
-			if (err) {
-				log.info('errored during db find: ', err);
-				return;
-			}
+// ipcMain.on('set-programs-async', (e) => {
+// 	if (!inMemoryShortcuts || !inMemoryShortcuts.length) {
+// 	  // TODO: At some point this might be too much to read at once?
+// 		getDb().find({}, function(err, res) {
+// 			if (err) {
+// 				log.info('errored during db find: ', err);
+// 				return;
+// 			}
 
-			if (res.length > 0) {
-				// firstLoad = true;
-				inMemoryShortcuts = res;
-				mainWindow.webContents.send('set-programs', res);
-				bubbleWindow.webContents.send('set-programs', res)
-			} else {
-				log.info('zero for res.length');
-			}
-		});
-	} else {
-		mainWindow.webContents.send('set-programs', inMemoryShortcuts);
-		bubbleWindow.webContents.send('set-programs', inMemoryShortcuts)
-	}
-});
+// 			if (res.length > 0) {
+// 				// firstLoad = true;
+// 				inMemoryShortcuts = res;
+// 				mainWindow.webContents.send('set-programs', res);
+// 				bubbleWindow.webContents.send('set-programs', res)
+// 			} else {
+// 				log.info('zero for res.length');
+// 			}
+// 		});
+// 	} else {
+// 		mainWindow.webContents.send('set-programs', inMemoryShortcuts);
+// 		bubbleWindow.webContents.send('set-programs', inMemoryShortcuts)
+// 	}
+// });
 
 ipcMain.on('main-app-switched-notification', appSwitched);
 
@@ -1075,15 +1123,15 @@ function appSwitched(event, appName) {
 		const compare = appName.toLowerCase();
 		// TODO: Make this list editable somewhere to avoid people having problems?
 		// TODO: Convert to regex or match
-    if (compare === "electron" ||
-        compare === "shortcutmagic" ||
+    if (compare === "shortcutmagic" ||
         compare === "shortcutmagic-mac") {
         mainWindow.show();
         mainWindow.focus();
         return;
     }
 
-    if (compare === "screensaverengine" ||
+    if (compare === "electron" ||
+	    	compare === "screensaverengine" ||
         compare === "loginwindow" ||
         compare === "dock" ||
         compare === "google software update..." ||
@@ -1112,8 +1160,11 @@ function appSwitched(event, appName) {
 
 	currentAppName = appName;
 	loadWithPeriods();
-	showBubbleWindow();
+	console.log('appSwitched  SENDING >>>>>>>>>>> ');
+	console.log(currentAppName);
 	mainWindow.webContents.send('set-current-program-name', currentAppName);
+	bubbleWindow.webContents.send('set-current-program-name', currentAppName);
+	showBubbleWindow();
 }
 
 function mainParseShortcutsCallback(payload) {
@@ -1122,8 +1173,6 @@ function mainParseShortcutsCallback(payload) {
 	loadingText = null;
 
 	if (payload) {
-		mainWindow.webContents.send('set-current-program-name', payload.name);
-		bubbleWindow.webContents.send('set-current-program-name', payload.name);
 		saveWithoutPeriods(payload);
 	} else {
 		appSwitched(null, currentAppName);
@@ -1156,6 +1205,10 @@ ipcMain.on('update-shortcut-item', (event, shortcutItem) => {
 	} else {
 		inMemoryShortcuts[currentAppName].shortcuts[shortcutItem.name] = shortcutItem;
 	}
+
+	// if (shortcutObject.shortcuts.length < 2) {
+		// throw new Error("NOT ENOUGH SHORTCUTS");
+	// }
 
 	getDb().update({
 		name: currentAppName
@@ -1203,6 +1256,10 @@ ipcMain.on('execute-list-item', (event, listItem) => {
 ipcMain.on('update-current-app-value', function(event, newAppValue) {
 	log.info('on update-current-app-value with ', newAppValue);
 
+	// if (newAppValue.shortcuts.length < 2) {
+		// throw new Error("NOT ENOUGH SHORTCUTS");
+	// }
+
 	getDb().update({
 		name: currentAppName
 	}, {
@@ -1221,8 +1278,12 @@ ipcMain.on('save-app-settings', (event, newSetting) => {
     inMemoryShortcuts[GLOBAL_SETTINGS]["alwaysOnTop"] = newSetting["alwaysOnTop"];
     mainWindow.setAlwaysOnTop(newSetting["alwaysOnTop"]);
 
-    getDb().update({
-        name: GLOBAL_SETTINGS
+	// if (newSetting.shortcuts.length < 2) {
+		// throw new Error("NOT ENOUGH SHORTCUTS");
+	// }
+
+  getDb().update({
+    name: GLOBAL_SETTINGS
 	}, {
 		$set: newSetting
 	}, {
@@ -1363,6 +1424,11 @@ ipcMain.on('save-gif', (event, newGif, listItem, appName) => {
 		inMemoryShortcuts[appName].shortcuts[listItem.name] = listItem;
 	}
 
+	// if (shortcutObject.shortcuts.length < 2) {
+		// throw new Error("NOT ENOUGH SHORTCUTS");
+	// }
+
+
 	getDb().update({
         name: appName
 	}, {
@@ -1375,9 +1441,11 @@ ipcMain.on('save-gif', (event, newGif, listItem, appName) => {
 		} else {
       // This might update the window with other shortcuts than the one we just recorded a gif for. That is ok
       // because the gif will be visible when they switch back to that app again.
+      console.log('savegif  SENDING >>>>>>>>>>> ');
+      console.log(currentAppName);
       mainWindow.webContents.send('set-current-program-name', currentAppName);
       bubbleWindow.webContents.send('set-current-program-name', currentAppName);
-			log.info("successfuly saved new gif", res);
+      log.info("successfuly saved new gif", res);
 		}
 	});
 });

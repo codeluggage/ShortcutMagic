@@ -25,98 +25,75 @@ function hexToRgba(hex, alpha) {
 
 export default class Home extends Component {
   componentWillMount() {
-      this.onSortEnd = this.onSortEnd.bind(this);
-      this.filterListTrigger = this.filterListTrigger.bind(this);
-      this.filterList = this.filterList.bind(this);
-      this.toggleSettings = this.toggleSettings.bind(this);
-      this.toggleMiniSettings = this.toggleMiniSettings.bind(this);
-      this.changeFontUp = this.changeFontUp.bind(this);
-      this.changeFontDown = this.changeFontDown.bind(this);
-      this.setCurrentProgramName = this.setCurrentProgramName.bind(this);
+    this.onSortEnd = this.onSortEnd.bind(this);
+    this.updateItems = this.updateItems.bind(this);
+    this.filterListTrigger = this.filterListTrigger.bind(this);
+    this.filterList = this.filterList.bind(this);
+    this.toggleSettings = this.toggleSettings.bind(this);
+    this.toggleMiniSettings = this.toggleMiniSettings.bind(this);
+    this.changeFontUp = this.changeFontUp.bind(this);
+    this.changeFontDown = this.changeFontDown.bind(this);
+    this.filterListKeyDown = this.filterListKeyDown.bind(this);
+    this.focusSearchField = this.focusSearchField.bind(this);
 
-      ipcRenderer.on('focus', (event, focus) => {
-          this.setState({
-              focused: focus,
-          });
-      });
-
-      ipcRenderer.on('execute-list-item', (event, itemNumber) => {
-          if (this.state && this.state.items && this.state.items.length >= itemNumber) {
-            ipcRenderer.send('execute-list-item', this.state.items[itemNumber]);
-          }
-      });
-
-      ipcRenderer.on('focus-search-field', this.focusSearchField);
-
-      ipcRenderer.on('set-current-program-name', this.setCurrentProgramName);
-
-      ipcRenderer.on('set-programs', (event, programs) => {
-        let shortcutDict = {};
-        programs.forEach(s => shortcutDict[s.name] = s);
+    ipcRenderer.on('focus-search-field', this.focusSearchField);
+    ipcRenderer.on('focus', (event, focus) => {
         this.setState({
-          programs: shortcutDict, 
+            focused: focus,
         });
-      });
-
-
+    });
+    ipcRenderer.on('execute-list-item', (event, itemNumber) => {
+        if (this.state && this.state.items && this.state.items.length >= itemNumber) {
+          ipcRenderer.send('execute-list-item', this.state.items[itemNumber]);
+        }
+    });
+    ipcRenderer.on('set-current-program-name', (event, currentProgramName) => {
+      this.updateItems(currentProgramName);
+    });
+    ipcRenderer.on('set-programs', (event, programs, currentProgramName) => {
+      console.log('set-programs: ', programs.length, currentProgramName);
+      let programDict = {};
+      programs.forEach(s => programDict[s.name] = s);
+      this.updateItems(currentProgramName, programDict);
+    });
     ipcRenderer.on('no-shortcuts-visual-notification', (event) => {
         console.log("TODO: Show that the list item execution might not work");
     });
-
     ipcRenderer.on('force-to-top', (event, shortcut) => {
         this.focusSearchField(null, shortcut.name);
     });
 
-    console.log('home constructor called');
-
-    ipcRenderer.send('set-programs-async');
+    // ipcRenderer.send('set-programs-async');
   }
 
-  setCurrentProgramName(event, currentProgramName) {
-    if (!this || !currentProgramName) {
+  updateItems(currentProgramName, programs) {
+    console.log(programs);
+
+    if (!currentProgramName || !currentProgramName.length) {
       return;
     }
 
-    if (!this.state) {
-      this.setState({
-        currentProgramName
-      });
-
-      return;
-    }
-
-    let program = this.state.programs[currentProgramName];
-
-    if (!program) {
-      program = this.state.programs[this.state.currentProgramName];
-    }
-
-    if (!program) {
-      // Call once more after delay
-      if (event !== null) { 
-        setTimeout(() => setCurrentProgramName(null, currentProgramName), 250);
-      }
-      return;
-    }
-
-    let items = Object.values(this.state.programs[currentProgramName].shortcuts);
-
-    items.sort((a, b) => {
-      console.log('sorting a b', a.score, b.score);
-      if (!a.score) a.score = 0;
-      if (!b.score) b.score = 0;
-
-      if (a.score > b.score) return  -1;
-      if (a.score < b.score) return  1;
-      if (a.score === b.score) return  0;
-
-      return 0;
-    });
-
-    this.setState({
+    let newState = {
       currentProgramName,
-      items,
-    });
+    };
+
+    let program = programs ? programs[currentProgramName] : null;
+
+    if (programs) newState.programs = programs;
+
+    if (!program) {
+      if (this.state && this.state.programs) {
+        program = this.state.programs[this.state.currentProgramName];
+        if (program) {
+          let items = Object.values(program.shortcuts);
+          items.sort((a, b) => `${a.score ? a.score : a.name}`.localeCompare(`${b.score ? b.score : b.name}`));
+
+          newState.items = items;
+        }
+      }
+    }
+
+    this.setState(newState);
   }
 
   changeFontUp() {
@@ -229,25 +206,24 @@ export default class Home extends Component {
   }
 
   filterList(targetValue) {
+    let items = Object.values(this.state.programs[this.state.currentProgramName].shortcuts);
     if (targetValue && targetValue.length) {
-      updatedList = this.state.programs.filter((program) => {
-
-        const innerValues = Object.keys(program.shortcuts).map(key => item[key]);
-
-        for (var i = 0; i < innerValues.length; i++) {
-          let innerVal = innerValues[i];
-
-          if (typeof innerVal === 'string' && innerVal.toLowerCase().indexOf(targetValue.toLowerCase()) !== -1) return true;
-
-          if (innerVal == targetValue) return true;
-        }
+      targetValue.toLowerCase();
+      let filteredItems = items.filter((shortcut) => {
+          if (shortcut.menuName.toLowerCase().indexOf(targetValue) !== -1) return true;
+          if (shortcut.name.toLowerCase().indexOf(targetValue) !== -1) return true;
+          if (shortcut.glyph && shortcut.glyph.toLowerCase().indexOf(targetValue) !== -1) return true;
+          if (shortcut.mod && shortcut.mod.toLowerCase().indexOf(targetValue) !== -1) return true;
+          if (shortcut.char && shortcut.char.toLowerCase().indexOf(targetValue) !== -1) return true;
       });
 
       this.setState({
-        items: updatedList
+        items: filteredItems,
       });
     } else {
-      this.setCurrentProgramName(this.state.currentProgramName);
+      this.setState({
+        items: items,
+      });
     }
   }
 
@@ -270,6 +246,13 @@ export default class Home extends Component {
   }
 
   render() {
+    console.log('inside render');
+    if (this.state && this.state.programs) {
+      console.log('pomodone: ', this.state.programs["System Preferences"]);
+    } else {
+      console.log('no state or programs available');
+    }
+
     let shortcutTableBody;
     let programTitles;
 
@@ -341,12 +324,12 @@ export default class Home extends Component {
             let formattedName = name;
             let query = window.document.getElementById("search-field").value;
             if (query && query.length && formattedName.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
-              formattedName = <u>{name}</u>;
+              formattedName = <u><b>{name}</b></u>;
             }
 
             return (
               <span className={navGroupClass} key={name} onClick={(e) => {
-                this.setCurrentProgramName(null, name);
+                this.updateItems(name);
               }}>
                 <span className="icon icon-window"></span>
                 {formattedName}
@@ -359,31 +342,118 @@ export default class Home extends Component {
 
     return (
       <div className="window">
-        <header className="toolbar toolbar-header">
-          <div className="toolbar-actions">
-            <input className="form-control" type="text" id="search-field" placeholder="Search"
-              onChange={this.filterListTrigger} onKeyDown={this.filterListKeyDown}/>
-          </div>
-        </header>
-
         <div className="window-content">
           <div className="pane-group">
             <div className="pane pane-sm sidebar">
+            <header className="toolbar toolbar-header">
+              <div className="toolbar-actions" style={{
+                display: 'flex',
+                flexDirection: 'row',
+              }}>
+                <input className="form-control" type="text" id="search-field" placeholder="Search" style={{
+                  flex: 4,
+                }} onChange={this.filterListTrigger} onKeyDown={this.filterListKeyDown}/>
+                <button className="btn btn-default" type="button" onClick={e => {
+                  this.setState({
+                    settingsPaneActive: !(this.state && this.state.settingsPaneActive),
+                  });
+                }}>
+                  <span className="icon icon-cog" style={{
+                    flex: 1,
+                  }}></span>
+                </button>
+              </div>
+            </header>
               {programTitles ? programTitles : "Loading..."}
             </div>
             <div className="pane">
-              <table className="table-striped">
-                <thead>
-                  <tr>
-                    <th>Run</th>
-                    <th>Name</th>
-                    <th>Shortcut</th>
-                    <th>Menu</th>
-                    <th>Rating</th>
-                  </tr>
-                </thead>
-                {shortcutTableBody}
-              </table>
+              {!this.state || !this.state.settingsPaneActive ? (
+                <table className="table-striped">
+                  <thead>
+                    <tr>
+                      <th>Run</th>
+                      <th>Name</th>
+                      <th>Shortcut</th>
+                      <th>Menu</th>
+                      <th>Rating</th>
+                    </tr>
+                  </thead>
+                  {shortcutTableBody}
+                </table>
+              ) : (
+                <div>
+                  <div className="checkbox">
+                    <label>
+                      {this.state.timeoutRepeat ? (
+                        <input id="timeoutRepeatCheckbox" type="checkbox" defaultChecked onChange={e => {
+
+                          console.log('inside timeoutRepeatCheckbox ');
+                          console.log(e);
+                          this.setState({timeoutRepeat: 5}) 
+                        }}/>
+                      ) : (
+                        <input id="timeoutRepeatCheckbox" type="checkbox" onChange={e => {
+
+                          console.log('inside timeoutRepeatCheckbox');
+                          
+                          console.log(e.targetValue);
+                          console.log(e.currentTarget);
+                          console.log(e.target);
+
+                          this.setState({timeoutRepeat: undefined}) 
+                        }}/>
+                      )}
+                      Show random shortcut every <input id="timeoutRepeatMinutes" type="number" placeholder={this.state.timeoutRepeat !== undefined ?
+                        this.state.timeoutRepeat : 5} onChange={e => {
+
+                          console.log('inside this.state.timeoutRepeat');
+                          
+                          console.log(e.targetValue);
+                          console.log(e.currentTarget);
+                          console.log(e.target);
+
+                          this.setState({timeoutRepeat: e.targetValue}) 
+                        }}/> minutes
+                    </label>
+                  </div>
+
+                  <div className="checkbox">
+                    <label>
+                      {this.state.switchWithApp ? (
+                        <input id="appSwitchCheckbox" type="checkbox" defaultChecked onChange={e => {
+
+                          console.log('inside appSwitchCheckbox');
+                          console.log(e.targetValue);
+                          console.log(e.currentTarget);
+                          console.log(e.target);
+                          this.setState({switchWithApp: e.targetValue}) 
+                        }}/>
+                      ) : (
+                        <input id="appSwitchCheckbox" type="checkbox" onChange={e => {
+
+                          console.log('inside appSwitchCheckbox');
+                          
+                          console.log(e.targetValue);
+                          console.log(e.currentTarget);
+                          console.log(e.target);
+
+                          this.setState({switchWithApp: e.targetValue}) 
+                        }}/>
+                      )}
+                      Show random shortcut when the app switches
+                    </label>
+                  </div>
+
+                  <div style={{
+                      padding: '15px',
+                  }}>
+                    <button id="reload-button" className="btn btn-negative" onClick={() => {
+                      console.log('sending reloadShortcuts from ipcRenderer');
+                      ipcRenderer.send('main-parse-shortcuts');
+                    }}>Re-parse {this.state.currentProgramName}</button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
