@@ -93,13 +93,25 @@ export default class BubbleView extends Component {
     setTimeout(this.fadeIn, 30);
   }
 
-  setPrograms(e, programs) {
+  setPrograms(e, programs, currentProgramName) {
+    console.log('setPrograms > ');
+    console.log(programs);
     this.setState({
-      programs
+      programs,
+      currentProgramName,
     });
+    console.log('setPrograms < ');
+    console.log(this.state.programs);
+
+    this.setCurrentProgramName(null, currentProgramName);
   }
 
   setCurrentProgramName(e, newProgramName) {
+    console.log('setCurrentProgramName > ');
+    console.log(newProgramName);
+    console.log(this.state);
+    console.log(this.state.programs);
+
     if (!this.state || !this.state.programs) {
       return;
     }

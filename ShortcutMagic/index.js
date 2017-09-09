@@ -281,11 +281,11 @@ function createBubbleWindow() {
 	}
 
 	bubbleWindow = new BrowserWindow({
-		show: true,
 		title: "bubbleWindow",
 		alwaysOnTop: true,
 		acceptFirstClick: true,
 		transparent: true,
+		show: false,
 		frame: false,
 		x: hiddenBounds.x, y: hiddenBounds.y, width: hiddenBounds.width, height: hiddenBounds.height,
     webPreferences: {
@@ -303,7 +303,11 @@ function createBubbleWindow() {
   });
 
   bubbleWindow.on('ready-to-show', (e) => {
+  	console.log('>>> bubbleWindow ready-to-show');
+  	console.log(firstPrograms);
+
   	bubbleWindow.webContents.send('set-programs', firstPrograms, currentAppName);
+  	bubbleWindow.show();
   })
 
 	var bubblePath = `file://${__dirname}/bubble/index.html`;
@@ -490,26 +494,26 @@ function createWindows() {
 			log.info('loaded programs, err? ', err);
 			if (err) {
 				log.info('errored during db find: ', err);
-				return;
-			}
-			if (!res || !res.length) {
-				log.info('errored during db find: ', err);
-				return;
+			} else {
+				if (!res || !res.length) {
+					log.info('errored during db find: ', err);
+				} else {
+					console.log(' getdbfind in createwindows SENDING >>>>>>>>>>> ');
+					firstPrograms = res;
+				}
 			}
 
-			console.log(' getdbfind in createwindows SENDING >>>>>>>>>>> ');
-			firstPrograms = res;
+
+			createBackgroundTaskRunnerWindow();
+			createBackgroundListenerWindow();
+			// createSettingsWindow();
+			// createMiniSettingsWindow();
+			createBubbleWindow();
+			createMainWindow();
+	    createTooltipWindow();
+	    // createGifRecorderWindow();
+	    // createGifCommunityWindow();
 		});
-
-		createBackgroundTaskRunnerWindow();
-		createBackgroundListenerWindow();
-		// createSettingsWindow();
-		// createMiniSettingsWindow();
-		createBubbleWindow();
-		createMainWindow();
-    createTooltipWindow();
-    // createGifRecorderWindow();
-    // createGifCommunityWindow();
   };
 
 	// TODO: keep the permissions simple for now but improve in the future
