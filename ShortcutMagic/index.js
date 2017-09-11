@@ -909,6 +909,24 @@ function saveWithoutPeriods(payload) {
 	});
 }
 
+function parseOrWait() {
+	if (!loadingText) {
+		mainWindow.webContents.send('set-loading', currentAppName);
+		loadingText = "Learning...";
+		trayObject.setTitle(loadingText);
+
+		log.info('calling parseShortcuts with currentAppName', currentAppName);
+		parseShortcuts(currentAppName, mainParseShortcutsCallback);
+	} else {
+		// TODO: Handle never ending shortcut parsing better
+		// Clear out eventually
+		setTimeout(() => {
+			trayObject.setTitle("");
+			loadingText = null;
+		}, 20000);
+	}
+}
+
 function loadWithPeriods(forceReload) {
 	log.info(`entering loadWithPeriods with currentAppName ${currentAppName} and forceReload ${forceReload}`);
 
@@ -920,9 +938,14 @@ function loadWithPeriods(forceReload) {
 		log.info("no currentAppName when calling loadWithPeriods()");
 	}
 
+	if (forceReload) {
+		parseOrWait();
+		return;
+	}
+
 
 	getShortcuts((currentShortcuts) => {
-		if (currentShortcuts && !forceReload) {
+		if (currentShortcuts) {
 			log.info('loaded in memory shortcuts ', currentAppName);
 			console.log(' loadWithPeriods SENDING >>>>>>>>>>> ');
 			console.log(currentAppName);
@@ -939,44 +962,31 @@ function loadWithPeriods(forceReload) {
 				}
 
 				if (res.length > 0) {
-					currentShortcuts = res[0];
-					if (!currentShortcuts) {
-						log.info('ERROR bad data - loaded currentShortcuts but did not exist!');
-						return;
-					} else if (!currentShortcuts.bounds || deepEqual(currentShortcuts.bounds, hiddenBounds)) {
-						log.info('ERROR bad data - loaded currentShortcuts but no bounds found! resetting to default');
-						currentShortcuts.bounds = defaultFullBounds;
-					}
-
-					// Convert the sanitised periods into real periods again: 
-					var stringified = JSON.stringify(currentShortcuts.shortcuts);
-					stringified = stringified.replace(/u002e/g, '.');
-					currentShortcuts.shortcuts = JSON.parse(stringified);
-
-		      inMemoryShortcuts[currentAppName] = currentShortcuts;
-
-					console.log(' loadWithPeriods SENDING >>>>>>>>>>> ');
-					console.log(currentAppName);
-
-		      mainWindow.webContents.send('set-current-program-name', currentAppName);
-		      bubbleWindow.webContents.send('set-current-program-name', currentAppName);
-		    } else {
-					if (!loadingText) {
-						mainWindow.webContents.send('set-loading', currentAppName);
-						loadingText = "Learning...";
-						trayObject.setTitle(loadingText);
-
-						log.info('calling parseShortcuts with currentAppName', currentAppName);
-						parseShortcuts(currentAppName, mainParseShortcutsCallback);
-					} else {
-						// TODO: Handle never ending shortcut parsing better
-						// Clear out eventually
-						setTimeout(() => {
-							trayObject.setTitle("");
-							loadingText = null;
-						}, 20000);
-					}
+		    	parseOrWait();
+		    	return;
 				}
+
+				currentShortcuts = res[0];
+				if (!currentShortcuts) {
+					log.info('ERROR bad data - loaded currentShortcuts but did not exist!');
+					return;
+				} else if (!currentShortcuts.bounds || deepEqual(currentShortcuts.bounds, hiddenBounds)) {
+					log.info('ERROR bad data - loaded currentShortcuts but no bounds found! resetting to default');
+					currentShortcuts.bounds = defaultFullBounds;
+				}
+
+				// Convert the sanitised periods into real periods again: 
+				var stringified = JSON.stringify(currentShortcuts.shortcuts);
+				stringified = stringified.replace(/u002e/g, '.');
+				currentShortcuts.shortcuts = JSON.parse(stringified);
+
+	      inMemoryShortcuts[currentAppName] = currentShortcuts;
+
+				console.log(' loadWithPeriods SENDING >>>>>>>>>>> ');
+				console.log(currentAppName);
+
+	      mainWindow.webContents.send('set-current-program-name', currentAppName);
+	      bubbleWindow.webContents.send('set-current-program-name', currentAppName);
 			});
 		}
 	});

@@ -75,6 +75,7 @@ export default class Home extends Component {
 
     let newState = {
       currentProgramName,
+      settingsPaneActive: false,
     };
 
     let program = programs ? programs[currentProgramName] : null;
@@ -83,7 +84,7 @@ export default class Home extends Component {
 
     if (!program) {
       if (this.state && this.state.programs) {
-        program = this.state.programs[this.state.currentProgramName];
+        program = this.state.programs[currentProgramName ? currentProgramName : this.state.currentProgramName];
         if (program) {
           let items = Object.values(program.shortcuts);
           items.sort((a, b) => `${a.score ? a.score : a.name}`.localeCompare(`${b.score ? b.score : b.name}`));
@@ -237,12 +238,12 @@ export default class Home extends Component {
   }
 
   focusSearchField(event, searchValue) {
+    window.document.getElementById("search-field").focus();
+
     if (searchValue && typeof searchValue === "string") {
       window.document.getElementById("search-field").value = searchValue;
       this.filterList(searchValue);
     }
-
-    window.document.getElementById("search-field").focus();
   }
 
   render() {
@@ -351,6 +352,8 @@ export default class Home extends Component {
                 flexDirection: 'row',
               }}>
                 <input className="form-control" type="text" id="search-field" placeholder="Search" style={{
+                  marginTop: '6px',
+                  marginLeft: '6px',
                   flex: 4,
                 }} onChange={this.filterListTrigger} onKeyDown={this.filterListKeyDown}/>
                 <button className="btn btn-default" type="button" onClick={e => {
@@ -449,7 +452,7 @@ export default class Home extends Component {
                   }}>
                     <button id="reload-button" className="btn btn-negative" onClick={() => {
                       console.log('sending reloadShortcuts from ipcRenderer');
-                      ipcRenderer.send('main-parse-shortcuts');
+                      ipcRenderer.send('main-parse-shortcuts', this.state.currentProgramName);
                     }}>Re-parse {this.state.currentProgramName}</button>
                   </div>
                 </div>
