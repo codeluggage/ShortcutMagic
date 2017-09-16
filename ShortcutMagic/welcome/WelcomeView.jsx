@@ -24,8 +24,6 @@ export default class WelcomeView extends Component {
     });
   }
 
-  componentDidMount() {}
-
   render() {
     return (
         <div style={{
@@ -42,7 +40,8 @@ export default class WelcomeView extends Component {
             alignItems: 'center',
             textAlign: 'center',
           }}>
-            <img src="../assets/wizard.png" height="128" width="128"></img>
+
+
             <h1>Running ShortcutMagic</h1>
 
             To run ShortcutMagic, it needs administrative access which is unlocked with your computer password. 

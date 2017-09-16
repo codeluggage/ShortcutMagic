@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import { ipcRenderer } from 'electron';
 import ReactDOM from 'react-dom';
 
+const GLOBAL_SETTINGS_KEY = "all programs";
 
 
 /**
@@ -99,6 +100,7 @@ export default class BubbleView extends Component {
     this.setState({
       programs,
       currentProgramName,
+      settings: programs.find(p => p.name === GLOBAL_SETTINGS_KEY)
     });
     console.log('setPrograms < ');
     console.log(this.state.programs);
@@ -111,6 +113,10 @@ export default class BubbleView extends Component {
     console.log(newProgramName);
     console.log(this.state);
     console.log(this.state.programs);
+
+    if (!newProgramName) {
+      this.fadeIn();
+    }
 
     if (!this.state || !this.state.programs) {
       return;
@@ -222,10 +228,12 @@ export default class BubbleView extends Component {
           display: 'flex',
           flex: 1,
           flexDirection: 'row',
+          borderLeft: `1px solid rgba(194, 192, 194, ${this.state.fade})`,
         }}>
 
           <div className="btn" style={{
             flex: 2,
+            borderLeft: `1px solid rgba(194, 192, 194, ${this.state.fade})`,
           }} onClick={() => {
             this.setState({
               currentShortcut: getRandomShortcut(this.state.shortcuts, this.state.previousShortcuts),
@@ -239,17 +247,21 @@ export default class BubbleView extends Component {
             // borderRadius: ".35rem",
             // borderWidth: ".50rem",
             flex: 2,
+            borderLeft: `1px solid rgba(194, 192, 194, ${this.state.fade})`,
           }} onClick={() => {
-            currentShortcut.score = currentShortcut.score ? currentShortcut.score + 1 : 1;
             ipcRenderer.send('update-current-app-value', {
               shortcuts: [currentShortcut]
+            });
+            currentShortcut.score = currentShortcut.score ? currentShortcut.score + 1 : 1;
+            this.setState({
+              currentShortcut
             });
 
             console.log('>>>> UPVOTE: ');
             console.log(currentShortcut.score);
             console.log(previousShortcuts);
 
-          }}>Upvote</div>
+          }}>See More</div>
 
           <div className="btn" style={{
             // backgroundColor: `rgba(255, 255, 255, 0)`,
@@ -258,6 +270,7 @@ export default class BubbleView extends Component {
             // borderRadius: ".35rem",
             // borderWidth: ".50rem",
             flex: 2,
+            borderLeft: `1px solid rgba(194, 192, 194, ${this.state.fade})`,
           }} onClick={() => {
             ipcRenderer.send('execute-list-item', currentShortcut);
           }}>Run</div>
@@ -267,6 +280,7 @@ export default class BubbleView extends Component {
           display: 'flex',
           flex: 1,
           flexDirection: 'row',
+          borderLeft: `1px solid rgba(194, 192, 194, ${this.state.fade})`,
         }}>
           <div className="btn" style={{
             // backgroundColor: `rgba(255, 255, 255, 0)`,
@@ -297,17 +311,21 @@ export default class BubbleView extends Component {
             // borderRadius: ".35rem",
             // borderWidth: ".50rem",
             flex: 2,
+            borderLeft: `1px solid rgba(194, 192, 194, ${this.state.fade})`,
           }} onClick={() => {
-            currentShortcut.score = currentShortcut.score ? currentShortcut.score - 1 : -1;
             ipcRenderer.send('update-current-app-value', {
               shortcuts: [currentShortcut]
+            });
+            currentShortcut.score = currentShortcut.score ? currentShortcut.score - 1 : -1;
+            this.setState({
+              currentShortcut
             });
 
             console.log('>>>> DOWNVOTE: ');
             console.log(currentShortcut.score);
             console.log(previousShortcuts);
 
-          }}>Downvote</div>
+          }}>See Less</div>
 
           <div className="btn" style={{
             // backgroundColor: `rgba(255, 255, 255, 0)`,
@@ -316,6 +334,7 @@ export default class BubbleView extends Component {
             // borderRadius: ".35rem",
             // borderWidth: ".50rem",
             flex: 2,
+            borderLeft: `1px solid rgba(194, 192, 194, ${this.state.fade})`,
           }} onClick={() => {
             ipcRenderer.send('force-to-top', currentShortcut);
           }}>Highlight</div>
@@ -343,47 +362,65 @@ export default class BubbleView extends Component {
       </div>
     );
 
+    const iconComponent = (
+        <div style={{
+            position: 'relative',
+        }} onClick={(e) => {
+          ipcRenderer.send('show-window');
+        }}>
+            <img src="../assets/wizard.png" style={{
+                right: '1px',
+                top: '1px',
+                height: '20px',
+                transform: 'rotate(25deg)',
+                transformOrigin: '0% %0',
+                position: 'absolute',
+                opacity: this.state.fade,
+            }}></img>
+        </div>
+    );
+
+    const score = (
+      <span className="icon icon-trophy" style={{
+          left: '2px',
+          top: '4px',
+          fontSize: '16px',
+          position: 'absolute',
+          opacity: this.state.fade,
+      }}>{currentShortcut.score}</span>
+    );
+
+
+    const headerComponent = (
+      <header style={{
+        borderBottom: '1px solid #c2c0c2',
+        minHeight: '22px',
+        boxShadow: 'inset 0 1px 0 rgba(245, 244, 245, ${this.state.fade})',
+        backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
+        backgroundImage: '-webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(232, 230, 232, ${this.state.fade})), color-stop(100%, rgba(209, 207, 209, ${this.state.fade})))',
+        backgroundImage: '-webkit-linear-gradient(top, rgba(232, 230, 232, ${this.state.fade}) 0%, rgba(209, 207, 209, ${this.state.fade}) 100%)',
+        backgroundImage: 'linear-gradient(to bottom, rgba(232, 230, 232, ${this.state.fade}) 0%, rgba(209, 207, 209, ${this.state.fade}) 100%)',
+      }}>
+        <div className="title" style={{
+          // backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
+          color: `rgba(85, 85, 85, ${this.state.fade})`, 
+          fontSize: 14,
+        }}>
+          {currentShortcut.name}
+        </div>
+      </header>
+    );
 
     return (
       <div className="window" style={{
+        overflow: 'hidden',
         height: '100%',
         width: '100%',
-        overflow: 'auto',
         backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
         color: `rgba(85, 85, 85, ${this.state.fade})`, 
       }}>
-          <header style={{
-
-            borderBottom: '1px solid #c2c0c2',
-            minHeight: '22px',
-            boxShadow: 'inset 0 1px 0 rgba(245, 244, 245, ${this.state.fade})',
-            backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
-            backgroundImage: '-webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(232, 230, 232, ${this.state.fade})), color-stop(100%, rgba(209, 207, 209, ${this.state.fade})))',
-            backgroundImage: '-webkit-linear-gradient(top, rgba(232, 230, 232, ${this.state.fade}) 0%, rgba(209, 207, 209, ${this.state.fade}) 100%)',
-            backgroundImage: 'linear-gradient(to bottom, rgba(232, 230, 232, ${this.state.fade}) 0%, rgba(209, 207, 209, ${this.state.fade}) 100%)',
-
-            // backgroundColor: `transparent`,
-            // backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
-            // backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
-            // color: `rgba(85, 85, 85, ${this.state.fade})`, 
-            // backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
-            // flex: 1,
-            // textAlign: 'center',
-            // justifyContent: 'center',
-            // alignContent: 'stretch',
-            // marginBottom: '2px',
-            // fontSize: 16,
-            // fontWeight: 500,
-          }}>
-            <div className="title" style={{
-              // backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
-              color: `rgba(85, 85, 85, ${this.state.fade})`, 
-              fontSize: 14,
-            }}>
-              {currentShortcut.name}{currentShortcut.score ? ` (score: ${currentShortcut.score})` : ""}
-            </div>
-          </header>
-
+        {iconComponent}
+        {headerComponent}
         <div className="window-content">
           <div style={{
             display: 'flex',
@@ -414,7 +451,7 @@ export default class BubbleView extends Component {
               fontWeight: 600,
               backgroundColor: `transparent`,
               // backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
-              // color: `rgba(85, 85, 85, ${this.state.fade})`, 
+              color: `rgba(85, 85, 85, ${this.state.fade})`, 
             }}>
               {shortcutSection}
             </div>
@@ -424,7 +461,6 @@ export default class BubbleView extends Component {
               alignContent: 'stretch',
               backgroundColor: `transparent`,
               // backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
-              // color: `rgba(85, 85, 85, ${this.state.fade})`, 
             }}>
               {buttonSection}
             </div>

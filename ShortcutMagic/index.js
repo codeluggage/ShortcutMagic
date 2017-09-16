@@ -34,11 +34,13 @@ const defaultBubbleWidth = 250;
 // the name of the app that was switched to last time, so we know it's the name of the currently active program
 let currentAppName = "ShortcutMagic-mac"; // TODO: Check for bugs with this when opening ShortcutMagic the first time
 // These global settings are stored together with the shortcuts, and this is the "name":
-var GLOBAL_SETTINGS = "all programs";
+const GLOBAL_SETTINGS_KEY = "all programs";
 // controls the tray of the application
 let trayObject;
 // First batch of loaded shortcuts for browserwindows to immediately use
 let firstPrograms;
+// Show bubblewindow at intervals
+let bubbleWindowTimeout;
 
 // Browser windows:
 let settingsWindow,
@@ -57,6 +59,7 @@ let settingsWindow,
 // a hacky bad construct holding the shortcuts from the db in memory
 // TODO: merge into a class that encapsulates the db and functionality, and caches things in memory without checking this array everywhere :|
 let inMemoryShortcuts = [];
+inMemoryShortcuts[GLOBAL_SETTINGS_KEY] = {};
 // const weirdErrorPos = { x: 89, y: 23, width: 0, height: 0 };
 // hackyStopSavePos needs to be replaced with a better system. right now it just stops the size and position of the application
 // from being saved. this is typically set when we are loading a position or moving between window modes
@@ -1174,11 +1177,41 @@ function appSwitched(event, appName) {
 
 	currentAppName = appName;
 	loadWithPeriods();
-	console.log('appSwitched  SENDING >>>>>>>>>>> ');
-	console.log(currentAppName);
+	console.log('appSwitched  with settings:  ');
+	console.log(inMemoryShortcuts[GLOBAL_SETTINGS_KEY]);
 	mainWindow.webContents.send('set-current-program-name', currentAppName);
 	bubbleWindow.webContents.send('set-current-program-name', currentAppName);
-	showBubbleWindow();
+
+	if (!inMemoryShortcuts) { 
+		showBubbleWindow();
+		return;
+	}
+
+	const settings = inMemoryShortcuts[GLOBAL_SETTINGS_KEY];
+	if (!settings) {
+		showBubbleWindow();
+		return;
+	} 
+
+	if (settings.hideBubbleWindow) {
+		return;
+	}
+
+	if (!settings.timeoutRepeat) {
+		showBubbleWindow();
+		return;
+	}
+
+	if (!bubbleWindowTimeout) {
+		bubbleWindowTimeout = true;
+
+		// TODO: Make recursive to repeat on timeoutRepeat value
+		setTimeout(() => {
+			bubbleWindowTimeout = false;
+			bubbleWindow.webContents.send('set-current-program-name', null);
+			showBubbleWindow();
+		}, inMemoryShortcuts[GLOBAL_SETTINGS_KEY].timeoutRepeat * 60000); // Minutes to milliseconds 
+	}
 }
 
 function mainParseShortcutsCallback(payload) {
@@ -1288,32 +1321,33 @@ ipcMain.on('update-current-app-value', function(event, newAppValue) {
 });
 
 ipcMain.on('save-app-settings', (event, newSetting) => {
-    inMemoryShortcuts[GLOBAL_SETTINGS]["boundsPerApp"] = newSetting["boundsPerApp"];
-    inMemoryShortcuts[GLOBAL_SETTINGS]["alwaysOnTop"] = newSetting["alwaysOnTop"];
-    mainWindow.setAlwaysOnTop(newSetting["alwaysOnTop"]);
+	console.log('save-app-settings with ');
+	console.log(newSetting);
+
+	Object.assign(inMemoryShortcuts[GLOBAL_SETTINGS_KEY], newSetting);
 
 	// if (newSetting.shortcuts.length < 2) {
 		// throw new Error("NOT ENOUGH SHORTCUTS");
 	// }
 
   getDb().update({
-    name: GLOBAL_SETTINGS
+    name: GLOBAL_SETTINGS_KEY
 	}, {
-		$set: newSetting
+		$set: inMemoryShortcuts[GLOBAL_SETTINGS_KEY],
 	}, {
 		upsert: true
 	}, (err, res) => {
 		if (err) {
 			log.info("error when saving global settings", newSetting);
 		} else {
-			log.info("successfully saved global settings: ", res);
+			log.info("successfully saved global settings: ", res, inMemoryShortcuts[GLOBAL_SETTINGS_KEY]);
 		}
 	});
 });
 
 ipcMain.on('temporarily-update-app-settings', (event, newSetting) => {
-    inMemoryShortcuts[GLOBAL_SETTINGS]["boundsPerApp"] = newSetting["boundsPerApp"];
-    inMemoryShortcuts[GLOBAL_SETTINGS]["alwaysOnTop"] = newSetting["alwaysOnTop"];
+    inMemoryShortcuts[GLOBAL_SETTINGS_KEY]["boundsPerApp"] = newSetting["boundsPerApp"];
+    inMemoryShortcuts[GLOBAL_SETTINGS_KEY]["alwaysOnTop"] = newSetting["alwaysOnTop"];
     mainWindow.setAlwaysOnTop(newSetting["alwaysOnTop"]);
 });
 

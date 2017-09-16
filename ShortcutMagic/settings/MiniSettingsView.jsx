@@ -7,12 +7,12 @@ let Datastore = require('nedb');
 const path = require('path');
 
 let cachedStyles = [];
-let GLOBAL_SETTINGS = "all programs";
+let GLOBAL_SETTINGS_KEY = "all programs";
 // From http://www.visualcinnamon.com/2016/05/smooth-color-legend-d3-svg-gradient.html
 let beautifulColors = ["#ffffff", "#000000", "#2c7bb6",  "#00a6ca", "#00ccbc",
 	"#90eb9d", "#ffff8c", "#f9d057", "#f29e2e", "#e76818", "#d7191c"];
 let defaultSettings = {
-	name: GLOBAL_SETTINGS,
+	name: GLOBAL_SETTINGS_KEY,
 	backgroundColor: beautifulColors[5],
 	itemColor: beautifulColors[2],
 	textColor: beautifulColors[1],
@@ -48,7 +48,7 @@ function getDb() {
 
         // TODO: send to worker?
         styleDb.find({
-            name: GLOBAL_SETTINGS
+            name: GLOBAL_SETTINGS_KEY
         }, function(err, doc) {
             if (err) {
                 console.log('Tried to find default style, got error: ', err);
@@ -62,7 +62,7 @@ function getDb() {
                     }
                 });
             } else {
-                cachedStyles[GLOBAL_SETTINGS] = defaultSettings = doc[0];
+                cachedStyles[GLOBAL_SETTINGS_KEY] = defaultSettings = doc[0];
             }
         });
     }

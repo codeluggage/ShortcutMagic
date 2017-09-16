@@ -9,7 +9,7 @@ import { ipcRenderer, remote } from 'electron';
 // - send heavy tasks to settingsWorker - or will this be settingsWorker in itself?
 
 // Is there ever a risk that an app has on eof these names and will overwrite..?
-var GLOBAL_SETTINGS = "all programs";
+const GLOBAL_SETTINGS_KEY = "all programs";
 var settingsInProgress = {};
 var lastSavedSettings = {};
 var cachedSettings = {};
@@ -20,7 +20,7 @@ var defaultFullBounds = {x: 1100, y: 100, width: 350, height: 800};
 var defaultBubbleBounds = {x: 800, y: 10, width: 250, height: 200};
 
 defaultSettings = {
-	name: GLOBAL_SETTINGS,
+	name: GLOBAL_SETTINGS_KEY,
 	acceptFirstClick: true,
 	defaultWindowMode: 'tray',
 	alwaysOnTop: true,
@@ -73,7 +73,7 @@ try {
 
 	// TODO: send to worker?
 	settingsDb.find({
-		name: GLOBAL_SETTINGS
+		name: GLOBAL_SETTINGS_KEY
 	}, function(err, doc) {
 		if (err) {
 			console.log('Tried to find default settings, got error: ', err);
@@ -87,7 +87,7 @@ try {
 				}
 			});
 		} else {
-			cachedSettings[GLOBAL_SETTINGS] = defaultSettings = doc[0];
+			cachedSettings[GLOBAL_SETTINGS_KEY] = defaultSettings = doc[0];
 		}
 	});
 } catch (e) {
@@ -123,13 +123,13 @@ export class Settings {
 	// Return settings for appName, as well as global settings
 	get(appName, cb) {
 		if (!appName || appName == "") {
-			cb(defaultSettings, cachedSettings[GLOBAL_SETTINGS]);
+			cb(defaultSettings, cachedSettings[GLOBAL_SETTINGS_KEY]);
 			return;
 		}
 
 		var val = cachedSettings[appName];
 		if (val) {
-			cb(val, cachedSettings[GLOBAL_SETTINGS]);
+			cb(val, cachedSettings[GLOBAL_SETTINGS_KEY]);
 			return;
 		}
 
@@ -144,11 +144,11 @@ export class Settings {
 
 			if (res && res.length > 0 && res[0]) {
 				cachedSettings[appName] = res[0]
-				cb(res[0], cachedSettings[GLOBAL_SETTINGS]);
+				cb(res[0], cachedSettings[GLOBAL_SETTINGS_KEY]);
 			} else {
 				var fallback = defaultSettings;
 				fallback["name"] = appName;
-				cb(fallback, cachedSettings[GLOBAL_SETTINGS]);
+				cb(fallback, cachedSettings[GLOBAL_SETTINGS_KEY]);
 			}
 		});
 	}
@@ -197,10 +197,10 @@ export class Settings {
 	set(appSettings, globalSettings) {
 		delete appSettings._id;
 		cachedSettings[appSettings.name] = appSettings;
-		cachedSettings[GLOBAL_SETTINGS] = globalSettings;
+		cachedSettings[GLOBAL_SETTINGS_KEY] = globalSettings;
 
 		settingsDb.update({
-			name: GLOBAL_SETTINGS
+			name: GLOBAL_SETTINGS_KEY
 		}, {
 			$set: globalSettings
 		}, {
@@ -272,7 +272,7 @@ export class Settings {
 
 			var cached = cachedSettings[newName];
 			if (cached) {
-				changeSettings(cached, cachedSettings[GLOBAL_SETTINGS]);
+				changeSettings(cached, cachedSettings[GLOBAL_SETTINGS_KEY]);
 			} else {
 				this.get(newName, changeSettings);
 			}

@@ -6,6 +6,8 @@ import Electron, { ipcRenderer, remote } from 'electron';
 import ReactTooltip from 'react-tooltip'
 import ReactDOM from 'react-dom';
 
+const GLOBAL_SETTINGS_KEY = "all programs";
+
 
 // From http://www.visualcinnamon.com/2016/05/smooth-color-legend-d3-svg-gradient.html
 let beautifulColors = ["#2c7bb6",  "#00a6ca", "#00ccbc", "#90eb9d", "#ffff8c", "#f9d057", "#f29e2e", "#e76818", "#d7191c"];
@@ -35,6 +37,7 @@ export default class Home extends Component {
     this.changeFontDown = this.changeFontDown.bind(this);
     this.filterListKeyDown = this.filterListKeyDown.bind(this);
     this.focusSearchField = this.focusSearchField.bind(this);
+    this.toggleTimeout = this.toggleTimeout.bind(this);
 
     ipcRenderer.on('focus-search-field', this.focusSearchField);
     ipcRenderer.on('focus', (event, focus) => {
@@ -80,7 +83,10 @@ export default class Home extends Component {
 
     let program = programs ? programs[currentProgramName] : null;
 
-    if (programs) newState.programs = programs;
+    if (programs) {
+      newState.programs = programs;
+      newState.settings = programs[GLOBAL_SETTINGS_KEY];
+    }
 
     if (!program) {
       if (this.state && this.state.programs) {
@@ -246,6 +252,13 @@ export default class Home extends Component {
     }
   }
 
+  toggleTimeout(activate) {
+    this.setState({
+      timeoutRepeat: (activate) ? window.document.getElementById('timeoutRepeatMinutes').value : undefined
+    });
+    ipcRenderer.send('set-timeout-repeat', this.state.timeoutRepeat);
+  }
+
   render() {
     console.log('inside render');
     if (this.state && this.state.programs) {
@@ -317,8 +330,12 @@ export default class Home extends Component {
           <h5 className="nav-group-title">Programs</h5>
 
           {Object.keys(this.state.programs).map(name => {
+            if (name === GLOBAL_SETTINGS_KEY) {
+              return;
+            }
+
             let navGroupClass = "nav-group-item"; 
-            if (name == this.state.currentProgramName) {
+            if (name === this.state.currentProgramName) {
               navGroupClass +=  " active";
             }
 
@@ -340,6 +357,22 @@ export default class Home extends Component {
         </nav>
       );
     }
+
+
+    const iconComponent = (
+        <div style={{
+            position: 'relative',
+        }}>
+            <img src="../assets/wizard.png" style={{
+                right: '2px',
+                top: '24px',
+                height: '20px',
+                transform: 'rotate(25deg)',
+                transformOrigin: '0% %0',
+                position: 'absolute',
+            }}></img>
+        </div>
+    );
 
     return (
       <div className="window">
@@ -370,7 +403,7 @@ export default class Home extends Component {
               {programTitles ? programTitles : "Loading..."}
             </div>
             <div className="pane">
-              {!this.state || !this.state.settingsPaneActive ? (
+              {!this.state || !this.state.settingsPaneActive || !this.state.settings ? (
                 <table className="table-striped">
                   <thead>
                     <tr>
@@ -387,49 +420,71 @@ export default class Home extends Component {
                 <div>
                   <div className="checkbox">
                     <label>
-                      {this.state.timeoutRepeat ? (
+                      {this.state.settings.timeoutRepeat ? (
                         <input id="timeoutRepeatCheckbox" type="checkbox" defaultChecked onChange={e => {
-
-                          console.log('inside timeoutRepeatCheckbox ');
+                          console.log('inside checked timeoutRepeatCheckbox ');
                           console.log(e);
-                          this.setState({timeoutRepeat: 5}) 
+                          const newState = {
+                            timeoutRepeat: false,
+                          };
+
+                          ipcRenderer.send('save-app-settings', newState);
+                          this.setState({
+                            settings: Object.assign(this.state.settings, newState)
+                          });
                         }}/>
                       ) : (
                         <input id="timeoutRepeatCheckbox" type="checkbox" onChange={e => {
-
-                          console.log('inside timeoutRepeatCheckbox');
+                          console.log('inside uncheckd timeoutRepeatCheckbox');
+                          console.log(e);
                           
-                          console.log(e.targetValue);
-                          console.log(e.currentTarget);
-                          console.log(e.target);
+                          const newState = {
+                            timeoutRepeat: document.getElementById('timeoutRepeatMinutes').value,
+                          };
 
-                          this.setState({timeoutRepeat: undefined}) 
+                          ipcRenderer.send('save-app-settings', newState);
+                          this.setState({
+                            settings: Object.assign(this.state.settings, newState)
+                          });
                         }}/>
                       )}
-                      Show random shortcut every <input id="timeoutRepeatMinutes" type="number" placeholder={this.state.timeoutRepeat !== undefined ?
-                        this.state.timeoutRepeat : 5} onChange={e => {
-
+                      Show random shortcut every <input id="timeoutRepeatMinutes" type="number"
+                        placeholder={this.state.settings.timeoutRepeat ? this.state.settings.timeoutRepeat : 5} onChange={e => {
                           console.log('inside this.state.timeoutRepeat');
                           
                           console.log(e.targetValue);
                           console.log(e.currentTarget);
                           console.log(e.target);
 
-                          this.setState({timeoutRepeat: e.targetValue}) 
+                          const newState = {
+                            timeoutRepeat: document.getElementById('timeoutRepeatMinutes').value,
+                          };
+
+                          ipcRenderer.send('save-app-settings', newState);
+                          this.setState({
+                            settings: Object.assign(this.state.settings, newState)
+                          });
                         }}/> minutes
                     </label>
                   </div>
 
                   <div className="checkbox">
                     <label>
-                      {this.state.switchWithApp ? (
+                      {this.state.settings.hideBubbleWindow ? (
                         <input id="appSwitchCheckbox" type="checkbox" defaultChecked onChange={e => {
 
                           console.log('inside appSwitchCheckbox');
                           console.log(e.targetValue);
                           console.log(e.currentTarget);
                           console.log(e.target);
-                          this.setState({switchWithApp: e.targetValue}) 
+                          const newState = {
+                            hideBubbleWindow: false,
+                          };
+
+                          ipcRenderer.send('save-app-settings', newState);
+                          this.setState({
+                            settings: Object.assign(this.state.settings, newState)
+                          });
                         }}/>
                       ) : (
                         <input id="appSwitchCheckbox" type="checkbox" onChange={e => {
@@ -440,10 +495,17 @@ export default class Home extends Component {
                           console.log(e.currentTarget);
                           console.log(e.target);
 
-                          this.setState({switchWithApp: e.targetValue}) 
+                          const newState = {
+                            hideBubbleWindow: true,
+                          };
+
+                          ipcRenderer.send('save-app-settings', newState);
+                          this.setState({
+                            settings: Object.assign(this.state.settings, newState)
+                          });
                         }}/>
                       )}
-                      Show random shortcut when the app switches
+                      Never show random shortcuts
                     </label>
                   </div>
 
