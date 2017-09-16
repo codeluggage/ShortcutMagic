@@ -306,8 +306,8 @@ function createBubbleWindow() {
   });
 
   bubbleWindow.on('ready-to-show', (e) => {
-  	console.log('>>> bubbleWindow ready-to-show');
-  	console.log(firstPrograms);
+  	// console.log('>>> bubbleWindow ready-to-show');
+  	// console.log(firstPrograms);
 
   	bubbleWindow.webContents.send('set-programs', firstPrograms, currentAppName);
   	bubbleWindow.show();
@@ -501,7 +501,6 @@ function createWindows() {
 				if (!res || !res.length) {
 					log.info('errored during db find: ', err);
 				} else {
-					console.log(' getdbfind in createwindows SENDING >>>>>>>>>>> ');
 					firstPrograms = res;
 				}
 			}
@@ -875,6 +874,17 @@ function saveWithoutPeriods(payload) {
 	let stringified = JSON.stringify(savePayload.shortcuts).replace(/\./g, 'u002e');
 	savePayload.shortcuts = JSON.parse(stringified);
 
+	console.log('=============================================');
+	console.log('=============================================');
+	console.log('=============================================');
+	console.log('=============================================');
+	console.log('saving saveWithoutPeriods');
+	console.log(payload);
+	console.log('=============================================');
+	console.log('=============================================');
+	console.log('=============================================');
+	console.log('=============================================');
+
 	// if (payload.shortcuts.length < 2) {
 		// throw new Error("NOT ENOUGH SHORTCUTS");
 	// }
@@ -903,8 +913,8 @@ function saveWithoutPeriods(payload) {
 					return;
 				}
 
-				console.log(' getdbfind SENDING >>>>>>>>>>> ');
-				console.log(res);
+				// console.log(' getdbfind SENDING >>>>>>>>>>> ');
+				// console.log(res);
 				mainWindow.webContents.send('set-programs', res, currentAppName);
 				bubbleWindow.webContents.send('set-programs', res, currentAppName);
 			});
@@ -1256,6 +1266,16 @@ ipcMain.on('update-shortcut-item', (event, shortcutItem) => {
 	// if (shortcutObject.shortcuts.length < 2) {
 		// throw new Error("NOT ENOUGH SHORTCUTS");
 	// }
+	console.log('=============================================');
+	console.log('=============================================');
+	console.log('=============================================');
+	console.log('=============================================');
+	console.log('saving update-shortcut-item');
+	console.log(shortcutObject);
+	console.log('=============================================');
+	console.log('=============================================');
+	console.log('=============================================');
+	console.log('=============================================');
 
 	getDb().update({
 		name: currentAppName
@@ -1306,6 +1326,18 @@ ipcMain.on('update-current-app-value', function(event, newAppValue) {
 	// if (newAppValue.shortcuts.length < 2) {
 		// throw new Error("NOT ENOUGH SHORTCUTS");
 	// }
+
+	console.log('=============================================');
+	console.log('=============================================');
+	console.log('=============================================');
+	console.log('=============================================');
+	console.log('saving update-current-app-value');
+	console.log(newAppValue);
+	console.log('=============================================');
+	console.log('=============================================');
+	console.log('=============================================');
+	console.log('=============================================');
+
 
 	getDb().update({
 		name: currentAppName
@@ -1475,6 +1507,17 @@ ipcMain.on('save-gif', (event, newGif, listItem, appName) => {
 	// if (shortcutObject.shortcuts.length < 2) {
 		// throw new Error("NOT ENOUGH SHORTCUTS");
 	// }
+
+	console.log('=============================================');
+	console.log('=============================================');
+	console.log('=============================================');
+	console.log('=============================================');
+	console.log('saving save-gif');
+	console.log(shortcutObject);
+	console.log('=============================================');
+	console.log('=============================================');
+	console.log('=============================================');
+	console.log('=============================================');
 
 
 	getDb().update({

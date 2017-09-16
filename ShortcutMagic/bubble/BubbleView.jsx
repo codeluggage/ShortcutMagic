@@ -249,13 +249,15 @@ export default class BubbleView extends Component {
             flex: 2,
             borderLeft: `1px solid rgba(194, 192, 194, ${this.state.fade})`,
           }} onClick={() => {
-            ipcRenderer.send('update-current-app-value', {
-              shortcuts: [currentShortcut]
-            });
             currentShortcut.score = currentShortcut.score ? currentShortcut.score + 1 : 1;
             this.setState({
               currentShortcut
             });
+
+            let shortcuts = {};
+            shortcuts[`shortcuts.${currentShortcut.name}`] = currentShortcut;
+
+            ipcRenderer.send('update-current-app-value', shortcuts);
 
             console.log('>>>> UPVOTE: ');
             console.log(currentShortcut.score);
@@ -313,13 +315,15 @@ export default class BubbleView extends Component {
             flex: 2,
             borderLeft: `1px solid rgba(194, 192, 194, ${this.state.fade})`,
           }} onClick={() => {
-            ipcRenderer.send('update-current-app-value', {
-              shortcuts: [currentShortcut]
-            });
             currentShortcut.score = currentShortcut.score ? currentShortcut.score - 1 : -1;
             this.setState({
               currentShortcut
             });
+
+            let shortcuts = {};
+            shortcuts[`shortcuts.${currentShortcut.name}`] = currentShortcut;
+
+            ipcRenderer.send('update-current-app-value', shortcuts);
 
             console.log('>>>> DOWNVOTE: ');
             console.log(currentShortcut.score);
@@ -362,24 +366,6 @@ export default class BubbleView extends Component {
       </div>
     );
 
-    const iconComponent = (
-        <div style={{
-            position: 'relative',
-        }} onClick={(e) => {
-          ipcRenderer.send('show-window');
-        }}>
-            <img src="../assets/wizard.png" style={{
-                right: '1px',
-                top: '1px',
-                height: '20px',
-                transform: 'rotate(25deg)',
-                transformOrigin: '0% %0',
-                position: 'absolute',
-                opacity: this.state.fade,
-            }}></img>
-        </div>
-    );
-
     const score = (
       <span className="icon icon-trophy" style={{
           left: '2px',
@@ -389,7 +375,6 @@ export default class BubbleView extends Component {
           opacity: this.state.fade,
       }}>{currentShortcut.score}</span>
     );
-
 
     const headerComponent = (
       <header style={{
@@ -409,6 +394,24 @@ export default class BubbleView extends Component {
           {currentShortcut.name}
         </div>
       </header>
+    );
+
+    const iconComponent = (
+        <div style={{
+            position: 'relative',
+        }} onClick={(e) => {
+          ipcRenderer.send('show-window');
+        }}>
+            <img src="../assets/wizard.png" style={{
+                right: '1px',
+                top: '1px',
+                height: '20px',
+                transform: 'rotate(25deg)',
+                transformOrigin: '0% %0',
+                position: 'absolute',
+                opacity: this.state.fade,
+            }}></img>
+        </div>
     );
 
     return (
