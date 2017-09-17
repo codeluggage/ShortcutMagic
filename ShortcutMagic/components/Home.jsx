@@ -325,35 +325,43 @@ export default class Home extends Component {
         </tbody>
       );
 
+      const titles = Object.keys(this.state.programs).map(name => {
+        if (name === GLOBAL_SETTINGS_KEY) {
+          return;
+        }
+
+        let navGroupClass = "nav-group-item"; 
+        if (name === this.state.currentProgramName) {
+          navGroupClass +=  " active";
+        }
+
+        let formattedName = name;
+        let query = window.document.getElementById("search-field").value;
+        if (query && query.length && formattedName.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+          formattedName = <u><b>{name}</b></u>;
+        }
+
+        return (
+          <span className={navGroupClass} key={name} onClick={(e) => {
+            this.updateItems(name);
+          }}>
+            <span className="icon icon-window"></span>
+            {formattedName}
+          </span>
+        );
+      });
+
+      titles.sort((a, b) => {
+        if (a.key > b.key) return 1;
+        if (a.key < b.key) return -1;
+        return 0;
+      });
+
       programTitles = (
         <nav className="nav-group">  
           <h5 className="nav-group-title">Programs</h5>
 
-          {Object.keys(this.state.programs).map(name => {
-            if (name === GLOBAL_SETTINGS_KEY) {
-              return;
-            }
-
-            let navGroupClass = "nav-group-item"; 
-            if (name === this.state.currentProgramName) {
-              navGroupClass +=  " active";
-            }
-
-            let formattedName = name;
-            let query = window.document.getElementById("search-field").value;
-            if (query && query.length && formattedName.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
-              formattedName = <u><b>{name}</b></u>;
-            }
-
-            return (
-              <span className={navGroupClass} key={name} onClick={(e) => {
-                this.updateItems(name);
-              }}>
-                <span className="icon icon-window"></span>
-                {formattedName}
-              </span>
-            );
-          })}
+          {titles}
         </nav>
       );
     }
