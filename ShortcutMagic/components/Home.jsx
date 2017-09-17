@@ -310,15 +310,36 @@ export default class Home extends Component {
                   }
                 </td>
                 <td>{value.menuName}</td>
-                <td><span className="icon icon-up-open-big" onClick={e => {
+                <td onClick={e => {
+
+
+
                   value.score = value.score ? value.score + 1 : 1;
                   console.log("clicked upvote-list-item with ", value);
+
                   ipcRenderer.send('update-shortcut-item', value);
-                }}></span>   <span className="icon icon-down-open-big" onClick={e => {
+                  let newItems = this.state.items.map(item => item.name === value.name ? value : item);
+
+                  this.setState({
+                    items: newItems,
+                  });
+
+                }}><span className="icon icon-up-open-big"></span></td>
+                <td onClick={e => {
+
+
                   value.score = value.score ? value.score - 1 : -1;
                   console.log("clicked upvote-list-item with ", value);
+                  
                   ipcRenderer.send('update-shortcut-item', value);
-                }}></span>   {value.score}</td>
+                  let newItems = this.state.items.map(item => item.name === value.name ? value : item);
+
+                  this.setState({
+                    items: newItems,
+                  });
+
+                }}><span className="icon icon-down-open-big"></span></td>
+                <td>{value.score}</td>
               </tr>
             );
           })}
@@ -419,6 +440,8 @@ export default class Home extends Component {
                       <th>Name</th>
                       <th>Shortcut</th>
                       <th>Menu</th>
+                      <th>Up</th>
+                      <th>Down</th>
                       <th>Rating</th>
                     </tr>
                   </thead>

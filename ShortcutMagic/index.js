@@ -1256,26 +1256,11 @@ ipcMain.on('update-shortcut-item', (event, shortcutItem) => {
 	var shortcutObject = {};
 	shortcutObject[`shortcuts.${shortcutItem.name}`] = shortcutItem;
 
-	// TODO: use new function (callback hell) here until promises 
 	if (!inMemoryShortcuts || !inMemoryShortcuts[currentAppName]) {
 		log.info("error: no loaded shortcuts when updating with update-shortcut-item");
 	} else {
 		inMemoryShortcuts[currentAppName].shortcuts[shortcutItem.name] = shortcutItem;
 	}
-
-	// if (shortcutObject.shortcuts.length < 2) {
-		// throw new Error("NOT ENOUGH SHORTCUTS");
-	// }
-	console.log('=============================================');
-	console.log('=============================================');
-	console.log('=============================================');
-	console.log('=============================================');
-	console.log('saving update-shortcut-item');
-	console.log(shortcutObject);
-	console.log('=============================================');
-	console.log('=============================================');
-	console.log('=============================================');
-	console.log('=============================================');
 
 	getDb().update({
 		name: currentAppName
@@ -1288,7 +1273,7 @@ ipcMain.on('update-shortcut-item', (event, shortcutItem) => {
 			log.info("error when updating favorite for list item ", listItemName);
 		} else {
 			log.info("saved ", shortcutObject, res);
-			loadWithPeriods();
+			// loadWithPeriods();
 		}
 	});
 });
