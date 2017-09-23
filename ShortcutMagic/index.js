@@ -59,7 +59,10 @@ let settingsWindow,
 // a hacky bad construct holding the shortcuts from the db in memory
 // TODO: merge into a class that encapsulates the db and functionality, and caches things in memory without checking this array everywhere :|
 let inMemoryShortcuts = [];
-inMemoryShortcuts[GLOBAL_SETTINGS_KEY] = {};
+inMemoryShortcuts[GLOBAL_SETTINGS_KEY] = {
+	showOnAppSwitch: true,
+	neverShowBubbleWindow: false,
+};
 // const weirdErrorPos = { x: 89, y: 23, width: 0, height: 0 };
 // hackyStopSavePos needs to be replaced with a better system. right now it just stops the size and position of the application
 // from being saved. this is typically set when we are loading a position or moving between window modes
@@ -624,7 +627,7 @@ function createMainWindow() {
 	mainWindow = new BrowserWindow({
 		name: "ShortcutMagic",
 		title: "ShortcutMagic",
-		acceptFirstClick: true,
+		acceptFirstClick: false,
 		alwaysOnTop: false,
 		frame: true,
 		show: false,
@@ -1198,29 +1201,28 @@ function appSwitched(event, appName) {
 	}
 
 	const settings = inMemoryShortcuts[GLOBAL_SETTINGS_KEY];
-	if (!settings) {
-		showBubbleWindow();
+	if (!settings || settings.neverShowBubbleWindow) {
 		return;
 	} 
 
-	if (settings.hideBubbleWindow) {
-		return;
-	}
-
-	if (!settings.timeoutRepeat) {
+	if (settings.showOnAppSwitch) {
 		showBubbleWindow();
-		return;
 	}
 
-	if (!bubbleWindowTimeout) {
+	if (settings.timeoutRepeat && !bubbleWindowTimeout) {
 		bubbleWindowTimeout = true;
 
+		const repeatTimeout = inMemoryShortcuts[GLOBAL_SETTINGS_KEY].timeoutRepeat * 60000;
+
 		// TODO: Make recursive to repeat on timeoutRepeat value
-		setTimeout(() => {
-			bubbleWindowTimeout = false;
-			bubbleWindow.webContents.send('set-current-program-name', null);
-			showBubbleWindow();
-		}, inMemoryShortcuts[GLOBAL_SETTINGS_KEY].timeoutRepeat * 60000); // Minutes to milliseconds 
+		const recursing = () => {
+				setTimeout(() => {
+				bubbleWindowTimeout = false;
+				bubbleWindow.webContents.send('set-current-program-name', null);
+				showBubbleWindow();
+				setTimeout(recursing, repeatTimeout); // Minutes to milliseconds 
+			}, repeatTimeout); // Minutes to milliseconds 
+		}
 	}
 }
 

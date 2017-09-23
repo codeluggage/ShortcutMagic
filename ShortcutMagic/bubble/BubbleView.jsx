@@ -116,6 +116,13 @@ export default class BubbleView extends Component {
 
     if (!newProgramName) {
       this.fadeIn();
+      setTimeout(() => {
+        if (!this.state.mouseOver) {
+          stopFadeOut = false;
+          this.fadeOut();
+        }
+      }, 3000);
+      return;
     }
 
     if (!this.state || !this.state.programs) {

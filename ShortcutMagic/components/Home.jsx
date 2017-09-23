@@ -93,7 +93,12 @@ export default class Home extends Component {
         program = this.state.programs[currentProgramName ? currentProgramName : this.state.currentProgramName];
         if (program) {
           let items = Object.values(program.shortcuts);
-          items.sort((a, b) => `${a.score ? a.score : a.name}`.localeCompare(`${b.score ? b.score : b.name}`));
+          items.sort((a, b) => {
+            if (a.score > 0 && !b.score) return 1;
+            if (b.score > 0 && !a.score) return -1;
+
+            return `${b.score ? b.score : b.name}`.localeCompare(`${a.score ? a.score : a.name}`);
+          });
 
           newState.items = items;
         }
@@ -339,7 +344,7 @@ export default class Home extends Component {
                   });
 
                 }}><span className="icon icon-down-open-big"></span></td>
-                <td>{value.score}</td>
+                <td>{value.score ? value.score : 0}</td>
               </tr>
             );
           })}
@@ -403,6 +408,14 @@ export default class Home extends Component {
         </div>
     );
 
+    console.log('about to render with settings: ');
+    if (this.state && this.state.settings) {
+      console.log(this.state.settings);
+    } else {
+      console.log('no state or settings...');
+    }
+
+
     return (
       <div className="window">
         <div className="window-content">
@@ -431,7 +444,9 @@ export default class Home extends Component {
             </header>
               {programTitles ? programTitles : "Loading..."}
             </div>
-            <div className="pane">
+            <div className="pane" style={{
+              textAlign: 'center',
+            }}>
               {!this.state || !this.state.settingsPaneActive || !this.state.settings ? (
                 <table className="table-striped">
                   <thead>
@@ -449,105 +464,191 @@ export default class Home extends Component {
                 </table>
               ) : (
                 <div>
-                  <div className="checkbox">
-                    <label>
-                      {this.state.settings.timeoutRepeat ? (
-                        <input id="timeoutRepeatCheckbox" type="checkbox" defaultChecked onChange={e => {
-                          console.log('inside checked timeoutRepeatCheckbox ');
-                          console.log(e);
-                          const newState = {
-                            timeoutRepeat: false,
-                          };
 
-                          ipcRenderer.send('save-app-settings', newState);
-                          this.setState({
-                            settings: Object.assign(this.state.settings, newState)
-                          });
-                        }}/>
-                      ) : (
-                        <input id="timeoutRepeatCheckbox" type="checkbox" onChange={e => {
-                          console.log('inside uncheckd timeoutRepeatCheckbox');
-                          console.log(e);
-                          
-                          const newState = {
-                            timeoutRepeat: document.getElementById('timeoutRepeatMinutes').value,
-                          };
+                  <ReactTooltip id='neverShowTooltip'
+                    place='bottom'
+                    type={tooltipEffect.type}
+                    effect={tooltipEffect.effect}
+                    multiline={true}/>
 
-                          ipcRenderer.send('save-app-settings', newState);
-                          this.setState({
-                            settings: Object.assign(this.state.settings, newState)
-                          });
-                        }}/>
-                      )}
-                      Show random shortcut every <input id="timeoutRepeatMinutes" type="number"
-                        placeholder={this.state.settings.timeoutRepeat ? this.state.settings.timeoutRepeat : 5} onChange={e => {
-                          console.log('inside this.state.timeoutRepeat');
-                          
-                          console.log(e.targetValue);
-                          console.log(e.currentTarget);
-                          console.log(e.target);
+                  <ReactTooltip id='timeoutRepeatTooltip'
+                    place='bottom'
+                    type={tooltipEffect.type}
+                    effect={tooltipEffect.effect}
+                    multiline={true}/>
 
-                          const newState = {
-                            timeoutRepeat: document.getElementById('timeoutRepeatMinutes').value,
-                          };
+                  <ReactTooltip id='appSwitchTooltip'
+                    place='bottom'
+                    type={tooltipEffect.type}
+                    effect={tooltipEffect.effect}
+                    multiline={true}/>
 
-                          ipcRenderer.send('save-app-settings', newState);
-                          this.setState({
-                            settings: Object.assign(this.state.settings, newState)
-                          });
-                        }}/> minutes
-                    </label>
-                  </div>
+                  <h3>Continually Learn With Suggestions</h3>
+                  <br />
+                  <i>Suggestions look like this:</i>
+                  <br />
+                  <br />
+                  <img src="../assets/bubble-window.png" style={{
+                    width: 'auto',
+                    height: 'auto',
+                  }}></img>
+                  <br />
 
-                  <div className="checkbox">
-                    <label>
-                      {this.state.settings.hideBubbleWindow ? (
-                        <input id="appSwitchCheckbox" type="checkbox" defaultChecked onChange={e => {
+                    {this.state && this.state.settings && this.state.settings.neverShowBubbleWindow ? (
+                      <div style={{
+                        padding: '25px',
+                        textAlign: 'left',
+                      }}>
+                        <div className="checkbox">
+                          <label>
+                            <input id="alwaysHideCheckbox" type="checkbox" defaultChecked onChange={e => {
 
-                          console.log('inside appSwitchCheckbox');
-                          console.log(e.targetValue);
-                          console.log(e.currentTarget);
-                          console.log(e.target);
-                          const newState = {
-                            hideBubbleWindow: false,
-                          };
+                              console.log('inside alwaysHideCheckbox');
+                              console.log(e.targetValue);
+                              console.log(e.currentTarget);
+                              console.log(e.target);
+                              const newState = {
+                                neverShowBubbleWindow: false,
+                              };
 
-                          ipcRenderer.send('save-app-settings', newState);
-                          this.setState({
-                            settings: Object.assign(this.state.settings, newState)
-                          });
-                        }}/>
-                      ) : (
-                        <input id="appSwitchCheckbox" type="checkbox" onChange={e => {
+                              ipcRenderer.send('save-app-settings', newState);
+                              this.setState({
+                                settings: Object.assign(this.state.settings, newState)
+                              });
+                            }}/> Never show random shortcuts <span className="icon icon-help-circled" data-for='neverShowTooltip' data-iscapture="true" 
+                            data-tip='Completely hide this suggestion window and never show it.'></span>
+                          </label> 
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{
+                        padding: '25px',
+                        textAlign: 'left',
+                      }}>
+                        <div className="checkbox">
+                          <label>
+                            <input id="alwaysHideCheckbox" type="checkbox" onChange={e => {
 
-                          console.log('inside appSwitchCheckbox');
-                          
-                          console.log(e.targetValue);
-                          console.log(e.currentTarget);
-                          console.log(e.target);
+                              console.log('inside alwaysHideCheckbox');
+                              
+                              console.log(e.targetValue);
+                              console.log(e.currentTarget);
+                              console.log(e.target);
 
-                          const newState = {
-                            hideBubbleWindow: true,
-                          };
+                              const newState = {
+                                neverShowBubbleWindow: true,
+                              };
 
-                          ipcRenderer.send('save-app-settings', newState);
-                          this.setState({
-                            settings: Object.assign(this.state.settings, newState)
-                          });
-                        }}/>
-                      )}
-                      Never show random shortcuts
-                    </label>
-                  </div>
+                              ipcRenderer.send('save-app-settings', newState);
+                              this.setState({
+                                settings: Object.assign(this.state.settings, newState)
+                              });
+                            }}/> Never show random shortcuts <span className="icon icon-help-circled" data-for='neverShowTooltip' data-iscapture="true" 
+                            data-tip='Completely hide this suggestion window and never show it.'></span>
+                          </label>
+                        </div>
+                        <div className="checkbox">
+                          <label>
+                            {this.state && this.state.settings && this.state.settings.showOnAppSwitch ? (
 
-                  <div style={{
-                      padding: '15px',
-                  }}>
-                    <button id="reload-button" className="btn btn-negative" onClick={() => {
-                      console.log('sending reloadShortcuts from ipcRenderer');
-                      ipcRenderer.send('main-parse-shortcuts', this.state.currentProgramName);
-                    }}>Re-parse {this.state.currentProgramName}</button>
-                  </div>
+                              <input id="appSwitchCheckbox" type="checkbox" defaultChecked onChange={e => {
+
+                                console.log('inside appSwitchCheckbox');
+                                console.log(e.targetValue);
+                                console.log(e.currentTarget);
+                                console.log(e.target);
+                                const newState = {
+                                  showOnAppSwitch: false,
+                                };
+
+                                ipcRenderer.send('save-app-settings', newState);
+                                this.setState({
+                                  settings: Object.assign(this.state.settings, newState)
+                                });
+                              }}/>
+                            ) : (
+                              <input id="appSwitchCheckbox" type="checkbox" onChange={e => {
+                                console.log('inside appSwitchCheckbox');
+                                console.log(e.targetValue);
+                                console.log(e.currentTarget);
+                                console.log(e.target);
+
+                                const newState = {
+                                  showOnAppSwitch: true,
+                                };
+
+                                ipcRenderer.send('save-app-settings', newState);
+                                this.setState({
+                                  settings: Object.assign(this.state.settings, newState)
+                                });
+                              }}/>
+
+                            )}
+                            Show when app switches <span className="icon icon-help-circled" data-for='appSwitchTooltip' data-iscapture="true" 
+                              data-tip='Each time you change the active program, the suggestion window will show.'></span>
+                          </label>
+                        </div>
+
+                        <div className="checkbox">
+                          <label>
+                            {this.state.settings.timeoutRepeat ? (
+                              <input id="timeoutRepeatCheckbox" type="checkbox" onChange={e => {
+                                console.log('inside uncheckd timeoutRepeatCheckbox');
+                                console.log(e);
+                                
+                                const val = document.getElementById('timeoutRepeatMinutes').value;
+                                const newState = {
+                                  timeoutRepeat: val ? Number(val) : false, // convert to number or zero
+                                };
+
+                                ipcRenderer.send('save-app-settings', newState);
+                                this.setState({
+                                  settings: Object.assign(this.state.settings, newState)
+                                });
+                              }}/>
+                            ) : (
+                              <input id="timeoutRepeatCheckbox" type="checkbox" defaultChecked onChange={e => {
+                                console.log('inside checked timeoutRepeatCheckbox ');
+                                console.log(e);
+                                const newState = {
+                                  timeoutRepeat: false,
+                                };
+
+                                ipcRenderer.send('save-app-settings', newState);
+                                this.setState({
+                                  settings: Object.assign(this.state.settings, newState)
+                                });
+                              }}/>
+                            )} 
+                            Repeat <input id="timeoutRepeatMinutes" type="number" style={{
+                              width: '20px',
+                            }} placeholder={this.state.settings.timeoutRepeat ? this.state.settings.timeoutRepeat : "?"} onChange={e => {
+                                console.log('inside this.state.timeoutRepeat');
+                                
+                                console.log(e.targetValue);
+                                console.log(e.currentTarget);
+                                console.log(e.target);
+
+                                const val = document.getElementById('timeoutRepeatMinutes').value;
+                                const newState = {
+                                  timeoutRepeat: val ? Number(val) : false, // convert to number or zero
+                                };
+
+                                ipcRenderer.send('save-app-settings', newState);
+                                this.setState({
+                                  settings: Object.assign(this.state.settings, newState)
+                                });
+                              }}/> <span className="icon icon-help-circled" data-for='timeoutRepeatTooltip' data-iscapture="true" data-tip="How often to show this window"></span>
+                          </label>
+                        </div>
+                      </div>
+                    )}
+
+                  <button id="reload-button" className="btn btn-negative" onClick={() => {
+                    console.log('sending reloadShortcuts from ipcRenderer');
+                    ipcRenderer.send('main-parse-shortcuts', this.state.currentProgramName);
+                  }}>Re-parse {this.state.currentProgramName}</button> <span className="icon icon-help-circled" data-for='neverShowTooltip' data-iscapture="true" 
+                    data-tip={`Delete the shortcuts from ${this.state.currentProgramName} and parse them again.`}></span>
                 </div>
               )}
             </div>
