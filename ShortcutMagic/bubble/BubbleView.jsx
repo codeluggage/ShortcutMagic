@@ -455,7 +455,6 @@ export default class BubbleView extends Component {
               alignContent: 'stretch',
               textAlign: 'center',
               marginBottom: '4px',
-              marginBottom: '4px',
               fontSize: 16,
               // fontWeight: 500,
               fontWeight: 600,

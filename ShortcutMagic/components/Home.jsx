@@ -54,7 +54,7 @@ export default class Home extends Component {
       this.updateItems(currentProgramName);
     });
     ipcRenderer.on('set-programs', (event, programs, currentProgramName) => {
-      console.log('set-programs: ', programs.length, currentProgramName);
+      console.log('set-programs: ', programs, currentProgramName);
       let programDict = {};
       programs.forEach(s => programDict[s.name] = s);
       this.updateItems(currentProgramName, programDict);
@@ -81,12 +81,12 @@ export default class Home extends Component {
       settingsPaneActive: false,
     };
 
-    let program = programs ? programs[currentProgramName] : null;
-
     if (programs) {
       newState.programs = programs;
       newState.settings = programs[GLOBAL_SETTINGS_KEY];
     }
+
+    let program = programs ? programs[currentProgramName] : null;
 
     if (!program) {
       if (this.state && this.state.programs) {
@@ -279,12 +279,17 @@ export default class Home extends Component {
       shortcutTableBody = (
         <tbody style={{
           textAlign: 'center',
-          fontSize: 18,
+          fontSize: 20,
           fontWeight: 600,
         }}>
           <tr className="file_arq">
+            <td></td>
             <td>
-              Click a program to the left to see its shortcuts.
+              <p style={{marginLeft: '60px'}}>
+                ShortcutMagic is running.
+                <br />
+                Switch programs to load shortcuts.
+              </p>
             </td>
           </tr>
         </tbody>
@@ -295,11 +300,18 @@ export default class Home extends Component {
           {this.state.items.map((value) => {
             return (
               <tr className="file_arq" key={value.name + value.menuName}>
-                <td className="btn btn-mini" onClick={(e) => {
-                  console.log("clicked execute-list-item with ", value);
-                  ipcRenderer.send('execute-list-item', value);
-                }}>Run</td>
-                <td>{value.name}</td>
+
+                <td style={{
+                }}>
+                  <button className="btn btn-primary" style={{
+                    padding: '2px 4px',
+                  }} onClick={(e) => {
+                    console.log("clicked execute-list-item with ", value);
+                    ipcRenderer.send('execute-list-item', value);
+                  }}>
+                    {value.name}
+                  </button> 
+                </td>
                 <td>
                   {
                     // Always show ⌘ if there are no mods or glyphs
@@ -434,6 +446,7 @@ export default class Home extends Component {
                 <button className="btn btn-default" type="button" onClick={e => {
                   this.setState({
                     settingsPaneActive: !(this.state && this.state.settingsPaneActive),
+                    settings: this.state && this.state.programs && this.state.programs[GLOBAL_SETTINGS_KEY] ? this.state.programs[GLOBAL_SETTINGS_KEY] : {},
                   });
                 }}>
                   <span className="icon icon-cog" style={{
@@ -442,27 +455,12 @@ export default class Home extends Component {
                 </button>
               </div>
             </header>
-              {programTitles ? programTitles : "Loading..."}
+              {programTitles ? programTitles : ""}
             </div>
             <div className="pane" style={{
               textAlign: 'center',
             }}>
-              {!this.state || !this.state.settingsPaneActive || !this.state.settings ? (
-                <table className="table-striped">
-                  <thead>
-                    <tr>
-                      <th>Run</th>
-                      <th>Name</th>
-                      <th>Shortcut</th>
-                      <th>Menu</th>
-                      <th>Up</th>
-                      <th>Down</th>
-                      <th>Rating</th>
-                    </tr>
-                  </thead>
-                  {shortcutTableBody}
-                </table>
-              ) : (
+              {this.state && this.state.settingsPaneActive ? (
                 <div>
 
                   <ReactTooltip id='neverShowTooltip'
@@ -598,7 +596,7 @@ export default class Home extends Component {
                                 
                                 const val = document.getElementById('timeoutRepeatMinutes').value;
                                 const newState = {
-                                  timeoutRepeat: val ? Number(val) : false, // convert to number or zero
+                                  timeoutRepeat: val ? Number(val) : false,
                                 };
 
                                 ipcRenderer.send('save-app-settings', newState);
@@ -622,7 +620,7 @@ export default class Home extends Component {
                             )} 
                             Repeat <input id="timeoutRepeatMinutes" type="number" style={{
                               width: '20px',
-                            }} placeholder={this.state.settings.timeoutRepeat ? this.state.settings.timeoutRepeat : "?"} onChange={e => {
+                            }} placeholder={this.state.settings.timeoutRepeat ? this.state.settings.timeoutRepeat : "0"} onChange={e => {
                                 console.log('inside this.state.timeoutRepeat');
                                 
                                 console.log(e.targetValue);
@@ -631,7 +629,7 @@ export default class Home extends Component {
 
                                 const val = document.getElementById('timeoutRepeatMinutes').value;
                                 const newState = {
-                                  timeoutRepeat: val ? Number(val) : false, // convert to number or zero
+                                  timeoutRepeat: val ? Number(val) : false,
                                 };
 
                                 ipcRenderer.send('save-app-settings', newState);
@@ -643,13 +641,26 @@ export default class Home extends Component {
                         </div>
                       </div>
                     )}
-
                   <button id="reload-button" className="btn btn-negative" onClick={() => {
                     console.log('sending reloadShortcuts from ipcRenderer');
                     ipcRenderer.send('main-parse-shortcuts', this.state.currentProgramName);
                   }}>Re-parse {this.state.currentProgramName}</button> <span className="icon icon-help-circled" data-for='neverShowTooltip' data-iscapture="true" 
                     data-tip={`Delete the shortcuts from ${this.state.currentProgramName} and parse them again.`}></span>
                 </div>
+              ) : (
+                <table className="table-striped">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Shortcut</th>
+                      <th>Menu</th>
+                      <th>Up</th>
+                      <th>Down</th>
+                      <th>Rating</th>
+                    </tr>
+                  </thead>
+                  {shortcutTableBody}
+                </table>
               )}
             </div>
           </div>

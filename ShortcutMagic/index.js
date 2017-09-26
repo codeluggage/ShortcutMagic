@@ -38,7 +38,7 @@ const GLOBAL_SETTINGS_KEY = "all programs";
 // controls the tray of the application
 let trayObject;
 // First batch of loaded shortcuts for browserwindows to immediately use
-let firstPrograms;
+let firstPrograms = [];
 // Show bubblewindow at intervals
 let bubbleWindowTimeout;
 
@@ -58,8 +58,9 @@ let settingsWindow,
 
 // a hacky bad construct holding the shortcuts from the db in memory
 // TODO: merge into a class that encapsulates the db and functionality, and caches things in memory without checking this array everywhere :|
-let inMemoryShortcuts = [];
+let inMemoryShortcuts = {};
 inMemoryShortcuts[GLOBAL_SETTINGS_KEY] = {
+	name: GLOBAL_SETTINGS_KEY,
 	showOnAppSwitch: true,
 	neverShowBubbleWindow: false,
 };
@@ -501,10 +502,18 @@ function createWindows() {
 			if (err) {
 				log.info('errored during db find: ', err);
 			} else {
-				if (!res || !res.length) {
+				if (!res) {
 					log.info('errored during db find: ', err);
 				} else {
 					firstPrograms = res;
+				}
+
+				console.log(firstPrograms);
+				console.log(inMemoryShortcuts);
+
+				if (!firstPrograms.find(p => p.name == GLOBAL_SETTINGS_KEY)) {
+					console.log('inside if check ');
+					firstPrograms.push(inMemoryShortcuts[GLOBAL_SETTINGS_KEY]);
 				}
 			}
 
@@ -984,7 +993,8 @@ function loadWithPeriods(forceReload) {
 
 				currentShortcuts = res[0];
 				if (!currentShortcuts) {
-					log.info('ERROR bad data - loaded currentShortcuts but did not exist!');
+					log.info('No data - parsing instead');
+					parseOrWait();
 					return;
 				} else if (!currentShortcuts.bounds || deepEqual(currentShortcuts.bounds, hiddenBounds)) {
 					log.info('ERROR bad data - loaded currentShortcuts but no bounds found! resetting to default');
@@ -1233,6 +1243,7 @@ function mainParseShortcutsCallback(payload) {
 
 	if (payload) {
 		saveWithoutPeriods(payload);
+		mainWindow.webContents.send('set-current-program-name', payload.name);
 	} else {
 		appSwitched(null, currentAppName);
 	}
@@ -1364,11 +1375,11 @@ ipcMain.on('save-app-settings', (event, newSetting) => {
 	});
 });
 
-ipcMain.on('temporarily-update-app-settings', (event, newSetting) => {
-    inMemoryShortcuts[GLOBAL_SETTINGS_KEY]["boundsPerApp"] = newSetting["boundsPerApp"];
-    inMemoryShortcuts[GLOBAL_SETTINGS_KEY]["alwaysOnTop"] = newSetting["alwaysOnTop"];
-    mainWindow.setAlwaysOnTop(newSetting["alwaysOnTop"]);
-});
+// ipcMain.on('temporarily-update-app-settings', (event, newSetting) => {
+//     inMemoryShortcuts[GLOBAL_SETTINGS_KEY]["boundsPerApp"] = newSetting["boundsPerApp"];
+//     inMemoryShortcuts[GLOBAL_SETTINGS_KEY]["alwaysOnTop"] = newSetting["alwaysOnTop"];
+//     mainWindow.setAlwaysOnTop(newSetting["alwaysOnTop"]);
+// });
 
 ipcMain.on('unfocus-shortcutmagic', (event) => {
     // TODO: Fix unfocusing window properly
