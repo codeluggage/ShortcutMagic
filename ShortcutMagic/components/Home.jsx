@@ -51,6 +51,7 @@ export default class Home extends Component {
         }
     });
     ipcRenderer.on('set-current-program-name', (event, currentProgramName) => {
+      window.document.getElementById("search-field").value = "";
       this.updateItems(currentProgramName);
     });
     ipcRenderer.on('set-programs', (event, programs, currentProgramName) => {
