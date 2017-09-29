@@ -206,7 +206,7 @@ export default class BubbleView extends Component {
       );
     }
 
-    let { fade, currentShortcut } = this.state;
+    let { fade, currentShortcut, currentProgramName } = this.state;
 
     // console.log('render ', this.state.mouseOver);
 
@@ -281,7 +281,7 @@ export default class BubbleView extends Component {
             flex: 2,
             borderLeft: `1px solid rgba(194, 192, 194, ${this.state.fade})`,
           }} onClick={() => {
-            ipcRenderer.send('execute-list-item', currentShortcut);
+            ipcRenderer.send('execute-list-item', currentShortcut, currentProgramName);
           }}>Run</div>
         </div>
 

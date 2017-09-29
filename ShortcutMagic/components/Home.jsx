@@ -304,11 +304,11 @@ export default class Home extends Component {
 
                 <td style={{
                 }}>
-                  <button className="btn btn-primary" style={{
+                  <button className="btn" style={{
                     padding: '2px 4px',
                   }} onClick={(e) => {
                     console.log("clicked execute-list-item with ", value);
-                    ipcRenderer.send('execute-list-item', value);
+                    ipcRenderer.send('execute-list-item', value, this.state.currentProgramName);
                   }}>
                     {value.name}
                   </button> 
@@ -591,24 +591,7 @@ export default class Home extends Component {
                         <div className="checkbox">
                           <label>
                             {this.state.settings.timeoutRepeat ? (
-                              <input id="timeoutRepeatCheckbox" type="checkbox" onChange={e => {
-                                console.log('inside uncheckd timeoutRepeatCheckbox');
-                                console.log(e);
-                                
-                                const val = document.getElementById('timeoutRepeatMinutes').value;
-                                const newState = {
-                                  timeoutRepeat: val ? Number(val) : false,
-                                };
-
-                                ipcRenderer.send('save-app-settings', newState);
-                                this.setState({
-                                  settings: Object.assign(this.state.settings, newState)
-                                });
-                              }}/>
-                            ) : (
                               <input id="timeoutRepeatCheckbox" type="checkbox" defaultChecked onChange={e => {
-                                console.log('inside checked timeoutRepeatCheckbox ');
-                                console.log(e);
                                 const newState = {
                                   timeoutRepeat: false,
                                 };
@@ -618,8 +601,20 @@ export default class Home extends Component {
                                   settings: Object.assign(this.state.settings, newState)
                                 });
                               }}/>
+                            ) : (
+                              <input id="timeoutRepeatCheckbox" type="checkbox" onChange={e => {
+                                const val = document.getElementById('timeoutRepeatMinutes').value;
+                                const newState = {
+                                  timeoutRepeat: val && val != "?" ? Number(val) : false,
+                                };
+
+                                ipcRenderer.send('save-app-settings', newState);
+                                this.setState({
+                                  settings: Object.assign(this.state.settings, newState)
+                                });
+                              }}/>
                             )} 
-                            Repeat <input id="timeoutRepeatMinutes" type="number" style={{
+                            Show on repeat <input id="timeoutRepeatMinutes" type="number" style={{
                               width: '20px',
                             }} placeholder={this.state.settings.timeoutRepeat ? this.state.settings.timeoutRepeat : "0"} onChange={e => {
                                 console.log('inside this.state.timeoutRepeat');

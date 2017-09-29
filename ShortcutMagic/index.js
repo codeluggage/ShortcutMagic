@@ -1291,7 +1291,7 @@ ipcMain.on('update-shortcut-item', (event, shortcutItem) => {
 	});
 });
 
-ipcMain.on('execute-list-item', (event, listItem) => {
+ipcMain.on('execute-list-item', (event, listItem, targetProgramName) => {
 	if (!listItem) {
 		// how did we end up here??
 		log.info("tried to execute non existent stuff");
@@ -1310,10 +1310,10 @@ ipcMain.on('execute-list-item', (event, listItem) => {
 	// not be possible to execute that as a key combo.
 	if (listItem.char || listItem.glyph) {
 		// Found shortcuts, execute
-		backgroundTaskRunnerWindow.webContents.send('webview-execute-shortcut', currentAppName, listItem);
+		backgroundTaskRunnerWindow.webContents.send('webview-execute-shortcut', targetProgramName, listItem);
 	} else {
 		// Did not find shortcuts, still attempt to execute the menu item by clicking it with applescript
-		backgroundTaskRunnerWindow.webContents.send('webview-execute-menu-item', currentAppName, listItemName, menu);
+		backgroundTaskRunnerWindow.webContents.send('webview-execute-menu-item', targetProgramName, listItemName, menu);
 	}
 });
 
