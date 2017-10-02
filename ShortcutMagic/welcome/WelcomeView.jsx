@@ -8,20 +8,6 @@ export default class WelcomeView extends Component {
     this.setState({
       accessGranted: false
     });
-
-    // window.document.documentElement.style.backgroundColor = '#3a9ad9';
-
-    ipcRenderer.on('set-background-color', (event, backgroundColor) => {
-      window.document.documentElement.style.backgroundColor = backgroundColor;
-    });
-
-    ipcRenderer.on('set-div-color', (event, backgroundColor) => {
-      this.setState({
-        backgroundColor: backgroundColor
-      });
-
-      window.document.documentElement.style.backgroundColor = backgroundColor;
-    });
   }
 
   render() {
