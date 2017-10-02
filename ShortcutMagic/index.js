@@ -406,12 +406,60 @@ function createSettingsWindow() {
 	log.info("after loading url");
 }
 
+function saveSuccessfulPermissions() {
+  getDb().update({
+    name: GLOBAL_SETTINGS_KEY
+	}, {
+		$set: {
+			permission: true,
+		}
+	}, {
+		upsert: true
+	}, (err, res) => {
+		if (err) {
+			log.info("could not save permissions to disk", err);
+		} else {
+			log.info("successfully saved permissions: ", res);
+		}
+	});
+}
+
 function permissionCheck(cb) {
+	const holdDb = getDb();
+	if (!holdDb || !holdDb.find) {
+		cb(false);
+	} else {
+		holdDb.find({
+			name: GLOBAL_SETTINGS_KEY,
+		}, function(err, res) {
+			if (err) {
+				log.info(`error searching for ${GLOBAL_SETTINGS_KEY}: `, err);
+			}
+
+			if (res.length > 0) {
+				cb(res[0].permission);
+				return;
+			}
+
+			cb(false);
+		});
+	}
+}
+
+function permissionAttempt(cb) {
+	const saveAndCb = (res) => {
+		if (res) {
+			saveSuccessfulPermissions();
+		}
+
+		cb(res);
+	};
+
 	const identifier = "com.electron.shortcutmagic-mac";
 
 	// if (process.env.NODE_ENV === "development") {
 	// 	console.log('>>>>>>>>>>>>>>>>> IGNORING PERMISSIONS <<<<<<<<<<<<<<<<<<<<');
-	// 	cb(true);
+	// 	saveAndCb(true);
 	// }
 
 	sudoer.spawn(`tccutil --enable ${identifier}`, [], {}).then((tccutilResult) => {
@@ -444,7 +492,7 @@ function permissionCheck(cb) {
 				if (installBrewErr) {
 					log.info('installBrewErr', installBrewErr);
 					log.info('installing brew failed, returning false for permissions');
-					cb(false);
+					saveAndCb(false);
 				}
 			}
 
@@ -453,35 +501,35 @@ function permissionCheck(cb) {
 				const tccutilResult2Err = tccutilResult2.stderr.toString();
 				if (tccutilResult2Err) {
 					log.info('installing tccutil failed, returning false for permissions', tccutilResult2Err);
-					cb(false);
+					saveAndCb(false);
 				}
 
 				log.info('permissions success!');
-				cb(true);
+				saveAndCb(true);
 			});
 		} else {
 			log.info("tccutil installed");
-			cb(true);
+			saveAndCb(true);
 			// sudoer.spawn(`tccutil --list | grep ${identifier}`, [], {}).then((tccutilListResult) => {
 			// 	log.info(tccutilListResult.stdout.toString());
 
 			// 	if (tccutilListResult.stderr.toString()) {
 			// 		log.info("error running sudo tccutil --list", tccutilListResult.stderr.toString());
-			// 		cb(false);
+			// 		saveAndCb(false);
 			// 	}
 
 			// 	if (tccutilListResult.stdout.toString() == "") {
 			// 		log.info('empty grep, failed permissions');
-			// 		cb(false);
+			// 		saveAndCb(false);
 			// 	}
 
 			// 	if (tccutilListResult.stdout.toString() != identifier) {
 			// 		log.info(`result is not equal to ${identifier}`);
-			// 		cb(false);
+			// 		saveAndCb(false);
 			// 	}
 
 			// 	log.info('permissions success!');
-			// 	cb(true);
+			// 	saveAndCb(true);
 			// });
 		}
 	});
@@ -530,19 +578,22 @@ function createWindows() {
 		});
   };
 
-	// TODO: keep the permissions simple for now but improve in the future
-	if (process.env.NODE_ENV === "development") {
-		create();
-	} else {
-		permissionCheck((success) => {
-			if (!success && reallyQuit) {
-				return;
-			}
-
-			reallyQuit = false;
+	// TODO: reduce this to only 1 permissionCheck and permissionAttempt and
+	// don't keep all the logic in createWindows()
+	permissionCheck((res) => {
+		if (res) {
 			create();
-		});
-	}
+		} else {
+			permissionAttempt((success) => {
+				if (!success && reallyQuit) {
+					return;
+				}
+
+				reallyQuit = false;
+				create();
+			});
+		}
+	});
 
    //  if (!localShortcutsCreated) {
    //  	localShortcutsCreated = true;
@@ -1117,9 +1168,9 @@ app.on('ready', () => {
 	// createWindows();
 	// loadWithPeriods(backgroundTaskRunnerWindow.webContents.send('read-last-app-name'));
     createTray();
-    createWelcomeWindow();
     createLearnWindow();
-    // createMainWindow();
+    console.log('starting permission attempt.............................................................');
+    permissionCheck((res) => res ? createWindows() : createWelcomeWindow());
 });
 
 app.on('before-quit', (event) => {
