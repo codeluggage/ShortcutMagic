@@ -65,9 +65,7 @@ inMemoryShortcuts[GLOBAL_SETTINGS_KEY] = {
 	neverShowBubbleWindow: false,
 };
 // const weirdErrorPos = { x: 89, y: 23, width: 0, height: 0 };
-// hackyStopSavePos needs to be replaced with a better system. right now it just stops the size and position of the application
-// from being saved. this is typically set when we are loading a position or moving between window modes
-let hackyStopSavePos = false;
+
 
 let db;
 let isQuitting = false; // TODO: find a better way to do this
@@ -80,7 +78,7 @@ let firstLoad = false;
 
 log.transports.console.level = 'info';
 log.transports.file.level = 'info';
-// TODO: Re-enable auto updates
+// TODO: re-enable logging for autoUpdater when update functionality is back 
 // autoUpdater.logger = log;
 // autoUpdater.logger.transports.file.level = 'info';
 log.info('App starting...');
@@ -88,7 +86,7 @@ log.info('App starting...');
 app.setName("ShortcutMagic");
 
 // Start up a survey window after app has been running for a long time
-setTimeout(function() { if (!surveyWindow) createSurveyWindow()}, 600000);
+setTimeout(function() { if (!surveyWindow || !surveyWindow.isVisible()) createSurveyWindow()}, 30000);
 
 	// TODO: Properly implement auto update releases
 // autoUpdater.on('checking-for-update', () => {
@@ -116,10 +114,6 @@ setTimeout(function() { if (!surveyWindow) createSurveyWindow()}, 600000);
 //     }, 2000)
 // });
 
-
-// TODO: Fix preference crash when building release version
-// these prefs let us determine if the menu bar is dark or light
-// const osxPrefs = require('electron-osx-appearance');
 
 // Functions
 // =========
@@ -160,29 +154,12 @@ function getDb() {
 		    });
 
 		    getDb().remove({
-		      name: "mysms"
-		    });
-
-		    getDb().remove({
-		      name: "Battle.net Launcher"
-		    });
-
-		    getDb().remove({
-		      name: "1Password mini"
-		    });
-
-		    getDb().remove({
 		      name: "Mullvad"
 		    });
 
 		    getDb().remove({
 		      name: "Evernote Helper"
 		    });
-
-		    getDb().remove({
-		      name: "System Preferences"
-		    });
-
 		  }
 
 	  	return db;
@@ -207,7 +184,7 @@ function getBubbleWindowBounds() {
   };
 }
 
-// TODO: Use promise instead of this callback hell: 
+// TODO: Convert callbacks to promises with new await keyword
 function getShortcuts(cb) {
 	if (inMemoryShortcuts[currentAppName]) {
 		cb(inMemoryShortcuts[currentAppName]);
@@ -262,12 +239,13 @@ function showShortcutWindows() {
 function quitShortcutMagic() {
     // loop over browserwindows and destroy + null all?
 
-    // settingsWindow = null; // TODO: double check that the settings window isn't destroyed elsewhere
-    // miniSettingsWindow = null;
     backgroundTaskRunnerWindow = null;
     mainWindow = null;
     welcomeWindow = null;
     bubbleWindow = null;
+    // TODO: Re-enable when these windows are in use again
+    // settingsWindow = null;
+    // miniSettingsWindow = null;
     // gifRecorderWindow = null;
     // gifCommunityWindow = null;
 
@@ -310,58 +288,12 @@ function createBubbleWindow() {
   });
 
   bubbleWindow.on('ready-to-show', (e) => {
-  	// console.log('>>> bubbleWindow ready-to-show');
-  	// console.log(firstPrograms);
-
   	bubbleWindow.webContents.send('set-programs', firstPrograms, currentAppName);
   	bubbleWindow.show();
   })
 
 	var bubblePath = `file://${__dirname}/bubble/index.html`;
 	bubbleWindow.loadURL(bubblePath);
-
-	// bubbleWindow.on('ready-to-show', (e) => {
-	// 	// TODO>>>>>>>>>>>>>>>  check settings here;
-	// 	// 1 - always show when programs are switching
-	// 	// 2 - only show when X minutes has passed
-	// 	// 3 - show after switching programs X times
-	// 	// 4 - never show anything (disable bubblewindow)
-	// 	// extra:
-	// 	// - always show
-	// 	// - unique settings per window? 
-
-		
-
-	// 	bubbleWindow.webContents.send('');
-	// });
-
-
-	// TODO: Make the bubble window prettier
-
-    //   if (type == "appearance-based") {
-    //     vibrancyType = NSVisualEffectMaterialAppearanceBased;
-    //   } else if (type == "light") {
-    //     vibrancyType = NSVisualEffectMaterialLight;
-    //   } else if (type == "dark") {
-    //     vibrancyType = NSVisualEffectMaterialDark;
-    //   } else if (type == "titlebar") {
-    //     vibrancyType = NSVisualEffectMaterialTitlebar;
-    //   }
-    //
-    //   if (base::mac::IsOSYosemiteOrLater()) 
-    //     if (type == "selection") {
-    //       vibrancyType = NSVisualEffectMaterialSelection;
-    //     } else if (type == "menu") {
-    //       vibrancyType = NSVisualEffectMaterialMenu;
-    //     } else if (type == "popover") {
-    //       vibrancyType = NSVisualEffectMaterialPopover;
-    //     } else if (type == "sidebar") {
-    //       vibrancyType = NSVisualEffectMaterialSidebar;
-    //     } else if (type == "medium-light") {
-    //       vibrancyType = NSVisualEffectMaterialMediumLight;
-    //     } else if (type == "ultra-dark") 
-    //       vibrancyType = NSVisualEffectMaterialUltraDark;
-
 }
 
 function createMiniSettingsWindow() {
@@ -566,6 +498,7 @@ function createWindows() {
 			}
 
 
+			// TODO: Re-enable old windows here again
 			createBackgroundTaskRunnerWindow();
 			createBackgroundListenerWindow();
 			// createSettingsWindow();
@@ -595,6 +528,7 @@ function createWindows() {
 		}
 	});
 
+	// TODO: Re-enable shortcuts for main window... somehow. 
    //  if (!localShortcutsCreated) {
    //  	localShortcutsCreated = true;
 	  //   electronLocalshortcut.register(mainWindow, 'Cmd+1', () => {
@@ -631,33 +565,33 @@ function createGifCommunityWindow() {
 		return;
 	}
 
-    gifCommunityWindow = new BrowserWindow({
-        name: "gifCommunityWindow",
-        show: false,
-        frame: true,
-        x: 334, y: 153, width: 900, height: 600,
-        nodeIntegration: false,
-    });
+	gifCommunityWindow = new BrowserWindow({
+		name: "gifCommunityWindow",
+		show: false,
+		frame: true,
+		x: 334, y: 153, width: 900, height: 600,
+		nodeIntegration: false,
+	});
 
-    gifCommunityWindow.loadURL('https://shortcutmagic.meteorapp.com');
+	gifCommunityWindow.loadURL('https://shortcutmagic.meteorapp.com');
 }
 
 function createGifRecorderWindow() {
-		if (gifRecorderWindow) {
-			log.info('gifRecorderWindow already existed, exiting');
-			return;
-		}
+	if (gifRecorderWindow) {
+		log.info('gifRecorderWindow already existed, exiting');
+		return;
+	}
 
-    gifRecorderWindow = new BrowserWindow({
+	gifRecorderWindow = new BrowserWindow({
 		name: "gifRecorderWindow",
-        show: false,
-        frame: false,
-        acceptFirstClick: true,
-        alwaysOnTop: true,
-        x: 750, y: 153, width: 400, height: 400,
-    });
+		show: false,
+		frame: false,
+		acceptFirstClick: true,
+		alwaysOnTop: true,
+		x: 750, y: 153, width: 400, height: 400,
+	});
 
-    gifRecorderWindow.loadURL(`file://${__dirname}/gifRecorder/gifRecorder.html`);
+	gifRecorderWindow.loadURL(`file://${__dirname}/gifRecorder/gifRecorder.html`);
 }
 
 function createTooltipWindow() {
@@ -666,16 +600,16 @@ function createTooltipWindow() {
 		return;
 	}
 
-    tooltipWindow = new BrowserWindow({
+	tooltipWindow = new BrowserWindow({
 		name: "tooltipWindow",
-        show: false,
-        frame: false,
-        alwaysOnTop: true,
-        x: 334, y: 153, width: 826, height: 568,
-    });
+		show: false,
+		frame: false,
+		alwaysOnTop: true,
+		x: 334, y: 153, width: 826, height: 568,
+	});
 
 
-    tooltipWindow.loadURL(`file://${__dirname}/tooltip/tooltip.html`);
+	tooltipWindow.loadURL(`file://${__dirname}/tooltip/tooltip.html`);
 }
 
 function createMainWindow() {
@@ -713,47 +647,47 @@ function createMainWindow() {
 }
 
 function debugEverything() {
-    if (mainWindow) {
-        // mainWindow.show();
-        mainWindow.openDevTools();
-    } else {
-        log.info("cant find mainwindow to show");
-    }
+	if (mainWindow) {
+    // mainWindow.show();
+		mainWindow.openDevTools();
+	} else {
+		log.info("cant find mainwindow to show");
+	}
 
-    if (settingsWindow) {
-        // settingsWindow.show();
-        settingsWindow.openDevTools();
-    } else {
-        log.info("cant find settingswindow to show");
-    }
+	if (settingsWindow) {
+    // settingsWindow.show();
+		settingsWindow.openDevTools();
+	} else {
+		log.info("cant find settingswindow to show");
+	}
 
-    if (backgroundTaskRunnerWindow) {
+	if (backgroundTaskRunnerWindow) {
         // backgroundTaskRunnerWindow.show();
-        backgroundTaskRunnerWindow.openDevTools();
-    } else {
-        log.info("cant find backgroundTaskRunnerWindow to show");
-    }
+		backgroundTaskRunnerWindow.openDevTools();
+	} else {
+		log.info("cant find backgroundTaskRunnerWindow to show");
+	}
 
-    if (backgroundListenerWindow) {
+	if (backgroundListenerWindow) {
         // backgroundListenerWindow.show();
-        backgroundListenerWindow.openDevTools();
-    } else {
-        log.info("cant find backgroundListenerWindow to show");
-    }
+		backgroundListenerWindow.openDevTools();
+	} else {
+		log.info("cant find backgroundListenerWindow to show");
+	}
 
-    if (welcomeWindow) {
+	if (welcomeWindow) {
         // welcomeWindow.show();
-        welcomeWindow.openDevTools();
-    } else {
-        log.info("cant find welcomeWindow to show");
-    }
+		welcomeWindow.openDevTools();
+	} else {
+		log.info("cant find welcomeWindow to show");
+	}
 
-    if (miniSettingsWindow) {
-        // miniSettingsWindow.show();
-        miniSettingsWindow.openDevTools();
-    } else {
-        log.info("cant find miniSettingsWindow to show");
-    }
+	if (miniSettingsWindow) {
+    // miniSettingsWindow.show();
+		miniSettingsWindow.openDevTools();
+	} else {
+		log.info("cant find miniSettingsWindow to show");
+	}
 
 	if (tooltipWindow) {
 		// tooltipWindow.show();
@@ -781,8 +715,11 @@ function createTray() {
 		log.info('trayObject already existed, exiting');
 		return;
 	}
+
 	// TODO: read if menu is dark or not, load white/black hat icon as response:
+	// const osxPrefs = require('electron-osx-appearance');
 	// const iconPath = path.join(__dirname, osxPrefs.isDarkMode() ? 'assets/wizard-white.png' : 'wizard.png');
+
 	const iconPath = path.join(__dirname, 'assets/wizard_16x16.png');
 	trayObject = new Tray(iconPath);
 
@@ -808,8 +745,8 @@ function createTray() {
 			quitShortcutMagic();
 		}
 	}];
-	const trayMenu = Menu.buildFromTemplate(trayMenuTemplate);
-	trayObject.setContextMenu(trayMenu);
+
+	trayObject.setContextMenu(Menu.buildFromTemplate(trayMenuTemplate));
 
 	return trayObject;
 }
@@ -895,6 +832,13 @@ function createSurveyWindow() {
 		log.info('in surveyWindow closed');
 	});
 
+	surveyWindow.on('closed', (e) => {
+		if (!isQuitting) {
+			e.preventDefault();
+			surveyWindow.hide();
+		}
+	});
+
 	surveyWindow.on('ready', event => {
 		setTimeout(surveyWindow.show, 10000); // Let webview load on slow connections
 	});
@@ -920,7 +864,6 @@ function createLearnWindow() {
 
 	learnWindow.loadURL(`file://${__dirname}/learn/index.html`);
 
-	// TODO: prevent closing and just hide
 	learnWindow.on('closed', (e) => {
 		if (!isQuitting) {
 			e.preventDefault();
@@ -937,20 +880,7 @@ function saveWithoutPeriods(payload) {
 	let stringified = JSON.stringify(savePayload.shortcuts).replace(/\./g, 'u002e');
 	savePayload.shortcuts = JSON.parse(stringified);
 
-	console.log('=============================================');
-	console.log('=============================================');
-	console.log('=============================================');
-	console.log('=============================================');
-	console.log('saving saveWithoutPeriods');
 	console.log(payload);
-	console.log('=============================================');
-	console.log('=============================================');
-	console.log('=============================================');
-	console.log('=============================================');
-
-	// if (payload.shortcuts.length < 2) {
-		// throw new Error("NOT ENOUGH SHORTCUTS");
-	// }
 
 
 	getDb().update({
@@ -976,8 +906,6 @@ function saveWithoutPeriods(payload) {
 					return;
 				}
 
-				// console.log(' getdbfind SENDING >>>>>>>>>>> ');
-				// console.log(res);
 				mainWindow.webContents.send('set-programs', res, currentAppName);
 				bubbleWindow.webContents.send('set-programs', res, currentAppName);
 			});
@@ -1212,28 +1140,31 @@ ipcMain.on('main-app-switched-notification', appSwitched);
 
 function appSwitched(event, appName) {
 		const compare = appName.toLowerCase();
-		// TODO: Make this list editable somewhere to avoid people having problems?
-		// TODO: Convert to regex or match
-    if (compare === "shortcutmagic" ||
-        compare === "shortcutmagic-mac") {
-        mainWindow.show();
-        mainWindow.focus();
-        return;
-    }
 
-    if (compare === "electron" ||
-	    	compare === "screensaverengine" ||
-        compare === "loginwindow" ||
-        compare === "dock" ||
-        compare === "google software update..." ||
-        compare === "google software update" ||
-        compare === "dropbox finder integration" ||
-        compare === "kap" ||
-        compare === "securityagent" ||
-        compare === "airplayuiagent" ||
-        compare === "coreservicesuiagent" ||
-        compare === "evernote helper") {
+  if (compare === "screensaverengine" ||
+      compare === "loginwindow" ||
+      compare === "dock" ||
+      compare === "google software update..." ||
+      compare === "google software update" ||
+      compare === "dropbox finder integration" ||
+      compare === "kap" ||
+      compare === "securityagent" ||
+      compare === "airplayuiagent" ||
+      compare === "coreservicesuiagent" ||
+      compare === "mullvad" || 
+      compare === "evernote helper" ||
+      (compare === "electron" && process.env.NODE_ENV !== "development")) {
 		log.info("Not switching to this app: ", appName);
+		return;
+	}
+
+	// TODO: Make this list editable somewhere to avoid people having problems?
+	// TODO: Convert to regex or match
+	if ((compare === "shortcutmagic" && process.env.NODE_ENV !== "development") ||
+			(compare === "shortcutmagic-mac" && process.env.NODE_ENV !== "development") ||
+			(compare === "electron" && process.env.NODE_ENV === "development")) {
+		mainWindow.show();
+		mainWindow.focus();
 		return;
 	}
 
@@ -1246,8 +1177,6 @@ function appSwitched(event, appName) {
 		log.info("cannot switch app without main window");
 		return;
 	}
-
-	// log.info(`${currentAppName} -> ${appName}`);
 
 	currentAppName = appName;
 	loadWithPeriods();
