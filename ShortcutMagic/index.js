@@ -468,6 +468,8 @@ function permissionAttempt(cb) {
 }
 
 function createWindows() {
+	console.log('createWindows called with firstPrograms length: ', firstPrograms.length);
+
 	if (!global.folderPath) {
 		console.log('setting folderpath on global, was -> is');
 		console.log(global["folderPath"]);
@@ -488,15 +490,10 @@ function createWindows() {
 					firstPrograms = res;
 				}
 
-				console.log(firstPrograms);
-				console.log(inMemoryShortcuts);
-
 				if (!firstPrograms.find(p => p.name == GLOBAL_SETTINGS_KEY)) {
-					console.log('inside if check ');
 					firstPrograms.push(inMemoryShortcuts[GLOBAL_SETTINGS_KEY]);
 				}
 			}
-
 
 			// TODO: Re-enable old windows here again
 			createBackgroundTaskRunnerWindow();
@@ -1531,7 +1528,6 @@ ipcMain.on('toggle-gif-community', (event) => {
 
 ipcMain.on('create-windows', (event) => {
     createWindows();
-    mainWindow.show();
 });
 
 ipcMain.on('log', (event) => {

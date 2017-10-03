@@ -73,8 +73,12 @@ export default class Home extends Component {
   updateItems(currentProgramName, programs) {
     console.log(programs);
 
-    if (!currentProgramName || !currentProgramName.length) {
-      return;
+    if (!currentProgramName || currentProgramName == "") {
+      if (!this.state || !this.state.currentProgramName) {
+        return;
+      }
+
+      currentProgramName = this.state.currentProgramName;
     }
 
     let newState = {
@@ -91,7 +95,7 @@ export default class Home extends Component {
 
     if (!program) {
       if (this.state && this.state.programs) {
-        program = this.state.programs[currentProgramName ? currentProgramName : this.state.currentProgramName];
+        program = this.state.programs[currentProgramName];
         if (program) {
           let items = Object.values(program.shortcuts);
           items.sort((a, b) => {
@@ -246,7 +250,8 @@ export default class Home extends Component {
       window.document.getElementById("search-field").value = '';
     }
 
-    this.filterList(document.getElementById("search-field").value);
+    const searchField = document.getElementById("search-field");
+    this.filterList(searchField && searchField.value ? searchField.value : '');
   }
 
   focusSearchField(event, searchValue) {
@@ -276,26 +281,7 @@ export default class Home extends Component {
     let shortcutTableBody;
     let programTitles;
 
-    if (!this.state || !this.state.programs || !this.state.currentProgramName) {
-      shortcutTableBody = (
-        <tbody style={{
-          textAlign: 'center',
-          fontSize: 20,
-          fontWeight: 600,
-        }}>
-          <tr className="file_arq">
-            <td></td>
-            <td>
-              <p style={{marginLeft: '60px'}}>
-                ShortcutMagic is running.
-                <br />
-                Switch programs to load shortcuts.
-              </p>
-            </td>
-          </tr>
-        </tbody>
-      );
-    } else {
+    if (this.state && this.state.currentProgramName && this.state.items) {
       shortcutTableBody = (
         <tbody>
           {this.state.items.map((value) => {
@@ -363,14 +349,16 @@ export default class Home extends Component {
           })}
         </tbody>
       );
+    }
 
+    if (this.state && this.state.programs) {
       const titles = Object.keys(this.state.programs).map(name => {
         if (name === GLOBAL_SETTINGS_KEY) {
           return;
         }
 
         let navGroupClass = "nav-group-item"; 
-        if (name === this.state.currentProgramName) {
+        if (this.state.items && name === this.state.currentProgramName) {
           navGroupClass +=  " active";
         }
 
@@ -421,13 +409,7 @@ export default class Home extends Component {
         </div>
     );
 
-    console.log('about to render with settings: ');
-    if (this.state && this.state.settings) {
-      console.log(this.state.settings);
-    } else {
-      console.log('no state or settings...');
-    }
-
+    console.log('rendering...');
 
     return (
       <div className="window">
@@ -655,7 +637,7 @@ export default class Home extends Component {
                       <th>Rating</th>
                     </tr>
                   </thead>
-                  {shortcutTableBody}
+                  {shortcutTableBody ? shortcutTableBody : ""}
                 </table>
               )}
             </div>
