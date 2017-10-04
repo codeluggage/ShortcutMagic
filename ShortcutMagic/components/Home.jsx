@@ -61,10 +61,29 @@ export default class Home extends Component {
       this.updateItems(currentProgramName, programDict);
     });
     ipcRenderer.on('no-shortcuts-visual-notification', (event) => {
-        console.log("TODO: Show that the list item execution might not work");
+      console.log("TODO: Show that the list item execution might not work");
     });
     ipcRenderer.on('force-to-top', (event, shortcut) => {
-        this.focusSearchField(null, shortcut.name);
+      this.focusSearchField(null, shortcut.name);
+    });
+    ipcRenderer.on('permission-failure', (event) => {
+      this.setState({
+        error: (
+          <div style={{
+            textAlign: 'center',
+          }}>
+            <h2>Permission error.
+            <br />
+            Please quit ShortcutMagic and 
+            <br />
+            start again and approve permissions.</h2>
+            <br />
+            <img src="../assets/admin-access.png" height="236" width="380"></img>
+            <br />
+            <button className="btn btn-negative" onClick={() => ipcRenderer.send('quit')}>Quit ShortcutMagic</button>
+          </div>
+        )
+      });
     });
 
     // ipcRenderer.send('set-programs-async');
@@ -281,7 +300,9 @@ export default class Home extends Component {
     let shortcutTableBody;
     let programTitles;
 
-    if (this.state && this.state.currentProgramName && this.state.items) {
+    if (this.state && this.state.error) {
+      shortcutTableBody = this.state.error;
+    } else if (this.state && this.state.currentProgramName && this.state.items) {
       shortcutTableBody = (
         <tbody>
           {this.state.items.map((value) => {

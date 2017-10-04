@@ -39,6 +39,8 @@ const GLOBAL_SETTINGS_KEY = "all programs";
 let trayObject;
 // First batch of loaded shortcuts for browserwindows to immediately use
 let firstPrograms = [];
+// Measure how often we switch programs and try to parse new shortcuts, used to avoid looping endlessly when permissions are missing
+let parseTimes = [];
 // Show bubblewindow at intervals
 let bubbleWindowTimeout;
 
@@ -151,14 +153,6 @@ function getDb() {
 	    if (process.env.NODE_ENV === "development") {
 		    getDb().remove({
 		      name: "PomoDoneApp"
-		    });
-
-		    getDb().remove({
-		      name: "Mullvad"
-		    });
-
-		    getDb().remove({
-		      name: "Evernote Helper"
 		    });
 		  }
 
@@ -912,12 +906,26 @@ function saveWithoutPeriods(payload) {
 
 function parseOrWait() {
 	if (!loadingText) {
+		if (parseTimes.length > 5) {
+			const times = parseTimes.map(t => t.getTime());
+			let prev;
+			let deltas = times.map(t => { let ret = 0; if (prev) { ret = t - prev } prev = t; return ret }).sort().reverse();
+			if (deltas[0] + deltas[1] + deltas[2] < 500) {
+				//temp
+				console.log('>>>>>>>>>>>>>>>> repeating too often, bailing out');
+				mainWindow.webContents.send('permission-failure');
+				parseTimes = [];
+				return;
+			}
+		}
+
 		mainWindow.webContents.send('set-loading', currentAppName);
 		loadingText = "Learning...";
 		trayObject.setTitle(loadingText);
 
 		log.info('calling parseShortcuts with currentAppName', currentAppName);
 		parseShortcuts(currentAppName, mainParseShortcutsCallback);
+		parseTimes.push(new Date());
 	} else {
 		// TODO: Handle never ending shortcut parsing better
 		// Clear out eventually
@@ -1552,4 +1560,10 @@ ipcMain.on('hide-bubble-window', hideBubbleWindow);
 
 ipcMain.on('force-to-top', (e, shortcut) => {
 	mainWindow.webContents.send('force-to-top', shortcut);
+});
+
+ipcMain.on('quit', (e) => {
+	isQuitting = true;
+	app.quit();
+	quitShortcutMagic();
 });
