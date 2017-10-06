@@ -39,6 +39,8 @@ const GLOBAL_SETTINGS_KEY = "all programs";
 let trayObject;
 // First batch of loaded shortcuts for browserwindows to immediately use
 let firstPrograms = [];
+// Measure how often we switch programs and try to parse new shortcuts, used to avoid looping endlessly when permissions are missing
+let parseTimes = [];
 // Show bubblewindow at intervals
 let bubbleWindowTimeout;
 
@@ -152,14 +154,6 @@ function getDb() {
 		    getDb().remove({
 		      name: "PomoDoneApp"
 		    });
-
-		    getDb().remove({
-		      name: "Mullvad"
-		    });
-
-		    getDb().remove({
-		      name: "Evernote Helper"
-		    });
 		  }
 
 	  	return db;
@@ -270,7 +264,7 @@ function createBubbleWindow() {
 		alwaysOnTop: true,
 		acceptFirstClick: true,
 		transparent: true,
-		show: false,
+		show: true,
 		frame: false,
 		x: hiddenBounds.x, y: hiddenBounds.y, width: hiddenBounds.width, height: hiddenBounds.height,
     webPreferences: {
@@ -289,7 +283,7 @@ function createBubbleWindow() {
 
   bubbleWindow.on('ready-to-show', (e) => {
   	bubbleWindow.webContents.send('set-programs', firstPrograms, currentAppName);
-  	bubbleWindow.show();
+  	showBubbleWindow();
   })
 
 	var bubblePath = `file://${__dirname}/bubble/index.html`;
@@ -638,6 +632,7 @@ function createMainWindow() {
 
   mainWindow.on('ready-to-show', (e) => {
   	mainWindow.webContents.send('set-programs', firstPrograms, currentAppName);
+  	bubbleWindow.webContents.send('set-programs', firstPrograms, currentAppName);
   	app.dock.show();
   	mainWindow.show();
   });
@@ -912,12 +907,26 @@ function saveWithoutPeriods(payload) {
 
 function parseOrWait() {
 	if (!loadingText) {
+		if (parseTimes.length > 5) {
+			const times = parseTimes.map(t => t.getTime());
+			let prev;
+			let deltas = times.map(t => { let ret = 0; if (prev) { ret = t - prev } prev = t; return ret }).sort().reverse();
+			if (deltas[0] + deltas[1] + deltas[2] < 500) {
+				//temp
+				console.log('>>>>>>>>>>>>>>>> repeating too often, bailing out');
+				mainWindow.webContents.send('permission-failure');
+				parseTimes = [];
+				return;
+			}
+		}
+
 		mainWindow.webContents.send('set-loading', currentAppName);
 		loadingText = "Learning...";
 		trayObject.setTitle(loadingText);
 
 		log.info('calling parseShortcuts with currentAppName', currentAppName);
 		parseShortcuts(currentAppName, mainParseShortcutsCallback);
+		parseTimes.push(new Date());
 	} else {
 		// TODO: Handle never ending shortcut parsing better
 		// Clear out eventually
@@ -1022,8 +1031,8 @@ ipcMain.on('show-mini-settings', (e) => {
 
 // Remove mainWindow.on('closed'), as it is redundant
 
-app.on('activate-with-no-open-windows', function(){
-    mainWindow.show();
+app.on('activate-with-no-open-windows', function() {
+  mainWindow.show();
 });
 
 // // Events
@@ -1160,6 +1169,7 @@ function appSwitched(event, appName) {
 	if ((compare === "shortcutmagic" && process.env.NODE_ENV !== "development") ||
 			(compare === "shortcutmagic-mac" && process.env.NODE_ENV !== "development") ||
 			(compare === "electron" && process.env.NODE_ENV === "development")) {
+		
 		mainWindow.show();
 		mainWindow.focus();
 		return;
@@ -1552,4 +1562,10 @@ ipcMain.on('hide-bubble-window', hideBubbleWindow);
 
 ipcMain.on('force-to-top', (e, shortcut) => {
 	mainWindow.webContents.send('force-to-top', shortcut);
+});
+
+ipcMain.on('quit', (e) => {
+	isQuitting = true;
+	app.quit();
+	quitShortcutMagic();
 });
