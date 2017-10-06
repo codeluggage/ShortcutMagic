@@ -264,7 +264,7 @@ function createBubbleWindow() {
 		alwaysOnTop: true,
 		acceptFirstClick: true,
 		transparent: true,
-		show: false,
+		show: true,
 		frame: false,
 		x: hiddenBounds.x, y: hiddenBounds.y, width: hiddenBounds.width, height: hiddenBounds.height,
     webPreferences: {
@@ -283,7 +283,7 @@ function createBubbleWindow() {
 
   bubbleWindow.on('ready-to-show', (e) => {
   	bubbleWindow.webContents.send('set-programs', firstPrograms, currentAppName);
-  	bubbleWindow.show();
+  	showBubbleWindow();
   })
 
 	var bubblePath = `file://${__dirname}/bubble/index.html`;
@@ -632,6 +632,7 @@ function createMainWindow() {
 
   mainWindow.on('ready-to-show', (e) => {
   	mainWindow.webContents.send('set-programs', firstPrograms, currentAppName);
+  	bubbleWindow.webContents.send('set-programs', firstPrograms, currentAppName);
   	app.dock.show();
   	mainWindow.show();
   });
@@ -1030,8 +1031,8 @@ ipcMain.on('show-mini-settings', (e) => {
 
 // Remove mainWindow.on('closed'), as it is redundant
 
-app.on('activate-with-no-open-windows', function(){
-    mainWindow.show();
+app.on('activate-with-no-open-windows', function() {
+  mainWindow.show();
 });
 
 // // Events
@@ -1168,6 +1169,7 @@ function appSwitched(event, appName) {
 	if ((compare === "shortcutmagic" && process.env.NODE_ENV !== "development") ||
 			(compare === "shortcutmagic-mac" && process.env.NODE_ENV !== "development") ||
 			(compare === "electron" && process.env.NODE_ENV === "development")) {
+		
 		mainWindow.show();
 		mainWindow.focus();
 		return;
