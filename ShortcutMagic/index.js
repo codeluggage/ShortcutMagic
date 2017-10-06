@@ -785,17 +785,20 @@ function createWelcomeWindow() {
 	}
 
 	welcomeWindow = new BrowserWindow({
-		show: true,
+		show: false,
 		width: 800,
-		height: 720,
+		height: 540,
 		title: "welcomeWindow",
-		backgroundColor: "#323f53",
 		alwaysOnTop: true,
 		frame: false,
 		nodeIntegration: true,
 	});
 
 	welcomeWindow.loadURL(`file://${__dirname}/welcome/index.html`);
+
+	welcomeWindow.on('ready-to-show', event => {
+		welcomeWindow.show();
+	});
 
 	welcomeWindow.on('closed', event => {
 		log.info('in welcomewindow closed, isQuitting: ', isQuitting);
@@ -1537,6 +1540,8 @@ ipcMain.on('log', (event) => {
 
 ipcMain.on('welcome-window-ready', (event) => {
     createWindows();
+    welcomeWindow.close();
+    welcomeWindow = null;
 });
 
 ipcMain.on('open-learn', (e) => {
