@@ -426,15 +426,24 @@ export default class Home extends Component {
                   marginLeft: '6px',
                   flex: 4,
                 }} onChange={this.filterListTrigger} onKeyDown={this.filterListKeyDown}/>
+
+                <button className="btn btn-default" type="button" onClick={e => {
+                  ipcRenderer.send('open-about');
+                }}>
+                  <span style={{
+                    flex: 1,
+                  }} className="icon icon-help-circled"></span>
+                </button>
+
                 <button className="btn btn-default" type="button" onClick={e => {
                   this.setState({
                     settingsPaneActive: !(this.state && this.state.settingsPaneActive),
                     settings: this.state && this.state.programs && this.state.programs[GLOBAL_SETTINGS_KEY] ? this.state.programs[GLOBAL_SETTINGS_KEY] : {},
                   });
                 }}>
-                  <span className="icon icon-cog" style={{
+                  <span style={{
                     flex: 1,
-                  }}></span>
+                  }} className="icon icon-cog"></span>
                 </button>
               </div>
             </header>

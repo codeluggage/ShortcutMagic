@@ -54,7 +54,8 @@ let settingsWindow,
 		gifCommunityWindow,
 		bubbleWindow,
 		learnWindow,
-		surveyWindow;
+		surveyWindow,
+		aboutWindow;
 
 // a hacky bad construct holding the shortcuts from the db in memory
 // TODO: merge into a class that encapsulates the db and functionality, and caches things in memory without checking this array everywhere :|
@@ -872,6 +873,34 @@ function createLearnWindow() {
 	});
 }
 
+function createAboutWindow() {
+	if (aboutWindow) {
+		log.info('aboutWindow already existed, exiting');
+		return;
+	}
+
+	aboutWindow = new BrowserWindow({
+		show: false,
+		width: 600,
+		height: 410,
+		title: "About",
+		alwaysOnTop: true,
+		frame: true,
+		nodeIntegration: true,
+	});
+
+	aboutWindow.loadURL(`file://${__dirname}/about/index.html`);
+
+	aboutWindow.on('ready-to-show', event => {
+		aboutWindow.show();
+		aboutWindow.focus();
+	});
+
+	aboutWindow.on('closed', event => {
+		aboutWindow = null;
+	});
+}
+
 function saveWithoutPeriods(payload) {
 	payload.bounds = mainWindow.getBounds();
 	inMemoryShortcuts[payload.name] = payload;
@@ -1557,4 +1586,10 @@ ipcMain.on('hide-bubble-window', hideBubbleWindow);
 
 ipcMain.on('force-to-top', (e, shortcut) => {
 	mainWindow.webContents.send('force-to-top', shortcut);
+});
+
+ipcMain.on('open-about', (e) => {
+	if (!aboutWindow) { 
+		createAboutWindow();
+	}
 });
