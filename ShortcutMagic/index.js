@@ -947,6 +947,7 @@ function parseOrWait() {
 		mainWindow.webContents.send('set-loading', currentAppName);
 		loadingText = "Learning...";
 		trayObject.setTitle(loadingText);
+		hideBubbleWindow();
 
 		log.info('calling parseShortcuts with currentAppName', currentAppName);
 		parseShortcuts(currentAppName, mainParseShortcutsCallback);
@@ -954,6 +955,7 @@ function parseOrWait() {
 		// TODO: Handle never ending shortcut parsing better
 		// Clear out eventually
 		setTimeout(() => {
+			showBubbleWindow();
 			trayObject.setTitle("");
 			loadingText = null;
 		}, 20000);
@@ -1026,10 +1028,6 @@ function loadWithPeriods(forceReload) {
 	});
 }
 
-
-ipcMain.on("not-loading", (e) => {
-	trayObject.setTitle("");
-});
 
 ipcMain.on('show-window', () => {
   showMainWindow();
@@ -1249,6 +1247,7 @@ function mainParseShortcutsCallback(payload) {
 	log.info("mainParseShortcutsCallback");
 	trayObject.setTitle("");
 	loadingText = null;
+	showBubbleWindow();
 
 	if (payload) {
 		saveWithoutPeriods(payload);
