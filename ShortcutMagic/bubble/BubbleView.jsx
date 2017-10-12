@@ -44,9 +44,11 @@ export default class BubbleView extends Component {
     this.setPrograms = this.setPrograms.bind(this);
     this.setCurrentProgramName = this.setCurrentProgramName.bind(this);
     this.stopFadingWithState = this.stopFadingWithState.bind(this);
+    // this.promptToHide = this.promptToHide.bind(this);
 
     ipcRenderer.on('set-programs', this.setPrograms);
     ipcRenderer.on('set-current-program-name', this.setCurrentProgramName);
+    // ipcRenderer.on('prompt-to-hide', this.promptToHide);
 
     this.setState({
       fade: initialFade
@@ -115,14 +117,18 @@ export default class BubbleView extends Component {
     console.log(this.state.programs);
 
     if (!newProgramName) {
-      this.fadeIn();
-      setTimeout(() => {
-        if (!this.state.mouseOver) {
-          stopFadeOut = false;
-          this.fadeOut();
-        }
-      }, 3000);
-      return;
+      if (!this.state || !this.state.currentProgramName) {
+        this.fadeIn();
+        setTimeout(() => {
+          if (!this.state.mouseOver) {
+            stopFadeOut = false;
+            this.fadeOut();
+          }
+        }, 3000);
+        return;
+      } else {
+        newProgramName = this.state.currentProgramName
+      }
     }
 
     if (!this.state || !this.state.programs) {
@@ -195,6 +201,11 @@ export default class BubbleView extends Component {
     this.setState(newState);
   }
 
+  // promptToHide() {
+  //   this.setState({
+  //     promptToHide: true,
+  //   });
+  // }
 
   render() {
     if (!this.state || !this.state.currentShortcut) {
@@ -403,6 +414,23 @@ export default class BubbleView extends Component {
       </header>
     );
 
+    const closeWindowComponent = (
+      <div style={{
+          position: 'relative',
+      }} onClick={(e) => {
+        ipcRenderer.send('hide-bubble-window', true);
+      }}>
+        <span className="icon icon-cancel" style={{
+          right: '3px',
+          left: '3px',
+          margin: '3px',
+          height: '6px',
+          position: 'absolute',
+          opacity: this.state.fade,
+        }}></span>
+      </div>
+    );
+
     const iconComponent = (
         <div style={{
             position: 'relative',
@@ -429,6 +457,7 @@ export default class BubbleView extends Component {
         backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
         color: `rgba(85, 85, 85, ${this.state.fade})`, 
       }}>
+        {closeWindowComponent}
         {iconComponent}
         {headerComponent}
         <div className="window-content">

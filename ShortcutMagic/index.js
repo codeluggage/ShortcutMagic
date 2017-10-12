@@ -33,8 +33,6 @@ const defaultBubbleWidth = 250;
 
 // the name of the app that was switched to last time, so we know it's the name of the currently active program
 let currentAppName = "ShortcutMagic-mac"; // TODO: Check for bugs with this when opening ShortcutMagic the first time
-// These global settings are stored together with the shortcuts, and this is the "name":
-const GLOBAL_SETTINGS_KEY = "all programs";
 // controls the tray of the application
 let trayObject;
 // First batch of loaded shortcuts for browserwindows to immediately use
@@ -56,16 +54,29 @@ let settingsWindow,
 		gifCommunityWindow,
 		bubbleWindow,
 		learnWindow,
-		surveyWindow;
+		surveyWindow,
+		aboutWindow;
+
+let inMemoryHiddenNotifications = {};
+// These global settings are stored together with the shortcuts, and this is the "name":
+const GLOBAL_SETTINGS_KEY = "all programs";
+const DEFAULT_GLOBAL_SETTINGS = {
+	timeoutRepeat: 0.20,
+	showOnAppSwitch: true,
+	neverShowBubbleWindow: false,
+};
 
 // a hacky bad construct holding the shortcuts from the db in memory
 // TODO: merge into a class that encapsulates the db and functionality, and caches things in memory without checking this array everywhere :|
 let inMemoryShortcuts = {};
 inMemoryShortcuts[GLOBAL_SETTINGS_KEY] = {
 	name: GLOBAL_SETTINGS_KEY,
-	showOnAppSwitch: true,
-	neverShowBubbleWindow: false,
+	showOnAppSwitch: DEFAULT_GLOBAL_SETTINGS.showOnAppSwitch,
+	neverShowBubbleWindow: DEFAULT_GLOBAL_SETTINGS.neverShowBubbleWindow,
+	timeoutRepeat: DEFAULT_GLOBAL_SETTINGS.timeoutRepeat,
 };
+
+
 // const weirdErrorPos = { x: 89, y: 23, width: 0, height: 0 };
 
 
@@ -203,6 +214,11 @@ function getShortcuts(cb) {
 }
 
 function showBubbleWindow() {
+	if (inMemoryShortcuts[GLOBAL_SETTINGS_KEY].neverShowBubbleWindow) {
+		console.log('showBubbleWindow - not showing because neverShowBubbleWindow is set');
+		return;
+	}
+
 	console.log('bubbleWindow.setBounds(getBubbleWindowBounds());', bubbleWindow.getBounds());
 	const bounds = getBubbleWindowBounds();
 	console.log('new bounds: ', bounds);
@@ -780,17 +796,20 @@ function createWelcomeWindow() {
 	}
 
 	welcomeWindow = new BrowserWindow({
-		show: true,
+		show: false,
 		width: 800,
-		height: 720,
+		height: 540,
 		title: "welcomeWindow",
-		backgroundColor: "#323f53",
 		alwaysOnTop: true,
 		frame: false,
 		nodeIntegration: true,
 	});
 
 	welcomeWindow.loadURL(`file://${__dirname}/welcome/index.html`);
+
+	welcomeWindow.on('ready-to-show', event => {
+		welcomeWindow.show();
+	});
 
 	welcomeWindow.on('closed', event => {
 		log.info('in welcomewindow closed, isQuitting: ', isQuitting);
@@ -864,6 +883,34 @@ function createLearnWindow() {
 	});
 }
 
+function createAboutWindow() {
+	if (aboutWindow) {
+		log.info('aboutWindow already existed, exiting');
+		return;
+	}
+
+	aboutWindow = new BrowserWindow({
+		show: false,
+		width: 600,
+		height: 410,
+		title: "About",
+		alwaysOnTop: true,
+		frame: true,
+		nodeIntegration: true,
+	});
+
+	aboutWindow.loadURL(`file://${__dirname}/about/index.html`);
+
+	aboutWindow.on('ready-to-show', event => {
+		aboutWindow.show();
+		aboutWindow.focus();
+	});
+
+	aboutWindow.on('closed', event => {
+		aboutWindow = null;
+	});
+}
+
 function saveWithoutPeriods(payload) {
 	payload.bounds = mainWindow.getBounds();
 	inMemoryShortcuts[payload.name] = payload;
@@ -923,6 +970,7 @@ function parseOrWait() {
 		mainWindow.webContents.send('set-loading', currentAppName);
 		loadingText = "Learning...";
 		trayObject.setTitle(loadingText);
+		hideBubbleWindow();
 
 		log.info('calling parseShortcuts with currentAppName', currentAppName);
 		parseShortcuts(currentAppName, mainParseShortcutsCallback);
@@ -931,6 +979,7 @@ function parseOrWait() {
 		// TODO: Handle never ending shortcut parsing better
 		// Clear out eventually
 		setTimeout(() => {
+			showBubbleWindow();
 			trayObject.setTitle("");
 			loadingText = null;
 		}, 20000);
@@ -1003,10 +1052,6 @@ function loadWithPeriods(forceReload) {
 	});
 }
 
-
-ipcMain.on("not-loading", (e) => {
-	trayObject.setTitle("");
-});
 
 ipcMain.on('show-window', () => {
   showMainWindow();
@@ -1209,17 +1254,21 @@ function appSwitched(event, appName) {
 	if (settings.timeoutRepeat && !bubbleWindowTimeout) {
 		bubbleWindowTimeout = true;
 
-		const repeatTimeout = inMemoryShortcuts[GLOBAL_SETTINGS_KEY].timeoutRepeat * 60000;
+		const repeatTimeout = inMemoryShortcuts[GLOBAL_SETTINGS_KEY].timeoutRepeat * 60000; // 1 minute
 
 		// TODO: Make recursive to repeat on timeoutRepeat value
 		const recursing = () => {
 				setTimeout(() => {
-				bubbleWindowTimeout = false;
-				bubbleWindow.webContents.send('set-current-program-name', null);
-				showBubbleWindow();
-				setTimeout(recursing, repeatTimeout); // Minutes to milliseconds 
-			}, repeatTimeout); // Minutes to milliseconds 
+					bubbleWindowTimeout = false;
+					bubbleWindow.webContents.send('set-current-program-name', null);
+					showBubbleWindow();
+
+					// TODO: Re-enable recursing when it can be stopped from overlapping
+					// setTimeout(recursing, repeatTimeout); // Minutes to milliseconds 
+				}, repeatTimeout); // Minutes to milliseconds 
 		}
+
+		recursing();
 	}
 }
 
@@ -1227,6 +1276,7 @@ function mainParseShortcutsCallback(payload) {
 	log.info("mainParseShortcutsCallback");
 	trayObject.setTitle("");
 	loadingText = null;
+	showBubbleWindow();
 
 	if (payload) {
 		saveWithoutPeriods(payload);
@@ -1547,6 +1597,8 @@ ipcMain.on('log', (event) => {
 
 ipcMain.on('welcome-window-ready', (event) => {
     createWindows();
+    welcomeWindow.close();
+    welcomeWindow = null;
 });
 
 ipcMain.on('open-learn', (e) => {
@@ -1558,14 +1610,52 @@ ipcMain.on('open-learn', (e) => {
 	learnWindow.focus();
 });
 
-ipcMain.on('hide-bubble-window', hideBubbleWindow);
+ipcMain.on('hide-bubble-window', (e, manual) => {
+	// if (manual) {
+	// 	inMemoryHiddenNotifications[currentAppName] = (inMemoryHiddenNotifications[currentAppName] ? inMemoryHiddenNotifications[currentAppName] + 1 : 1);
+
+	// 	// TODO: Display prompt to hide forever?
+	// 	if (!inMemoryShortcuts[currentAppName].hideNotification && inMemoryHiddenNotifications[currentAppName] > 1) {
+	// 		bubbleWindow.webContents.send('prompt-to-hide', currentAppName);
+	// 		return;
+	// 	}
+	// }
+
+	hideBubbleWindow();
+});
 
 ipcMain.on('force-to-top', (e, shortcut) => {
 	mainWindow.webContents.send('force-to-top', shortcut);
+});
+
+ipcMain.on('open-about', (e) => {
+	if (!aboutWindow) { 
+		createAboutWindow();
+	}
 });
 
 ipcMain.on('quit', (e) => {
 	isQuitting = true;
 	app.quit();
 	quitShortcutMagic();
-});
+})
+
+ipcMain.on('configure-suggestions', (e, mode) => {
+	switch (mode) {
+		case 0:
+			inMemoryShortcuts[GLOBAL_SETTINGS_KEY].showOnAppSwitch = false;
+			inMemoryShortcuts[GLOBAL_SETTINGS_KEY].timeoutRepeat = false;
+			inMemoryShortcuts[GLOBAL_SETTINGS_KEY].neverShowBubbleWindow = true;
+			break;
+		case 1:
+			inMemoryShortcuts[GLOBAL_SETTINGS_KEY].showOnAppSwitch = false;
+			inMemoryShortcuts[GLOBAL_SETTINGS_KEY].timeoutRepeat = DEFAULT_GLOBAL_SETTINGS.timeoutRepeat;
+			inMemoryShortcuts[GLOBAL_SETTINGS_KEY].neverShowBubbleWindow = false;
+			break;
+		case 2:
+			inMemoryShortcuts[GLOBAL_SETTINGS_KEY].showOnAppSwitch = true;
+			inMemoryShortcuts[GLOBAL_SETTINGS_KEY].timeoutRepeat = DEFAULT_GLOBAL_SETTINGS.timeoutRepeat;
+			inMemoryShortcuts[GLOBAL_SETTINGS_KEY].neverShowBubbleWindow = false;
+			break;
+	}
+})
