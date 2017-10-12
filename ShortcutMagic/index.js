@@ -1563,9 +1563,3 @@ ipcMain.on('hide-bubble-window', hideBubbleWindow);
 ipcMain.on('force-to-top', (e, shortcut) => {
 	mainWindow.webContents.send('force-to-top', shortcut);
 });
-
-ipcMain.on('quit', (e) => {
-	isQuitting = true;
-	app.quit();
-	quitShortcutMagic();
-});
