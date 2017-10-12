@@ -57,14 +57,26 @@ let settingsWindow,
 		surveyWindow,
 		aboutWindow;
 
+let inMemoryHiddenNotifications = {};
+// These global settings are stored together with the shortcuts, and this is the "name":
+const GLOBAL_SETTINGS_KEY = "all programs";
+const DEFAULT_GLOBAL_SETTINGS = {
+	timeoutRepeat: 0.20,
+	showOnAppSwitch: true,
+	neverShowBubbleWindow: false,
+};
+
 // a hacky bad construct holding the shortcuts from the db in memory
 // TODO: merge into a class that encapsulates the db and functionality, and caches things in memory without checking this array everywhere :|
 let inMemoryShortcuts = {};
 inMemoryShortcuts[GLOBAL_SETTINGS_KEY] = {
 	name: GLOBAL_SETTINGS_KEY,
-	showOnAppSwitch: true,
-	neverShowBubbleWindow: false,
+	showOnAppSwitch: DEFAULT_GLOBAL_SETTINGS.showOnAppSwitch,
+	neverShowBubbleWindow: DEFAULT_GLOBAL_SETTINGS.neverShowBubbleWindow,
+	timeoutRepeat: DEFAULT_GLOBAL_SETTINGS.timeoutRepeat,
 };
+
+
 // const weirdErrorPos = { x: 89, y: 23, width: 0, height: 0 };
 
 
