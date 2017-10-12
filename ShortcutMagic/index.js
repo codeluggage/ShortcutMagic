@@ -1625,3 +1625,9 @@ ipcMain.on('open-about', (e) => {
 		createAboutWindow();
 	}
 });
+
+ipcMain.on('quit', (e) => {
+	isQuitting = true;
+	app.quit();
+	quitShortcutMagic();
+})
