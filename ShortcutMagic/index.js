@@ -210,6 +210,11 @@ function getShortcuts(cb) {
 }
 
 function showBubbleWindow() {
+	if (inMemoryShortcuts[GLOBAL_SETTINGS_KEY].neverShowBubbleWindow) {
+		console.log('showBubbleWindow - not showing because neverShowBubbleWindow is set');
+		return;
+	}
+
 	console.log('bubbleWindow.setBounds(getBubbleWindowBounds());', bubbleWindow.getBounds());
 	const bounds = getBubbleWindowBounds();
 	console.log('new bounds: ', bounds);
@@ -1229,17 +1234,21 @@ function appSwitched(event, appName) {
 	if (settings.timeoutRepeat && !bubbleWindowTimeout) {
 		bubbleWindowTimeout = true;
 
-		const repeatTimeout = inMemoryShortcuts[GLOBAL_SETTINGS_KEY].timeoutRepeat * 60000;
+		const repeatTimeout = inMemoryShortcuts[GLOBAL_SETTINGS_KEY].timeoutRepeat * 60000; // 1 minute
 
 		// TODO: Make recursive to repeat on timeoutRepeat value
 		const recursing = () => {
 				setTimeout(() => {
-				bubbleWindowTimeout = false;
-				bubbleWindow.webContents.send('set-current-program-name', null);
-				showBubbleWindow();
-				setTimeout(recursing, repeatTimeout); // Minutes to milliseconds 
-			}, repeatTimeout); // Minutes to milliseconds 
+					bubbleWindowTimeout = false;
+					bubbleWindow.webContents.send('set-current-program-name', null);
+					showBubbleWindow();
+
+					// TODO: Re-enable recursing when it can be stopped from overlapping
+					// setTimeout(recursing, repeatTimeout); // Minutes to milliseconds 
+				}, repeatTimeout); // Minutes to milliseconds 
 		}
+
+		recursing();
 	}
 }
 
