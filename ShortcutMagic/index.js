@@ -33,8 +33,6 @@ const defaultBubbleWidth = 250;
 
 // the name of the app that was switched to last time, so we know it's the name of the currently active program
 let currentAppName = "ShortcutMagic-mac"; // TODO: Check for bugs with this when opening ShortcutMagic the first time
-// These global settings are stored together with the shortcuts, and this is the "name":
-const GLOBAL_SETTINGS_KEY = "all programs";
 // controls the tray of the application
 let trayObject;
 // First batch of loaded shortcuts for browserwindows to immediately use
@@ -1630,4 +1628,24 @@ ipcMain.on('quit', (e) => {
 	isQuitting = true;
 	app.quit();
 	quitShortcutMagic();
+})
+
+ipcMain.on('configure-suggestions', (e, mode) => {
+	switch (mode) {
+		case 0:
+			inMemoryShortcuts[GLOBAL_SETTINGS_KEY].showOnAppSwitch = false;
+			inMemoryShortcuts[GLOBAL_SETTINGS_KEY].timeoutRepeat = false;
+			inMemoryShortcuts[GLOBAL_SETTINGS_KEY].neverShowBubbleWindow = true;
+			break;
+		case 1:
+			inMemoryShortcuts[GLOBAL_SETTINGS_KEY].showOnAppSwitch = false;
+			inMemoryShortcuts[GLOBAL_SETTINGS_KEY].timeoutRepeat = DEFAULT_GLOBAL_SETTINGS.timeoutRepeat;
+			inMemoryShortcuts[GLOBAL_SETTINGS_KEY].neverShowBubbleWindow = false;
+			break;
+		case 2:
+			inMemoryShortcuts[GLOBAL_SETTINGS_KEY].showOnAppSwitch = true;
+			inMemoryShortcuts[GLOBAL_SETTINGS_KEY].timeoutRepeat = DEFAULT_GLOBAL_SETTINGS.timeoutRepeat;
+			inMemoryShortcuts[GLOBAL_SETTINGS_KEY].neverShowBubbleWindow = false;
+			break;
+	}
 })

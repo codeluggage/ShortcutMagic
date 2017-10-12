@@ -11,6 +11,189 @@ export default class WelcomeView extends Component {
   }
 
   render() {
+    const unlockPage = (
+      <div>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignContent: 'center',
+          alignItems: 'center',
+          textAlign: 'center',
+        }}>
+          <br />
+          <h1>Running ShortcutMagic</h1>
+
+          To run ShortcutMagic, it needs administrative access which is unlocked with your computer password. 
+          <br />
+          The password is not used for anything, it only unlocks administrative access.
+          <br />
+          <br />
+          It will look like this: 
+
+          <img src="../assets/admin-access.png" height="236" width="380"></img>
+        </div>
+
+        <div style={{
+          display: 'flex',
+          flex: 1,
+          flexDirection: 'row',
+          alignContent: 'center',
+          alignItems: 'center',
+        }}>
+          <div className="btn btn-primary" onClick={e => {
+            ipcRenderer.send('welcome-window-ready');
+          }} style={{
+            flex: 1,
+            paddingRight: '40px',
+            paddingLeft: '40px',
+            fontSize: 28,
+            margin: '10px',
+          }}>Start</div>
+          <div className="btn btn-negative" onClick={e => {
+            ipcRenderer.send('quit');
+          }} style={{
+            flex: 1,
+            paddingRight: '40px',
+            paddingLeft: '40px',
+            fontSize: 28,
+            margin: '10px',
+          }}>Cancel</div>
+        </div>
+      </div>
+    );
+
+    const onboarding = (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        textAlign: 'center',
+      }}>
+        <div style={{
+          flex: 1,
+        }}>
+          <br />
+          <h1>Welcome!</h1>
+          <h3>How often would you like to see this shortcut suggestion?</h3>
+          <br />
+        </div>
+
+        <div style={{
+          flex: 1,
+          backgroundColor: '#aaaaaa',
+          border: '5px solid',
+          borderColor: '#aaaaaa',
+          borderRadius: '4px',
+          padding: '20px',
+          marginLeft: '20px',
+          marginRight: '20px',
+        }}>
+          <img src="../assets/bubble-window.png" style={{
+            height: '125px',
+          }}></img>
+        </div>
+
+        <div style={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignContent: 'center',
+          alignItems: 'space-between',
+          flexWrap: 'nowrap',
+          flex: 3,
+        }}>
+          <div style={{
+            flex: 'auto',
+            color: 'white',
+            backgroundColor: '#aaaaaa',
+            border: '5px solid',
+            marginLeft: '20px',
+            margin: '8px 8px 8px 20px',
+            borderColor: '#6db3fd',
+            borderRadius: '4px',
+            padding: '8px',
+          }} onClick={(e) => {
+            ipcRenderer.send('configure-suggestions', 0);
+            this.setState({
+              modePicked: true,
+            });
+          }}>
+            <b>No suggestions</b>
+            <br />
+            <br />
+            Only use ShortcutMagic to search for shortcuts.
+            <br />
+            Never show suggestion window.
+          </div>
+
+          <div style={{
+            flex: 'auto',
+            color: 'white',
+            backgroundColor: '#aaaaaa',
+            border: '5px solid',
+            margin: '8px',
+            borderColor: '#6db3fd',
+            borderRadius: '4px',
+            padding: '8px',
+          }} onClick={(e) => {
+            ipcRenderer.send('configure-suggestions', 1);
+            this.setState({
+              modePicked: true,
+            });
+          }}>
+            <b>Some suggestions</b>
+            <br />
+            <br />
+            Show a suggestion a little while after you switch to a new program
+          </div>
+
+          <div style={{
+            flex: 'auto',
+            color: 'white',
+            backgroundColor: '#aaaaaa',
+            border: '5px solid',
+            margin: '8px 20px 8px 8px',
+            borderColor: '#6db3fd',
+            borderRadius: '4px',
+            padding: '8px',
+          }} onClick={(e) => {
+            ipcRenderer.send('configure-suggestions', 2);
+            this.setState({
+              modePicked: true,
+            });
+          }}>
+            <b>Many suggestions</b>
+            <br />
+            <br />
+            Show a suggestion when switching apps
+            <br />
+            and also after a little while.
+          </div>
+
+        </div>
+      </div>
+    );
+
+    const iconComponent = (
+      <img src="../assets/wizard.png" style={{
+          left: '47%',
+          top: '8px',
+          height: '30px',
+          // transform: 'rotate(-25deg)',
+          // transformOrigin: '0% %0',
+          position: 'absolute',
+      }}></img>
+    );
+
+    const helpComponent = (
+      <span style={{
+        right: '2%',
+        top: '1%',
+        position: 'absolute',
+        fontSize: 24,
+      }} type="button" onClick={e => {
+        ipcRenderer.send('open-about');
+      }} className="icon icon-help-circled"></span>
+    );
+
     return (
       <div style={{
         backgroundColor: `rgba(232, 230, 232, 0.9)`,
@@ -20,62 +203,11 @@ export default class WelcomeView extends Component {
         alignContent: 'center',
         alignItems: 'center',
       }}>
-      <span style={{
-        right: '6px',
-        top: '3px',
-        position: 'absolute',
-        fontSize: 24,
-      }} type="button" onClick={e => {
-        ipcRenderer.send('open-about');
-      }} className="icon icon-help-circled"></span>
+        {iconComponent}
+        {helpComponent}
 
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignContent: 'center',
-        alignItems: 'center',
-        textAlign: 'center',
-      }}>
-        <h1>Running ShortcutMagic</h1>
-        <br />
-
-        To run ShortcutMagic, it needs administrative access which is unlocked with your computer password. 
-        <br />
-        The password is not used for anything, it only unlocks administrative access.
-        <br />
-        <br />
-        It will look like this: 
-
-        <img src="../assets/admin-access.png" height="236" width="380"></img>
+        {this.state && this.state.modePicked ? unlockPage : onboarding}
       </div>
-
-      <div style={{
-        display: 'flex',
-        flex: 1,
-        flexDirection: 'row',
-        alignContent: 'center',
-        alignItems: 'center',
-      }}>
-        <div className="btn btn-negative" onClick={e => {
-          ipcRenderer.send('quit');
-        }} style={{
-          flex: 1,
-          paddingRight: '40px',
-          paddingLeft: '40px',
-          fontSize: 28,
-          margin: '10px',
-        }}>Cancel</div>
-        <div className="btn btn-primary" onClick={e => {
-          ipcRenderer.send('welcome-window-ready');
-        }} style={{
-          flex: 1,
-          paddingRight: '40px',
-          paddingLeft: '40px',
-          fontSize: 28,
-          margin: '10px',
-        }}>Start</div>
-      </div>
-    </div>
     );
   }
 };
