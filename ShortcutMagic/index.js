@@ -1581,7 +1581,19 @@ ipcMain.on('open-learn', (e) => {
 	learnWindow.focus();
 });
 
-ipcMain.on('hide-bubble-window', hideBubbleWindow);
+ipcMain.on('hide-bubble-window', (e, manual) => {
+	// if (manual) {
+	// 	inMemoryHiddenNotifications[currentAppName] = (inMemoryHiddenNotifications[currentAppName] ? inMemoryHiddenNotifications[currentAppName] + 1 : 1);
+
+	// 	// TODO: Display prompt to hide forever?
+	// 	if (!inMemoryShortcuts[currentAppName].hideNotification && inMemoryHiddenNotifications[currentAppName] > 1) {
+	// 		bubbleWindow.webContents.send('prompt-to-hide', currentAppName);
+	// 		return;
+	// 	}
+	// }
+
+	hideBubbleWindow();
+});
 
 ipcMain.on('force-to-top', (e, shortcut) => {
 	mainWindow.webContents.send('force-to-top', shortcut);
