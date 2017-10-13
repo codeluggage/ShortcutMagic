@@ -295,12 +295,124 @@ export default class Home extends Component {
   }
 
   render() {
+
     console.log('inside render');
-    if (this.state && this.state.programs) {
-      console.log('pomodone: ', this.state.programs["System Preferences"]);
-    } else {
-      console.log('no state or programs available');
+    console.log(this.state);
+    console.log('loading? ', this.state && this.state.loading);
+
+
+    if (this.state && this.loading) {
+      return (
+        <div className="window">
+          <div className="window-content">
+            <div className="pane-group">
+              <div className="pane pane-sm sidebar">
+              <header className="toolbar toolbar-header">
+                <div className="toolbar-actions" style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                }}>
+                  <input className="form-control" type="text" id="search-field" placeholder="Search" style={{
+                    marginTop: '6px',
+                    marginLeft: '6px',
+                    flex: 4,
+                  }} />
+
+                  <button className="btn btn-default" type="button" onClick={e => {
+                    ipcRenderer.send('open-about');
+                  }}>
+                    <span style={{
+                      flex: 1,
+                    }} className="icon icon-help-circled"></span>
+                  </button>
+
+                  <button className="btn btn-default" type="button" >
+                    <span style={{
+                      flex: 1,
+                    }} className="icon icon-cog"></span>
+                  </button>
+                </div>
+              </header>
+                {programTitles ? programTitles : ""}
+              </div>
+              <div className="pane" style={{
+                textAlign: 'center',
+              }}>
+                <table className="table-striped">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Shortcut</th>
+                      <th>Menu</th>
+                      <th>Up</th>
+                      <th>Down</th>
+                      <th>Rating</th>
+                    </tr>
+                  </thead>
+                  <h3 style={{margin: '4px'}}>Loading...</h3>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // if (this.state && this.state.loading) {
+    //   return (
+    //     <div className="window">
+    //       <div className="window-content">
+    //         <div className="pane-group">
+    //           <div className="pane pane-sm sidebar">
+    //             Loading
+    //           </div>
+    //         </div>
+    //       </div>
+    //     </div>
+    //   );
+    // }
+
+      // return (
+      //   <div className="window">
+      //     <div className="window-content">
+      //       <div style={{
+      //         position: 'absolute',
+      //         top: '50%',
+      //         left: '50%',
+      //         width: '120px',
+      //         height: '120px',
+      //         margin: '-60px 0 0 -60px',
+      //         "-webkit-animation": 'spin 2s linear infinite',
+      //         "-moz-animation": 'spin 2s linear infinite',
+      //         animation: 'spin 2s linear infinite',
+      //         "@-moz-keyframes": "spin 100%" ,
+      //         "-moz-transform": "rotate(360deg)",
+      //         "@-webkit-keyframes": "spin 100%",
+      //         "-webkit-transform": "rotate(360deg)",
+      //         "@keyframes": "spin 100%",
+      //         "-webkit-transform": "rotate(360deg)",
+      //         transform: "rotate(360deg)",
+      //       }}>
+      //         <img src="../assets/wizard.png"></img>
+      //       </div>
+      //     </div>
+      //   </div>
+      // );
+    // }
+
 
     let shortcutTableBody;
     let programTitles;
@@ -661,21 +773,22 @@ export default class Home extends Component {
             <div className="pane" style={{
               textAlign: 'center',
             }}>
-              {settingsComponent ? settingsComponent : (
-                <table className="table-striped">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Shortcut</th>
-                      <th>Menu</th>
-                      <th>Up</th>
-                      <th>Down</th>
-                      <th>Rating</th>
-                    </tr>
-                  </thead>
-                  {shortcutTableBody ? shortcutTableBody : ""}
-                </table>
-              )}
+              <table className="table-striped">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Shortcut</th>
+                    <th>Menu</th>
+                    <th>Up</th>
+                    <th>Down</th>
+                    <th>Rating</th>
+                  </tr>
+                </thead>
+
+                {settingsComponent ? settingsComponent : (shortcutTableBody ? shortcutTableBody : (
+                  <h3 style={{margin: '4px'}}>Try switching programs to load shortcuts!</h3>
+                ))}
+              </table>
             </div>
           </div>
         </div>
@@ -683,6 +796,11 @@ export default class Home extends Component {
     );
   }
 }
+                // {this.state && this.state.loading ? (
+                //   <h3 style={{margin: '4px'}}>Loading...</h3>
+                // ) : (settingsComponent ? settingsComponent : shortcutTableBody ? shortcutTableBody : (
+                //   <h3 style={{margin: '4px'}}>Try switching programs to load shortcuts!</h3>
+                // ))}
 
 window.onload = function() {
     ReactDOM.render(<Home />, document.getElementById("app"));

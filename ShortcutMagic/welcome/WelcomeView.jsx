@@ -21,14 +21,12 @@ export default class WelcomeView extends Component {
           textAlign: 'center',
         }}>
           <br />
-          <h1>Running ShortcutMagic</h1>
+          <h1>Allowing access to read shortcuts</h1>
 
-          To run ShortcutMagic, it needs administrative access which is unlocked with your computer password. 
-          <br />
-          The password is not used for anything, it only unlocks administrative access.
+          ShortcutMagic needs administrative access.
           <br />
           <br />
-          It will look like this: 
+          This window will pop up when you click "Start":
 
           <img src="../assets/admin-access.png" height="236" width="380"></img>
         </div>
@@ -72,8 +70,8 @@ export default class WelcomeView extends Component {
           flex: 1,
         }}>
           <br />
-          <h1>Welcome!</h1>
-          <h3>How often would you like to see this shortcut suggestion?</h3>
+          <h1>Welcome to ShortcutMagic!</h1>
+          <h3>How often would you like to see shortcut suggestions like these?</h3>
           <br />
         </div>
 
@@ -84,8 +82,9 @@ export default class WelcomeView extends Component {
           borderColor: '#aaaaaa',
           borderRadius: '4px',
           padding: '20px',
-          marginLeft: '20px',
-          marginRight: '20px',
+          margin: '8px',
+          // marginLeft: '20px',
+          // marginRight: '20px',
         }}>
           <img src="../assets/bubble-window.png" style={{
             height: '125px',
@@ -100,72 +99,86 @@ export default class WelcomeView extends Component {
           flexWrap: 'nowrap',
           flex: 3,
         }}>
-          <div style={{
-            flex: 'auto',
-            color: 'white',
-            backgroundColor: '#aaaaaa',
-            border: '5px solid',
-            marginLeft: '20px',
-            margin: '8px 8px 8px 20px',
-            borderColor: '#6db3fd',
-            borderRadius: '4px',
-            padding: '8px',
+          <div className="btn btn-primary" style={{
+            flex: 1,
+            // color: 'white',
+            // backgroundColor: '#ebebeb',
+            // border: '5px solid',
+            margin: '8px',
+            // borderColor: '#6db3fd',
+            // borderRadius: '4px',
+            // padding: '8px',
           }} onClick={(e) => {
             ipcRenderer.send('configure-suggestions', 0);
             this.setState({
               modePicked: true,
             });
           }}>
-            <b>No suggestions</b>
-            <br />
-            <br />
-            Only use ShortcutMagic to search for shortcuts.
-            <br />
-            Never show suggestion window.
+            <p style={{
+              fontSize: 22,
+              fontWeight: 400,
+              margin: '5px',
+            }}>Never</p>
+            <ul style={{
+              textAlign: 'left',
+            }}>
+              <li>Hide suggestions</li>
+            </ul>
           </div>
 
-          <div style={{
-            flex: 'auto',
-            color: 'white',
-            backgroundColor: '#aaaaaa',
-            border: '5px solid',
+          <div className="btn btn-primary" style={{
+            flex: 1,
+            // color: 'white',
+            // backgroundColor: '#ebebeb',
+            // border: '5px solid',
             margin: '8px',
-            borderColor: '#6db3fd',
-            borderRadius: '4px',
-            padding: '8px',
+            // borderColor: '#6db3fd',
+            // borderRadius: '4px',
+            // padding: '8px',
           }} onClick={(e) => {
             ipcRenderer.send('configure-suggestions', 1);
             this.setState({
               modePicked: true,
             });
           }}>
-            <b>Some suggestions</b>
-            <br />
-            <br />
-            Show a suggestion a little while after you switch to a new program
+            <p style={{
+              fontSize: 22,
+              fontWeight: 400,
+              margin: '5px',
+            }}>Sometimes</p>
+            <ul style={{
+              textAlign: 'left',
+            }}>
+              <li>Once in a while</li>
+            </ul>
           </div>
 
-          <div style={{
-            flex: 'auto',
-            color: 'white',
-            backgroundColor: '#aaaaaa',
-            border: '5px solid',
-            margin: '8px 20px 8px 8px',
-            borderColor: '#6db3fd',
-            borderRadius: '4px',
-            padding: '8px',
+          <div className="btn btn-primary" style={{
+            flex: 1,
+            // color: 'white',
+            // backgroundColor: '#ebebeb',
+            // border: '5px solid',
+            margin: '8px',
+            // borderColor: '#6db3fd',
+            // borderRadius: '4px',
+            // padding: '8px',
           }} onClick={(e) => {
             ipcRenderer.send('configure-suggestions', 2);
             this.setState({
               modePicked: true,
             });
           }}>
-            <b>Many suggestions</b>
-            <br />
-            <br />
-            Show a suggestion when switching apps
-            <br />
-            and also after a little while.
+            <p style={{
+              fontSize: 22,
+              fontWeight: 400,
+              margin: '5px',
+            }}>Often</p>
+            <ul style={{
+              textAlign: 'left',
+            }}>
+              <li>Each time app switches</li>
+              <li>Also once in a while</li>
+            </ul>
           </div>
 
         </div>
