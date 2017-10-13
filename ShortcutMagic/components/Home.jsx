@@ -28,6 +28,7 @@ function hexToRgba(hex, alpha) {
 export default class Home extends Component {
   componentWillMount() {
     this.onSortEnd = this.onSortEnd.bind(this);
+    this.updatePrograms = this.updatePrograms.bind(this);
     this.updateItems = this.updateItems.bind(this);
     this.filterListTrigger = this.filterListTrigger.bind(this);
     this.filterList = this.filterList.bind(this);
@@ -50,15 +51,15 @@ export default class Home extends Component {
           ipcRenderer.send('execute-list-item', this.state.items[itemNumber]);
         }
     });
-    ipcRenderer.on('set-current-program-name', (event, currentProgramName) => {
+    ipcRenderer.on('set-current-program', (event, currentProgramName, items) => {
       window.document.getElementById("search-field").value = "";
-      this.updateItems(currentProgramName);
+      this.updateItems(currentProgramName, items);
     });
     ipcRenderer.on('set-programs', (event, programs, currentProgramName) => {
       console.log('set-programs: ', programs, currentProgramName);
       let programDict = {};
       programs.forEach(s => programDict[s.name] = s);
-      this.updateItems(currentProgramName, programDict);
+      this.updatePrograms(currentProgramName, programDict);
     });
     ipcRenderer.on('no-shortcuts-visual-notification', (event) => {
       console.log("TODO: Show that the list item execution might not work");
@@ -85,51 +86,55 @@ export default class Home extends Component {
         )
       });
     });
+    ipcRenderer.on('set-loading', (e, loading) => {
+      this.setState({
+        loading,
+      });
+    });
+
+    ipcRenderer.on('log', (e, text) => console.log(text));
 
     // ipcRenderer.send('set-programs-async');
   }
 
-  updateItems(currentProgramName, programs) {
-    console.log(programs);
+  updateItems(currentProgramName, program) {
+    if (!program) program = this.state.programs[currentProgramName];
+    
+    if (program.name === GLOBAL_SETTINGS_KEY) {
+      this.setState({
+        settings: program
+      });
 
-    if (!currentProgramName || currentProgramName == "") {
-      if (!this.state || !this.state.currentProgramName) {
-        return;
-      }
-
-      currentProgramName = this.state.currentProgramName;
+      return;
     }
 
-    let newState = {
+    let items = Object.values(program.shortcuts);
+    items.sort((a, b) => {
+      if (a.score > 0 && !b.score) return 1;
+      if (b.score > 0 && !a.score) return -1;
+
+      return `${b.score ? b.score : b.name}`.localeCompare(`${a.score ? a.score : a.name}`);
+    });
+
+    this.setState({
       currentProgramName,
+      items,
+    });
+  }
+
+  updatePrograms(currentProgramName, programs) {
+    if (!currentProgramName || currentProgramName == "") {
+      return;
+    }
+
+    this.setState({
+      programs,
+      currentProgramName,
+      settings: programs[GLOBAL_SETTINGS_KEY],
       settingsPaneActive: false,
-    };
+    });
 
-    if (programs) {
-      newState.programs = programs;
-      newState.settings = programs[GLOBAL_SETTINGS_KEY];
-    }
-
-    let program = programs ? programs[currentProgramName] : null;
-
-    if (!program) {
-      if (this.state && this.state.programs) {
-        program = this.state.programs[currentProgramName];
-        if (program) {
-          let items = Object.values(program.shortcuts);
-          items.sort((a, b) => {
-            if (a.score > 0 && !b.score) return 1;
-            if (b.score > 0 && !a.score) return -1;
-
-            return `${b.score ? b.score : b.name}`.localeCompare(`${a.score ? a.score : a.name}`);
-          });
-
-          newState.items = items;
-        }
-      }
-    }
-
-    this.setState(newState);
+    this.updateItems(currentProgramName, programs[currentProgramName]);
   }
 
   changeFontUp() {

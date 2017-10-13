@@ -31,6 +31,8 @@ const hiddenBounds  = { x: 89, y: 23, width: 0, height: 0 };
 const defaultBubbleHeight = 130;
 const defaultBubbleWidth = 250;
 
+let oldMainWindowBounds = defaultFullBounds;
+
 // the name of the app that was switched to last time, so we know it's the name of the currently active program
 let currentAppName = "ShortcutMagic-mac"; // TODO: Check for bugs with this when opening ShortcutMagic the first time
 // controls the tray of the application
@@ -61,7 +63,7 @@ let inMemoryHiddenNotifications = {};
 // These global settings are stored together with the shortcuts, and this is the "name":
 const GLOBAL_SETTINGS_KEY = "all programs";
 const DEFAULT_GLOBAL_SETTINGS = {
-	timeoutRepeat: 0.20,
+	timeoutRepeat: 0.4,
 	showOnAppSwitch: true,
 	neverShowBubbleWindow: false,
 };
@@ -226,13 +228,33 @@ function showBubbleWindow() {
 	console.log('bubbleWindow.getBounds', bubbleWindow.getBounds());
 }
 
+function hideMainWindow() {
+	const oldBounds = mainWindow.getBounds();
+	if (deepEqual(oldBounds, hiddenBounds)) {
+		return;
+	}
+
+	oldMainWindowBounds = oldBounds;
+	console.log('mainWindow.setBounds(getBubbleWindowBounds());', oldBounds);
+	mainWindow.setBounds(hiddenBounds);
+	console.log('mainWindow.getBounds', mainWindow.getBounds());
+}
+
+function showMainWindow() {
+	const currentBounds = mainWindow.getBounds();
+
+	console.log('mainWindow.setBounds(getBubbleWindowBounds());', currentBounds);
+	mainWindow.setBounds(defaultFullBounds);
+	console.log('mainWindow.getBounds', mainWindow.getBounds());
+}
+
 function hideBubbleWindow() {
 	console.log('bubbleWindow.setBounds(getBubbleWindowBounds());', bubbleWindow.getBounds());
 	bubbleWindow.setBounds(hiddenBounds);
 	console.log('bubbleWindow.getBounds', bubbleWindow.getBounds());
 }
 
-function showMainWindow() {
+function focusMainWindow() {
 	mainWindow.show();
 	mainWindow.focus();
 }
@@ -242,7 +264,7 @@ function showShortcutWindows() {
 
 	log.info('showShortcutWindows calling showMainWindow');
 	app.dock.show();
-	showMainWindow();
+	focusMainWindow();
 	showBubbleWindow();
 }
 
@@ -945,8 +967,8 @@ function saveWithoutPeriods(payload) {
 					return;
 				}
 
-				mainWindow.webContents.send('set-programs', res, currentAppName);
-				bubbleWindow.webContents.send('set-programs', res, currentAppName);
+				mainWindow.webContents.send('set-programs', res, savePayload.name);
+				bubbleWindow.webContents.send('set-programs', res, savePayload.name);
 			});
 		}
 	});
@@ -967,10 +989,11 @@ function parseOrWait() {
 			}
 		}
 
-		mainWindow.webContents.send('set-loading', currentAppName);
 		loadingText = "Learning...";
+		// mainWindow.webContents.send('set-loading', true);
 		trayObject.setTitle(loadingText);
 		hideBubbleWindow();
+		hideMainWindow();
 
 		log.info('calling parseShortcuts with currentAppName', currentAppName);
 		parseShortcuts(currentAppName, mainParseShortcutsCallback);
@@ -980,6 +1003,10 @@ function parseOrWait() {
 		// Clear out eventually
 		setTimeout(() => {
 			showBubbleWindow();
+			showMainWindow();
+
+			mainWindow.webContents.send('set-current-program', currentProgramName, inMemoryShortcuts[currentProgramName]);
+			// mainWindow.webContents.send('set-loading', false);
 			trayObject.setTitle("");
 			loadingText = null;
 		}, 20000);
@@ -1008,8 +1035,10 @@ function loadWithPeriods(forceReload) {
 			log.info('loaded in memory shortcuts ', currentAppName);
 			console.log(' loadWithPeriods SENDING >>>>>>>>>>> ');
 			console.log(currentAppName);
-			mainWindow.webContents.send('set-current-program-name', currentAppName);
+
+			mainWindow.webContents.send('set-current-program', currentAppName, inMemoryShortcuts[currentAppName]);
 			bubbleWindow.webContents.send('set-current-program-name', currentAppName);
+
 		} else {
 			getDb().find({
 				name: currentAppName
@@ -1045,8 +1074,8 @@ function loadWithPeriods(forceReload) {
 				console.log(' loadWithPeriods SENDING >>>>>>>>>>> ');
 				console.log(currentAppName);
 
-	      mainWindow.webContents.send('set-current-program-name', currentAppName);
-	      bubbleWindow.webContents.send('set-current-program-name', currentAppName);
+				mainWindow.webContents.send('set-current-program', currentAppName, inMemoryShortcuts[currentAppName]);
+				bubbleWindow.webContents.send('set-current-program-name', currentAppName);
 			});
 		}
 	});
@@ -1054,7 +1083,7 @@ function loadWithPeriods(forceReload) {
 
 
 ipcMain.on('show-window', () => {
-  showMainWindow();
+  focusMainWindow();
 });
 
 ipcMain.on('blur-window', () => {
@@ -1076,10 +1105,6 @@ ipcMain.on('show-mini-settings', (e) => {
 
 // Remove mainWindow.on('closed'), as it is redundant
 
-app.on('activate-with-no-open-windows', function() {
-  mainWindow.show();
-});
-
 // // Events
 // app.on('window-all-closed', function() {
 // 	app.quit();
@@ -1089,6 +1114,9 @@ app.on('activate-with-no-open-windows', () => {
 	if (!mainWindow || !backgroundListenerWindow || !backgroundTaskRunnerWindow) {
 		createWindows();
 	}
+
+  mainWindow.show();
+  showMainWindow();
 });
 
 app.on('ready', () => {
@@ -1110,7 +1138,7 @@ app.on('ready', () => {
 
 
     globalShortcut.register('Command+Shift+Alt+Space', function () {
-        showMainWindow();
+        focusMainWindow();
     });
 
     // globalShortcut.register('Command+Shift+Alt+Up', function () {
@@ -1234,7 +1262,8 @@ function appSwitched(event, appName) {
 	loadWithPeriods();
 	console.log('appSwitched  with settings:  ');
 	console.log(inMemoryShortcuts[GLOBAL_SETTINGS_KEY]);
-	mainWindow.webContents.send('set-current-program-name', currentAppName);
+
+	mainWindow.webContents.send('set-current-program', currentAppName, inMemoryShortcuts[currentAppName]);
 	bubbleWindow.webContents.send('set-current-program-name', currentAppName);
 
 	if (!inMemoryShortcuts) { 
@@ -1274,16 +1303,21 @@ function appSwitched(event, appName) {
 
 function mainParseShortcutsCallback(payload) {
 	log.info("mainParseShortcutsCallback");
+	// mainWindow.webContents.send('set-loading', false);
 	trayObject.setTitle("");
 	loadingText = null;
 	showBubbleWindow();
+	showMainWindow();
 
 	if (payload) {
 		saveWithoutPeriods(payload);
-		mainWindow.webContents.send('set-current-program-name', payload.name);
 	} else {
 		appSwitched(null, currentAppName);
 	}
+
+	const name = (payload) ? payload.name : currentAppName;
+	const program = (payload) ? payload : inMemoryShortcuts[currentAppName];
+	mainWindow.webContents.send('set-current-program', name, program);
 }
 
 ipcMain.on('main-parse-shortcuts', function(event, appName) {
@@ -1569,6 +1603,7 @@ ipcMain.on('save-gif', (event, newGif, listItem, appName) => {
       // because the gif will be visible when they switch back to that app again.
       console.log('savegif  SENDING >>>>>>>>>>> ');
       console.log(currentAppName);
+
       mainWindow.webContents.send('set-current-program-name', currentAppName);
       bubbleWindow.webContents.send('set-current-program-name', currentAppName);
       log.info("successfuly saved new gif", res);
