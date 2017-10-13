@@ -34,7 +34,7 @@ const defaultBubbleWidth = 250;
 let oldMainWindowBounds = defaultFullBounds;
 
 // the name of the app that was switched to last time, so we know it's the name of the currently active program
-let currentAppName = "ShortcutMagic-mac"; // TODO: Check for bugs with this when opening ShortcutMagic the first time
+let currentProgramName = "ShortcutMagic-mac"; // TODO: Check for bugs with this when opening ShortcutMagic the first time
 // controls the tray of the application
 let trayObject;
 // First batch of loaded shortcuts for browserwindows to immediately use
@@ -193,11 +193,11 @@ function getBubbleWindowBounds() {
 
 // TODO: Convert callbacks to promises with new await keyword
 function getShortcuts(cb) {
-	if (inMemoryShortcuts[currentAppName]) {
-		cb(inMemoryShortcuts[currentAppName]);
+	if (inMemoryShortcuts[currentProgramName]) {
+		cb(inMemoryShortcuts[currentProgramName]);
 	} else {
 		getDb().find({
-			name: currentAppName
+			name: currentProgramName
 		}, function(err, res) {
 			if (err) {
 				log.info('errored during db find: ', err);
@@ -205,9 +205,9 @@ function getShortcuts(cb) {
 			}
 
 			if (res.length > 0) {
-	      let currentShortcuts = inMemoryShortcuts[currentAppName] = res[0];
+	      let currentShortcuts = inMemoryShortcuts[currentProgramName] = res[0];
 	      log.info('loaded shortcuts', currentShortcuts.name, currentShortcuts.bounds, mainWindow.getBounds());
-	      cb(inMemoryShortcuts[currentAppName]);
+	      cb(inMemoryShortcuts[currentProgramName]);
 			} else {
 				cb(null);
 			}
@@ -320,7 +320,7 @@ function createBubbleWindow() {
   });
 
   bubbleWindow.on('ready-to-show', (e) => {
-  	bubbleWindow.webContents.send('set-programs', firstPrograms, currentAppName);
+  	bubbleWindow.webContents.send('set-programs', firstPrograms, currentProgramName);
   	showBubbleWindow();
   })
 
@@ -669,8 +669,8 @@ function createMainWindow() {
   });
 
   mainWindow.on('ready-to-show', (e) => {
-  	mainWindow.webContents.send('set-programs', firstPrograms, currentAppName);
-  	bubbleWindow.webContents.send('set-programs', firstPrograms, currentAppName);
+  	mainWindow.webContents.send('set-programs', firstPrograms, currentProgramName);
+  	bubbleWindow.webContents.send('set-programs', firstPrograms, currentProgramName);
   	app.dock.show();
   	mainWindow.show();
   });
@@ -995,8 +995,8 @@ function parseOrWait() {
 		hideBubbleWindow();
 		hideMainWindow();
 
-		log.info('calling parseShortcuts with currentAppName', currentAppName);
-		parseShortcuts(currentAppName, mainParseShortcutsCallback);
+		log.info('calling parseShortcuts with currentProgramName', currentProgramName);
+		parseShortcuts(currentProgramName, mainParseShortcutsCallback);
 		parseTimes.push(new Date());
 	} else {
 		// TODO: Handle never ending shortcut parsing better
@@ -1014,14 +1014,14 @@ function parseOrWait() {
 }
 
 function loadWithPeriods(forceReload) {
-	log.info(`entering loadWithPeriods with currentAppName ${currentAppName} and forceReload ${forceReload}`);
+	log.info(`entering loadWithPeriods with currentProgramName ${currentProgramName} and forceReload ${forceReload}`);
 
 	if (!mainWindow) {
 		log.info("no mainWindow when calling loadWithPeriods()");
 	}
 
-	if (!currentAppName) {
-		log.info("no currentAppName when calling loadWithPeriods()");
+	if (!currentProgramName) {
+		log.info("no currentProgramName when calling loadWithPeriods()");
 	}
 
 	if (forceReload) {
@@ -1032,16 +1032,16 @@ function loadWithPeriods(forceReload) {
 
 	getShortcuts((currentShortcuts) => {
 		if (currentShortcuts) {
-			log.info('loaded in memory shortcuts ', currentAppName);
+			log.info('loaded in memory shortcuts ', currentProgramName);
 			console.log(' loadWithPeriods SENDING >>>>>>>>>>> ');
-			console.log(currentAppName);
+			console.log(currentProgramName);
 
-			mainWindow.webContents.send('set-current-program', currentAppName, inMemoryShortcuts[currentAppName]);
-			bubbleWindow.webContents.send('set-current-program-name', currentAppName);
+			mainWindow.webContents.send('set-current-program', currentProgramName, inMemoryShortcuts[currentProgramName]);
+			bubbleWindow.webContents.send('set-current-program-name', currentProgramName);
 
 		} else {
 			getDb().find({
-				name: currentAppName
+				name: currentProgramName
 			}, function(err, res) {
 				log.info('loaded shortcuts, err? ', err);
 				if (err) {
@@ -1069,13 +1069,13 @@ function loadWithPeriods(forceReload) {
 				stringified = stringified.replace(/u002e/g, '.');
 				currentShortcuts.shortcuts = JSON.parse(stringified);
 
-	      inMemoryShortcuts[currentAppName] = currentShortcuts;
+	      inMemoryShortcuts[currentProgramName] = currentShortcuts;
 
 				console.log(' loadWithPeriods SENDING >>>>>>>>>>> ');
-				console.log(currentAppName);
+				console.log(currentProgramName);
 
-				mainWindow.webContents.send('set-current-program', currentAppName, inMemoryShortcuts[currentAppName]);
-				bubbleWindow.webContents.send('set-current-program-name', currentAppName);
+				mainWindow.webContents.send('set-current-program', currentProgramName, inMemoryShortcuts[currentProgramName]);
+				bubbleWindow.webContents.send('set-current-program-name', currentProgramName);
 			});
 		}
 	});
@@ -1188,7 +1188,7 @@ app.on('before-quit', (event) => {
 });
 
 ipcMain.on('get-app-name-sync', function(event) {
-	event.returnValue = currentAppName;
+	event.returnValue = currentProgramName;
 });
 
 // ipcMain.on('set-programs-async', (e) => {
@@ -1248,7 +1248,7 @@ function appSwitched(event, appName) {
 		return;
 	}
 
-	if (compare == currentAppName) {
+	if (compare == currentProgramName) {
 		log.info("cannot switch to same app again");
 		return;
 	}
@@ -1258,13 +1258,13 @@ function appSwitched(event, appName) {
 		return;
 	}
 
-	currentAppName = appName;
+	currentProgramName = appName;
 	loadWithPeriods();
 	console.log('appSwitched  with settings:  ');
 	console.log(inMemoryShortcuts[GLOBAL_SETTINGS_KEY]);
 
-	mainWindow.webContents.send('set-current-program', currentAppName, inMemoryShortcuts[currentAppName]);
-	bubbleWindow.webContents.send('set-current-program-name', currentAppName);
+	mainWindow.webContents.send('set-current-program', currentProgramName, inMemoryShortcuts[currentProgramName]);
+	bubbleWindow.webContents.send('set-current-program-name', currentProgramName);
 
 	if (!inMemoryShortcuts) { 
 		showBubbleWindow();
@@ -1288,6 +1288,7 @@ function appSwitched(event, appName) {
 		// TODO: Make recursive to repeat on timeoutRepeat value
 		const recursing = () => {
 				setTimeout(() => {
+					if (currentProgramName)
 					bubbleWindowTimeout = false;
 					bubbleWindow.webContents.send('set-current-program-name', null);
 					showBubbleWindow();
@@ -1312,20 +1313,20 @@ function mainParseShortcutsCallback(payload) {
 	if (payload) {
 		saveWithoutPeriods(payload);
 	} else {
-		appSwitched(null, currentAppName);
+		appSwitched(null, currentProgramName);
 	}
 
-	const name = (payload) ? payload.name : currentAppName;
-	const program = (payload) ? payload : inMemoryShortcuts[currentAppName];
+	const name = (payload) ? payload.name : currentProgramName;
+	const program = (payload) ? payload : inMemoryShortcuts[currentProgramName];
 	mainWindow.webContents.send('set-current-program', name, program);
 }
 
 ipcMain.on('main-parse-shortcuts', function(event, appName) {
 	log.info('#2 - root index.js, triggered main-parse-shortcuts, with appName: ', appName, typeof appName);
-	if (appName && currentAppName !== appName) {
+	if (appName && currentProgramName !== appName) {
 		appSwitched(event, appName);
 	} else {
-		appSwitched(event, currentAppName);
+		appSwitched(event, currentProgramName);
 	}
 
 	loadWithPeriods(true);
@@ -1340,14 +1341,14 @@ ipcMain.on('update-shortcut-item', (event, shortcutItem) => {
 	var shortcutObject = {};
 	shortcutObject[`shortcuts.${shortcutItem.name}`] = shortcutItem;
 
-	if (!inMemoryShortcuts || !inMemoryShortcuts[currentAppName]) {
+	if (!inMemoryShortcuts || !inMemoryShortcuts[currentProgramName]) {
 		log.info("error: no loaded shortcuts when updating with update-shortcut-item");
 	} else {
-		inMemoryShortcuts[currentAppName].shortcuts[shortcutItem.name] = shortcutItem;
+		inMemoryShortcuts[currentProgramName].shortcuts[shortcutItem.name] = shortcutItem;
 	}
 
 	getDb().update({
-		name: currentAppName
+		name: currentProgramName
 	}, {
 		$set: shortcutObject
 	}, {
@@ -1409,7 +1410,7 @@ ipcMain.on('update-current-app-value', function(event, newAppValue) {
 
 
 	getDb().update({
-		name: currentAppName
+		name: currentProgramName
 	}, {
 		$set: newAppValue
 	}, function(err, doc) {
@@ -1540,7 +1541,7 @@ ipcMain.on('record-gif', (event, listItem) => {
 
   // TODO: Customize from gifRecorderWindow
   let gifPath = "~/Movies/Kaptures";
-  gifRecorderWindow.webContents.send('recording-for-shortcut-in-path', listItem, gifPath, currentAppName);
+  gifRecorderWindow.webContents.send('recording-for-shortcut-in-path', listItem, gifPath, currentProgramName);
   // TODO: Display on the list item itself instead? Less easy to hide in the recording... 
   gifRecorderWindow.show();
 
@@ -1602,10 +1603,10 @@ ipcMain.on('save-gif', (event, newGif, listItem, appName) => {
       // This might update the window with other shortcuts than the one we just recorded a gif for. That is ok
       // because the gif will be visible when they switch back to that app again.
       console.log('savegif  SENDING >>>>>>>>>>> ');
-      console.log(currentAppName);
+      console.log(currentProgramName);
 
-      mainWindow.webContents.send('set-current-program-name', currentAppName);
-      bubbleWindow.webContents.send('set-current-program-name', currentAppName);
+      mainWindow.webContents.send('set-current-program-name', currentProgramName);
+      bubbleWindow.webContents.send('set-current-program-name', currentProgramName);
       log.info("successfuly saved new gif", res);
 		}
 	});
@@ -1647,11 +1648,11 @@ ipcMain.on('open-learn', (e) => {
 
 ipcMain.on('hide-bubble-window', (e, manual) => {
 	// if (manual) {
-	// 	inMemoryHiddenNotifications[currentAppName] = (inMemoryHiddenNotifications[currentAppName] ? inMemoryHiddenNotifications[currentAppName] + 1 : 1);
+	// 	inMemoryHiddenNotifications[currentProgramName] = (inMemoryHiddenNotifications[currentProgramName] ? inMemoryHiddenNotifications[currentProgramName] + 1 : 1);
 
 	// 	// TODO: Display prompt to hide forever?
-	// 	if (!inMemoryShortcuts[currentAppName].hideNotification && inMemoryHiddenNotifications[currentAppName] > 1) {
-	// 		bubbleWindow.webContents.send('prompt-to-hide', currentAppName);
+	// 	if (!inMemoryShortcuts[currentProgramName].hideNotification && inMemoryHiddenNotifications[currentProgramName] > 1) {
+	// 		bubbleWindow.webContents.send('prompt-to-hide', currentProgramName);
 	// 		return;
 	// 	}
 	// }

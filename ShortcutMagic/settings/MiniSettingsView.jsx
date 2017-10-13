@@ -144,10 +144,10 @@ export default class MiniSettingsView extends Component {
             return;
         }
 
-        let currentAppName = ipcRenderer.sendSync('get-app-name-sync');
+        let currentProgramName = ipcRenderer.sendSync('get-app-name-sync');
 
 		getDb().update({
-			name: currentAppName
+			name: currentProgramName
 		}, {
 			$set: this.state
 		}, {
@@ -156,7 +156,7 @@ export default class MiniSettingsView extends Component {
 			if (err) {
 				console.log("Error upserting in minisettingsview set", err, this.state);
 			} else {
-                cachedStyles[currentAppName] = this.state;
+                cachedStyles[currentProgramName] = this.state;
 				console.log("Succeeded in saving minisettingsview style to db: ", this.state);
 			}
 		});
