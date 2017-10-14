@@ -523,8 +523,11 @@ function createWindows() {
 					firstPrograms = res;
 				}
 
-				if (!firstPrograms.find(p => p.name == GLOBAL_SETTINGS_KEY)) {
+				const newGlobalSettings = firstPrograms.find(p => p.name == GLOBAL_SETTINGS_KEY);
+				if (!newGlobalSettings) {
 					firstPrograms.push(inMemoryShortcuts[GLOBAL_SETTINGS_KEY]);
+				} else {
+					inMemoryShortcuts[GLOBAL_SETTINGS_KEY] = Object.assign(inMemoryShortcuts[GLOBAL_SETTINGS_KEY], newGlobalSettings);
 				}
 			}
 

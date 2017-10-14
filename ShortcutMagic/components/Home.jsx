@@ -103,8 +103,14 @@ export default class Home extends Component {
   }
 
   updateItems(currentProgramName, program) {
-    if (!program) program = this.state.programs[currentProgramName];
-    
+    if (!program) {
+       if (this.state && this.state.programs) { 
+        program = this.state.programs[currentProgramName];
+      }
+    } 
+
+    if (!program) return;
+
     if (program.name === GLOBAL_SETTINGS_KEY) {
       this.setState({
         settings: program
@@ -303,7 +309,8 @@ export default class Home extends Component {
 
     console.log('inside render');
     console.log(this.state);
-    console.log('loading? ', this.state && this.state.loading);
+    
+
 
 
     if (this.state && this.loading) {
