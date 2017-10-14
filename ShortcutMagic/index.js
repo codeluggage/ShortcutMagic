@@ -685,7 +685,7 @@ function createMainWindow() {
   console.log(JSON.stringify(inMemoryShortcuts));
 
   if (!inMemoryShortcuts || !inMemoryShortcuts[GLOBAL_SETTINGS_KEY] || !inMemoryShortcuts[GLOBAL_SETTINGS_KEY].survey) {
-  	const noSurveyTimeout = 10000;
+  	const noSurveyTimeout = 120000;
   	console.log('starting with timeout... ', noSurveyTimeout);
 
 		setTimeout(() => {
@@ -695,7 +695,7 @@ function createMainWindow() {
 
 
   } else if (inMemoryShortcuts[GLOBAL_SETTINGS_KEY].survey == "cancelled") {
-  	const cancelledTimeout = 15000;
+  	const cancelledTimeout = 300000;
   	console.log('starting with timeout... ', cancelledTimeout);
 
 		setTimeout(() => {
@@ -988,7 +988,7 @@ function saveWithoutPeriods(payload) {
 
 function parseOrWait() {
 	if (!loadingText) {
-		if (parseTimes.length > 3) {
+		if (parseTimes.length > 5) {
 			// const times = parseTimes.map(t => t.getTime());
 			// let prev;
 			// let deltas = times.map(t => { let ret = 0; if (prev) { ret = t - prev } prev = t; return ret }).sort().reverse();

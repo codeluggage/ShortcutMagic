@@ -834,7 +834,20 @@ export default class Home extends Component {
                 ) : "" }
 
                 {settingsComponent ? settingsComponent : (shortcutTableBody ? shortcutTableBody : (
-                  <h3 style={{margin: '4px'}}>Try switching programs to load shortcuts!</h3>
+                  <div style={{
+                    textAlign: 'center',
+                  }}>
+                    <h3 style={{margin: '4px'}}>Try switching programs to load shortcuts!</h3>
+
+                    <br />
+                    The first time ShortcutMagic learns new shortcuts, it will take a while.
+                    <br />
+                    Please give the little program some time, it only needs to learn the shortcuts once and then it remembers.
+                    <br />
+                    <br />
+
+                    <img src="../assets/learning.png" height="auto" width="auto"></img>
+                  </div>
                 ))}
               </table>
             </div>
