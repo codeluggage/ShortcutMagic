@@ -91,6 +91,11 @@ export default class Home extends Component {
         loading,
       });
     });
+    ipcRenderer.on('show-survey-request', (e) => {
+      this.setState({
+        showSurveyRequest: true,
+      });
+    });
 
     ipcRenderer.on('log', (e, text) => console.log(text));
 
@@ -428,14 +433,18 @@ export default class Home extends Component {
 
                 <td style={{
                 }}>
-                  <button className="btn" style={{
+                  <a style={{
                     padding: '2px 4px',
+                    borderRadius: ".35rem",
+                    borderWidth: ".50rem",
+                    border: '1px solid',
+                    borderColor: '#11D3F5',
                   }} onClick={(e) => {
                     console.log("clicked execute-list-item with ", value);
                     ipcRenderer.send('execute-list-item', value, this.state.currentProgramName);
                   }}>
                     {value.name}
-                  </button> 
+                  </a> 
                 </td>
                 <td>
                   {
@@ -730,7 +739,9 @@ export default class Home extends Component {
       </div>
     );
 
-    console.log('rendering...');
+    console.log('rendering... ', this.state);
+    console.log('rendering... ', (this.state && this.state.showSurveyRequest) ? this.state.showSurveyRequest : undefined);
+
 
     return (
       <div className="window">
@@ -784,6 +795,36 @@ export default class Home extends Component {
                     <th>Rating</th>
                   </tr>
                 </thead>
+
+                {(shortcutTableBody && this.state && this.state.showSurveyRequest) ? (
+                  <div style={{
+                      textAlign: 'center',
+                      top: '20px',
+                      left: '45px',
+                      position: 'absolute',
+                      backgroundColor: '#11D3F5',
+                      borderRadius: ".35rem",
+                      borderWidth: ".50rem",
+                      border: '5px solid',
+                      borderColor: '#11D3F5',
+                    }}>
+                      <b>What is bad in ShortcutMagic? What could be better?</b>
+                      <br />
+                      <br />
+                      <div className="btn btn-primary" style={{ }} onClick={(e) => {
+                        ipcRenderer.send('show-survey-window');
+                        this.setState({
+                          showSurveyRequest: false,
+                        });
+                        ipcRenderer.send('answered-survey');
+                      }}>Answer</div> <i style={{margin: '10px'}}>or</i> <div className="btn btn-negative" style={{ }} onClick={(e) => {
+                        this.setState({
+                          showSurveyRequest: false,
+                        });
+                        ipcRenderer.send('cancelled-survey');
+                      }}>{"Don't answer"}</div>
+                  </div>
+                ) : "" }
 
                 {settingsComponent ? settingsComponent : (shortcutTableBody ? shortcutTableBody : (
                   <h3 style={{margin: '4px'}}>Try switching programs to load shortcuts!</h3>

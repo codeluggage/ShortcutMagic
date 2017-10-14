@@ -66,6 +66,7 @@ const DEFAULT_GLOBAL_SETTINGS = {
 	timeoutRepeat: 0.4,
 	showOnAppSwitch: true,
 	neverShowBubbleWindow: false,
+	survey: false,
 };
 
 // a hacky bad construct holding the shortcuts from the db in memory
@@ -101,7 +102,7 @@ log.info('App starting...');
 app.setName("ShortcutMagic");
 
 // Start up a survey window after app has been running for a long time
-setTimeout(function() { if (!surveyWindow || !surveyWindow.isVisible()) createSurveyWindow()}, 30000);
+// setTimeout(function() { if (!surveyWindow || !surveyWindow.isVisible()) createSurveyWindow()}, 30000);
 
 	// TODO: Properly implement auto update releases
 // autoUpdater.on('checking-for-update', () => {
@@ -674,6 +675,31 @@ function createMainWindow() {
   	app.dock.show();
   	mainWindow.show();
   });
+
+
+  console.log('inMemoryShortcuts when mainWindow is created: ');
+  console.log(inMemoryShortcuts);
+  console.log(JSON.stringify(inMemoryShortcuts));
+
+  if (!inMemoryShortcuts || !inMemoryShortcuts[GLOBAL_SETTINGS_KEY] || !inMemoryShortcuts[GLOBAL_SETTINGS_KEY].survey) {
+  	const noSurveyTimeout = 10000;
+  	console.log('starting with timeout... ', noSurveyTimeout);
+
+		setTimeout(() => {
+			console.log('survey firing ');
+			mainWindow.webContents.send('show-survey-request');
+		}, noSurveyTimeout);
+
+
+  } else if (inMemoryShortcuts[GLOBAL_SETTINGS_KEY].survey == "cancelled") {
+  	const cancelledTimeout = 15000;
+  	console.log('starting with timeout... ', cancelledTimeout);
+
+		setTimeout(() => {
+			console.log('SURVEY > FIRING ');
+			mainWindow.webContents.send('show-survey-request');
+		}, cancelledTimeout);
+  }
 }
 
 function debugEverything() {
@@ -840,18 +866,12 @@ function createWelcomeWindow() {
 }
 
 function createSurveyWindow() {
-	if (surveyWindow) {
-		log.info('surveyWindow already existed, showing window but not creating');
-		setTimeout(surveyWindow.show, 10000); // Let webview load on slow connections
-		return;
-	}
-
 	surveyWindow = new BrowserWindow({
-		show: false,
+		show: true,
 		x: 350,
 		y: 100,
-		width: 800,
-		height: 600,
+		width: 806,
+		height: 606,
 		title: "Help make ShortcutMagic better by giving feedback",
 		alwaysOnTop: true,
 		frame: true,
@@ -863,17 +883,6 @@ function createSurveyWindow() {
 	// TODO: prevent closing and just hide
 	surveyWindow.on('closed', event => {
 		log.info('in surveyWindow closed');
-	});
-
-	surveyWindow.on('closed', (e) => {
-		if (!isQuitting) {
-			e.preventDefault();
-			surveyWindow.hide();
-		}
-	});
-
-	surveyWindow.on('ready', event => {
-		setTimeout(surveyWindow.show, 10000); // Let webview load on slow connections
 	});
 }
 
@@ -988,12 +997,12 @@ function parseOrWait() {
 				return;
 			}
 		}
+		hideMainWindow();
 
 		loadingText = "Learning...";
 		// mainWindow.webContents.send('set-loading', true);
 		trayObject.setTitle(loadingText);
 		hideBubbleWindow();
-		hideMainWindow();
 
 		log.info('calling parseShortcuts with currentProgramName', currentProgramName);
 		parseShortcuts(currentProgramName, mainParseShortcutsCallback);
@@ -1694,4 +1703,28 @@ ipcMain.on('configure-suggestions', (e, mode) => {
 			inMemoryShortcuts[GLOBAL_SETTINGS_KEY].neverShowBubbleWindow = false;
 			break;
 	}
-})
+});
+
+ipcMain.on('show-survey-window', (e) => {
+	createSurveyWindow();
+});
+
+ipcMain.on('answered-survey', (e) => {
+	getDb().update({
+		name: GLOBAL_SETTINGS_KEY,
+	}, {
+		$set: {
+			survey: 'answered',
+		}
+	});
+});
+
+ipcMain.on('cancelled-survey', (e) => {
+	getDb().update({
+		name: GLOBAL_SETTINGS_KEY,
+	}, {
+		$set: {
+			survey: 'cancelled',
+		}
+	});
+});
