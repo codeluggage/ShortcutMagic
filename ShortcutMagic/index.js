@@ -988,17 +988,17 @@ function saveWithoutPeriods(payload) {
 
 function parseOrWait() {
 	if (!loadingText) {
-		if (parseTimes.length > 5) {
-			const times = parseTimes.map(t => t.getTime());
-			let prev;
-			let deltas = times.map(t => { let ret = 0; if (prev) { ret = t - prev } prev = t; return ret }).sort().reverse();
-			if (deltas[0] + deltas[1] + deltas[2] < 500) {
-				//temp
+		if (parseTimes.length > 3) {
+			// const times = parseTimes.map(t => t.getTime());
+			// let prev;
+			// let deltas = times.map(t => { let ret = 0; if (prev) { ret = t - prev } prev = t; return ret }).sort().reverse();
+			// if (deltas[0] + deltas[1] + deltas[2] < 500) {
+			// 	//temp
 				console.log('>>>>>>>>>>>>>>>> repeating too often, bailing out');
 				mainWindow.webContents.send('permission-failure');
 				parseTimes = [];
 				return;
-			}
+			// }
 		}
 		hideMainWindow();
 
