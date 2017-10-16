@@ -14,14 +14,11 @@ export default class AboutView extends Component {
         alignContent: 'center',
         alignItems: 'center',
       }}>
-        <h1>About ShortcutMagic</h1>
-        <br />
-        <br />
-
         <img src="../assets/wizard.png" style={{
-          height: '100px',
+          height: '75px',
         }}></img>
-        <br />
+
+        <h1>About ShortcutMagic</h1>
 
         <div>
           ShortcutMagic is an open project. You can contribute! 
@@ -45,7 +42,7 @@ export default class AboutView extends Component {
           <br />
         </div>
       </div>
-      );
+    );
   }
 };
 

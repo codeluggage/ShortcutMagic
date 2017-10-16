@@ -760,6 +760,103 @@ export default class Home extends Component {
     console.log('rendering... ', (this.state && this.state.showSurveyRequest) ? this.state.showSurveyRequest : undefined);
 
 
+
+    const mainPane = this.state && this.state.showSurveyRequest && shortcutTableBody ? (
+      <div className="pane" style={{
+        textAlign: 'center',
+      }}>
+        <table className="table-striped">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Shortcut</th>
+              <th>Menu</th>
+              <th>Up</th>
+              <th>Down</th>
+              <th>Rating</th>
+            </tr>
+          </thead>
+          <div style={{
+              textAlign: 'center',
+              top: '20px',
+              left: '45px',
+              position: 'absolute',
+              backgroundColor: '#11D3F5',
+              borderRadius: ".35rem",
+              borderWidth: ".50rem",
+              border: '5px solid',
+              borderColor: '#11D3F5',
+            }}>
+              <b>What is bad in ShortcutMagic? What could be better?</b>
+              <br />
+              <br />
+              <div className="btn btn-primary" style={{ }} onClick={(e) => {
+                ipcRenderer.send('show-survey-window');
+                this.setState({
+                  showSurveyRequest: false,
+                });
+                ipcRenderer.send('answered-survey');
+              }}>Answer</div> <i style={{margin: '10px'}}>or</i> <div className="btn btn-negative" style={{ }} onClick={(e) => {
+                this.setState({
+                  showSurveyRequest: false,
+                });
+                ipcRenderer.send('cancelled-survey');
+              }}>{"Don't answer"}</div>
+              {shortcutTableBody}
+          </div>
+        </table>
+      </div>
+    ) : (settingsComponent ? (
+      <div className="pane" style={{
+        textAlign: 'center',
+      }}>
+        {settingsComponent}
+      </div>
+    ) : (shortcutTableBody ? (
+      <div className="pane" style={{
+        textAlign: 'center',
+      }}>
+        <table className="table-striped">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Shortcut</th>
+              <th>Menu</th>
+              <th>Up</th>
+              <th>Down</th>
+              <th>Rating</th>
+            </tr>
+          </thead>
+          {shortcutTableBody}
+        </table>
+      </div>
+    ) : (
+      <div className="pane" style={{
+        textAlign: 'center',
+        padding: '15px',
+      }}>
+        <h3 style={{margin: '4px'}}>Try switching programs to load shortcuts!</h3>
+
+        <br />
+        At the top of your screen in the menu bar, 
+        <br />
+        this hat icon will show if ShortcutMagic is learning or not:
+        <br />
+
+        <img src="../assets/learning.png" height="auto" width="auto"></img>
+
+        <br />
+        <br />
+        The first time ShortcutMagic learns new shortcuts, 
+        <br />
+        it will take a while (from 15 seconds to about 2 minutes).
+        <br />
+        Please give the little program some time. 
+        <br />
+        It only needs to learn the shortcuts the first time and then it remembers forever.
+      </div>
+    )));
+
     return (
       <div className="window">
         <div className="window-content">
@@ -798,69 +895,7 @@ export default class Home extends Component {
             </header>
               {programTitles ? programTitles : ""}
             </div>
-            <div className="pane" style={{
-              textAlign: 'center',
-            }}>
-              <table className="table-striped">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Shortcut</th>
-                    <th>Menu</th>
-                    <th>Up</th>
-                    <th>Down</th>
-                    <th>Rating</th>
-                  </tr>
-                </thead>
-
-                {(shortcutTableBody && this.state && this.state.showSurveyRequest) ? (
-                  <div style={{
-                      textAlign: 'center',
-                      top: '20px',
-                      left: '45px',
-                      position: 'absolute',
-                      backgroundColor: '#11D3F5',
-                      borderRadius: ".35rem",
-                      borderWidth: ".50rem",
-                      border: '5px solid',
-                      borderColor: '#11D3F5',
-                    }}>
-                      <b>What is bad in ShortcutMagic? What could be better?</b>
-                      <br />
-                      <br />
-                      <div className="btn btn-primary" style={{ }} onClick={(e) => {
-                        ipcRenderer.send('show-survey-window');
-                        this.setState({
-                          showSurveyRequest: false,
-                        });
-                        ipcRenderer.send('answered-survey');
-                      }}>Answer</div> <i style={{margin: '10px'}}>or</i> <div className="btn btn-negative" style={{ }} onClick={(e) => {
-                        this.setState({
-                          showSurveyRequest: false,
-                        });
-                        ipcRenderer.send('cancelled-survey');
-                      }}>{"Don't answer"}</div>
-                  </div>
-                ) : "" }
-
-                {settingsComponent ? settingsComponent : (shortcutTableBody ? shortcutTableBody : (
-                  <div style={{
-                    textAlign: 'center',
-                  }}>
-                    <h3 style={{margin: '4px'}}>Try switching programs to load shortcuts!</h3>
-
-                    <br />
-                    The first time ShortcutMagic learns new shortcuts, it will take a while.
-                    <br />
-                    Please give the little program some time, it only needs to learn the shortcuts once and then it remembers.
-                    <br />
-                    <br />
-
-                    <img src="../assets/learning.png" height="auto" width="auto"></img>
-                  </div>
-                ))}
-              </table>
-            </div>
+            {mainPane}
           </div>
         </div>
       </div>
