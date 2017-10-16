@@ -440,12 +440,22 @@ export default class Home extends Component {
 
                 <td style={{
                 }}>
-                  <a style={{
+                  <a id={value.name + value.menuName} style={{
                     padding: '2px 4px',
                     borderRadius: ".35rem",
                     borderWidth: ".50rem",
                     border: '1px solid',
                     borderColor: '#11D3F5',
+                  }} onMouseEnter={(e) => {
+                    const a = document.getElementById(value.name + value.menuName);
+                    if (a) {
+                      a.style.backgroundColor = '#11D3F5';
+                    }
+                  }} onMouseLeave={(e) => {
+                    const a = document.getElementById(value.name + value.menuName);
+                    if (a) {
+                      a.style.backgroundColor = '';
+                    }
                   }} onClick={(e) => {
                     console.log("clicked execute-list-item with ", value);
                     ipcRenderer.send('execute-list-item', value, this.state.currentProgramName);
