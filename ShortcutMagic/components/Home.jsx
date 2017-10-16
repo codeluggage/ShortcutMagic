@@ -373,7 +373,6 @@ export default class Home extends Component {
               {settings.neverShowBubbleWindow ? (
                 <div style={{
                   padding: '25px',
-                  // textAlign: 'left',
                 }}>
                   <div className="checkbox">
                     <label>
@@ -399,7 +398,6 @@ export default class Home extends Component {
               ) : (
                 <div style={{
                   padding: '25px',
-                  // textAlign: 'left',
                 }}>
                   <div className="checkbox">
                     <label>
