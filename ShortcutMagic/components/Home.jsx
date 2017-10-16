@@ -713,8 +713,8 @@ export default class Home extends Component {
                 });
                 ipcRenderer.send('cancelled-survey');
               }}>{"Don't answer"}</div>
-              {shortcutTableBody}
           </div>
+          {shortcutTableBody}
         </table>
       </div>
     ) : (shortcutTableBody ? (
