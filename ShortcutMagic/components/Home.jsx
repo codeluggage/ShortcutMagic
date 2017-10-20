@@ -323,22 +323,6 @@ export default class Home extends Component {
       return (
         <div>
           <div style={{
-              position: 'relative',
-          }} onClick={(e) => {
-            this.setState({
-              settingsPaneActive: false,
-            });
-          }}>
-            <span className="icon icon-cancel" style={{
-              top: '6px',
-              left: '6px',
-              margin: '3px',
-              height: '10px',
-              position: 'absolute',
-            }}></span>
-          </div>
-
-          <div style={{
             textAlign: 'center',
           }}>
             <ReactTooltip id='neverShowTooltip'
@@ -390,7 +374,7 @@ export default class Home extends Component {
                         this.setState({
                           settings: Object.assign(this.state.settings, newState)
                         });
-                      }}/> Never show random shortcuts <span className="icon icon-help-circled" data-for='neverShowTooltip' data-iscapture="true" 
+                      }}/> Never show <span className="icon icon-help-circled" data-for='neverShowTooltip' data-iscapture="true" 
                       data-tip='Completely hide this suggestion window and never show it.'></span>
                     </label> 
                   </div>
@@ -417,7 +401,7 @@ export default class Home extends Component {
                         this.setState({
                           settings: Object.assign(this.state.settings, newState)
                         });
-                      }}/> Never show random shortcuts <span className="icon icon-help-circled" data-for='neverShowTooltip' data-iscapture="true" 
+                      }}/> Never show <span className="icon icon-help-circled" data-for='neverShowTooltip' data-iscapture="true" 
                       data-tip='Completely hide this suggestion window and never show it.'></span>
                     </label>
                   </div>
@@ -458,7 +442,7 @@ export default class Home extends Component {
                         }}/>
 
                       )}
-                      Show when app switches <span className="icon icon-help-circled" data-for='appSwitchTooltip' data-iscapture="true" 
+                      Show when apps focus <span className="icon icon-help-circled" data-for='appSwitchTooltip' data-iscapture="true" 
                         data-tip='Each time you change the active program, the suggestion window will show.'></span>
                     </label>
                   </div>
@@ -489,7 +473,7 @@ export default class Home extends Component {
                           });
                         }}/>
                       )} 
-                      Show on repeat <input id="timeoutRepeatMinutes" type="number" step="0.20" style={{
+                      Show mintues later <input id="timeoutRepeatMinutes" type="number" step="0.20" style={{
                         width: '40px',
                       }} placeholder={this.state.settings.timeoutRepeat ? this.state.settings.timeoutRepeat : "0"} onChange={e => {
                           console.log('inside this.state.timeoutRepeat');
@@ -512,11 +496,28 @@ export default class Home extends Component {
                   </div>
                 </div>
               )}
-            <button id="reload-button" className="btn btn-negative" onClick={() => {
+            Delete {this.state.currentProgramName} shortcuts and learn them again <button id="reload-button" className="btn btn-negative" onClick={() => {
               console.log('sending reloadShortcuts from ipcRenderer');
               ipcRenderer.send('main-parse-shortcuts', this.state.currentProgramName);
-            }}>Re-parse {this.state.currentProgramName}</button> <span className="icon icon-help-circled" data-for='neverShowTooltip' data-iscapture="true" 
+            }}>Learn again</button> <span className="icon icon-help-circled" data-for='neverShowTooltip' data-iscapture="true" 
               data-tip={`Delete the shortcuts from ${this.state.currentProgramName} and parse them again.`}></span>
+
+            <br />
+            <br />
+
+            <div className="btn btn-primary" style={{
+              margin: '2px',
+            }} onClick={(e) => {
+              this.setState({
+                settingsPaneActive: false,
+              });
+            }}>
+              <p style={{
+                fontSize: 18,
+                fontWeight: 400,
+                margin: '2px',
+              }}>OK</p>
+            </div>
           </div>
         </div>
       );
@@ -705,7 +706,7 @@ export default class Home extends Component {
                   showSurveyRequest: false,
                 });
                 ipcRenderer.send('answered-survey');
-              }}>Answer</div> <i style={{margin: '10px'}}>or</i> <div className="btn btn-negative" style={{ }} onClick={(e) => {
+              }}>Answer</div> <i style={{margin: '10px'}}><b>or</b></i> <div className="btn btn-negative" style={{ }} onClick={(e) => {
                 this.setState({
                   showSurveyRequest: false,
                 });
