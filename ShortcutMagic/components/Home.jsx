@@ -436,7 +436,7 @@ export default class Home extends Component {
                         }}/>
 
                       )}
-                      Show when apps focus <span className="icon icon-help-circled" data-for='appSwitchTooltip' data-iscapture="true" 
+                      Show when switching apps <span className="icon icon-help-circled" data-for='appSwitchTooltip' data-iscapture="true" 
                         data-tip='Each time you change the active program, the suggestion window will show.'></span>
                     </label>
                   </div>
@@ -467,7 +467,7 @@ export default class Home extends Component {
                           });
                         }}/>
                       )} 
-                      Show mintues later <input id="timeoutRepeatMinutes" type="number" step="0.20" style={{
+                      Show <input id="timeoutRepeatMinutes" type="number" step="0.20" style={{
                         width: '40px',
                       }} placeholder={this.state.settings.timeoutRepeat ? this.state.settings.timeoutRepeat : "0"} onChange={e => {
                           console.log('inside this.state.timeoutRepeat');
@@ -485,7 +485,7 @@ export default class Home extends Component {
                           this.setState({
                             settings: Object.assign(this.state.settings, newState)
                           });
-                        }}/> <span className="icon icon-help-circled" data-for='timeoutRepeatTooltip' data-iscapture="true" data-tip="How often to show this window"></span>
+                        }}/> <span className="icon icon-help-circled" data-for='timeoutRepeatTooltip' data-iscapture="true" data-tip="How often to show this window"></span> minutes later 
                     </label>
                   </div>
                 </div>
