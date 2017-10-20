@@ -37,8 +37,6 @@ let oldMainWindowBounds = defaultFullBounds;
 let currentProgramName = "ShortcutMagic-mac"; // TODO: Check for bugs with this when opening ShortcutMagic the first time
 // controls the tray of the application
 let trayObject;
-// First batch of loaded shortcuts for browserwindows to immediately use
-let firstPrograms = [];
 // Measure how often we switch programs and try to parse new shortcuts, used to avoid looping endlessly when permissions are missing
 let parseTimes = [];
 // Show bubblewindow at intervals
@@ -321,7 +319,7 @@ function createBubbleWindow() {
   });
 
   bubbleWindow.on('ready-to-show', (e) => {
-  	bubbleWindow.webContents.send('set-programs', firstPrograms, currentProgramName);
+  	bubbleWindow.webContents.send('set-programs', inMemoryShortcuts, currentProgramName);
   	showBubbleWindow();
   })
 
@@ -501,7 +499,7 @@ function permissionAttempt(cb) {
 }
 
 function createWindows() {
-	console.log('createWindows called with firstPrograms length: ', firstPrograms.length);
+	console.log('createWindows called with inMemoryShortcuts length: ', inMemoryShortcuts.length);
 
 	if (!global.folderPath) {
 		console.log('setting folderpath on global, was -> is');
@@ -519,16 +517,13 @@ function createWindows() {
 			} else {
 				if (!res) {
 					log.info('errored during db find: ', err);
-				} else {
-					firstPrograms = res;
+					return;
 				}
 
-				const newGlobalSettings = firstPrograms.find(p => p.name == GLOBAL_SETTINGS_KEY);
-				if (!newGlobalSettings) {
-					firstPrograms.push(inMemoryShortcuts[GLOBAL_SETTINGS_KEY]);
-				} else {
-					inMemoryShortcuts[GLOBAL_SETTINGS_KEY] = Object.assign(inMemoryShortcuts[GLOBAL_SETTINGS_KEY], newGlobalSettings);
-				}
+	      let programDict = {};
+	      res.forEach(s => programDict[s.name] = s);
+				programDict[GLOBAL_SETTINGS_KEY] = Object.assign(inMemoryShortcuts[GLOBAL_SETTINGS_KEY], programDict[GLOBAL_SETTINGS_KEY]);
+				inMemoryShortcuts = programDict;
 			}
 
 			// TODO: Re-enable old windows here again
@@ -673,8 +668,8 @@ function createMainWindow() {
   });
 
   mainWindow.on('ready-to-show', (e) => {
-  	mainWindow.webContents.send('set-programs', firstPrograms, currentProgramName);
-  	bubbleWindow.webContents.send('set-programs', firstPrograms, currentProgramName);
+  	mainWindow.webContents.send('set-programs', inMemoryShortcuts, currentProgramName);
+  	bubbleWindow.webContents.send('set-programs', inMemoryShortcuts, currentProgramName);
   	app.dock.show();
   	mainWindow.show();
   });
@@ -690,7 +685,13 @@ function createMainWindow() {
 
 		setTimeout(() => {
 			console.log('survey firing ');
-			mainWindow.webContents.send('show-survey-request');
+			// Check if mainWindow exists in case we are about to shut down:
+			if (mainWindow) {
+				mainWindow.webContents.send('show-survey-request');
+				console.log('survey fired');
+			} else {
+				console.log('survey not fired, no mainWindow');
+			}
 		}, noSurveyTimeout);
 
 
@@ -979,8 +980,11 @@ function saveWithoutPeriods(payload) {
 					return;
 				}
 
-				mainWindow.webContents.send('set-programs', res, savePayload.name);
-				bubbleWindow.webContents.send('set-programs', res, savePayload.name);
+	      let programDict = {};
+	      res.forEach(s => programDict[s.name] = s);
+
+				mainWindow.webContents.send('set-programs', programDict, savePayload.name);
+				bubbleWindow.webContents.send('set-programs', programDict, savePayload.name);
 			});
 		}
 	});

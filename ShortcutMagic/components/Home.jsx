@@ -56,12 +56,9 @@ export default class Home extends Component {
       window.document.getElementById("search-field").value = "";
       this.updateItems(currentProgramName, items);
     });
-    ipcRenderer.on('set-programs', (event, programs, currentProgramName) => {
-      console.log('set-programs: ', programs, currentProgramName);
-      let programDict = {};
-      programs.forEach(s => programDict[s.name] = s);
-      this.updatePrograms(currentProgramName, programDict);
-    });
+
+    ipcRenderer.on('set-programs', this.updatePrograms);
+
     ipcRenderer.on('no-shortcuts-visual-notification', (event) => {
       console.log("TODO: Show that the list item execution might not work");
     });
@@ -104,10 +101,6 @@ export default class Home extends Component {
   }
 
   updateSettings(settings) {
-
-
-
-
     this.setState({
       settings,
     });
@@ -141,7 +134,7 @@ export default class Home extends Component {
     });
   }
 
-  updatePrograms(currentProgramName, programs) {
+  updatePrograms(event, programs, currentProgramName) {
     if (!currentProgramName || currentProgramName == "") {
       return;
     }
@@ -314,8 +307,9 @@ export default class Home extends Component {
   }
 
   render() {
-    console.log('inside render');
-    console.log(this.state);
+    console.log('inside render with settings');
+    console.log(this.state ? this.state.settings : undefined);
+    console.log(this.state && this.state.programs ? this.state.programs[GLOBAL_SETTINGS_KEY] : undefined);
 
     const settings = this.state && this.state.settings ? this.state.settings : {};
 
