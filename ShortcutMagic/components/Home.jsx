@@ -39,6 +39,7 @@ export default class Home extends Component {
     this.filterListKeyDown = this.filterListKeyDown.bind(this);
     this.focusSearchField = this.focusSearchField.bind(this);
     this.toggleTimeout = this.toggleTimeout.bind(this);
+    this.updateSettings = this.updateSettings.bind(this);
 
     ipcRenderer.on('focus-search-field', this.focusSearchField);
     ipcRenderer.on('focus', (event, focus) => {
@@ -55,12 +56,9 @@ export default class Home extends Component {
       window.document.getElementById("search-field").value = "";
       this.updateItems(currentProgramName, items);
     });
-    ipcRenderer.on('set-programs', (event, programs, currentProgramName) => {
-      console.log('set-programs: ', programs, currentProgramName);
-      let programDict = {};
-      programs.forEach(s => programDict[s.name] = s);
-      this.updatePrograms(currentProgramName, programDict);
-    });
+
+    ipcRenderer.on('set-programs', this.updatePrograms);
+
     ipcRenderer.on('no-shortcuts-visual-notification', (event) => {
       console.log("TODO: Show that the list item execution might not work");
     });
@@ -102,6 +100,12 @@ export default class Home extends Component {
     // ipcRenderer.send('set-programs-async');
   }
 
+  updateSettings(settings) {
+    this.setState({
+      settings,
+    });
+  }
+
   updateItems(currentProgramName, program) {
     if (!program) {
        if (this.state && this.state.programs) { 
@@ -112,10 +116,7 @@ export default class Home extends Component {
     if (!program) return;
 
     if (program.name === GLOBAL_SETTINGS_KEY) {
-      this.setState({
-        settings: program
-      });
-
+      this.updateSettings(program);
       return;
     }
 
@@ -133,7 +134,7 @@ export default class Home extends Component {
     });
   }
 
-  updatePrograms(currentProgramName, programs) {
+  updatePrograms(event, programs, currentProgramName) {
     if (!currentProgramName || currentProgramName == "") {
       return;
     }
@@ -306,125 +307,215 @@ export default class Home extends Component {
   }
 
   render() {
+    console.log('inside render with settings');
+    console.log(this.state ? this.state.settings : undefined);
+    console.log(this.state && this.state.programs ? this.state.programs[GLOBAL_SETTINGS_KEY] : undefined);
 
-    console.log('inside render');
-    console.log(this.state);
-    
+    const settings = this.state && this.state.settings ? this.state.settings : {};
 
-
-
-    if (this.state && this.loading) {
+    if (this.state && this.state.settingsPaneActive) {
       return (
-        <div className="window">
-          <div className="window-content">
-            <div className="pane-group">
-              <div className="pane pane-sm sidebar">
-              <header className="toolbar toolbar-header">
-                <div className="toolbar-actions" style={{
-                  display: 'flex',
-                  flexDirection: 'row',
+        <div>
+          <div style={{
+            textAlign: 'center',
+          }}>
+            <ReactTooltip id='neverShowTooltip'
+              place='bottom'
+              type={tooltipEffect.type}
+              effect={tooltipEffect.effect}
+              multiline={true}/>
+
+            <ReactTooltip id='timeoutRepeatTooltip'
+              place='bottom'
+              type={tooltipEffect.type}
+              effect={tooltipEffect.effect}
+              multiline={true}/>
+
+            <ReactTooltip id='appSwitchTooltip'
+              place='bottom'
+              type={tooltipEffect.type}
+              effect={tooltipEffect.effect}
+              multiline={true}/>
+
+            <h3>Continually Learn With Suggestions</h3>
+            <br />
+            <i>Suggestions look like this:</i>
+            <br />
+            <br />
+            <img src="../assets/bubble-window.png" style={{
+              width: 'auto',
+              height: 'auto',
+            }}></img>
+            <br />
+
+              {settings.neverShowBubbleWindow ? (
+                <div style={{
+                  padding: '25px',
                 }}>
-                  <input className="form-control" type="text" id="search-field" placeholder="Search" style={{
-                    marginTop: '6px',
-                    marginLeft: '6px',
-                    flex: 4,
-                  }} />
+                  <div className="checkbox">
+                    <label>
+                      <input id="alwaysHideCheckbox" type="checkbox" defaultChecked onChange={e => {
 
-                  <button className="btn btn-default" type="button" onClick={e => {
-                    ipcRenderer.send('open-about');
-                  }}>
-                    <span style={{
-                      flex: 1,
-                    }} className="icon icon-help-circled"></span>
-                  </button>
+                        console.log('inside alwaysHideCheckbox');
+                        console.log(e.targetValue);
+                        console.log(e.currentTarget);
+                        console.log(e.target);
+                        const newState = {
+                          neverShowBubbleWindow: false,
+                        };
 
-                  <button className="btn btn-default" type="button" >
-                    <span style={{
-                      flex: 1,
-                    }} className="icon icon-cog"></span>
-                  </button>
+                        ipcRenderer.send('save-app-settings', newState);
+                        this.setState({
+                          settings: Object.assign(this.state.settings, newState)
+                        });
+                      }}/> Never show <span className="icon icon-help-circled" data-for='neverShowTooltip' data-iscapture="true" 
+                      data-tip='Completely hide this suggestion window and never show it.'></span>
+                    </label> 
+                  </div>
                 </div>
-              </header>
-                {programTitles ? programTitles : ""}
-              </div>
-              <div className="pane" style={{
-                textAlign: 'center',
-              }}>
-                <table className="table-striped">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Shortcut</th>
-                      <th>Menu</th>
-                      <th>Up</th>
-                      <th>Down</th>
-                      <th>Rating</th>
-                    </tr>
-                  </thead>
-                  <h3 style={{margin: '4px'}}>Loading...</h3>
-                </table>
-              </div>
+              ) : (
+                <div style={{
+                  padding: '25px',
+                }}>
+                  <div className="checkbox">
+                    <label>
+                      <input id="alwaysHideCheckbox" type="checkbox" onChange={e => {
+
+                        console.log('inside alwaysHideCheckbox');
+                        
+                        console.log(e.targetValue);
+                        console.log(e.currentTarget);
+                        console.log(e.target);
+
+                        const newState = {
+                          neverShowBubbleWindow: true,
+                        };
+
+                        ipcRenderer.send('save-app-settings', newState);
+                        this.setState({
+                          settings: Object.assign(this.state.settings, newState)
+                        });
+                      }}/> Never show <span className="icon icon-help-circled" data-for='neverShowTooltip' data-iscapture="true" 
+                      data-tip='Completely hide this suggestion window and never show it.'></span>
+                    </label>
+                  </div>
+                  <div className="checkbox">
+                    <label>
+                      {settings.showOnAppSwitch ? (
+
+                        <input id="appSwitchCheckbox" type="checkbox" defaultChecked onChange={e => {
+
+                          console.log('inside appSwitchCheckbox');
+                          console.log(e.targetValue);
+                          console.log(e.currentTarget);
+                          console.log(e.target);
+                          const newState = {
+                            showOnAppSwitch: false,
+                          };
+
+                          ipcRenderer.send('save-app-settings', newState);
+                          this.setState({
+                            settings: Object.assign(this.state.settings, newState)
+                          });
+                        }}/>
+                      ) : (
+                        <input id="appSwitchCheckbox" type="checkbox" onChange={e => {
+                          console.log('inside appSwitchCheckbox');
+                          console.log(e.targetValue);
+                          console.log(e.currentTarget);
+                          console.log(e.target);
+
+                          const newState = {
+                            showOnAppSwitch: true,
+                          };
+
+                          ipcRenderer.send('save-app-settings', newState);
+                          this.setState({
+                            settings: Object.assign(this.state.settings, newState)
+                          });
+                        }}/>
+
+                      )}
+                      Show when switching apps <span className="icon icon-help-circled" data-for='appSwitchTooltip' data-iscapture="true" 
+                        data-tip='Each time you change the active program, the suggestion window will show.'></span>
+                    </label>
+                  </div>
+
+                  <div className="checkbox">
+                    <label>
+                      {settings.timeoutRepeat ? (
+                        <input id="timeoutRepeatCheckbox" type="checkbox" defaultChecked onChange={e => {
+                          const newState = {
+                            timeoutRepeat: false,
+                          };
+
+                          ipcRenderer.send('save-app-settings', newState);
+                          this.setState({
+                            settings: Object.assign(this.state.settings, newState)
+                          });
+                        }}/>
+                      ) : (
+                        <input id="timeoutRepeatCheckbox" type="checkbox" onChange={e => {
+                          const val = document.getElementById('timeoutRepeatMinutes').value;
+                          const newState = {
+                            timeoutRepeat: val && val != "?" ? Number(val) : false,
+                          };
+
+                          ipcRenderer.send('save-app-settings', newState);
+                          this.setState({
+                            settings: Object.assign(this.state.settings, newState)
+                          });
+                        }}/>
+                      )} 
+                      Show <input id="timeoutRepeatMinutes" type="number" step="0.20" style={{
+                        width: '40px',
+                      }} placeholder={this.state.settings.timeoutRepeat ? this.state.settings.timeoutRepeat : "0"} onChange={e => {
+                          console.log('inside this.state.timeoutRepeat');
+                          
+                          console.log(e.targetValue);
+                          console.log(e.currentTarget);
+                          console.log(e.target);
+
+                          const val = document.getElementById('timeoutRepeatMinutes').value;
+                          const newState = {
+                            timeoutRepeat: val ? Number(val) : false,
+                          };
+
+                          ipcRenderer.send('save-app-settings', newState);
+                          this.setState({
+                            settings: Object.assign(this.state.settings, newState)
+                          });
+                        }}/> <span className="icon icon-help-circled" data-for='timeoutRepeatTooltip' data-iscapture="true" data-tip="How often to show this window"></span> minutes later 
+                    </label>
+                  </div>
+                </div>
+              )}
+            Delete {this.state.currentProgramName} shortcuts and learn them again <button id="reload-button" className="btn btn-negative" onClick={() => {
+              console.log('sending reloadShortcuts from ipcRenderer');
+              ipcRenderer.send('main-parse-shortcuts', this.state.currentProgramName);
+            }}>Learn again</button> <span className="icon icon-help-circled" data-for='neverShowTooltip' data-iscapture="true" 
+              data-tip={`Delete the shortcuts from ${this.state.currentProgramName} and parse them again.`}></span>
+
+            <br />
+            <br />
+
+            <div className="btn btn-primary" style={{
+              margin: '2px',
+            }} onClick={(e) => {
+              this.setState({
+                settingsPaneActive: false,
+              });
+            }}>
+              <p style={{
+                fontSize: 18,
+                fontWeight: 400,
+                margin: '2px',
+              }}>OK</p>
             </div>
           </div>
         </div>
       );
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // if (this.state && this.state.loading) {
-    //   return (
-    //     <div className="window">
-    //       <div className="window-content">
-    //         <div className="pane-group">
-    //           <div className="pane pane-sm sidebar">
-    //             Loading
-    //           </div>
-    //         </div>
-    //       </div>
-    //     </div>
-    //   );
-    // }
-
-      // return (
-      //   <div className="window">
-      //     <div className="window-content">
-      //       <div style={{
-      //         position: 'absolute',
-      //         top: '50%',
-      //         left: '50%',
-      //         width: '120px',
-      //         height: '120px',
-      //         margin: '-60px 0 0 -60px',
-      //         "-webkit-animation": 'spin 2s linear infinite',
-      //         "-moz-animation": 'spin 2s linear infinite',
-      //         animation: 'spin 2s linear infinite',
-      //         "@-moz-keyframes": "spin 100%" ,
-      //         "-moz-transform": "rotate(360deg)",
-      //         "@-webkit-keyframes": "spin 100%",
-      //         "-webkit-transform": "rotate(360deg)",
-      //         "@keyframes": "spin 100%",
-      //         "-webkit-transform": "rotate(360deg)",
-      //         transform: "rotate(360deg)",
-      //       }}>
-      //         <img src="../assets/wizard.png"></img>
-      //       </div>
-      //     </div>
-      //   </div>
-      // );
-    // }
-
 
     let shortcutTableBody;
     let programTitles;
@@ -440,12 +531,22 @@ export default class Home extends Component {
 
                 <td style={{
                 }}>
-                  <a style={{
+                  <a id={value.name + value.menuName} style={{
                     padding: '2px 4px',
                     borderRadius: ".35rem",
                     borderWidth: ".50rem",
                     border: '1px solid',
                     borderColor: '#11D3F5',
+                  }} onMouseEnter={(e) => {
+                    const a = document.getElementById(value.name + value.menuName);
+                    if (a) {
+                      a.style.backgroundColor = '#11D3F5';
+                    }
+                  }} onMouseLeave={(e) => {
+                    const a = document.getElementById(value.name + value.menuName);
+                    if (a) {
+                      a.style.backgroundColor = '';
+                    }
                   }} onClick={(e) => {
                     console.log("clicked execute-list-item with ", value);
                     ipcRenderer.send('execute-list-item', value, this.state.currentProgramName);
@@ -517,7 +618,9 @@ export default class Home extends Component {
         }
 
         let formattedName = name;
-        let query = window.document.getElementById("search-field").value;
+        let query = window.document.getElementById("search-field");
+        if (query) query = query.value;
+
         if (query && query.length && formattedName.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
           formattedName = <u><b>{name}</b></u>;
         }
@@ -547,7 +650,6 @@ export default class Home extends Component {
       );
     }
 
-
     const iconComponent = (
         <div style={{
             position: 'relative',
@@ -563,192 +665,95 @@ export default class Home extends Component {
         </div>
     );
 
-    const settingsComponent = !this.state || !this.state.settingsPaneActive ? undefined : (
-      <div>
-        <ReactTooltip id='neverShowTooltip'
-          place='bottom'
-          type={tooltipEffect.type}
-          effect={tooltipEffect.effect}
-          multiline={true}/>
-
-        <ReactTooltip id='timeoutRepeatTooltip'
-          place='bottom'
-          type={tooltipEffect.type}
-          effect={tooltipEffect.effect}
-          multiline={true}/>
-
-        <ReactTooltip id='appSwitchTooltip'
-          place='bottom'
-          type={tooltipEffect.type}
-          effect={tooltipEffect.effect}
-          multiline={true}/>
-
-        <h3>Continually Learn With Suggestions</h3>
-        <br />
-        <i>Suggestions look like this:</i>
-        <br />
-        <br />
-        <img src="../assets/bubble-window.png" style={{
-          width: 'auto',
-          height: 'auto',
-        }}></img>
-        <br />
-
-          {this.state && this.state.settings && this.state.settings.neverShowBubbleWindow ? (
-            <div style={{
-              padding: '25px',
-              textAlign: 'left',
+    const mainPane = this.state && this.state.showSurveyRequest && shortcutTableBody ? (
+      <div className="pane" style={{
+        textAlign: 'center',
+      }}>
+        <table className="table-striped">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Shortcut</th>
+              <th>Menu</th>
+              <th>Up</th>
+              <th>Down</th>
+              <th>Rating</th>
+            </tr>
+          </thead>
+          <div style={{
+              textAlign: 'center',
+              top: '20px',
+              left: '45px',
+              position: 'absolute',
+              backgroundColor: '#11D3F5',
+              borderRadius: ".35rem",
+              borderWidth: ".50rem",
+              border: '5px solid',
+              borderColor: '#11D3F5',
             }}>
-              <div className="checkbox">
-                <label>
-                  <input id="alwaysHideCheckbox" type="checkbox" defaultChecked onChange={e => {
-
-                    console.log('inside alwaysHideCheckbox');
-                    console.log(e.targetValue);
-                    console.log(e.currentTarget);
-                    console.log(e.target);
-                    const newState = {
-                      neverShowBubbleWindow: false,
-                    };
-
-                    ipcRenderer.send('save-app-settings', newState);
-                    this.setState({
-                      settings: Object.assign(this.state.settings, newState)
-                    });
-                  }}/> Never show random shortcuts <span className="icon icon-help-circled" data-for='neverShowTooltip' data-iscapture="true" 
-                  data-tip='Completely hide this suggestion window and never show it.'></span>
-                </label> 
-              </div>
-            </div>
-          ) : (
-            <div style={{
-              padding: '25px',
-              textAlign: 'left',
-            }}>
-              <div className="checkbox">
-                <label>
-                  <input id="alwaysHideCheckbox" type="checkbox" onChange={e => {
-
-                    console.log('inside alwaysHideCheckbox');
-                    
-                    console.log(e.targetValue);
-                    console.log(e.currentTarget);
-                    console.log(e.target);
-
-                    const newState = {
-                      neverShowBubbleWindow: true,
-                    };
-
-                    ipcRenderer.send('save-app-settings', newState);
-                    this.setState({
-                      settings: Object.assign(this.state.settings, newState)
-                    });
-                  }}/> Never show random shortcuts <span className="icon icon-help-circled" data-for='neverShowTooltip' data-iscapture="true" 
-                  data-tip='Completely hide this suggestion window and never show it.'></span>
-                </label>
-              </div>
-              <div className="checkbox">
-                <label>
-                  {this.state && this.state.settings && this.state.settings.showOnAppSwitch ? (
-
-                    <input id="appSwitchCheckbox" type="checkbox" defaultChecked onChange={e => {
-
-                      console.log('inside appSwitchCheckbox');
-                      console.log(e.targetValue);
-                      console.log(e.currentTarget);
-                      console.log(e.target);
-                      const newState = {
-                        showOnAppSwitch: false,
-                      };
-
-                      ipcRenderer.send('save-app-settings', newState);
-                      this.setState({
-                        settings: Object.assign(this.state.settings, newState)
-                      });
-                    }}/>
-                  ) : (
-                    <input id="appSwitchCheckbox" type="checkbox" onChange={e => {
-                      console.log('inside appSwitchCheckbox');
-                      console.log(e.targetValue);
-                      console.log(e.currentTarget);
-                      console.log(e.target);
-
-                      const newState = {
-                        showOnAppSwitch: true,
-                      };
-
-                      ipcRenderer.send('save-app-settings', newState);
-                      this.setState({
-                        settings: Object.assign(this.state.settings, newState)
-                      });
-                    }}/>
-
-                  )}
-                  Show when app switches <span className="icon icon-help-circled" data-for='appSwitchTooltip' data-iscapture="true" 
-                    data-tip='Each time you change the active program, the suggestion window will show.'></span>
-                </label>
-              </div>
-
-              <div className="checkbox">
-                <label>
-                  {this.state.settings.timeoutRepeat ? (
-                    <input id="timeoutRepeatCheckbox" type="checkbox" defaultChecked onChange={e => {
-                      const newState = {
-                        timeoutRepeat: false,
-                      };
-
-                      ipcRenderer.send('save-app-settings', newState);
-                      this.setState({
-                        settings: Object.assign(this.state.settings, newState)
-                      });
-                    }}/>
-                  ) : (
-                    <input id="timeoutRepeatCheckbox" type="checkbox" onChange={e => {
-                      const val = document.getElementById('timeoutRepeatMinutes').value;
-                      const newState = {
-                        timeoutRepeat: val && val != "?" ? Number(val) : false,
-                      };
-
-                      ipcRenderer.send('save-app-settings', newState);
-                      this.setState({
-                        settings: Object.assign(this.state.settings, newState)
-                      });
-                    }}/>
-                  )} 
-                  Show on repeat <input id="timeoutRepeatMinutes" type="number" step="0.20" style={{
-                    width: '40px',
-                  }} placeholder={this.state.settings.timeoutRepeat ? this.state.settings.timeoutRepeat : "0"} onChange={e => {
-                      console.log('inside this.state.timeoutRepeat');
-                      
-                      console.log(e.targetValue);
-                      console.log(e.currentTarget);
-                      console.log(e.target);
-
-                      const val = document.getElementById('timeoutRepeatMinutes').value;
-                      const newState = {
-                        timeoutRepeat: val ? Number(val) : false,
-                      };
-
-                      ipcRenderer.send('save-app-settings', newState);
-                      this.setState({
-                        settings: Object.assign(this.state.settings, newState)
-                      });
-                    }}/> <span className="icon icon-help-circled" data-for='timeoutRepeatTooltip' data-iscapture="true" data-tip="How often to show this window"></span>
-                </label>
-              </div>
-            </div>
-          )}
-        <button id="reload-button" className="btn btn-negative" onClick={() => {
-          console.log('sending reloadShortcuts from ipcRenderer');
-          ipcRenderer.send('main-parse-shortcuts', this.state.currentProgramName);
-        }}>Re-parse {this.state.currentProgramName}</button> <span className="icon icon-help-circled" data-for='neverShowTooltip' data-iscapture="true" 
-          data-tip={`Delete the shortcuts from ${this.state.currentProgramName} and parse them again.`}></span>
+              <b>What is bad in ShortcutMagic? What could be better?</b>
+              <br />
+              <br />
+              <div className="btn btn-primary" style={{ }} onClick={(e) => {
+                ipcRenderer.send('show-survey-window');
+                this.setState({
+                  showSurveyRequest: false,
+                });
+                ipcRenderer.send('answered-survey');
+              }}>Answer</div> <i style={{margin: '10px'}}><b>or</b></i> <div className="btn btn-negative" style={{ }} onClick={(e) => {
+                this.setState({
+                  showSurveyRequest: false,
+                });
+                ipcRenderer.send('cancelled-survey');
+              }}>{"Don't answer"}</div>
+          </div>
+          {shortcutTableBody}
+        </table>
       </div>
-    );
+    ) : (shortcutTableBody ? (
+      <div className="pane" style={{
+        textAlign: 'center',
+      }}>
+        <table className="table-striped">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Shortcut</th>
+              <th>Menu</th>
+              <th>Up</th>
+              <th>Down</th>
+              <th>Rating</th>
+            </tr>
+          </thead>
+          {shortcutTableBody}
+        </table>
+      </div>
+    ) : (
+      <div className="pane" style={{
+        textAlign: 'center',
+        padding: '15px',
+      }}>
+        <h3 style={{margin: '4px'}}>Try switching programs to load shortcuts!</h3>
 
-    console.log('rendering... ', this.state);
-    console.log('rendering... ', (this.state && this.state.showSurveyRequest) ? this.state.showSurveyRequest : undefined);
+        <br />
+        At the top of your screen in the menu bar, 
+        <br />
+        this hat icon will show if ShortcutMagic is learning or not:
+        <br />
 
+        <img src="../assets/learning.png" height="auto" width="auto"></img>
+
+        <br />
+        <br />
+        The first time ShortcutMagic learns new shortcuts, 
+        <br />
+        it will take a while (from 15 seconds to about 2 minutes).
+        <br />
+        Please give the little program some time. 
+        <br />
+        It only needs to learn the shortcuts the first time and then it remembers forever.
+      </div>
+    ));
 
     return (
       <div className="window">
@@ -788,69 +793,7 @@ export default class Home extends Component {
             </header>
               {programTitles ? programTitles : ""}
             </div>
-            <div className="pane" style={{
-              textAlign: 'center',
-            }}>
-              <table className="table-striped">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Shortcut</th>
-                    <th>Menu</th>
-                    <th>Up</th>
-                    <th>Down</th>
-                    <th>Rating</th>
-                  </tr>
-                </thead>
-
-                {(shortcutTableBody && this.state && this.state.showSurveyRequest) ? (
-                  <div style={{
-                      textAlign: 'center',
-                      top: '20px',
-                      left: '45px',
-                      position: 'absolute',
-                      backgroundColor: '#11D3F5',
-                      borderRadius: ".35rem",
-                      borderWidth: ".50rem",
-                      border: '5px solid',
-                      borderColor: '#11D3F5',
-                    }}>
-                      <b>What is bad in ShortcutMagic? What could be better?</b>
-                      <br />
-                      <br />
-                      <div className="btn btn-primary" style={{ }} onClick={(e) => {
-                        ipcRenderer.send('show-survey-window');
-                        this.setState({
-                          showSurveyRequest: false,
-                        });
-                        ipcRenderer.send('answered-survey');
-                      }}>Answer</div> <i style={{margin: '10px'}}>or</i> <div className="btn btn-negative" style={{ }} onClick={(e) => {
-                        this.setState({
-                          showSurveyRequest: false,
-                        });
-                        ipcRenderer.send('cancelled-survey');
-                      }}>{"Don't answer"}</div>
-                  </div>
-                ) : "" }
-
-                {settingsComponent ? settingsComponent : (shortcutTableBody ? shortcutTableBody : (
-                  <div style={{
-                    textAlign: 'center',
-                  }}>
-                    <h3 style={{margin: '4px'}}>Try switching programs to load shortcuts!</h3>
-
-                    <br />
-                    The first time ShortcutMagic learns new shortcuts, it will take a while.
-                    <br />
-                    Please give the little program some time, it only needs to learn the shortcuts once and then it remembers.
-                    <br />
-                    <br />
-
-                    <img src="../assets/learning.png" height="auto" width="auto"></img>
-                  </div>
-                ))}
-              </table>
-            </div>
+            {mainPane}
           </div>
         </div>
       </div>
