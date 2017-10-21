@@ -2,7 +2,7 @@
 
 import React, { Component } from 'react';
 import {SortableContainer, SortableElement, SortableHandle, arrayMove} from 'react-sortable-hoc';
-import Electron, { ipcRenderer, remote } from 'electron';
+import Electron, { ipcRenderer, remote, shell } from 'electron';
 import ReactTooltip from 'react-tooltip'
 import ReactDOM from 'react-dom';
 
@@ -71,13 +71,20 @@ export default class Home extends Component {
           <div style={{
             textAlign: 'center',
           }}>
-            <h2>Permission error.
+            <h3>We Are Having Permission Problems
             <br />
-            Please quit ShortcutMagic and 
+            If this continues, please quit 
             <br />
-            start again and approve permissions.</h2>
+            ShortcutMagic and start again 
+            <br />
+            and approve permissions.</h3>
             <br />
             <img src="../assets/admin-access.png" height="236" width="380"></img>
+            <br />
+            If this still does not work, please follow <a style={{color: 'blue'}} onClick={(event) => {
+              shell.openExternal('https://shortcutmagic.com/download');
+            }}>the download instructions</a> from the beginning.
+
             <br />
             <button className="btn btn-negative" onClick={() => ipcRenderer.send('quit')}>Quit ShortcutMagic</button>
           </div>
@@ -131,6 +138,7 @@ export default class Home extends Component {
     this.setState({
       currentProgramName,
       items,
+      error: false,
     });
   }
 
@@ -493,6 +501,9 @@ export default class Home extends Component {
             Delete {this.state.currentProgramName} shortcuts and learn them again <button id="reload-button" className="btn btn-negative" onClick={() => {
               console.log('sending reloadShortcuts from ipcRenderer');
               ipcRenderer.send('main-parse-shortcuts', this.state.currentProgramName);
+              this.setState({
+                error: false,
+              });
             }}>Learn again</button> <span className="icon icon-help-circled" data-for='neverShowTooltip' data-iscapture="true" 
               data-tip={`Delete the shortcuts from ${this.state.currentProgramName} and parse them again.`}></span>
 

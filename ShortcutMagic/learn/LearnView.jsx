@@ -1,6 +1,6 @@
 'use babel';
 import React, { Component } from 'react';
-import Electron, { ipcRenderer, remote, shell } from 'electron';
+import Electron, { ipcRenderer, remote } from 'electron';
 import ReactDOM from 'react-dom';
 
 export default class LearnView extends Component {

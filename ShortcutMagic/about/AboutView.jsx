@@ -2,6 +2,7 @@
 
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import { shell } from 'electron';
 
 export default class AboutView extends Component {
   render() {
