@@ -4,6 +4,9 @@ import { ipcRenderer } from 'electron';
 import ReactDOM from 'react-dom';
 
 const GLOBAL_SETTINGS_KEY = "all programs";
+const RANDOM_SHORTCUT_PERCENTAGE = 0.25;
+
+// TODO: Remove all checks for this.state and replace all initial state with props passed from parent
 
 
 /**
@@ -21,16 +24,43 @@ function shuffleArray(array) {
     return array;
 }
 
-function getRandomShortcut(shortcuts, previousShortcuts) {
-  let filtered = shortcuts;
+// const randomNumber = (length, percentage) =>  {
+//   // why is length 1??????
+//   // console.log('=======================')
+//   // const a = (length * percentage)
+//   // console.log(a)
+//   // const b = Math.random() * a
+//   // console.log(b)
+//   // const c = Math.floor(b)
+//   // console.log(c)
+//   // return c
+//   // console.log('=======================')
 
-  if (previousShortcuts.length > 0 && shortcuts.length > previousShortcuts.length) {
-    let names = previousShortcuts.map(s => s.name);
-    filtered = (!names || !names.lenght) ? shortcuts : shortcuts.filter(s => names.indexOf(s.name) === -1);
-  }
+//   return Math.floor(Math.random() * length)
+// }
 
-  return filtered[Math.floor(Math.random() * (filtered.length * 0.5))];
-}
+// function getRandomShortcut(shortcuts, previousShortcuts = []) {
+//   console.log('entering getRandomShortcut with number of shortcuts: ', shortcuts.length)
+
+//   let names = previousShortcuts.filter(s => s && s.name).map(s => s.name);
+//   shortcuts = (!names || !names.length) ? shortcuts : shortcuts.filter(s => names.indexOf(s.name) !== -1);
+
+//   shortcuts.filter(s => !s.isHidden && s.name !== "File").sort((a, b) => {
+//     if (a.score > b.score) return 1;
+//     if (b.score > a.score) return -1;
+
+//     return 0;
+//   });
+
+//   let randomShortcut = shortcuts[randomNumber(shortcuts.length, RANDOM_SHORTCUT_PERCENTAGE)];
+
+//   console.log('which gave this new random shortcut: ')
+//   console.log(JSON.stringify(randomShortcut))
+
+//   return randomShortcut
+
+//   // return shortcuts[Math.floor(Math.random() * (shortcuts.length * RANDOM_SHORTCUT_PERCENTAGE))];
+// }
 
 
 let stopFadeOut = false;
@@ -39,20 +69,22 @@ const maxFade = 0.8;
 
 export default class BubbleView extends Component {
   componentWillMount() {
-    this.fadeOut = this.fadeOut.bind(this);
-    this.fadeIn = this.fadeIn.bind(this);
-    this.setPrograms = this.setPrograms.bind(this);
-    this.setCurrentProgramName = this.setCurrentProgramName.bind(this);
-    this.stopFadingWithState = this.stopFadingWithState.bind(this);
-    // this.promptToHide = this.promptToHide.bind(this);
+    this.fadeOut = this.fadeOut.bind(this)
+    this.fadeIn = this.fadeIn.bind(this)
+    this.fadeInAndOut = this.fadeInAndOut.bind(this)
+    this.setPrograms = this.setPrograms.bind(this)
+    // this.setCurrentProgramName = this.setCurrentProgramName.bind(this)
+    this.stopFadingWithState = this.stopFadingWithState.bind(this)
+    // this.promptToHide = this.promptToHide.bind(this)
 
-    ipcRenderer.on('set-programs', this.setPrograms);
-    ipcRenderer.on('set-current-program-name', this.setCurrentProgramName);
-    // ipcRenderer.on('prompt-to-hide', this.promptToHide);
+    ipcRenderer.on('set-programs', this.setPrograms)
+    // ipcRenderer.on('set-current-program-name', this.setCurrentProgramName)
+    ipcRenderer.on('fade-in-and-out', this.fadeInAndOut)
+    // ipcRenderer.on('prompt-to-hide', this.promptToHide)
 
-    this.setState({
+    this. state = {
       fade: initialFade
-    });
+    }
   }
 
   fadeOut() {
@@ -96,103 +128,123 @@ export default class BubbleView extends Component {
     setTimeout(this.fadeIn, 30);
   }
 
-  setPrograms(e, programs, currentProgramName) {
-    console.log('setPrograms > ');
-    console.log(programs);
-    this.setState({
-      programs,
-      currentProgramName,
-      settings: programs.find(p => p.name === GLOBAL_SETTINGS_KEY)
-    });
-    console.log('setPrograms < ');
-    console.log(this.state.programs);
+  fadeInAndOut(e, fadeOutTime = 3000) {
+    this.fadeIn()
 
-    this.setCurrentProgramName(null, currentProgramName);
+    setTimeout(() => {
+      if (!this.state.mouseOver) {
+        stopFadeOut = false
+        this.fadeOut()
+      }
+    }, fadeOutTime)
   }
 
-  setCurrentProgramName(e, newProgramName) {
-    console.log('setCurrentProgramName > ');
-    console.log(newProgramName);
-    console.log(this.state);
-    console.log(this.state.programs);
 
-    if (!newProgramName) {
-      if (!this.state || !this.state.currentProgramName) {
-        this.fadeIn();
-        setTimeout(() => {
-          if (!this.state.mouseOver) {
-            stopFadeOut = false;
-            this.fadeOut();
-          }
-        }, 3000);
-        return;
-      } else {
-        newProgramName = this.state.currentProgramName
-      }
-    }
+  setPrograms(e, programs, currentProgramName) {
+    console.log('setPrograms > ', currentProgramName)
+    console.log(programs)
 
-    if (!this.state || !this.state.programs) {
-      return;
-    }
-    
-    const program = this.state.programs.find(program => program.name === newProgramName);
-    if (!program) {
-      return;
-    }
+    let shortcuts = Object.values(programs[currentProgramName].shortcuts);
+    const randomShortcut = shortcuts[Math.floor(Math.random() * shortcuts.length)]
 
-    let shortcuts = Object.values(program.shortcuts);
-    if (!shortcuts || shortcuts.length < 1) {
-      return;
-    }
-
-    console.log('about to filter shortcuts before/after: ');
-    console.log(shortcuts);
-    // TODO: Decide what to exclude based on shortcut power level!
-    shortcuts = shortcuts.filter(obj => !obj.isHidden && obj.menu != "File");
-    console.log(shortcuts);
-    // shuffleArray(shortcuts);
-
-    shortcuts.sort((a, b) => {
-      console.log('sorting a b', a.score, b.score);
-      if (!a.score) a.score = 0;
-      if (!b.score) b.score = 0;
-
-      if (a.score > b.score) return -1;
-      if (a.score < b.score) return 1;
-
-      return 0;
-    });
-
-    // Random shortcut from top half of the list
-    let previousShortcuts = this.state ? (this.state.previousShortcuts ? this.state.previousShortcuts : []) : [];
-    let randomShortcut = getRandomShortcut(shortcuts, previousShortcuts);
-    console.log('random shortcut is: ', randomShortcut);
-    previousShortcuts.push(randomShortcut);
+    setTimeout(() => {
+      this.fadeIn();
+      setTimeout(() => {
+        if (!this.state.mouseOver) {
+          stopFadeOut = false
+          this.fadeOut()
+        }
+      }, 3000)
+    }, 500)
 
     let newState = {
-      shortcuts: shortcuts,
+      programs,
+      shortcuts,
+      currentProgramName,
+      settings: programs[GLOBAL_SETTINGS_KEY],
       currentShortcut: randomShortcut,
-      previousShortcuts: previousShortcuts,
-    };
-
-    if (e) {
-      newState.fade = initialFade;
-      newState.mouseOver = false;
-
-      setTimeout(() => {
-        this.fadeIn();
-        setTimeout(() => {
-          if (!this.state.mouseOver) {
-            stopFadeOut = false;
-            this.fadeOut();
-          }
-        }, 3000);
-      }, 500);
+      fade: initialFade,
+      mouseOver: false,
     }
 
-    newState.currentProgramName = newProgramName;
-    this.stopFadingWithState(newState);
+    console.log('setting new state: ', randomShortcut.name)
+    console.log(newState)
+
+    this.stopFadingWithState(newState)
   }
+
+  // setCurrentProgramName(e, newProgramName) {
+  //   console.log('setCurrentProgramName > ');
+  //   console.log(newProgramName);
+  //   console.log(this.state);
+  //   console.log(this.state.programs);
+
+  //   if (!this.state || !this.state.programs) {
+  //     console.log('cancelling setting program name because of state: ', this.state)
+  //     return;
+  //   }
+    
+  //   const program = this.state.programs[newProgramName]
+  //   if (!program) {
+  //     console.log('cancelling setting program name because of program: ', this.state.programs)
+  //     return
+  //   }
+
+  //   let shortcuts = Object.values(program.shortcuts);
+  //   if (!shortcuts || shortcuts.length < 1) {
+  //     console.log('cancelling setting program name because of shortcut length: ', shortcuts)
+  //     return;
+  //   }
+
+  //   console.log('about to filter shortcuts before/after: ');
+  //   console.log(shortcuts);
+  //   // TODO: Decide what to exclude based on shortcut power level!
+  //   shortcuts = shortcuts.filter(obj => !obj.isHidden && obj.menu !== "File");
+  //   console.log(shortcuts);
+  //   // shuffleArray(shortcuts);
+
+  //   // shortcuts.sort((a, b) => {
+  //   //   console.log('sorting a b', a.score, b.score);
+  //   //   if (!a.score) a.score = 0;
+  //   //   if (!b.score) b.score = 0;
+
+  //   //   if (a.score > b.score) return -1;
+  //   //   if (a.score < b.score) return 1;
+
+  //   //   return 0;
+  //   // });
+
+  //   // Pick a random shortcut from top half of the list
+  //   let previousShortcuts = [];
+  //   if (this.state && this.state.previousShortcuts) previousShortcuts = this.state.previousShortcuts
+
+  //   let randomShortcut = getRandomShortcut(shortcuts, previousShortcuts)
+
+  //   console.log('random shortcut is: ', randomShortcut)
+  //   ipcRenderer.send('suggested-shortcut', randomShortcut)
+  //   previousShortcuts.push(randomShortcut)
+
+  //   setTimeout(() => {
+  //     this.fadeIn();
+  //     setTimeout(() => {
+  //       if (!this.state.mouseOver) {
+  //         stopFadeOut = false;
+  //         this.fadeOut();
+  //       }
+  //     }, 3000);
+  //   }, 500);
+
+  //   let newState = {
+  //     shortcuts,
+  //     previousShortcuts,
+  //     currentShortcut: randomShortcut,
+  //     fade: initialFade,
+  //     mouseOver: false,
+  //     currentProgramName: newProgramName
+  //   }
+
+  //   this.stopFadingWithState(newState);
+  // }
 
   stopFadingWithState(newState = {}) {
     stopFadeOut = true;

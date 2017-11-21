@@ -301,11 +301,15 @@ function createBubbleWindow() {
 		alwaysOnTop: true,
 		acceptFirstClick: true,
 		transparent: true,
-		show: true,
+		show: false,
 		frame: false,
 		x: hiddenBounds.x, y: hiddenBounds.y, width: hiddenBounds.width, height: hiddenBounds.height,
     webPreferences: {
       vibrancy: 'appearance-based',
+    },
+    initialProps: {
+    	currentProgramName,
+    	inMemoryShortcuts,
     },
 	});
 
@@ -319,7 +323,10 @@ function createBubbleWindow() {
   });
 
   bubbleWindow.on('ready-to-show', (e) => {
+  	console.log('sending shortcuts to bubbleWindow')
+  	console.log(inMemoryShortcuts)
   	bubbleWindow.webContents.send('set-programs', inMemoryShortcuts, currentProgramName);
+  	bubbleWindow.showInactive()
   	showBubbleWindow();
   })
 
@@ -668,16 +675,23 @@ function createMainWindow() {
   });
 
   mainWindow.on('ready-to-show', (e) => {
+  	console.log('>>>>>>>>>>>>>>>>>>..')
+  	console.log('>>>>>>>>>>>>>>>>>>..')
+  	console.log('>>>>>>>>>>>>>>>>>>..')
+  	console.log('>>>>>>>>>>>>>>>>>>..')
+  	console.log('>>>>>>>>>>>>>>>>>>..')
+  	console.log('>>>>>>>>>>>>>>>>>>..')
+  	console.log('>>>>>>>>>>>>>>>>>>..')
+  	console.log('>>>>>>>>>>>>>>>>>>..')
+  	console.log('>>>>>>>>>>>>>>>>>>..')
+  	console.log('>>>>>>>>>>>>>>>>>>..')
+  	console.log('>>>>>>>>>>>>>>>>>>..')
+  	console.log('sending shortcuts to bubbleWindow')
+  	console.log(inMemoryShortcuts)
   	mainWindow.webContents.send('set-programs', inMemoryShortcuts, currentProgramName);
-  	bubbleWindow.webContents.send('set-programs', inMemoryShortcuts, currentProgramName);
   	app.dock.show();
   	mainWindow.show();
   });
-
-
-  console.log('inMemoryShortcuts when mainWindow is created: ');
-  console.log(inMemoryShortcuts);
-  console.log(JSON.stringify(inMemoryShortcuts));
 
   if (!inMemoryShortcuts || !inMemoryShortcuts[GLOBAL_SETTINGS_KEY] || !inMemoryShortcuts[GLOBAL_SETTINGS_KEY].survey) {
   	const noSurveyTimeout = 120000;
@@ -1053,7 +1067,7 @@ function loadWithPeriods(forceReload) {
 			console.log(currentProgramName);
 
 			mainWindow.webContents.send('set-current-program', currentProgramName, inMemoryShortcuts[currentProgramName]);
-			bubbleWindow.webContents.send('set-current-program-name', currentProgramName);
+			bubbleWindow.webContents.send('set-programs', inMemoryShortcuts, currentProgramName);
 
 		} else {
 			getDb().find({
@@ -1091,7 +1105,7 @@ function loadWithPeriods(forceReload) {
 				console.log(currentProgramName);
 
 				mainWindow.webContents.send('set-current-program', currentProgramName, inMemoryShortcuts[currentProgramName]);
-				bubbleWindow.webContents.send('set-current-program-name', currentProgramName);
+				bubbleWindow.webContents.send('set-programs', inMemoryShortcuts, currentProgramName);
 			});
 		}
 	});
@@ -1280,7 +1294,7 @@ function appSwitched(event, appName) {
 	console.log(inMemoryShortcuts[GLOBAL_SETTINGS_KEY]);
 
 	mainWindow.webContents.send('set-current-program', currentProgramName, inMemoryShortcuts[currentProgramName]);
-	bubbleWindow.webContents.send('set-current-program-name', currentProgramName);
+	bubbleWindow.webContents.send('set-programs', inMemoryShortcuts, currentProgramName);
 
 	if (!inMemoryShortcuts) { 
 		showBubbleWindow();
@@ -1288,6 +1302,17 @@ function appSwitched(event, appName) {
 	}
 
 	const settings = inMemoryShortcuts[GLOBAL_SETTINGS_KEY];
+
+
+	console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||')
+	console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||')
+	console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||')
+	console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||')
+	console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||')
+	console.log('inside appSwitch with settings and bubbleWindowTimeout')
+	console.log(settings)
+	console.log(bubbleWindowTimeout)
+
 	if (!settings || settings.neverShowBubbleWindow) {
 		return;
 	} 
@@ -1298,23 +1323,22 @@ function appSwitched(event, appName) {
 
 	if (settings.timeoutRepeat && !bubbleWindowTimeout) {
 		bubbleWindowTimeout = true;
-
-		const repeatTimeout = inMemoryShortcuts[GLOBAL_SETTINGS_KEY].timeoutRepeat * 60000; // 1 minute
+		console.log('|||||||||||||||||| inside if check')
 
 		// TODO: Make recursive to repeat on timeoutRepeat value
-		const recursing = () => {
+		// const recursing = () => {
 				setTimeout(() => {
-					if (currentProgramName)
+					console.log('||||||||||||||||||||||| inside timeout function, setting bubbleWindowTimeout to false')
 					bubbleWindowTimeout = false;
-					bubbleWindow.webContents.send('set-current-program-name', null);
+					bubbleWindow.webContents.send('fade-in-and-out');
 					showBubbleWindow();
 
 					// TODO: Re-enable recursing when it can be stopped from overlapping
 					// setTimeout(recursing, repeatTimeout); // Minutes to milliseconds 
-				}, repeatTimeout); // Minutes to milliseconds 
-		}
+				}, settings.timeoutRepeat * 60000); // Minutes to milliseconds 
+		// }
 
-		recursing();
+		// recursing();
 	}
 }
 
@@ -1735,3 +1759,33 @@ ipcMain.on('cancelled-survey', (e) => {
 		}
 	});
 });
+
+ipcMain.on('suggested-shortcut', (e, suggestedShortcut) => {
+	console.log('inside suggested-shortcut', suggestedShortcut)
+	if (!suggestedShortcut) return;
+
+	const db = getDb()
+
+	db.find({
+		name: suggestedShortcut.name
+	}, function(err, res) {
+
+		if (err) {
+			console.log('tried to get suggested shortcut and got error: ', err)
+			return
+		}
+
+		if (!res || !res.length) {
+			console.log('no results for ', suggestedShortcut)
+			return
+		}
+
+		db.update({
+			name: suggestedShortcut.name
+		}, {
+			$set: {
+				suggested: res[0].suggested ? res[0].suggested.push(suggestedShortcut.name) : [suggestedShortcut.name]
+			}
+		})
+	})
+})

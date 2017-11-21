@@ -19,8 +19,9 @@ let tooltipEffect = {
 };
 
 function hexToRgba(hex, alpha) {
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
 	if (!result) return;
+  
 	return `rgba(${ parseInt(result[1], 16) }, ${ parseInt(result[2], 16) }, ${ parseInt(result[3], 16) }, ${ alpha })`;
 }
 
@@ -751,16 +752,14 @@ export default class Home extends Component {
         <br />
         this hat icon will show if ShortcutMagic is learning or not:
         <br />
+        <br />
 
         <img src="../assets/learning.png" height="auto" width="auto"></img>
 
         <br />
         <br />
-        The first time ShortcutMagic learns new shortcuts, 
+        It will take a while (from 15 seconds to about 2 minutes). 
         <br />
-        it will take a while (from 15 seconds to about 2 minutes).
-        <br />
-        Please give the little program some time. 
         <br />
         It only needs to learn the shortcuts the first time and then it remembers forever.
       </div>
