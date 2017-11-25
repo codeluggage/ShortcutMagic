@@ -4,6 +4,10 @@ import { ipcRenderer } from 'electron';
 import ReactDOM from 'react-dom';
 
 const GLOBAL_SETTINGS_KEY = "all programs";
+// const RANDOM_SHORTCUT_PERCENTAGE = 0.25;
+const RANDOM_SHORTCUT_PERCENTAGE = 1
+
+// TODO: Remove all checks for this.state and replace all initial state with props passed from parent
 
 
 /**
@@ -21,16 +25,43 @@ function shuffleArray(array) {
     return array;
 }
 
-function getRandomShortcut(shortcuts, previousShortcuts) {
-  let filtered = shortcuts;
+// const randomNumber = (length, percentage) =>  {
+//   // why is length 1??????
+//   // console.log('=======================')
+//   // const a = (length * percentage)
+//   // console.log(a)
+//   // const b = Math.random() * a
+//   // console.log(b)
+//   // const c = Math.floor(b)
+//   // console.log(c)
+//   // return c
+//   // console.log('=======================')
 
-  if (previousShortcuts.length > 0 && shortcuts.length > previousShortcuts.length) {
-    let names = previousShortcuts.map(s => s.name);
-    filtered = (!names || !names.lenght) ? shortcuts : shortcuts.filter(s => names.indexOf(s.name) === -1);
-  }
+//   return Math.floor(Math.random() * length)
+// }
 
-  return filtered[Math.floor(Math.random() * (filtered.length * 0.5))];
-}
+// function getRandomShortcut(shortcuts, previousShortcuts = []) {
+//   console.log('entering getRandomShortcut with number of shortcuts: ', shortcuts.length)
+
+//   let names = previousShortcuts.filter(s => s && s.name).map(s => s.name);
+//   shortcuts = (!names || !names.length) ? shortcuts : shortcuts.filter(s => names.indexOf(s.name) !== -1);
+
+//   shortcuts.filter(s => !s.isHidden && s.name !== "File").sort((a, b) => {
+//     if (a.score > b.score) return 1;
+//     if (b.score > a.score) return -1;
+
+//     return 0;
+//   });
+
+//   let randomShortcut = shortcuts[randomNumber(shortcuts.length, RANDOM_SHORTCUT_PERCENTAGE)];
+
+//   console.log('which gave this new random shortcut: ')
+//   console.log(JSON.stringify(randomShortcut))
+
+//   return randomShortcut
+
+//   // return shortcuts[Math.floor(Math.random() * (shortcuts.length * RANDOM_SHORTCUT_PERCENTAGE))];
+// }
 
 
 let stopFadeOut = false;
@@ -38,21 +69,27 @@ const initialFade = 0.0;
 const maxFade = 0.8;
 
 export default class BubbleView extends Component {
-  componentWillMount() {
-    this.fadeOut = this.fadeOut.bind(this);
-    this.fadeIn = this.fadeIn.bind(this);
-    this.setPrograms = this.setPrograms.bind(this);
-    this.setCurrentProgramName = this.setCurrentProgramName.bind(this);
-    this.stopFadingWithState = this.stopFadingWithState.bind(this);
-    // this.promptToHide = this.promptToHide.bind(this);
+  constructor() {
+    super()
 
-    ipcRenderer.on('set-programs', this.setPrograms);
-    ipcRenderer.on('set-current-program-name', this.setCurrentProgramName);
-    // ipcRenderer.on('prompt-to-hide', this.promptToHide);
-
-    this.setState({
+    this.state = {
       fade: initialFade
-    });
+    }
+  }
+
+  componentWillMount() {
+    this.fadeOut = this.fadeOut.bind(this)
+    this.fadeIn = this.fadeIn.bind(this)
+    this.fadeInAndOut = this.fadeInAndOut.bind(this)
+    this.setPrograms = this.setPrograms.bind(this)
+    // this.setCurrentProgramName = this.setCurrentProgramName.bind(this)
+    this.stopFadingWithState = this.stopFadingWithState.bind(this)
+    // this.promptToHide = this.promptToHide.bind(this)
+
+    ipcRenderer.on('set-programs', this.setPrograms)
+    // ipcRenderer.on('set-current-program-name', this.setCurrentProgramName)
+    ipcRenderer.on('fade-in-and-out', this.fadeInAndOut)
+    // ipcRenderer.on('prompt-to-hide', this.promptToHide)
   }
 
   fadeOut() {
@@ -72,7 +109,7 @@ export default class BubbleView extends Component {
     }
 
     this.setState({
-      fade: this.state.fade - 0.01,
+      fade: this.state.fade - 0.005,
       fading: true
     });
 
@@ -89,110 +126,133 @@ export default class BubbleView extends Component {
     }
 
     this.setState({
-      fade: this.state.fade + 0.05,
+      fade: this.state.fade + 0.02,
       fading: true
     });
 
     setTimeout(this.fadeIn, 30);
   }
 
-  setPrograms(e, programs, currentProgramName) {
-    console.log('setPrograms > ');
-    console.log(programs);
-    this.setState({
-      programs,
-      currentProgramName,
-      settings: programs.find(p => p.name === GLOBAL_SETTINGS_KEY)
-    });
-    console.log('setPrograms < ');
-    console.log(this.state.programs);
+  fadeInAndOut(e, fadeOutTime = 3000) {
+    this.fadeIn()
 
-    this.setCurrentProgramName(null, currentProgramName);
+    setTimeout(() => {
+      if (!this.state.mouseOver) {
+        stopFadeOut = false
+        this.fadeOut()
+      }
+    }, fadeOutTime)
   }
 
-  setCurrentProgramName(e, newProgramName) {
-    console.log('setCurrentProgramName > ');
-    console.log(newProgramName);
-    console.log(this.state);
-    console.log(this.state.programs);
 
-    if (!newProgramName) {
-      if (!this.state || !this.state.currentProgramName) {
-        this.fadeIn();
-        setTimeout(() => {
-          if (!this.state.mouseOver) {
-            stopFadeOut = false;
-            this.fadeOut();
-          }
-        }, 3000);
-        return;
-      } else {
-        newProgramName = this.state.currentProgramName
-      }
-    }
+  setPrograms(e, programs, currentProgramName) {
+    console.log('setPrograms > ', currentProgramName)
+    console.log(programs)
 
-    if (!this.state || !this.state.programs) {
-      return;
-    }
-    
-    const program = this.state.programs.find(program => program.name === newProgramName);
-    if (!program) {
-      return;
-    }
+    let shortcuts = Object.values(programs[currentProgramName].shortcuts);
+    const filteredShortcuts = shortcuts.filter(s => !s.alwaysHide && (!s.score ||  s.score > -1))
+    const randomShortcut = filteredShortcuts[Math.floor(Math.random() * shortcuts.length)]
 
-    let shortcuts = Object.values(program.shortcuts);
-    if (!shortcuts || shortcuts.length < 1) {
-      return;
-    }
+    this.fadeIn();
 
-    console.log('about to filter shortcuts before/after: ');
-    console.log(shortcuts);
-    // TODO: Decide what to exclude based on shortcut power level!
-    shortcuts = shortcuts.filter(obj => !obj.isHidden && obj.menu != "File");
-    console.log(shortcuts);
-    // shuffleArray(shortcuts);
-
-    shortcuts.sort((a, b) => {
-      console.log('sorting a b', a.score, b.score);
-      if (!a.score) a.score = 0;
-      if (!b.score) b.score = 0;
-
-      if (a.score > b.score) return -1;
-      if (a.score < b.score) return 1;
-
-      return 0;
-    });
-
-    // Random shortcut from top half of the list
-    let previousShortcuts = this.state ? (this.state.previousShortcuts ? this.state.previousShortcuts : []) : [];
-    let randomShortcut = getRandomShortcut(shortcuts, previousShortcuts);
-    console.log('random shortcut is: ', randomShortcut);
-    previousShortcuts.push(randomShortcut);
+    setTimeout(() => {
+      setTimeout(() => {
+        if (!this.state.mouseOver) {
+          stopFadeOut = false
+          this.fadeOut()
+        }
+      }, 4000)
+    }, 500)
 
     let newState = {
-      shortcuts: shortcuts,
+      programs,
+      shortcuts,
+      currentProgramName,
+      settings: programs[GLOBAL_SETTINGS_KEY],
       currentShortcut: randomShortcut,
-      previousShortcuts: previousShortcuts,
-    };
-
-    if (e) {
-      newState.fade = initialFade;
-      newState.mouseOver = false;
-
-      setTimeout(() => {
-        this.fadeIn();
-        setTimeout(() => {
-          if (!this.state.mouseOver) {
-            stopFadeOut = false;
-            this.fadeOut();
-          }
-        }, 3000);
-      }, 500);
+      fade: initialFade,
+      mouseOver: false,
     }
 
-    newState.currentProgramName = newProgramName;
-    this.stopFadingWithState(newState);
+    console.log('setting new state: ', randomShortcut.name)
+    console.log(newState)
+
+    // this.stopFadingWithState(newState)
+    this.setState(newState)
   }
+
+  // setCurrentProgramName(e, newProgramName) {
+  //   console.log('setCurrentProgramName > ');
+  //   console.log(newProgramName);
+  //   console.log(this.state);
+  //   console.log(this.state.programs);
+
+  //   if (!this.state || !this.state.programs) {
+  //     console.log('cancelling setting program name because of state: ', this.state)
+  //     return;
+  //   }
+    
+  //   const program = this.state.programs[newProgramName]
+  //   if (!program) {
+  //     console.log('cancelling setting program name because of program: ', this.state.programs)
+  //     return
+  //   }
+
+  //   let shortcuts = Object.values(program.shortcuts);
+  //   if (!shortcuts || shortcuts.length < 1) {
+  //     console.log('cancelling setting program name because of shortcut length: ', shortcuts)
+  //     return;
+  //   }
+
+  //   console.log('about to filter shortcuts before/after: ');
+  //   console.log(shortcuts);
+  //   // TODO: Decide what to exclude based on shortcut power level!
+  //   shortcuts = shortcuts.filter(obj => !obj.isHidden && obj.menu !== "File");
+  //   console.log(shortcuts);
+  //   // shuffleArray(shortcuts);
+
+  //   // shortcuts.sort((a, b) => {
+  //   //   console.log('sorting a b', a.score, b.score);
+  //   //   if (!a.score) a.score = 0;
+  //   //   if (!b.score) b.score = 0;
+
+  //   //   if (a.score > b.score) return -1;
+  //   //   if (a.score < b.score) return 1;
+
+  //   //   return 0;
+  //   // });
+
+  //   // Pick a random shortcut from top half of the list
+  //   let previousShortcuts = [];
+  //   if (this.state && this.state.previousShortcuts) previousShortcuts = this.state.previousShortcuts
+
+  //   let randomShortcut = getRandomShortcut(shortcuts, previousShortcuts)
+
+  //   console.log('random shortcut is: ', randomShortcut)
+  //   ipcRenderer.send('suggested-shortcut', randomShortcut)
+  //   previousShortcuts.push(randomShortcut)
+
+  //   setTimeout(() => {
+  //     this.fadeIn();
+  //     setTimeout(() => {
+  //       if (!this.state.mouseOver) {
+  //         stopFadeOut = false;
+  //         this.fadeOut();
+  //       }
+  //     }, 3000);
+  //   }, 500);
+
+  //   let newState = {
+  //     shortcuts,
+  //     previousShortcuts,
+  //     currentShortcut: randomShortcut,
+  //     fade: initialFade,
+  //     mouseOver: false,
+  //     currentProgramName: newProgramName
+  //   }
+
+  //   this.stopFadingWithState(newState);
+  // }
 
   stopFadingWithState(newState = {}) {
     stopFadeOut = true;
@@ -369,6 +429,8 @@ export default class BubbleView extends Component {
     const shortcutSection = (
       <div style={{
         backgroundColor: `transparent`,
+        color: `rgba(135, 135, 135, ${this.state.fade})`, 
+        'mix-blend-mode': 'difference',
       }}>
         {
           (currentShortcut["mod"]) ? currentShortcut["mod"] :
@@ -396,18 +458,19 @@ export default class BubbleView extends Component {
 
     const headerComponent = (
       <header style={{
-        borderBottom: '1px solid #c2c0c2',
+        // borderBottom: '1px solid #c2c0c2',
         minHeight: '22px',
         boxShadow: 'inset 0 1px 0 rgba(245, 244, 245, ${this.state.fade})',
-        backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
-        backgroundImage: '-webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(232, 230, 232, ${this.state.fade})), color-stop(100%, rgba(209, 207, 209, ${this.state.fade})))',
-        backgroundImage: '-webkit-linear-gradient(top, rgba(232, 230, 232, ${this.state.fade}) 0%, rgba(209, 207, 209, ${this.state.fade}) 100%)',
-        backgroundImage: 'linear-gradient(to bottom, rgba(232, 230, 232, ${this.state.fade}) 0%, rgba(209, 207, 209, ${this.state.fade}) 100%)',
+        // backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
+        // backgroundImage: '-webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(232, 230, 232, ${this.state.fade})), color-stop(100%, rgba(209, 207, 209, ${this.state.fade})))',
+        // backgroundImage: '-webkit-linear-gradient(top, rgba(232, 230, 232, ${this.state.fade}) 0%, rgba(209, 207, 209, ${this.state.fade}) 100%)',
+        // backgroundImage: 'linear-gradient(to bottom, rgba(232, 230, 232, ${this.state.fade}) 0%, rgba(209, 207, 209, ${this.state.fade}) 100%)',
       }}>
         <div className="title" style={{
           // backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
-          color: `rgba(85, 85, 85, ${this.state.fade})`, 
-          fontSize: 14,
+          'mix-blend-mode': 'difference',
+          color: `rgba(135, 135, 135, ${this.state.fade})`, 
+          fontSize: currentShortcut.name.length > 20 ? 11 : 15,
         }}>
           {currentShortcut.name}
         </div>
@@ -417,16 +480,17 @@ export default class BubbleView extends Component {
     const closeWindowComponent = (
       <div style={{
           position: 'relative',
-      }} onClick={(e) => {
-        ipcRenderer.send('hide-bubble-window', true);
       }}>
         <span className="icon icon-cancel" style={{
           right: '3px',
           left: '3px',
           margin: '3px',
-          height: '6px',
+          height: '10px',
           position: 'absolute',
           opacity: this.state.fade,
+        }} onClick={(e) => {
+          console.log('hiding...')
+          ipcRenderer.send('hide-bubble-window', true);
         }}></span>
       </div>
     );
@@ -435,6 +499,7 @@ export default class BubbleView extends Component {
         <div style={{
             position: 'relative',
         }} onClick={(e) => {
+          console.log('seidning show-window')
           ipcRenderer.send('show-window');
         }}>
             <img src="../assets/wizard.png" style={{
@@ -454,30 +519,27 @@ export default class BubbleView extends Component {
         overflow: 'hidden',
         height: '100%',
         width: '100%',
+        // boxShadow: this.state.highlighting ? 'inset 0 1px 0 solid rgba(0, 155, 255, ${this.state.fade : 0})' : '',
+        border: `2px solid rgba(0, 155, 255, ${(this.state.highlighting) ? this.state.fade * 0.5 : 0})`,
+        borderRadius: ".35rem",
+        borderWidth: "1px",
         backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
-        color: `rgba(85, 85, 85, ${this.state.fade})`, 
+        color: `rgba(135, 135, 135, ${this.state.fade})`, 
+      }} onMouseEnter={(e) => {
+        this.stopFadingWithState(this.state.mouseOver ? undefined : {
+          mouseOver: true,
+        });
+
+        this.setState({
+          highlighting: true,
+        })
+      }} onMouseLeave={(e) => {
+        this.setState({
+          highlighting: false,
+        })
       }}>
-        {closeWindowComponent}
-        {iconComponent}
         {headerComponent}
         <div className="window-content">
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            backgroundColor: `transparent`,
-            // backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
-            // color: `rgba(85, 85, 85, ${this.state.fade})`, 
-            // backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
-            // color: `rgba(85, 85, 85, ${this.state.fade})`, 
-            // borderRadius: ".35rem",
-            // borderWidth: ".50rem",
-            // boxShadow: 'rgba(34, 34, 34, ${this.state.fade}) 0px 0px 10px 0px',
-            // textAlign: 'center',
-          }} onMouseEnter={(e) => {
-            this.stopFadingWithState(this.state.mouseOver ? undefined : {
-              mouseOver: true
-            });
-          }}>
             <div className="title" style={{
               flex: 1,
               justifyContent: 'center',
@@ -485,24 +547,13 @@ export default class BubbleView extends Component {
               textAlign: 'center',
               marginBottom: '4px',
               fontSize: 16,
-              // fontWeight: 500,
-              fontWeight: 600,
+              fontWeight: 500,
               backgroundColor: `transparent`,
               // backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
-              color: `rgba(85, 85, 85, ${this.state.fade})`, 
+              color: `rgba(135, 135, 135, ${this.state.fade})`, 
             }}>
               {shortcutSection}
             </div>
-            <div style={{
-              flex: 1,
-              justifyContent: 'center',
-              alignContent: 'stretch',
-              backgroundColor: `transparent`,
-              // backgroundColor: `rgba(232, 230, 232, ${this.state.fade})`,
-            }}>
-              {buttonSection}
-            </div>
-          </div>
         </div>
       </div>
     );

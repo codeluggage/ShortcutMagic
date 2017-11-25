@@ -19,8 +19,9 @@ let tooltipEffect = {
 };
 
 function hexToRgba(hex, alpha) {
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
 	if (!result) return;
+  
 	return `rgba(${ parseInt(result[1], 16) }, ${ parseInt(result[2], 16) }, ${ parseInt(result[3], 16) }, ${ alpha })`;
 }
 
@@ -116,30 +117,31 @@ export default class Home extends Component {
   updateItems(currentProgramName, program) {
     if (!program) {
        if (this.state && this.state.programs) { 
-        program = this.state.programs[currentProgramName];
+        program = this.state.programs[currentProgramName]
       }
     } 
 
-    if (!program) return;
+    if (!program) return
 
     if (program.name === GLOBAL_SETTINGS_KEY) {
-      this.updateSettings(program);
-      return;
+      this.updateSettings(program)
+      return
     }
 
-    let items = Object.values(program.shortcuts);
+    let items = Object.values(program.shortcuts)
     items.sort((a, b) => {
-      if (a.score > 0 && !b.score) return 1;
-      if (b.score > 0 && !a.score) return -1;
+      if (typeof a.score !== 'undefined' && typeof b.score !== 'undefined') return a.score < b.score
+      if (a.score > 0 && !b.score) return -1
+      if (b.score > 0 && !a.score) return 1
 
-      return `${b.score ? b.score : b.name}`.localeCompare(`${a.score ? a.score : a.name}`);
+      return a.name.localeCompare(b.name)
     });
 
     this.setState({
       currentProgramName,
       items,
       error: false,
-    });
+    })
   }
 
   updatePrograms(event, programs, currentProgramName) {
@@ -475,9 +477,9 @@ export default class Home extends Component {
                           });
                         }}/>
                       )} 
-                      Show <input id="timeoutRepeatMinutes" type="number" step="0.20" style={{
+                      Show <input id="timeoutRepeatMinutes" type="number" step="10" style={{
                         width: '40px',
-                      }} placeholder={this.state.settings.timeoutRepeat ? this.state.settings.timeoutRepeat : "0"} onChange={e => {
+                      }} placeholder={this.state.settings.timeoutRepeat ? this.state.settings.timeoutRepeat : 10} onChange={e => {
                           console.log('inside this.state.timeoutRepeat');
                           
                           console.log(e.targetValue);
@@ -493,7 +495,7 @@ export default class Home extends Component {
                           this.setState({
                             settings: Object.assign(this.state.settings, newState)
                           });
-                        }}/> <span className="icon icon-help-circled" data-for='timeoutRepeatTooltip' data-iscapture="true" data-tip="How often to show this window"></span> minutes later 
+                        }}/> <span className="icon icon-help-circled" data-for='timeoutRepeatTooltip' data-iscapture="true" data-tip="How often to show this window"></span> seconds after app switch 
                     </label>
                   </div>
                 </div>
@@ -580,36 +582,46 @@ export default class Home extends Component {
                   }
                 </td>
                 <td>{value.menuName}</td>
-                <td onClick={e => {
+                <td>
+                  <input id={`rate-${value.menuName}-${value.name}`} type="number" step="1" style={{
+                    width: '40px',
+                  }} placeholder={value.score ? value.score : 0} onChange={e => {
+                    const val = document.getElementById(`rate-${value.menuName}-${value.name}`).value;
+                    value.score = val ? Number(val) : 0
 
+                    ipcRenderer.send('update-shortcut-item', value);
+                  }}>
+                  </input>
+                </td>
+                {value.alwaysHide ? (
+                  <td>
+                    <div className="checkbox">
+                      <label>
+                        <input id={`toggle-${value.menuName}-${value.name}`} type="checkbox" defaultChecked onChange={e => {
 
+                          value.alwaysHide = document.getElementById(`toggle-${value.menuName}-${value.name}`).value ? true : false
 
-                  value.score = value.score ? value.score + 1 : 1;
-                  console.log("clicked upvote-list-item with ", value);
+                          ipcRenderer.send('update-shortcut-item', value);
+                        }}>
+                        </input>
+                      </label>
+                    </div>
+                  </td>
+                ) : (
+                  <td>
+                    <div className="checkbox">
+                      <label>
+                        <input id={`toggle-${value.menuName}-${value.name}`} type="checkbox" onChange={e => {
 
-                  ipcRenderer.send('update-shortcut-item', value);
-                  let newItems = this.state.items.map(item => item.name === value.name ? value : item);
+                          value.alwaysHide = document.getElementById(`toggle-${value.menuName}-${value.name}`).value ? true : false
 
-                  this.setState({
-                    items: newItems,
-                  });
-
-                }}><span className="icon icon-up-open-big"></span></td>
-                <td onClick={e => {
-
-
-                  value.score = value.score ? value.score - 1 : -1;
-                  console.log("clicked upvote-list-item with ", value);
-                  
-                  ipcRenderer.send('update-shortcut-item', value);
-                  let newItems = this.state.items.map(item => item.name === value.name ? value : item);
-
-                  this.setState({
-                    items: newItems,
-                  });
-
-                }}><span className="icon icon-down-open-big"></span></td>
-                <td>{value.score ? value.score : 0}</td>
+                          ipcRenderer.send('update-shortcut-item', value);
+                        }}>
+                        </input>
+                      </label>
+                    </div>
+                  </td>
+                )}
               </tr>
             );
           })}
@@ -686,9 +698,9 @@ export default class Home extends Component {
               <th>Name</th>
               <th>Shortcut</th>
               <th>Menu</th>
-              <th>Up</th>
-              <th>Down</th>
+              <th>Learning</th>
               <th>Rating</th>
+              <th>Never show</th>
             </tr>
           </thead>
           <div style={{
@@ -731,9 +743,8 @@ export default class Home extends Component {
               <th>Name</th>
               <th>Shortcut</th>
               <th>Menu</th>
-              <th>Up</th>
-              <th>Down</th>
               <th>Rating</th>
+              <th>Hide</th>
             </tr>
           </thead>
           {shortcutTableBody}
@@ -751,16 +762,14 @@ export default class Home extends Component {
         <br />
         this hat icon will show if ShortcutMagic is learning or not:
         <br />
+        <br />
 
         <img src="../assets/learning.png" height="auto" width="auto"></img>
 
         <br />
         <br />
-        The first time ShortcutMagic learns new shortcuts, 
+        It will take a while (from 15 seconds to about 2 minutes). 
         <br />
-        it will take a while (from 15 seconds to about 2 minutes).
-        <br />
-        Please give the little program some time. 
         <br />
         It only needs to learn the shortcuts the first time and then it remembers forever.
       </div>
