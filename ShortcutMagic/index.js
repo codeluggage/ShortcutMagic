@@ -19,6 +19,7 @@ const log = require('electron-log');
 const sizeOf = require('image-size');
 const path = require('path');
 const Datastore = require('nedb');
+const debugAllWindows = require('./utilities/browserWindow.js').debugAllWindows
 
 // Global (for now) objects:
 
@@ -28,8 +29,8 @@ const sudoer = new Sudoer({
 const gifDirectory = "~/Movies/Kaptures";
 const defaultFullBounds = { x: 200, y: 100, width: 800, height: 600 };
 const hiddenBounds  = { x: 89, y: 23, width: 0, height: 0 };
-const defaultBubbleHeight = 130;
-const defaultBubbleWidth = 250;
+const defaultBubbleHeight = 60;
+const defaultBubbleWidth = 200;
 
 let oldMainWindowBounds = defaultFullBounds;
 
@@ -538,9 +539,16 @@ function createWindows() {
 			createBackgroundListenerWindow();
 			// createSettingsWindow();
 			// createMiniSettingsWindow();
+
+
+
+
 			createBubbleWindow();
 			createMainWindow();
-	    createTooltipWindow();
+
+
+
+	    // createTooltipWindow();
 	    // createGifRecorderWindow();
 	    // createGifCommunityWindow();
 		});
@@ -693,95 +701,45 @@ function createMainWindow() {
   	mainWindow.show();
   });
 
-  if (!inMemoryShortcuts || !inMemoryShortcuts[GLOBAL_SETTINGS_KEY] || !inMemoryShortcuts[GLOBAL_SETTINGS_KEY].survey) {
-  	const noSurveyTimeout = 120000;
-  	console.log('starting with timeout... ', noSurveyTimeout);
+  // if (!inMemoryShortcuts || !inMemoryShortcuts[GLOBAL_SETTINGS_KEY] || !inMemoryShortcuts[GLOBAL_SETTINGS_KEY].survey) {
+  // 	const noSurveyTimeout = 120000;
+  // 	console.log('starting with timeout... ', noSurveyTimeout);
 
-		setTimeout(() => {
-			console.log('survey firing ');
-			// Check if mainWindow exists in case we are about to shut down:
-			if (mainWindow) {
-				mainWindow.webContents.send('show-survey-request');
-				console.log('survey fired');
-			} else {
-				console.log('survey not fired, no mainWindow');
-			}
-		}, noSurveyTimeout);
+		// setTimeout(() => {
+		// 	console.log('survey firing ');
+		// 	// Check if mainWindow exists in case we are about to shut down:
+		// 	if (mainWindow) {
+		// 		mainWindow.webContents.send('show-survey-request');
+		// 		console.log('survey fired');
+		// 	} else {
+		// 		console.log('survey not fired, no mainWindow');
+		// 	}
+		// }, noSurveyTimeout);
 
 
-  } else if (inMemoryShortcuts[GLOBAL_SETTINGS_KEY].survey == "cancelled") {
-  	const cancelledTimeout = 300000;
-  	console.log('starting with timeout... ', cancelledTimeout);
+  // } else if (inMemoryShortcuts[GLOBAL_SETTINGS_KEY].survey == "cancelled") {
+  // 	const cancelledTimeout = 300000;
+  // 	console.log('starting with timeout... ', cancelledTimeout);
 
-		setTimeout(() => {
-			console.log('SURVEY > FIRING ');
-			mainWindow.webContents.send('show-survey-request');
-		}, cancelledTimeout);
-  }
+		// setTimeout(() => {
+		// 	console.log('SURVEY > FIRING ');
+		// 	mainWindow.webContents.send('show-survey-request');
+		// }, cancelledTimeout);
+  // }
 }
 
 function debugEverything() {
-	if (mainWindow) {
-    // mainWindow.show();
-		mainWindow.openDevTools();
-	} else {
-		log.info("cant find mainwindow to show");
-	}
-
-	if (settingsWindow) {
-    // settingsWindow.show();
-		settingsWindow.openDevTools();
-	} else {
-		log.info("cant find settingswindow to show");
-	}
-
-	if (backgroundTaskRunnerWindow) {
-        // backgroundTaskRunnerWindow.show();
-		backgroundTaskRunnerWindow.openDevTools();
-	} else {
-		log.info("cant find backgroundTaskRunnerWindow to show");
-	}
-
-	if (backgroundListenerWindow) {
-        // backgroundListenerWindow.show();
-		backgroundListenerWindow.openDevTools();
-	} else {
-		log.info("cant find backgroundListenerWindow to show");
-	}
-
-	if (welcomeWindow) {
-        // welcomeWindow.show();
-		welcomeWindow.openDevTools();
-	} else {
-		log.info("cant find welcomeWindow to show");
-	}
-
-	if (miniSettingsWindow) {
-    // miniSettingsWindow.show();
-		miniSettingsWindow.openDevTools();
-	} else {
-		log.info("cant find miniSettingsWindow to show");
-	}
-
-	if (tooltipWindow) {
-		// tooltipWindow.show();
-		tooltipWindow.openDevTools();
-	} else {
-		log.info("cant find tooltipWindow to show");
-	}
-
-	if (gifRecorderWindow) {
-		// gifRecorderWindow.show();
-		gifRecorderWindow.openDevTools();
-	} else {
-		log.info("cant find gifRecorderWindow to show");
-	}
-
-	if (bubbleWindow) {
-		bubbleWindow.openDevTools();
-	} else {
-		log.info("cant find bubbleWindow to show");
-	}
+	debugAllWindows([
+		mainWindow,
+		settingsWindow,
+		backgroundTaskRunnerWindow,
+		backgroundListenerWindow,
+		welcomeWindow,
+		miniSettingsWindow,
+		tooltipWindow,
+		gifRecorderWindow,
+		bubbleWindow
+	])
 }
 
 function createTray() {
