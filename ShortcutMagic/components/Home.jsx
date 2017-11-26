@@ -1,10 +1,11 @@
 'use babel';
 
-import React, { Component } from 'react';
-import {SortableContainer, SortableElement, SortableHandle, arrayMove} from 'react-sortable-hoc';
-import Electron, { ipcRenderer, remote, shell } from 'electron';
+import React, { Component } from 'react'
+import {SortableContainer, SortableElement, SortableHandle, arrayMove} from 'react-sortable-hoc'
+import Electron, { ipcRenderer, remote, shell } from 'electron'
 import ReactTooltip from 'react-tooltip'
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom'
+import Mousetrap from 'mousetrap'
 
 const GLOBAL_SETTINGS_KEY = "all programs";
 
@@ -28,6 +29,12 @@ function hexToRgba(hex, alpha) {
 
 export default class Home extends Component {
   componentWillMount() {
+    Mousetrap.bind('command+,', () => {
+      this.setState({
+        settingsPaneActive: !this.state.settingsPaneActive
+      })
+    })
+
     this.onSortEnd = this.onSortEnd.bind(this);
     this.updatePrograms = this.updatePrograms.bind(this);
     this.updateItems = this.updateItems.bind(this);
@@ -104,6 +111,12 @@ export default class Home extends Component {
     });
 
     ipcRenderer.on('log', (e, text) => console.log(text));
+
+    ipcRenderer.on('show-settings', (e) => {
+      this.setState({
+        settingsPaneActive: true
+      })
+    })
 
     // ipcRenderer.send('set-programs-async');
   }

@@ -116,13 +116,18 @@ export default class BubbleView extends Component {
     setTimeout(this.fadeOut, 30);
   }
 
-  fadeIn() {
+  fadeIn(doneFadingCallback) {
     if (this.state.fade >= maxFade) {
       this.setState({
         fade: maxFade,
         fading: false
-      });
-      return;
+      })
+
+      if (doneFadingCallback) {
+        doneFadingCallback()
+      }
+
+      return
     }
 
     this.setState({
@@ -130,18 +135,23 @@ export default class BubbleView extends Component {
       fading: true
     });
 
-    setTimeout(this.fadeIn, 30);
+    setTimeout(this.fadeIn, 30)
   }
 
-  fadeInAndOut(e, fadeOutTime = 3000) {
-    this.fadeIn()
+  fadeInAndOut(e, fadeOutTime = 4000) {
+    this.setState({
+      fading: false,
+      fade: 0,
+    })
 
-    setTimeout(() => {
-      if (!this.state.mouseOver) {
-        stopFadeOut = false
-        this.fadeOut()
-      }
-    }, fadeOutTime)
+    this.fadeIn(() => {
+      setTimeout(() => {
+        if (!this.state.mouseOver) {
+          stopFadeOut = false
+          this.fadeOut()
+        }
+      }, fadeOutTime)
+    })
   }
 
 
@@ -150,7 +160,7 @@ export default class BubbleView extends Component {
     console.log(programs)
 
     let shortcuts = Object.values(programs[currentProgramName].shortcuts);
-    const filteredShortcuts = shortcuts.filter(s => !s.alwaysHide && (!s.score ||  s.score > -1))
+    const filteredShortcuts = shortcuts.filter(s => !s.alwaysHide)
     const randomShortcut = filteredShortcuts[Math.floor(Math.random() * shortcuts.length)]
 
     this.fadeIn();
@@ -293,11 +303,12 @@ export default class BubbleView extends Component {
         padding: '4px',
         backgroundColor: `transparent`,
       }} onMouseEnter={(e) => {
-        this.stopFadingWithState({
+        this.setState({
           mouseOver: true,
-        });
+          fade: initialFade,
+        })
       }} onMouseLeave={(e) => {
-        this.stopFadingWithState({
+        this.setState({
           mouseOver: false,
         });
       }}>
@@ -499,7 +510,6 @@ export default class BubbleView extends Component {
         <div style={{
             position: 'relative',
         }} onClick={(e) => {
-          console.log('seidning show-window')
           ipcRenderer.send('show-window');
         }}>
             <img src="../assets/wizard.png" style={{
@@ -534,9 +544,20 @@ export default class BubbleView extends Component {
           highlighting: true,
         })
       }} onMouseLeave={(e) => {
+        setTimeout(() => {
+          stopFadeOut = false
+          this.setState({
+            mouseOver: false,
+            highlighting: false,
+          })
+          this.fadeOut()
+        }, 6000)
+
         this.setState({
           highlighting: false,
         })
+      }} onClick={(e) => {
+        ipcRenderer.send('show-window');
       }}>
         {headerComponent}
         <div className="window-content">

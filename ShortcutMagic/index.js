@@ -62,7 +62,7 @@ let inMemoryHiddenNotifications = {};
 // These global settings are stored together with the shortcuts, and this is the "name":
 const GLOBAL_SETTINGS_KEY = "all programs";
 const DEFAULT_GLOBAL_SETTINGS = {
-	timeoutRepeat: 0.4,
+	timeoutRepeat: 20,
 	showOnAppSwitch: true,
 	neverShowBubbleWindow: false,
 	survey: false,
@@ -776,6 +776,15 @@ function createTray() {
 			app.quit();
 			quitShortcutMagic();
 		}
+	},
+	// TODO: This is not working, but at least it shows the shortcut on the menu item
+	{
+		label: 'Preferences',
+		accelerator: 'Cmd+,', 
+		click: function () {
+			showMainWindow()
+			mainWindow.webContents.send('show-settings')
+		}
 	}];
 
 	trayObject.setContextMenu(Menu.buildFromTemplate(trayMenuTemplate));
@@ -1109,63 +1118,61 @@ app.on('activate-with-no-open-windows', () => {
 
 app.on('ready', () => {
 	// TODO: Properly implement auto update releases
+  // const checkForUpdates = () => {
+  //     log.info("before AUTOUPDATER setFeedUrl");
+  //     // const appVersion = app.getVersion();
+  //     var platform = `${os.platform()}_${os.arch()}`;
+  //     var version = app.getVersion();
+  //     autoUpdater.setFeedURL(`https://shortcutmagic-updater.herokuapp.com/update/${platform}/${version}`);
+  //     log.info("after AUTOUPDATER setFeedUrl");
+  //     log.info("before AUTOUPDATER checkForUpdates");
+  //     autoUpdater.checkForUpdates();
+  //     // setTimeout(checkForUpdates, 3600000);
+  // };
 
-    // const checkForUpdates = () => {
-    //     log.info("before AUTOUPDATER setFeedUrl");
-    //     // const appVersion = app.getVersion();
-    //     var platform = `${os.platform()}_${os.arch()}`;
-    //     var version = app.getVersion();
-    //     autoUpdater.setFeedURL(`https://shortcutmagic-updater.herokuapp.com/update/${platform}/${version}`);
-    //     log.info("after AUTOUPDATER setFeedUrl");
-    //     log.info("before AUTOUPDATER checkForUpdates");
-    //     autoUpdater.checkForUpdates();
-    //     // setTimeout(checkForUpdates, 3600000);
-    // };
+  // setTimeout(checkForUpdates, 1000);
 
-    // setTimeout(checkForUpdates, 1000);
+  globalShortcut.register('Command+Shift+Alt+Space', function () {
+      focusMainWindow();
+  });
 
+  // globalShortcut.register('Command+Shift+Alt+Up', function () {
+  //     let currentBounds = mainWindow.getBounds();
+  //     currentBounds.y -= 25;
+  //     mainWindow.setBounds(currentBounds);
+  // });
 
-    globalShortcut.register('Command+Shift+Alt+Space', function () {
-        focusMainWindow();
-    });
+  // globalShortcut.register('Command+Shift+Alt+Left', function () {
+  //     let currentBounds = mainWindow.getBounds();
+  //     currentBounds.x -= 25;
+  //     mainWindow.setBounds(currentBounds);
+  // });
 
-    // globalShortcut.register('Command+Shift+Alt+Up', function () {
-    //     let currentBounds = mainWindow.getBounds();
-    //     currentBounds.y -= 25;
-    //     mainWindow.setBounds(currentBounds);
-    // });
+  // globalShortcut.register('Command+Shift+Alt+Down', function () {
+  //     let currentBounds = mainWindow.getBounds();
+  //     currentBounds.y += 25;
+  //     mainWindow.setBounds(currentBounds);
+  // });
 
-    // globalShortcut.register('Command+Shift+Alt+Left', function () {
-    //     let currentBounds = mainWindow.getBounds();
-    //     currentBounds.x -= 25;
-    //     mainWindow.setBounds(currentBounds);
-    // });
+  // globalShortcut.register('Command+Shift+Alt+Right', function () {
+  //     let currentBounds = mainWindow.getBounds();
+  //     currentBounds.x += 25;
+  //     mainWindow.setBounds(currentBounds);
+  // });
 
-    // globalShortcut.register('Command+Shift+Alt+Down', function () {
-    //     let currentBounds = mainWindow.getBounds();
-    //     currentBounds.y += 25;
-    //     mainWindow.setBounds(currentBounds);
-    // });
-
-    // globalShortcut.register('Command+Shift+Alt+Right', function () {
-    //     let currentBounds = mainWindow.getBounds();
-    //     currentBounds.x += 25;
-    //     mainWindow.setBounds(currentBounds);
-    // });
-
-    globalShortcut.register('Command+Shift+Alt+S', function () {
-        // TODO: Implement escape to drop focus and return to previous app
-        mainWindow.show();
-        mainWindow.focus();
-        mainWindow.webContents.send('focus-search-field');
-    });
+  globalShortcut.register('Command+Shift+Alt+S', function () {
+      // TODO: Implement escape to drop focus and return to previous app
+      mainWindow.show();
+      mainWindow.focus();
+      mainWindow.webContents.send('focus-search-field');
+  });
 
 	// createWindows();
 	// loadWithPeriods(backgroundTaskRunnerWindow.webContents.send('read-last-app-name'));
-    createTray();
-    createLearnWindow();
-    console.log('starting permission attempt.............................................................');
-    permissionCheck((res) => res ? createWindows() : createWelcomeWindow());
+  createTray();
+  createLearnWindow();
+  console.log('starting permission attempt.............................................................');
+  permissionCheck((res) => res ? createWindows() : createWelcomeWindow());
 });
 
 app.on('before-quit', (event) => {
@@ -1178,30 +1185,6 @@ app.on('before-quit', (event) => {
 ipcMain.on('get-app-name-sync', function(event) {
 	event.returnValue = currentProgramName;
 });
-
-// ipcMain.on('set-programs-async', (e) => {
-// 	if (!inMemoryShortcuts || !inMemoryShortcuts.length) {
-// 	  // TODO: At some point this might be too much to read at once?
-// 		getDb().find({}, function(err, res) {
-// 			if (err) {
-// 				log.info('errored during db find: ', err);
-// 				return;
-// 			}
-
-// 			if (res.length > 0) {
-// 				// firstLoad = true;
-// 				inMemoryShortcuts = res;
-// 				mainWindow.webContents.send('set-programs', res);
-// 				bubbleWindow.webContents.send('set-programs', res)
-// 			} else {
-// 				log.info('zero for res.length');
-// 			}
-// 		});
-// 	} else {
-// 		mainWindow.webContents.send('set-programs', inMemoryShortcuts);
-// 		bubbleWindow.webContents.send('set-programs', inMemoryShortcuts)
-// 	}
-// });
 
 ipcMain.on('main-app-switched-notification', appSwitched);
 
@@ -1261,16 +1244,6 @@ function appSwitched(event, appName) {
 
 	const settings = inMemoryShortcuts[GLOBAL_SETTINGS_KEY];
 
-
-	console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||')
-	console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||')
-	console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||')
-	console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||')
-	console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||')
-	console.log('inside appSwitch with settings and bubbleWindowTimeout')
-	console.log(settings)
-	console.log(bubbleWindowTimeout)
-
 	if (!settings || settings.neverShowBubbleWindow) {
 		return;
 	} 
@@ -1281,22 +1254,15 @@ function appSwitched(event, appName) {
 
 	if (settings.timeoutRepeat && !bubbleWindowTimeout) {
 		bubbleWindowTimeout = true;
-		console.log('|||||||||||||||||| inside if check')
 
-		// TODO: Make recursive to repeat on timeoutRepeat value
-		// const recursing = () => {
-				setTimeout(() => {
-					console.log('||||||||||||||||||||||| inside timeout function, setting bubbleWindowTimeout to false')
-					bubbleWindowTimeout = false;
-					bubbleWindow.webContents.send('fade-in-and-out');
-					showBubbleWindow();
+		setTimeout(() => {
+			bubbleWindowTimeout = false;
+			showBubbleWindow();
+			bubbleWindow.webContents.send('fade-in-and-out');
 
-					// TODO: Re-enable recursing when it can be stopped from overlapping
-					// setTimeout(recursing, repeatTimeout); // Minutes to milliseconds 
-				}, settings.timeoutRepeat * 60000); // Minutes to milliseconds 
-		// }
-
-		// recursing();
+			// TODO: Re-enable recursing when it can be stopped from overlapping
+			// setTimeout(recursing, repeatTimeout); // Minutes to milliseconds 
+		}, settings.timeoutRepeat * 1000); // Seconds to milliseconds 
 	}
 }
 
@@ -1576,16 +1542,8 @@ ipcMain.on('save-gif', (event, newGif, listItem, appName) => {
 		// throw new Error("NOT ENOUGH SHORTCUTS");
 	// }
 
-	console.log('=============================================');
-	console.log('=============================================');
-	console.log('=============================================');
-	console.log('=============================================');
 	console.log('saving save-gif');
 	console.log(shortcutObject);
-	console.log('=============================================');
-	console.log('=============================================');
-	console.log('=============================================');
-	console.log('=============================================');
 
 
 	getDb().update({
@@ -1645,16 +1603,6 @@ ipcMain.on('open-learn', (e) => {
 });
 
 ipcMain.on('hide-bubble-window', (e, manual) => {
-	// if (manual) {
-	// 	inMemoryHiddenNotifications[currentProgramName] = (inMemoryHiddenNotifications[currentProgramName] ? inMemoryHiddenNotifications[currentProgramName] + 1 : 1);
-
-	// 	// TODO: Display prompt to hide forever?
-	// 	if (!inMemoryShortcuts[currentProgramName].hideNotification && inMemoryHiddenNotifications[currentProgramName] > 1) {
-	// 		bubbleWindow.webContents.send('prompt-to-hide', currentProgramName);
-	// 		return;
-	// 	}
-	// }
-
 	hideBubbleWindow();
 });
 
