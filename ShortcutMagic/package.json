@@ -30,6 +30,7 @@
     "electron-sudo": "^4.0.12",
     "font-awesome": "^4.7.0",
     "image-size": "^0.6.1",
+    "mousetrap": "^1.6.1",
     "nedb": "^1.8.0",
     "nodobjc": "^2.1.0",
     "react": "^16.1.1",
