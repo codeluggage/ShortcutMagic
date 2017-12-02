@@ -1,29 +1,22 @@
 # ShortcutMagic
 
-This is the open source repository for [ShortcutMagic](https://shortcutmagic.com). 
+ShortcutMagic is a productivity program to help you learn shortcuts. It does this by showing suggetsions, either when the program changes or a set time afterwards. 
 
-## What is ShortcutMagic?
+![Suggestion](./ShortcutMagic/assets/bubble-window.png?raw=true "Suggestion")
 
-A small floating window that lives on your computer and teaches you about other programs. 
+Every action it can find, both those with shortcuts and those without, are added to the main shortcut library window: 
 
-In the ShortcutMagic window, all the things you can do in your program are listed. You can click them to run the shortcut, set it as your favorite, hide it if you don't need it, and so on. 
+![Library](./ShortcutMagic/assets/library.png?raw=true "Library")
 
-The community contributes ratings, advice, tips, and most importantly gifs that show how something works. 
+## How does it work?
 
+It uses the accessibility API's through AppleScript to parse every action item listed under the menues and adds them to a simple local database. The global notifications for app switching and launching are used through Objective-C, so ShortcutMagic knows when to parse new shortcuts and when to show the suggestion. 
 
-## How does ShortcutMagic work?
-
-It uses the accessibility in the computer to learn what the other programs on your computer can do, and what the shortcuts are.  
-
-## What technology is used?
-
-Several programming languages are used, but the majority of the code is in Javascript. Specifically in [Node.js](https://github.com/nodejs/node), ran by [Electron](https://github.com/electron/electron). Everything visible is in [React.js](https://github.com/facebook/react).
-
-Applescript is used to get the list of menu items through the accessibility API in MacOS. The Applescript is compiled and ran by Objective-C, in the form of NodObjc, running inside Node.js. All of this is happening in "worker threads" (actually, invisible Chrome browser windows) in the background. 
+The majority of the code is in Javascript. [Node.js](https://github.com/nodejs/node), running in [Electron](https://github.com/electron/electron), rendered with [React.js](https://github.com/facebook/react).
 
 ## Can I contribute to this repo? Can I use the code? 
 
-Yes you can! Head over to the [issues](https://github.com/codeluggage/ShortcutMagic/issues) page to see what's going on. Check out [contributing](https://github.com/codeluggage/ShortcutMagic/blob/master/CONTRIBUTING.md) for more on how you can help the ShortcutMagic community! 
+Yes and yes! The code freely available under the MIT license, and there are issues listed on [issues](https://github.com/codeluggage/ShortcutMagic/issues). 
 
 ## License
 
