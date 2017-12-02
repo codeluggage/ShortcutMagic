@@ -13,7 +13,7 @@ const {
 } = electron;
 const { spawnSync } = require('child_process');
 const deepEqual = require('deep-equal');
-const parseShortcuts = require('./background/parseShortcuts.js');
+const parseShortcuts = require('./shared/readAllShortcuts.js');
 const electronLocalshortcut = require('electron-localshortcut');
 const log = require('electron-log');
 const sizeOf = require('image-size');
@@ -1268,6 +1268,8 @@ function appSwitched(event, appName) {
 
 function mainParseShortcutsCallback(payload) {
 	log.info("mainParseShortcutsCallback");
+	console.log('payload: ')
+	console.log(payload)
 	// mainWindow.webContents.send('set-loading', false);
 	trayObject.setTitle("");
 	loadingText = null;

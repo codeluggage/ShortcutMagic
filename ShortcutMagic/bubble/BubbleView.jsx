@@ -160,7 +160,7 @@ export default class BubbleView extends Component {
     console.log(programs)
 
     let shortcuts = Object.values(programs[currentProgramName].shortcuts);
-    const filteredShortcuts = shortcuts.filter(s => !s.alwaysHide)
+    const filteredShortcuts = shortcuts.filter(s => !s.alwaysHide && (s.char || s.mod || s.glyph))
     const randomShortcut = filteredShortcuts[Math.floor(Math.random() * shortcuts.length)]
 
     this.fadeIn();

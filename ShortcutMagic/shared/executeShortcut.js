@@ -56,6 +56,8 @@ module.exports = function executeShortcut(appName, listItem) {
 
     var char = convertCharToKeyCode(listItem.char, listItem.glyph);
 
+    // TODO: Somehow, the app name "Photoshop CC" is read when the app is first parsed, but the actual name
+    // used for referencing the app is "Adobe Photoshop CC 2018" - can we read this some other way? 
     arrayArgs('addObject', $(appName));
     arrayArgs('addObject', $(char));
 
