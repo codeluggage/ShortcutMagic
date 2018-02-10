@@ -2,11 +2,11 @@
 
 ShortcutMagic is a productivity program to help you learn shortcuts. It does this by showing suggetsions, either when the program changes or a set time afterwards. 
 
-![Suggestion](./ShortcutMagic/assets/bubble-window.png?raw=true "Suggestion")
+![Suggestion](./bubble-window.png?raw=true "Suggestion")
 
 Every action it can find, both those with shortcuts and those without, are added to the main shortcut library window: 
 
-![Library](./ShortcutMagic/assets/library.png?raw=true "Library")
+![Library](./library.png?raw=true "Library")
 
 ## How does it work?
 
