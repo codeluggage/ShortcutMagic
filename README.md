@@ -1,5 +1,8 @@
 # ShortcutMagic
 
+Project page: https://codeluggage.github.io/ShortcutMagic
+Repository: https://github.com/codeluggage/ShortcutMagic
+
 ShortcutMagic is a productivity program to help you learn shortcuts. It does this by showing suggetsions, either when the program changes or a set time afterwards. 
 
 ![Suggestion](./bubble-window.png?raw=true "Suggestion")
